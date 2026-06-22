@@ -14,9 +14,16 @@
     "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "paths": {
+      "@assets/*": ["src/assets/*"],
+      "@axios/*": ["src/axios/*"],
       "@components/*": ["src/components/*"],
+      "@config/*": ["src/config/*"],
+      "@constant/*": ["src/constant/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@navigation/*": ["src/navigation/*"],
       "@screens/*": ["src/screens/*"],
-      "@hooks/*": ["src/hooks/*"]
+      "@appTypes/*": ["src/types/*"],
+      "@utils/*": ["src/utils/*"]
     }
   },
   "exclude": [
