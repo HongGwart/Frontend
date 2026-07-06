@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+const path = require('path');
+
 module.exports = {
   presets: ['module:@react-native/babel-preset'],
   plugins: [
     [
       'module-resolver',
       {
-        root: ['./src'],
+        root: [path.resolve(__dirname, 'src')], // ← 절대경로로 변경
         extensions: ['.ts', '.tsx', '.js', '.jsx'],
         alias: {
           '@assets': './src/assets',

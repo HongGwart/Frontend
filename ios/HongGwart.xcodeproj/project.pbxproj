@@ -8,11 +8,20 @@
 
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-HongGwart.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-HongGwart.a */; };
+		0CBB554DD02F45409AAEFA62 /* Pretendard-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 7CD0CFA0E89E40CD8CDD8301 /* Pretendard-SemiBold.otf */; };
+		0DCEB81738F84CF099B39730 /* Pretendard-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = D0D9C438A36F434799526DF2 /* Pretendard-Light.otf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		5757C5A14AF94B748EC12ACB /* Pretendard-ExtraBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 31B1920FE7D545E19DF086D9 /* Pretendard-ExtraBold.otf */; };
+		61B6A5D889C742969D78214D /* Pretendard-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 2ED5C73C75F24B1CBA521DAC /* Pretendard-Medium.otf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8F53C70F8706479EBD74F1DC /* Pretendard-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = C3689F1A58904F159DD3BAC4 /* Pretendard-Regular.otf */; };
 		B35BCE738F3645868050EE7E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		BF35A3DA6E284B4C87EBB32F /* Pretendard-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 4C1AB7AA8436498E82FD2B9E /* Pretendard-Bold.otf */; };
 		EE9CE0502FFA09A50042C54F /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = EE9CE04F2FFA09A50042C54F /* AppDelegate.mm */; };
 		EE9CE0562FFA0F840042C54F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9CE0552FFA0F840042C54F /* main.m */; };
+		F2698C4AD3E84171BDAA0EB6 /* Pretendard-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = C59F9D22CCA14C17B8FF3750 /* Pretendard-Thin.otf */; };
+		F27A6E75FD044C97B841A824 /* Pretendard-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6430456107124C9CAF741F40 /* Pretendard-ExtraLight.otf */; };
+		F657B9CA335C4BE0B66BB132 /* Pretendard-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3C371403120347E18C193DD7 /* Pretendard-Black.otf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,10 +29,19 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = HongGwart/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = HongGwart/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = HongGwart/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2ED5C73C75F24B1CBA521DAC /* Pretendard-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Medium.otf"; path = "../src/assets/fonts/Pretendard-Medium.otf"; sourceTree = "<group>"; };
+		31B1920FE7D545E19DF086D9 /* Pretendard-ExtraBold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-ExtraBold.otf"; path = "../src/assets/fonts/Pretendard-ExtraBold.otf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-HongGwart.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HongGwart.debug.xcconfig"; path = "Target Support Files/Pods-HongGwart/Pods-HongGwart.debug.xcconfig"; sourceTree = "<group>"; };
+		3C371403120347E18C193DD7 /* Pretendard-Black.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Black.otf"; path = "../src/assets/fonts/Pretendard-Black.otf"; sourceTree = "<group>"; };
+		4C1AB7AA8436498E82FD2B9E /* Pretendard-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Bold.otf"; path = "../src/assets/fonts/Pretendard-Bold.otf"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-HongGwart.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HongGwart.release.xcconfig"; path = "Target Support Files/Pods-HongGwart/Pods-HongGwart.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-HongGwart.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HongGwart.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6430456107124C9CAF741F40 /* Pretendard-ExtraLight.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-ExtraLight.otf"; path = "../src/assets/fonts/Pretendard-ExtraLight.otf"; sourceTree = "<group>"; };
+		7CD0CFA0E89E40CD8CDD8301 /* Pretendard-SemiBold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-SemiBold.otf"; path = "../src/assets/fonts/Pretendard-SemiBold.otf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = HongGwart/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		C3689F1A58904F159DD3BAC4 /* Pretendard-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Regular.otf"; path = "../src/assets/fonts/Pretendard-Regular.otf"; sourceTree = "<group>"; };
+		C59F9D22CCA14C17B8FF3750 /* Pretendard-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Thin.otf"; path = "../src/assets/fonts/Pretendard-Thin.otf"; sourceTree = "<group>"; };
+		D0D9C438A36F434799526DF2 /* Pretendard-Light.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Light.otf"; path = "../src/assets/fonts/Pretendard-Light.otf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		EE9CE04B2FFA09280042C54F /* HongGwart.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = HongGwart.xcodeproj; sourceTree = "<group>"; };
 		EE9CE04E2FFA09A50042C54F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -66,6 +84,23 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		58FC3B353D324E11A35F10F4 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C3689F1A58904F159DD3BAC4 /* Pretendard-Regular.otf */,
+				3C371403120347E18C193DD7 /* Pretendard-Black.otf */,
+				2ED5C73C75F24B1CBA521DAC /* Pretendard-Medium.otf */,
+				D0D9C438A36F434799526DF2 /* Pretendard-Light.otf */,
+				31B1920FE7D545E19DF086D9 /* Pretendard-ExtraBold.otf */,
+				4C1AB7AA8436498E82FD2B9E /* Pretendard-Bold.otf */,
+				C59F9D22CCA14C17B8FF3750 /* Pretendard-Thin.otf */,
+				6430456107124C9CAF741F40 /* Pretendard-ExtraLight.otf */,
+				7CD0CFA0E89E40CD8CDD8301 /* Pretendard-SemiBold.otf */,
+			);
+			name = Resources;
+			path = "";
+			sourceTree = "<group>";
+		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
@@ -82,6 +117,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				58FC3B353D324E11A35F10F4 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -107,6 +143,8 @@
 		};
 		EE9CE0532FFA0E790042C54F /* Products */ = {
 			isa = PBXGroup;
+			children = (
+			);
 			name = Products;
 			sourceTree = "<group>";
 		};
@@ -179,6 +217,15 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				B35BCE738F3645868050EE7E /* PrivacyInfo.xcprivacy in Resources */,
+				8F53C70F8706479EBD74F1DC /* Pretendard-Regular.otf in Resources */,
+				F657B9CA335C4BE0B66BB132 /* Pretendard-Black.otf in Resources */,
+				61B6A5D889C742969D78214D /* Pretendard-Medium.otf in Resources */,
+				0DCEB81738F84CF099B39730 /* Pretendard-Light.otf in Resources */,
+				5757C5A14AF94B748EC12ACB /* Pretendard-ExtraBold.otf in Resources */,
+				BF35A3DA6E284B4C87EBB32F /* Pretendard-Bold.otf in Resources */,
+				F2698C4AD3E84171BDAA0EB6 /* Pretendard-Thin.otf in Resources */,
+				F27A6E75FD044C97B841A824 /* Pretendard-ExtraLight.otf in Resources */,
+				0CBB554DD02F45409AAEFA62 /* Pretendard-SemiBold.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -209,13 +256,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-HongGwart/Pods-HongGwart-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-HongGwart/Pods-HongGwart-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -252,13 +295,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-HongGwart/Pods-HongGwart-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-HongGwart/Pods-HongGwart-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -418,7 +457,10 @@
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				PODFILE_DIR = "$(SRCROOT)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
@@ -498,7 +540,10 @@
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				PODFILE_DIR = "$(SRCROOT)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;

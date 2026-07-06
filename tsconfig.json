@@ -12,6 +12,7 @@
     "noEmit": true,
     "isolatedModules": true,
     "ignoreDeprecations": "5.0",
+    "typeRoots": ["./node_modules/@types"],
     "baseUrl": ".",
     "paths": {
       "@assets/*": ["src/assets/*"],
