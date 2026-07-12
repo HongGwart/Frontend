@@ -1,23 +1,27 @@
 import React from 'react';
 import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import BlueLogo from './assets/blueLogo.svg';
+import { ThemeProvider } from 'styled-components/native';
+import { theme } from './theme';
+import DevThemeCheckScreen from '@screens/DevThemeCheck.screen';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
+    <ThemeProvider theme={theme}>
+      <SafeAreaProvider>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <AppContent />
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 }
 
 function AppContent() {
   return (
     <View style={styles.container}>
-      <BlueLogo width={200} height={200} />
+      <DevThemeCheckScreen />
     </View>
   );
 }
