@@ -1,11 +1,13 @@
 ---
-name: 기능 구현
-about: 새로운 기능이나 작업 항목을 등록할 때 사용하세요.
-title: '[Feature] '
-labels: enhancement
+name: '[ Feature ] - Feature request'
+about: 'Request a new feature or task'
+title: '[ Feature ] - '
+labels: 'enhancement'
+assignees: ''
 ---
 
 ## Description
+어떤 기능/작업인지 적습니다. 이때 배경이나 이유를 같이 적어주면 좋습니다.
 
 -
 
