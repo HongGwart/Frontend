@@ -8,7 +8,21 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.Frontend"
+      "bundleIdentifier": "org.reactjs.native.example.HongGwart",
+       "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSExceptionDomains": {
+            "map.naver.com": {
+              "NSExceptionAllowsInsecureHTTPLoads": true,
+              "NSIncludesSubdomains": true
+            },
+            "map.naver.net": {
+              "NSExceptionAllowsInsecureHTTPLoads": true,
+              "NSIncludesSubdomains": true
+            }
+          }
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,10 +32,29 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.Frontend"
+      "package": "com.honggwart"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "@mj-studio/react-native-naver-map",
+        {
+          "client_id": "41u83ejd91",
+          "ios": {
+            "NSLocationWhenInUseUsageDescription": "현재 위치를 기반으로 캠퍼스 지도를 안내하기 위해 위치 정보가 필요합니다."
+          }
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraMavenRepos": ["https://repository.map.naver.com/archive/maven"]
+          }
+        }
+      ]    
+    ] 
   }
 }

@@ -3,7 +3,8 @@ import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { ThemeProvider } from 'styled-components/native';
 import { theme } from '@theme';
-import DevThemeCheckScreen from '@screens/DevThemeCheck.screen';
+// import DevThemeCheckScreen from '@screens/DevThemeCheck.screen';
+import MapScreen from '@screens/MapScreen';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -20,13 +21,14 @@ function App() {
 function AppContent() {
   return (
     <View style={styles.container}>
-      <DevThemeCheckScreen />
+      {/* <DevThemeCheckScreen /> */}
+      <MapScreen />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: { flex: 1 },
 });
 
 export default App;
