@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, View } from 'react-native';
 import styled, { DefaultTheme } from 'styled-components/native';
-import BlueLogo from '../assets/svg/blueLogo.svg';
+import BlueLogo from '@assets/svgs/blueLogo.svg';
 
 const Container = styled(ScrollView)`
   flex: 1;
