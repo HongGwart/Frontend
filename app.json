@@ -9,7 +9,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.reactjs.native.example.HongGwart",
-       "infoPlist": {
+      "infoPlist": {
         "NSAppTransportSecurity": {
           "NSExceptionDomains": {
             "map.naver.com": {
@@ -51,10 +51,13 @@
         "expo-build-properties",
         {
           "android": {
-            "extraMavenRepos": ["https://repository.map.naver.com/archive/maven"]
+            "extraMavenRepos": [
+              "https://repository.map.naver.com/archive/maven"
+            ]
           }
         }
-      ]    
-    ] 
+      ],
+      "expo-status-bar"
+    ]
   }
 }

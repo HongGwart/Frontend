@@ -3,8 +3,8 @@ import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { RoomPolygons } from './RoomPolygons';
-import { useMapGestures } from './useMapGestures';
-import type { FloorMapData, RoomShape } from './types';
+import { useMapGestures } from '@hooks/map/useMapGestures';
+import { FloorMapData, RoomShape } from '@appTypes/room';
 
 interface Props {
   mapData: FloorMapData;

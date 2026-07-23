@@ -6,6 +6,7 @@ import { ThemeProvider } from 'styled-components/native';
 import { theme } from '@theme';
 // import DevThemeCheckScreen from '@screens/DevThemeCheck.screen';
 import MapScreen from '@screens/MapScreen';
+import DevThemeCheckScreen from '@screens/DevThemeCheck.screen';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
