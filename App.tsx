@@ -1,5 +1,6 @@
 import React from 'react';
 import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { ThemeProvider } from 'styled-components/native';
 import { theme } from '@theme';
@@ -9,12 +10,15 @@ import MapScreen from '@screens/MapScreen';
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
   return (
-    <ThemeProvider theme={theme}>
-      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <AppContent />
-      </SafeAreaProvider>
-    </ThemeProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <ThemeProvider theme={theme}>
+            <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+              <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+              <AppContent />
+            </SafeAreaProvider>
+          </ThemeProvider>
+        </GestureHandlerRootView>
+
   );
 }
 
