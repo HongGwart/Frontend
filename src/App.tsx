@@ -20,10 +20,42 @@ function App() {
 function AppContent() {
   const [activeTab, setActiveTab] = useState<NavigationTab>('map');
 
+  // TODO: 캠퍼스맵 페이지로 이동
+  const goToMap = () => {};
+  // TODO: 길찾기 페이지로 이동
+  const goToNavigation = () => {};
+  // TODO: 편의시설 페이지로 이동
+  const goToFacility = () => {};
+  // TODO: 주변상권 페이지로 이동
+  const goToHongdae = () => {};
+  // TODO: MY 페이지로 이동
+  const goToMypage = () => {};
+
+  const handleTabPress = (tab: NavigationTab) => {
+    setActiveTab(tab);
+    switch (tab) {
+      case 'map':
+        goToMap();
+        break;
+      case 'navigation':
+        goToNavigation();
+        break;
+      case 'facility':
+        goToFacility();
+        break;
+      case 'hongdae':
+        goToHongdae();
+        break;
+      case 'mypage':
+        goToMypage();
+        break;
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.screen} />
-      <NavigationBar activeTab={activeTab} onTabPress={setActiveTab} />
+      <NavigationBar activeTab={activeTab} onTabPress={handleTabPress} />
     </View>
   );
 }
