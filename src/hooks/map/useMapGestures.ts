@@ -7,7 +7,19 @@ import {
   useAnimatedStyle,
   runOnJS,
   withTiming,
+  withSpring,
+  withDecay,
 } from 'react-native-reanimated';
+
+/**
+ * 확대 한계를 넘어갔다가 손을 뗄 때 튕겨 돌아오는 스프링.
+ * stiffness=200, mass=0.5 기준 임계감쇠(진동 없이 멈추는 경계)는 damping=20인데,
+ * 그러면 그냥 스무스하게 멈추기만 하고 "바운스" 느낌이 안 나서 그보다 낮게 잡아
+ * 살짝 되튕겼다가 자리잡도록 한다.
+ */
+const BOUNCE_SPRING_CONFIG = { damping: 12, stiffness: 200, mass: 0.5 };
+/** 한 손가락 팬을 손에서 놓았을 때 관성으로 미끄러지는 정도. 1에 가까울수록 오래 미끄러짐 */
+const PAN_DECELERATION = 0.9975;
 
 interface UseMapGesturesOptions {
   rooms: RoomShape[];
@@ -67,6 +79,16 @@ export function useMapGestures({
     return Math.min(Math.max(value, min), max);
   };
 
+  // 확대 한계(min/max)를 살짝 넘어가도 딱 멈추지 않고 고무줄처럼 저항하며 조금 더 늘어나게 한다.
+  // resistance가 작을수록 한계 밖에서 더 뻑뻑하게(조금만) 움직인다.
+  const rubberBandClamp = (value: number, min: number, max: number) => {
+    'worklet';
+    const resistance = 0.55;
+    if (value < min) return min - (min - value) * resistance;
+    if (value > max) return max + (value - max) * resistance;
+    return value;
+  };
+
   // 지금 화면 중앙에 있는 지도 좌표를 pivotLocalX/Y에 기록한다. 핀치/회전 제스처가
   // 시작될 때(두 손가락이 처음 닿는 순간) 한 번만 호출해서 회전축을 고정한다.
   const capturePivot = () => {
@@ -83,19 +105,27 @@ export function useMapGestures({
     pivotLocalY.value = -dx * sin + dy * cos;
   };
 
-  // pivotLocalX/Y가 scale/rotation이 얼마든 항상 화면 중앙에 오도록 translate를 다시 계산.
-  // scale.value/rotation.value를 갱신한 "다음"에 호출해야 한다.
-  const applyPivot = () => {
+  // pivotLocalX/Y를 주어진 scale로 투영했을 때의 translate를 계산한다 (화면 중앙에 고정).
+  // applyPivot(매 프레임)과 핀치 종료 시 한계 밖이면 튕겨 돌아갈 목표 지점 계산에 공용으로 쓴다.
+  const computePivotTranslate = (targetScale: number) => {
     'worklet';
-    if (!containerWidthShared.value || !containerHeightShared.value) return;
     const cx = containerWidthShared.value / 2;
     const cy = containerHeightShared.value / 2;
     const cos = Math.cos(rotation.value);
     const sin = Math.sin(rotation.value);
     const rotatedX = pivotLocalX.value * cos - pivotLocalY.value * sin;
     const rotatedY = pivotLocalX.value * sin + pivotLocalY.value * cos;
-    translateX.value = cx - rotatedX * scale.value;
-    translateY.value = cy - rotatedY * scale.value;
+    return { x: cx - rotatedX * targetScale, y: cy - rotatedY * targetScale };
+  };
+
+  // pivotLocalX/Y가 scale/rotation이 얼마든 항상 화면 중앙에 오도록 translate를 다시 계산.
+  // scale.value/rotation.value를 갱신한 "다음"에 호출해야 한다.
+  const applyPivot = () => {
+    'worklet';
+    if (!containerWidthShared.value || !containerHeightShared.value) return;
+    const { x, y } = computePivotTranslate(scale.value);
+    translateX.value = x;
+    translateY.value = y;
   };
 
   const pinchGesture = Gesture.Pinch()
@@ -103,13 +133,27 @@ export function useMapGestures({
       capturePivot();
     })
     .onUpdate((e) => {
-      scale.value = clamp(savedScale.value * e.scale, minScaleShared.value, maxScaleShared.value);
+      // 한계 안쪽에서는 그대로, 살짝 넘어가면 고무줄처럼 저항하며 더 늘어난다
+      scale.value = rubberBandClamp(savedScale.value * e.scale, minScaleShared.value, maxScaleShared.value);
       applyPivot();
     })
     .onEnd(() => {
-      savedScale.value = scale.value;
-      savedTranslateX.value = translateX.value;
-      savedTranslateY.value = translateY.value;
+      const clampedScale = clamp(scale.value, minScaleShared.value, maxScaleShared.value);
+      if (clampedScale !== scale.value && containerWidthShared.value && containerHeightShared.value) {
+        // 손을 뗄 때 한계 밖에 있었다면 정확한 한계값으로 스프링처럼 튕겨 돌아간다.
+        // scale과 translate를 같은 스프링으로 같이 움직여야 pivot이 안 어긋난다.
+        const target = computePivotTranslate(clampedScale);
+        scale.value = withSpring(clampedScale, BOUNCE_SPRING_CONFIG);
+        translateX.value = withSpring(target.x, BOUNCE_SPRING_CONFIG);
+        translateY.value = withSpring(target.y, BOUNCE_SPRING_CONFIG);
+        savedScale.value = clampedScale;
+        savedTranslateX.value = target.x;
+        savedTranslateY.value = target.y;
+      } else {
+        savedScale.value = scale.value;
+        savedTranslateX.value = translateX.value;
+        savedTranslateY.value = translateY.value;
+      }
     });
 
   const panGesture = Gesture.Pan()
@@ -119,11 +163,22 @@ export function useMapGestures({
     .maxPointers(1)
     // 손가락이 이 정도 움직여야 팬으로 인정 -> 그 전까지는 탭 제스처에 기회를 준다
     .minDistance(6)
+    .onStart(() => {
+      // 직전 관성 스크롤(withDecay)이 아직 굴러가는 중일 수 있으므로, 지금 값 그대로
+      // 자기 자신에 대입해서 진행 중이던 애니메이션을 멈추고 saved를 현재 위치로 맞춘다.
+      translateX.value = translateX.value;
+      translateY.value = translateY.value;
+      savedTranslateX.value = translateX.value;
+      savedTranslateY.value = translateY.value;
+    })
     .onUpdate((e) => {
       translateX.value = savedTranslateX.value + e.translationX;
       translateY.value = savedTranslateY.value + e.translationY;
     })
-    .onEnd(() => {
+    .onEnd((e) => {
+      // 손을 뗄 때 속도가 남아있으면 그 방향으로 서서히 미끄러지다 멈춘다 (관성 스크롤)
+      translateX.value = withDecay({ velocity: e.velocityX, deceleration: PAN_DECELERATION });
+      translateY.value = withDecay({ velocity: e.velocityY, deceleration: PAN_DECELERATION });
       savedTranslateX.value = translateX.value;
       savedTranslateY.value = translateY.value;
     });
