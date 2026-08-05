@@ -7,6 +7,7 @@ import { theme } from '@theme';
 // import DevThemeCheckScreen from '@screens/DevThemeCheck.screen';
 import MapScreen from '@screens/MapScreen';
 import DevThemeCheckScreen from '@screens/DevThemeCheck.screen';
+import IndoorMapTestScreen from '@screens/IndoorMapTestScreen';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -27,7 +28,8 @@ function AppContent() {
   return (
     <View style={styles.container}>
       {/* <DevThemeCheckScreen /> */}
-      <MapScreen />
+      {/* <MapScreen /> */}
+            <IndoorMapTestScreen />
     </View>
   );
 }

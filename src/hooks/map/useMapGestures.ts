@@ -1,3 +1,5 @@
+import { RoomShape } from '@appTypes/room';
+import { findRoomAtPoint } from '@utils/geometry';
 import { useCallback } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
 import {
@@ -5,13 +7,13 @@ import {
   useAnimatedStyle,
   runOnJS,
 } from 'react-native-reanimated';
-import { RoomShape } from '@types/room';
-import { findRoomAtPoint } from '@utils/geometry';
-
 
 interface UseMapGesturesOptions {
   rooms: RoomShape[];
   onRoomTap: (room: RoomShape) => void;
+  /** 원본 SVG(=mapData) 크기. fitToContainer 계산에 필요 */
+  mapWidth: number;
+  mapHeight: number;
   minScale?: number;
   maxScale?: number;
 }
@@ -28,6 +30,8 @@ interface UseMapGesturesOptions {
 export function useMapGestures({
   rooms,
   onRoomTap,
+  mapWidth,
+  mapHeight,
   minScale = 1,
   maxScale = 5,
 }: UseMapGesturesOptions) {
@@ -37,6 +41,9 @@ export function useMapGestures({
   const translateY = useSharedValue(0);
   const savedTranslateX = useSharedValue(0);
   const savedTranslateY = useSharedValue(0);
+  // 화면에 맞춘 배율보다 더 축소하지 못하게, fitToContainer가 호출되면 여기가 갱신됨
+  const minScaleShared = useSharedValue(minScale);
+  const maxScaleShared = useSharedValue(maxScale);
 
   const clamp = (value: number, min: number, max: number) => {
     'worklet';
@@ -45,7 +52,7 @@ export function useMapGestures({
 
   const pinchGesture = Gesture.Pinch()
     .onUpdate((e) => {
-      scale.value = clamp(savedScale.value * e.scale, minScale, maxScale);
+      scale.value = clamp(savedScale.value * e.scale, minScaleShared.value, maxScaleShared.value);
     })
     .onEnd(() => {
       savedScale.value = scale.value;
@@ -89,13 +96,32 @@ export function useMapGestures({
   }));
 
   const resetTransform = useCallback(() => {
-    scale.value = 1;
-    savedScale.value = 1;
-    translateX.value = 0;
-    translateY.value = 0;
-    savedTranslateX.value = 0;
-    savedTranslateY.value = 0;
-  }, [scale, savedScale, translateX, translateY, savedTranslateX, savedTranslateY]);
+    scale.value = savedScale.value = minScaleShared.value;
+    translateX.value = savedTranslateX.value = 0;
+    translateY.value = savedTranslateY.value = 0;
+  }, [scale, savedScale, translateX, translateY, savedTranslateX, savedTranslateY, minScaleShared]);
 
-  return { composedGesture, animatedStyle, resetTransform };
+  /**
+   * 컨테이너(화면에 실제로 보이는 영역) 크기를 알게 되는 시점(onLayout)에 호출.
+   * 지도 전체가 화면 안에 들어오도록 초기 배율/위치를 계산하고, 그보다 더
+   * 축소는 못 하게 minScale도 같이 끌어올린다.
+   */
+  const fitToContainer = useCallback(
+    (containerWidth: number, containerHeight: number) => {
+      if (!containerWidth || !containerHeight || !mapWidth || !mapHeight) return;
+      const fitScale = Math.min(containerWidth / mapWidth, containerHeight / mapHeight) * 0.98;
+      const offsetX = (containerWidth - mapWidth * fitScale) / 2;
+      const offsetY = (containerHeight - mapHeight * fitScale) / 2;
+
+      minScaleShared.value = fitScale;
+      maxScaleShared.value = Math.max(maxScale, fitScale * 5);
+
+      scale.value = savedScale.value = fitScale;
+      translateX.value = savedTranslateX.value = offsetX;
+      translateY.value = savedTranslateY.value = offsetY;
+    },
+    [mapWidth, mapHeight, maxScale, scale, savedScale, translateX, translateY, savedTranslateX, savedTranslateY, minScaleShared, maxScaleShared]
+  );
+
+  return { composedGesture, animatedStyle, resetTransform, fitToContainer };
 }
