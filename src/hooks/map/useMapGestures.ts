@@ -11,7 +11,8 @@ import {
 
 interface UseMapGesturesOptions {
   rooms: RoomShape[];
-  onRoomTap: (room: RoomShape) => void;
+  /** 지도 탭 시 호출. 방을 찾았으면 그 방, 빈 공간을 탭했으면 null이 온다 (선택 해제용) */
+  onMapTap: (room: RoomShape | null) => void;
   /** 원본 SVG(=mapData) 크기. fitToContainer 계산에 필요 */
   mapWidth: number;
   mapHeight: number;
@@ -30,7 +31,7 @@ interface UseMapGesturesOptions {
  */
 export function useMapGestures({
   rooms,
-  onRoomTap,
+  onMapTap,
   mapWidth,
   mapHeight,
   minScale = 1,
@@ -144,10 +145,9 @@ export function useMapGestures({
   const tapGesture = Gesture.Tap()
     .maxDuration(250)
     .onEnd((e) => {
+      // 방을 못 찾으면 null -> 빈 공간 탭으로 선택 해제
       const room = findRoomAtPoint(e.x, e.y, rooms);
-      if (room) {
-        runOnJS(onRoomTap)(room);
-      }
+      runOnJS(onMapTap)(room);
     });
 
   // 핀치/팬/회전은 동시에 굴러가야 하고, 탭은 그것들과 경합(Race)해서 움직임이 없을 때만 이긴다

@@ -95,11 +95,15 @@ export function IndoorMapView({
 }: Props) {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
-  const handleRoomTap = useCallback(
-    (room: RoomShape) => {
+  const handleMapTap = useCallback(
+    (room: RoomShape | null) => {
       setSelectedRoomId((prev) => {
-        const next = prev === room.id ? null : room.id;
-        onRoomSelect?.(next ? room : null);
+        // 빈 공간을 탭하면 room이 null로 들어와서 무조건 선택 해제.
+        // 이미 선택된 방을 다시 탭하면 토글 해제, 다른 방을 탭하면 그 방으로 교체.
+        const next = room && prev !== room.id ? room.id : null;
+        if (next !== prev) {
+          onRoomSelect?.(next ? room : null);
+        }
         return next;
       });
     },
@@ -117,7 +121,7 @@ export function IndoorMapView({
     rotation,
   } = useMapGestures({
     rooms: mapData.rooms,
-    onRoomTap: handleRoomTap,
+    onMapTap: handleMapTap,
     mapWidth: mapData.width,
     mapHeight: mapData.height,
     minScale,
