@@ -279,5 +279,43 @@
       ],
       "path": "M1344,608.5 L1392,608.5 L1392,664.5 L1344,664.5 Z"
     }
+  ],
+  "icons": [
+    {
+      "id": "map_elevator",
+      "type": "elevator",
+      "center": [
+        464,
+        456.5
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_stairs",
+      "type": "stairs",
+      "center": [
+        966,
+        496
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_stairs_2",
+      "type": "stairs",
+      "center": [
+        1048,
+        618.5
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_stairs_3",
+      "type": "stairs",
+      "center": [
+        553,
+        560
+      ],
+      "size": 32
+    }
   ]
 }

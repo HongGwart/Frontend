@@ -9,10 +9,25 @@ export interface RoomShape {
   path: string;
 }
 
+export type IconMarkerType = 'elevator' | 'stairs';
+
+export interface IconMarker {
+  /** svgToIcons.js가 뽑아낸 원본 그룹 id (예: "map_stairs_2") */
+  id: string;
+  type: IconMarkerType;
+  /** 원본 SVG 좌표계 기준 아이콘 중심점 [x, y]. 화면에는 이 좌표를 앵커로 고정 픽셀 크기로 그린다
+   *  (지도를 확대/축소해도 아이콘 크기는 안 커지는 네이버지도식 마커) */
+  center: [number, number];
+  /** 원본 SVG상 아이콘 한 변 길이 (참고용, 실제 렌더링 크기는 IconMarkersLayer가 별도로 정함) */
+  size: number;
+}
+
 export interface FloorMapData {
   floorId: string;
   /** 원본 SVG viewBox 기준 너비/높이 (배경 SVG와 반드시 같은 좌표계여야 함) */
   width: number;
   height: number;
   rooms: RoomShape[];
+  /** 계단/엘리베이터 등 확대해도 크기가 고정되어야 하는 마커. 없는 층은 생략 가능 */
+  icons?: IconMarker[];
 }

@@ -123,5 +123,15 @@ export function useMapGestures({
     [mapWidth, mapHeight, maxScale, scale, savedScale, translateX, translateY, savedTranslateX, savedTranslateY, minScaleShared, maxScaleShared]
   );
 
-  return { composedGesture, animatedStyle, resetTransform, fitToContainer };
+  return {
+    composedGesture,
+    animatedStyle,
+    resetTransform,
+    fitToContainer,
+    // 아이콘 마커 레이어(IconMarkersLayer)가 mapLayer와 같은 scale/translate 공식으로
+    // 화면 좌표를 계산해야 해서 shared value 자체를 그대로 노출한다.
+    scale,
+    translateX,
+    translateY,
+  };
 }

@@ -3,6 +3,7 @@ import { StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyl
 import Animated from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { RoomPolygons } from './RoomPolygons';
+import { IconMarkersLayer } from './IconMarkersLayer';
 import { FloorMapData, RoomShape } from '@appTypes/room';
 import { useMapGestures } from '@hooks/map/useMapGestures';
 
@@ -73,6 +74,8 @@ interface Props {
   onRoomSelect?: (room: RoomShape | null) => void;
   minScale?: number;
   maxScale?: number;
+  /** 계단/엘리베이터 마커의 고정 화면 픽셀 크기 (확대/축소해도 안 바뀜). 생략 시 IconMarkersLayer 기본값 */
+  iconSize?: number;
 }
 
 export function IndoorMapView({
@@ -82,6 +85,7 @@ export function IndoorMapView({
   onRoomSelect,
   minScale = 1,
   maxScale = 5,
+  iconSize,
 }: Props) {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
@@ -96,7 +100,7 @@ export function IndoorMapView({
     [onRoomSelect]
   );
 
-  const { composedGesture, animatedStyle, fitToContainer } = useMapGestures({
+  const { composedGesture, animatedStyle, fitToContainer, scale, translateX, translateY } = useMapGestures({
     rooms: mapData.rooms,
     onRoomTap: handleRoomTap,
     mapWidth: mapData.width,
@@ -129,6 +133,19 @@ export function IndoorMapView({
           {renderForeground && <AbsoluteLayer>{renderForeground(size)}</AbsoluteLayer>}
         </Animated.View>
       </GestureDetector>
+      {/*
+        mapLayer 밖(=scale transform이 안 걸리는 곳)에 별도 오버레이로 둔다. 아이콘은
+        "지도 위에 그려진 그림"이 아니라 "지도 좌표에 꽂힌 핀"이어야 확대해도 크기가 고정된
+        네이버지도식 마커가 된다. 위치 계산은 마커 내부에서 mapLayer와 동일한
+        translate + mapCoord * scale 공식을 그대로 재사용한다.
+      */}
+      <IconMarkersLayer
+        icons={mapData.icons ?? []}
+        scale={scale}
+        translateX={translateX}
+        translateY={translateY}
+        size={iconSize}
+      />
     </View>
   );
 }

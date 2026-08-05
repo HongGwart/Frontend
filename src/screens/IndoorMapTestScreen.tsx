@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import rawMapData from '@assets/svgs/floors/A_1_test.json';
 import VisualBackground from '@assets/svgs/floors/A_1_test_bg.svg';
 import VisualDoors from '@assets/svgs/floors/A_1_test_doors.svg';
-import VisualIcons from '@assets/svgs/floors/A_1_test_icons.svg';
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
 import { FloorMapData } from '@appTypes/room';
@@ -24,12 +23,7 @@ export default function IndoorMapTestScreen() {
         renderBackground={({ width, height }) => (
           <VisualBackground width={width} height={height} />
         )}
-        renderForeground={({ width, height }) => (
-          <>
-            <VisualDoors width={width} height={height} />
-            <VisualIcons width={width} height={height} />
-          </>
-        )}
+        renderForeground={({ width, height }) => <VisualDoors width={width} height={height} />}
         onRoomSelect={(room) => {
           console.log('selected room:', room?.id, room?.placeId);
         }}
