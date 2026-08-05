@@ -41,6 +41,9 @@ export function useMapGestures({
   const translateY = useSharedValue(0);
   const savedTranslateX = useSharedValue(0);
   const savedTranslateY = useSharedValue(0);
+  // 라디안 단위. 두 손가락 회전 제스처로 갱신됨
+  const rotation = useSharedValue(0);
+  const savedRotation = useSharedValue(0);
   // 화면에 맞춘 배율보다 더 축소하지 못하게, fitToContainer가 호출되면 여기가 갱신됨
   const minScaleShared = useSharedValue(minScale);
   const maxScaleShared = useSharedValue(maxScale);
@@ -72,6 +75,14 @@ export function useMapGestures({
       savedTranslateY.value = translateY.value;
     });
 
+  const rotationGesture = Gesture.Rotation()
+    .onUpdate((e) => {
+      rotation.value = savedRotation.value + e.rotation;
+    })
+    .onEnd(() => {
+      savedRotation.value = rotation.value;
+    });
+
   const tapGesture = Gesture.Tap()
     .maxDuration(250)
     .onEnd((e) => {
@@ -81,16 +92,20 @@ export function useMapGestures({
       }
     });
 
-  // 핀치/팬은 동시에 굴러가야 하고, 탭은 그것들과 경합(Race)해서 움직임이 없을 때만 이긴다
+  // 핀치/팬/회전은 동시에 굴러가야 하고, 탭은 그것들과 경합(Race)해서 움직임이 없을 때만 이긴다
   const composedGesture = Gesture.Race(
-    Gesture.Simultaneous(pinchGesture, panGesture),
+    Gesture.Simultaneous(pinchGesture, panGesture, rotationGesture),
     tapGesture
   );
 
+  // transformOrigin '0 0' 기준, 순서가 곧 공식이다: 자식 좌표 p에 scale -> rotate -> translate
+  // 순으로 적용돼서 최종 화면좌표 = translate + Rotate(rotation) * (p * scale) 가 된다.
+  // IconMarkersLayer/RoomLabelsLayer가 아이콘·라벨 위치를 계산할 때 이 공식을 그대로 재사용한다.
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       { translateX: translateX.value },
       { translateY: translateY.value },
+      { rotate: `${rotation.value}rad` },
       { scale: scale.value },
     ],
   }));
@@ -99,7 +114,8 @@ export function useMapGestures({
     scale.value = savedScale.value = minScaleShared.value;
     translateX.value = savedTranslateX.value = 0;
     translateY.value = savedTranslateY.value = 0;
-  }, [scale, savedScale, translateX, translateY, savedTranslateX, savedTranslateY, minScaleShared]);
+    rotation.value = savedRotation.value = 0;
+  }, [scale, savedScale, translateX, translateY, savedTranslateX, savedTranslateY, rotation, savedRotation, minScaleShared]);
 
   /**
    * 컨테이너(화면에 실제로 보이는 영역) 크기를 알게 되는 시점(onLayout)에 호출.
@@ -119,8 +135,23 @@ export function useMapGestures({
       scale.value = savedScale.value = fitScale;
       translateX.value = savedTranslateX.value = offsetX;
       translateY.value = savedTranslateY.value = offsetY;
+      rotation.value = savedRotation.value = 0;
     },
-    [mapWidth, mapHeight, maxScale, scale, savedScale, translateX, translateY, savedTranslateX, savedTranslateY, minScaleShared, maxScaleShared]
+    [
+      mapWidth,
+      mapHeight,
+      maxScale,
+      scale,
+      savedScale,
+      translateX,
+      translateY,
+      savedTranslateX,
+      savedTranslateY,
+      rotation,
+      savedRotation,
+      minScaleShared,
+      maxScaleShared,
+    ]
   );
 
   return {
@@ -128,10 +159,11 @@ export function useMapGestures({
     animatedStyle,
     resetTransform,
     fitToContainer,
-    // 아이콘 마커 레이어(IconMarkersLayer)가 mapLayer와 같은 scale/translate 공식으로
+    // 아이콘/라벨 오버레이 레이어가 mapLayer와 같은 translate+rotate+scale 공식으로
     // 화면 좌표를 계산해야 해서 shared value 자체를 그대로 노출한다.
     scale,
     translateX,
     translateY,
+    rotation,
   };
 }

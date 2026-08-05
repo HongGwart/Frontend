@@ -4,6 +4,7 @@ import Animated from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { RoomPolygons } from './RoomPolygons';
 import { IconMarkersLayer } from './IconMarkersLayer';
+import { RoomLabelsLayer } from './RoomLabelsLayer';
 import { FloorMapData, RoomShape } from '@appTypes/room';
 import { useMapGestures } from '@hooks/map/useMapGestures';
 
@@ -60,8 +61,9 @@ function AbsoluteLayer({ children }: { children: React.ReactNode }) {
 interface Props {
   mapData: FloorMapData;
   /**
-   * 배경(Visual) 레이어. 벽/방 박스/번호 라벨처럼 하이라이트보다 "아래"에
-   * 있어야 하는 것들. width/height는 mapData와 반드시 동일해야 좌표계가 맞는다.
+   * 배경(Visual) 레이어. 벽/방 박스처럼 하이라이트보다 "아래"에 있어야 하는 것들.
+   * width/height는 mapData와 반드시 동일해야 좌표계가 맞는다. 방 번호 라벨은 여기 넣지 않는다 —
+   * 지도가 회전해도 글자는 안 돌아야 해서 RoomLabelsLayer가 mapData.rooms로 따로 그린다.
    */
   renderBackground: (size: { width: number; height: number }) => React.ReactNode;
   /**
@@ -76,6 +78,8 @@ interface Props {
   maxScale?: number;
   /** 계단/엘리베이터 마커의 고정 화면 픽셀 크기 (확대/축소해도 안 바뀜). 생략 시 IconMarkersLayer 기본값 */
   iconSize?: number;
+  /** 방 번호 라벨의 고정 폰트 크기 (확대/축소해도 안 바뀜). 생략 시 RoomLabelsLayer 기본값 */
+  labelFontSize?: number;
 }
 
 export function IndoorMapView({
@@ -86,6 +90,7 @@ export function IndoorMapView({
   minScale = 1,
   maxScale = 5,
   iconSize,
+  labelFontSize,
 }: Props) {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
@@ -100,7 +105,7 @@ export function IndoorMapView({
     [onRoomSelect]
   );
 
-  const { composedGesture, animatedStyle, fitToContainer, scale, translateX, translateY } = useMapGestures({
+  const { composedGesture, animatedStyle, fitToContainer, scale, translateX, translateY, rotation } = useMapGestures({
     rooms: mapData.rooms,
     onRoomTap: handleRoomTap,
     mapWidth: mapData.width,
@@ -134,17 +139,26 @@ export function IndoorMapView({
         </Animated.View>
       </GestureDetector>
       {/*
-        mapLayer 밖(=scale transform이 안 걸리는 곳)에 별도 오버레이로 둔다. 아이콘은
-        "지도 위에 그려진 그림"이 아니라 "지도 좌표에 꽂힌 핀"이어야 확대해도 크기가 고정된
-        네이버지도식 마커가 된다. 위치 계산은 마커 내부에서 mapLayer와 동일한
-        translate + mapCoord * scale 공식을 그대로 재사용한다.
+        mapLayer 밖(=scale/rotate transform이 안 걸리는 곳)에 별도 오버레이로 둔다. 아이콘·라벨은
+        "지도 위에 그려진 그림"이 아니라 "지도 좌표에 꽂힌 핀"이어야 지도를 돌리거나 확대해도
+        위치만 따라가고 그림/글자 자체는 그대로다. 위치 계산은 각 레이어 내부에서 mapLayer와
+        동일한 translate + Rotate(rotation) * (mapCoord * scale) 공식을 그대로 재사용한다.
       */}
       <IconMarkersLayer
         icons={mapData.icons ?? []}
         scale={scale}
         translateX={translateX}
         translateY={translateY}
+        rotation={rotation}
         size={iconSize}
+      />
+      <RoomLabelsLayer
+        rooms={mapData.rooms}
+        scale={scale}
+        translateX={translateX}
+        translateY={translateY}
+        rotation={rotation}
+        fontSize={labelFontSize}
       />
     </View>
   );
