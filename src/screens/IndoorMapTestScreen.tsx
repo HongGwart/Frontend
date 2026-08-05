@@ -17,6 +17,9 @@ import B_2_Doors from '@assets/svgs/floors/B_2_doors.svg';
 import B_3_data from '@assets/svgs/floors/B_3.json';
 import B_3_Background from '@assets/svgs/floors/B_3_bg.svg';
 import B_3_Doors from '@assets/svgs/floors/B_3_doors.svg';
+import C_1_data from '@assets/svgs/floors/C_1.json';
+import C_1_Background from '@assets/svgs/floors/C_1_bg.svg';
+import C_1_Doors from '@assets/svgs/floors/C_1_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -52,11 +55,16 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     Background: B_3_Background,
     Doors: B_3_Doors,
   },
+  C_1: {
+    data: C_1_data as FloorMapData,
+    Background: C_1_Background,
+    Doors: C_1_Doors,
+  },
 };
 
 export default function IndoorMapTestScreen() {
   const [query, setQuery] = useState('');
-  const [floorId, setFloorId] = useState<keyof typeof FLOORS>('B_3');
+  const [floorId, setFloorId] = useState<keyof typeof FLOORS>('C_1');
 
   const floor = FLOORS[floorId];
   const mapData = useMemo(() => floor.data, [floor]);
