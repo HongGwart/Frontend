@@ -6,6 +6,7 @@ import {
   useSharedValue,
   useAnimatedStyle,
   runOnJS,
+  withTiming,
 } from 'react-native-reanimated';
 
 interface UseMapGesturesOptions {
@@ -50,6 +51,10 @@ export function useMapGestures({
   // fitToContainer(onLayout)에서 갱신. 핀치/회전 축을 화면 중앙으로 잡을 때 필요
   const containerWidthShared = useSharedValue(0);
   const containerHeightShared = useSharedValue(0);
+  // fitToContainer가 계산한 "화면에 꽉 맞춘" 상태의 translate. resetTransform이 (0,0)이
+  // 아니라 여기로 돌아가야 지도가 다시 정확히 화면 중앙에 맞춰진다.
+  const fitOffsetX = useSharedValue(0);
+  const fitOffsetY = useSharedValue(0);
   // 두 손가락 제스처가 시작된 시점에 "화면 중앙"이 가리키던 지도 좌표(원본 SVG 기준).
   // 확대/회전 도중 이 지도 좌표가 항상 화면 중앙에 그대로 있도록 매 프레임 translate를
   // 다시 풀어서, "지도 한쪽 구석(원점) 기준으로 도는" 대신 "화면 중앙 기준으로 도는" 느낌을 만든다.
@@ -163,12 +168,38 @@ export function useMapGestures({
     ],
   }));
 
+  /** 확대/이동/회전을 fitToContainer가 마지막으로 계산한 "화면에 꽉 맞춘" 상태로 되돌린다.
+   *  뚝 끊기지 않도록 withTiming으로 부드럽게 애니메이션한다. */
   const resetTransform = useCallback(() => {
-    scale.value = savedScale.value = minScaleShared.value;
-    translateX.value = savedTranslateX.value = 0;
-    translateY.value = savedTranslateY.value = 0;
-    rotation.value = savedRotation.value = 0;
-  }, [scale, savedScale, translateX, translateY, savedTranslateX, savedTranslateY, rotation, savedRotation, minScaleShared]);
+    scale.value = withTiming(minScaleShared.value, { duration: 300 });
+    translateX.value = withTiming(fitOffsetX.value, { duration: 300 });
+    translateY.value = withTiming(fitOffsetY.value, { duration: 300 });
+    // 예: 350도 회전한 상태에서 0으로 애니메이션하면 큰 원을 그리며 돌아간다.
+    // -180~180도 범위의 동일한 각으로 먼저 순간 이동(시각적으로 티 안 남)시켜서
+    // 항상 더 짧은 방향으로 0에 수렴하게 만든다.
+    const twoPi = Math.PI * 2;
+    let normalized = rotation.value % twoPi;
+    if (normalized > Math.PI) normalized -= twoPi;
+    if (normalized < -Math.PI) normalized += twoPi;
+    rotation.value = normalized;
+    rotation.value = withTiming(0, { duration: 300 });
+    savedScale.value = minScaleShared.value;
+    savedTranslateX.value = fitOffsetX.value;
+    savedTranslateY.value = fitOffsetY.value;
+    savedRotation.value = 0;
+  }, [
+    scale,
+    savedScale,
+    translateX,
+    translateY,
+    savedTranslateX,
+    savedTranslateY,
+    rotation,
+    savedRotation,
+    minScaleShared,
+    fitOffsetX,
+    fitOffsetY,
+  ]);
 
   /**
    * 컨테이너(화면에 실제로 보이는 영역) 크기를 알게 되는 시점(onLayout)에 호출.
@@ -186,6 +217,8 @@ export function useMapGestures({
       maxScaleShared.value = Math.max(maxScale, fitScale * 5);
       containerWidthShared.value = containerWidth;
       containerHeightShared.value = containerHeight;
+      fitOffsetX.value = offsetX;
+      fitOffsetY.value = offsetY;
 
       scale.value = savedScale.value = fitScale;
       translateX.value = savedTranslateX.value = offsetX;
@@ -208,6 +241,8 @@ export function useMapGestures({
       maxScaleShared,
       containerWidthShared,
       containerHeightShared,
+      fitOffsetX,
+      fitOffsetY,
     ]
   );
 

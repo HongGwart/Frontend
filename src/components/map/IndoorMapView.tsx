@@ -5,6 +5,7 @@ import { GestureDetector } from 'react-native-gesture-handler';
 import { RoomPolygons } from './RoomPolygons';
 import { IconMarkersLayer } from './IconMarkersLayer';
 import { RoomLabelsLayer } from './RoomLabelsLayer';
+import { ResetViewButton } from './ResetViewButton';
 import { FloorMapData, RoomShape } from '@appTypes/room';
 import { useMapGestures } from '@hooks/map/useMapGestures';
 
@@ -105,7 +106,16 @@ export function IndoorMapView({
     [onRoomSelect]
   );
 
-  const { composedGesture, animatedStyle, fitToContainer, scale, translateX, translateY, rotation } = useMapGestures({
+  const {
+    composedGesture,
+    animatedStyle,
+    fitToContainer,
+    resetTransform,
+    scale,
+    translateX,
+    translateY,
+    rotation,
+  } = useMapGestures({
     rooms: mapData.rooms,
     onRoomTap: handleRoomTap,
     mapWidth: mapData.width,
@@ -160,6 +170,7 @@ export function IndoorMapView({
         rotation={rotation}
         fontSize={labelFontSize}
       />
+      <ResetViewButton rotation={rotation} onPress={resetTransform} />
     </View>
   );
 }
