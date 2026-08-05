@@ -88,7 +88,7 @@ export function IndoorMapView({
   renderForeground,
   onRoomSelect,
   minScale = 1,
-  maxScale = 5,
+  maxScale = 1.5,
   iconSize,
   labelFontSize = 5,
 }: Props) {
