@@ -29,6 +29,8 @@ const PAN_DECELERATION = 0.9975;
 const ZOOM_MOMENTUM_FACTOR = 0.6;
 /** 확대 관성이 멎는 속도. 팬보다 살짝 빠르게 멎도록 조금 더 낮게 잡았다 */
 const ZOOM_DECELERATION = 0.996;
+/** 처음 화면을 열었을 때 "전체가 다 보이는" 배율(fitScale)보다 얼마나 더 확대해서 보여줄지 */
+const DEFAULT_ZOOM_MULTIPLIER = 1.3;
 
 interface UseMapGesturesOptions {
   rooms: RoomShape[];
@@ -70,6 +72,10 @@ export function useMapGestures({
   // 화면에 맞춘 배율보다 더 축소하지 못하게, fitToContainer가 호출되면 여기가 갱신됨
   const minScaleShared = useSharedValue(minScale);
   const maxScaleShared = useSharedValue(maxScale);
+  // 처음 화면을 열었을 때(그리고 리셋 버튼을 눌렀을 때) 보여줄 배율. "지도 전체가 다 보이는"
+  // minScaleShared보다 살짝 더 확대된 값 — 지도가 화면을 더 꽉 채워 보이도록. 사용자는
+  // 여기서 더 확대할 수도, minScaleShared까지 축소해서 전체를 볼 수도 있다.
+  const defaultScaleShared = useSharedValue(minScale);
   // fitToContainer(onLayout)에서 갱신. 핀치/회전 축을 화면 중앙으로 잡을 때 필요
   const containerWidthShared = useSharedValue(0);
   const containerHeightShared = useSharedValue(0);
@@ -272,7 +278,7 @@ export function useMapGestures({
     // 여기서 scale/translate를 직접 목표로 애니메이션하므로, pivot 반응형 추적은 꺼서
     // useAnimatedReaction이 옛 pivotLocalX/Y 기준으로 translate를 덮어쓰지 않게 한다.
     pivotActive.value = false;
-    scale.value = withTiming(minScaleShared.value, { duration: 300 });
+    scale.value = withTiming(defaultScaleShared.value, { duration: 300 });
     translateX.value = withTiming(fitOffsetX.value, { duration: 300 });
     translateY.value = withTiming(fitOffsetY.value, { duration: 300 });
     // 예: 350도 회전한 상태에서 0으로 애니메이션하면 큰 원을 그리며 돌아간다.
@@ -284,7 +290,7 @@ export function useMapGestures({
     if (normalized < -Math.PI) normalized += twoPi;
     rotation.value = normalized;
     rotation.value = withTiming(0, { duration: 300 });
-    savedScale.value = minScaleShared.value;
+    savedScale.value = defaultScaleShared.value;
     savedTranslateX.value = fitOffsetX.value;
     savedTranslateY.value = fitOffsetY.value;
     savedRotation.value = 0;
@@ -297,7 +303,7 @@ export function useMapGestures({
     savedTranslateY,
     rotation,
     savedRotation,
-    minScaleShared,
+    defaultScaleShared,
     fitOffsetX,
     fitOffsetY,
     pivotActive,
@@ -312,17 +318,22 @@ export function useMapGestures({
     (containerWidth: number, containerHeight: number) => {
       if (!containerWidth || !containerHeight || !mapWidth || !mapHeight) return;
       const fitScale = Math.min(containerWidth / mapWidth, containerHeight / mapHeight) * 0.98;
-      const offsetX = (containerWidth - mapWidth * fitScale) / 2;
-      const offsetY = (containerHeight - mapHeight * fitScale) / 2;
+      const maxScaleValue = Math.max(maxScale, fitScale * 5);
+      // 처음 보여줄 배율은 "전체가 다 보이는" fitScale보다 살짝 더 확대해서 지도가
+      // 화면을 더 꽉 채우도록 한다. maxScale을 넘기지는 않는다.
+      const initialScale = Math.min(fitScale * DEFAULT_ZOOM_MULTIPLIER, maxScaleValue);
+      const offsetX = (containerWidth - mapWidth * initialScale) / 2;
+      const offsetY = (containerHeight - mapHeight * initialScale) / 2;
 
       minScaleShared.value = fitScale;
-      maxScaleShared.value = Math.max(maxScale, fitScale * 5);
+      maxScaleShared.value = maxScaleValue;
+      defaultScaleShared.value = initialScale;
       containerWidthShared.value = containerWidth;
       containerHeightShared.value = containerHeight;
       fitOffsetX.value = offsetX;
       fitOffsetY.value = offsetY;
 
-      scale.value = savedScale.value = fitScale;
+      scale.value = savedScale.value = initialScale;
       translateX.value = savedTranslateX.value = offsetX;
       translateY.value = savedTranslateY.value = offsetY;
       rotation.value = savedRotation.value = 0;
@@ -341,6 +352,7 @@ export function useMapGestures({
       savedRotation,
       minScaleShared,
       maxScaleShared,
+      defaultScaleShared,
       containerWidthShared,
       containerHeightShared,
       fitOffsetX,
