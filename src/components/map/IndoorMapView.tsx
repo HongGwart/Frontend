@@ -173,6 +173,7 @@ export function IndoorMapView({
         translateY={translateY}
         rotation={rotation}
         fontSize={labelFontSize}
+        selectedRoomId={selectedRoomId}
       />
       <ResetViewButton rotation={rotation} onPress={resetTransform} />
     </View>

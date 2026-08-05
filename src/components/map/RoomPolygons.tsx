@@ -2,10 +2,15 @@ import React, { useEffect, useState } from 'react';
 import Svg, { Path } from 'react-native-svg';
 import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import { RoomShape } from '@appTypes/room';
+import { theme } from '@theme/color';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 const FADE_DURATION = 180;
+
+/** 완전 불투명 하이라이트. 이 위에 얹히는 방 번호 라벨은 RoomLabelsLayer가 흰색으로 바꿔서 보여준다 */
+const HIGHLIGHT_OPACITY = 1;
+const DEFAULT_HIGHLIGHT_FILL = theme.blue[800];
 
 interface Props {
   width: number;
@@ -13,6 +18,8 @@ interface Props {
   rooms: RoomShape[];
   selectedRoomId: string | null;
   highlightFill?: string;
+  /** 다 페이드인됐을 때 최종 불투명도. fill 자체엔 알파를 안 섞고 이 값으로만 조절한다 */
+  highlightOpacity?: number;
 }
 
 /**
@@ -24,7 +31,8 @@ export function RoomPolygons({
   height,
   rooms,
   selectedRoomId,
-  highlightFill = 'rgba(29, 32, 86, 0.35)',
+  highlightFill = DEFAULT_HIGHLIGHT_FILL,
+  highlightOpacity = HIGHLIGHT_OPACITY,
 }: Props) {
   const opacity = useSharedValue(0);
   // 선택 해제돼도 fade-out이 끝날 때까지는 마지막으로 선택됐던 방의 모양을 계속 그려야
@@ -36,11 +44,11 @@ export function RoomPolygons({
     const room = rooms.find((r) => r.id === selectedRoomId) ?? null;
     if (room) {
       setDisplayedPath(room.path);
-      opacity.value = withTiming(1, { duration: FADE_DURATION });
+      opacity.value = withTiming(highlightOpacity, { duration: FADE_DURATION });
     } else {
       opacity.value = withTiming(0, { duration: FADE_DURATION });
     }
-  }, [selectedRoomId, rooms, opacity]);
+  }, [selectedRoomId, rooms, opacity, highlightOpacity]);
 
   const animatedProps = useAnimatedProps(() => ({
     fillOpacity: opacity.value,

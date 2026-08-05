@@ -1,6 +1,11 @@
 export interface RoomShape {
   /** svgToRoomShapes.js가 뽑아낸 방 이름 (예: "506-1") */
   id: string;
+  /**
+   * 지도 위에 그릴 텍스트. 생략하면 id를 그대로 쓴다. 화장실처럼 배경 SVG에 이미
+   * 성별 아이콘이 박혀있어서 텍스트 라벨이 필요 없는 방은 빈 문자열("")로 명시해서 숨긴다.
+   */
+  label?: string;
   /** placeIdMapping.ts로 나중에 채워지는 값. 매핑 전이면 null */
   placeId: number | null;
   /** 원본 SVG 좌표계 기준 4개 모서리 [x, y] */

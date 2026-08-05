@@ -11,7 +11,10 @@
       "Bash(tee /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/expo-run-ios-3.log)",
       "Bash(tee /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/expo-run-ios-4.log)",
       "Bash(codesign -dv /Users/choijeong-in/Library/Developer/Xcode/DerivedData/Frontend-eroebskmoqnwqzftqwisbjhpdlyj/Build/Products/Debug-iphoneos/Frontend.app/Frameworks/hermesvm.framework)",
-      "Bash(security find-identity *)"
+      "Bash(security find-identity *)",
+      "Bash(python3 -c ' *)",
+      "Bash(ps -p 23139 -o pid,ppid,command)",
+      "Bash(qlmanage -t -s 2000 -o /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/A_2_grid.svg)"
     ]
   },
   "enabledPlugins": {

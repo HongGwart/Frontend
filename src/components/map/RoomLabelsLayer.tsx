@@ -14,6 +14,7 @@ interface LabelProps {
   room: RoomShape;
   fontSize: number;
   boxWidth: number;
+  isSelected: boolean;
   scale: SharedValue<number>;
   translateX: SharedValue<number>;
   translateY: SharedValue<number>;
@@ -25,8 +26,9 @@ interface LabelProps {
  * (mapCoord * scale))으로 위치만 지도를 따라가게 하고, 텍스트 자체에는 rotate를 걸지 않아서
  * 지도가 회전해도 글자는 항상 똑바로 보인다.
  */
-function RoomLabel({ room, fontSize, boxWidth, scale, translateX, translateY, rotation }: LabelProps) {
+function RoomLabel({ room, fontSize, boxWidth, isSelected, scale, translateX, translateY, rotation }: LabelProps) {
   const [cx, cy] = centroid(room.points);
+  const text = room.label ?? room.id;
 
   const animatedStyle = useAnimatedStyle(() => {
     const cos = Math.cos(rotation.value);
@@ -45,8 +47,11 @@ function RoomLabel({ room, fontSize, boxWidth, scale, translateX, translateY, ro
 
   return (
     <Animated.View style={[styles.label, { width: boxWidth }, animatedStyle]}>
-      <Text style={[styles.labelText, { fontSize }]} numberOfLines={1}>
-        {room.id}
+      <Text
+        style={[styles.labelText, { fontSize }, isSelected && styles.labelTextSelected]}
+        numberOfLines={1}
+      >
+        {text}
       </Text>
     </Animated.View>
   );
@@ -60,24 +65,37 @@ interface Props {
   rotation: SharedValue<number>;
   /** 고정 폰트 크기. 확대/축소해도 이 값은 안 바뀐다 */
   fontSize?: number;
+  /** 하이라이팅된 방의 id. 이 방의 라벨만 흰색으로 바뀐다 (진한 배경 위라 검정 글자는 안 보임) */
+  selectedRoomId?: string | null;
 }
 
-export function RoomLabelsLayer({ rooms, scale, translateX, translateY, rotation, fontSize = 7 }: Props) {
+export function RoomLabelsLayer({
+  rooms,
+  scale,
+  translateX,
+  translateY,
+  rotation,
+  fontSize = 7,
+  selectedRoomId = null,
+}: Props) {
   if (rooms.length === 0) return null;
   return (
     <Animated.View style={styles.overlay} pointerEvents="none">
-      {rooms.map((room) => (
-        <RoomLabel
-          key={room.id}
-          room={room}
-          fontSize={fontSize}
-          boxWidth={48}
-          scale={scale}
-          translateX={translateX}
-          translateY={translateY}
-          rotation={rotation}
-        />
-      ))}
+      {rooms
+        .filter((room) => room.label !== '')
+        .map((room) => (
+          <RoomLabel
+            key={room.id}
+            room={room}
+            fontSize={fontSize}
+            boxWidth={48}
+            isSelected={room.id === selectedRoomId}
+            scale={scale}
+            translateX={translateX}
+            translateY={translateY}
+            rotation={rotation}
+          />
+        ))}
     </Animated.View>
   );
 }
@@ -99,5 +117,8 @@ const styles = StyleSheet.create({
   labelText: {
     color: '#000',
     fontWeight: '500',
+  },
+  labelTextSelected: {
+    color: '#FFF',
   },
 });
