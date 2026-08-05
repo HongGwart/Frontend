@@ -5,6 +5,7 @@ import { Gesture } from 'react-native-gesture-handler';
 import {
   useSharedValue,
   useAnimatedStyle,
+  useAnimatedReaction,
   runOnJS,
   withTiming,
   withSpring,
@@ -20,6 +21,14 @@ import {
 const BOUNCE_SPRING_CONFIG = { damping: 12, stiffness: 200, mass: 0.5 };
 /** 한 손가락 팬을 손에서 놓았을 때 관성으로 미끄러지는 정도. 1에 가까울수록 오래 미끄러짐 */
 const PAN_DECELERATION = 0.9975;
+/**
+ * 핀치를 놓는 순간 손가락 속도를 얼마나 확대 관성에 반영할지. RNGH의 핀치 velocity는
+ * "배율이 초당 얼마나 변하는지"의 비율값이라, scale.value를 곱해서 절대 배율/초 단위로
+ * 바꾼 다음 이 계수로 한번 더 눌러서 네이버지도처럼 "살짝만" 더 나아가는 정도로 맞춘다.
+ */
+const ZOOM_MOMENTUM_FACTOR = 0.6;
+/** 확대 관성이 멎는 속도. 팬보다 살짝 빠르게 멎도록 조금 더 낮게 잡았다 */
+const ZOOM_DECELERATION = 0.996;
 
 interface UseMapGesturesOptions {
   rooms: RoomShape[];
@@ -73,6 +82,12 @@ export function useMapGestures({
   // 다시 풀어서, "지도 한쪽 구석(원점) 기준으로 도는" 대신 "화면 중앙 기준으로 도는" 느낌을 만든다.
   const pivotLocalX = useSharedValue(0);
   const pivotLocalY = useSharedValue(0);
+  // true인 동안에는 아래 useAnimatedReaction이 scale/rotation이 바뀔 때마다 pivotLocalX/Y
+  // 기준으로 translate를 다시 계산한다. 손가락으로 직접 핀치/회전하는 동안은 물론, 손을 뗀
+  // 뒤에 이어지는 관성/바운스 애니메이션이 scale.value를 계속 바꾸는 동안에도 켜둬야
+  // 그 애니메이션 내내 축이 안 흔들린다. resetTransform이나 새 팬 제스처처럼 pivot과
+  // 무관하게 translate를 직접 다루는 곳에서는 꺼야 서로 안 부딪힌다.
+  const pivotActive = useSharedValue(false);
 
   const clamp = (value: number, min: number, max: number) => {
     'worklet';
@@ -106,7 +121,8 @@ export function useMapGestures({
   };
 
   // pivotLocalX/Y를 주어진 scale로 투영했을 때의 translate를 계산한다 (화면 중앙에 고정).
-  // applyPivot(매 프레임)과 핀치 종료 시 한계 밖이면 튕겨 돌아갈 목표 지점 계산에 공용으로 쓴다.
+  // 아래 useAnimatedReaction(매 프레임)과 핀치 종료 시 한계 밖이면 튕겨 돌아갈 목표 지점
+  // 계산에 공용으로 쓴다.
   const computePivotTranslate = (targetScale: number) => {
     'worklet';
     const cx = containerWidthShared.value / 2;
@@ -118,41 +134,60 @@ export function useMapGestures({
     return { x: cx - rotatedX * targetScale, y: cy - rotatedY * targetScale };
   };
 
-  // pivotLocalX/Y가 scale/rotation이 얼마든 항상 화면 중앙에 오도록 translate를 다시 계산.
-  // scale.value/rotation.value를 갱신한 "다음"에 호출해야 한다.
-  const applyPivot = () => {
-    'worklet';
-    if (!containerWidthShared.value || !containerHeightShared.value) return;
-    const { x, y } = computePivotTranslate(scale.value);
-    translateX.value = x;
-    translateY.value = y;
-  };
+  // pivotActive가 켜져 있는 동안 scale/rotation이 바뀔 때마다(제스처든, 관성/바운스
+  // 애니메이션이든) pivotLocalX/Y가 항상 화면 중앙에 오도록 translate를 자동으로 다시 계산.
+  // withDecay/withSpring처럼 "여러 프레임에 걸쳐 scale.value를 계속 바꾸는" 상황에서도
+  // 매 프레임 따라가야 해서, 제스처 콜백에서 수동으로 호출하는 대신 반응형으로 처리한다.
+  useAnimatedReaction(
+    () => ({ scale: scale.value, rotation: rotation.value }),
+    (current) => {
+      if (!pivotActive.value) return;
+      if (!containerWidthShared.value || !containerHeightShared.value) return;
+      const { x, y } = computePivotTranslate(current.scale);
+      translateX.value = x;
+      translateY.value = y;
+    }
+  );
 
   const pinchGesture = Gesture.Pinch()
     .onStart(() => {
+      // 직전 확대 관성/바운스 애니메이션이 아직 진행 중일 수 있으니, 지금 값에서 멈추고
+      // saved를 현재 위치로 맞춘 다음 새 pivot을 잡는다.
+      scale.value = scale.value;
+      savedScale.value = scale.value;
       capturePivot();
+      pivotActive.value = true;
     })
     .onUpdate((e) => {
-      // 한계 안쪽에서는 그대로, 살짝 넘어가면 고무줄처럼 저항하며 더 늘어난다
+      // 한계 안쪽에서는 그대로, 살짝 넘어가면 고무줄처럼 저항하며 더 늘어난다.
+      // translate는 위 useAnimatedReaction이 scale 변화를 보고 자동으로 따라간다.
       scale.value = rubberBandClamp(savedScale.value * e.scale, minScaleShared.value, maxScaleShared.value);
-      applyPivot();
     })
-    .onEnd(() => {
+    .onEnd((e) => {
       const clampedScale = clamp(scale.value, minScaleShared.value, maxScaleShared.value);
-      if (clampedScale !== scale.value && containerWidthShared.value && containerHeightShared.value) {
-        // 손을 뗄 때 한계 밖에 있었다면 정확한 한계값으로 스프링처럼 튕겨 돌아간다.
-        // scale과 translate를 같은 스프링으로 같이 움직여야 pivot이 안 어긋난다.
-        const target = computePivotTranslate(clampedScale);
-        scale.value = withSpring(clampedScale, BOUNCE_SPRING_CONFIG);
-        translateX.value = withSpring(target.x, BOUNCE_SPRING_CONFIG);
-        translateY.value = withSpring(target.y, BOUNCE_SPRING_CONFIG);
+      const stopTracking = (finished?: boolean) => {
+        'worklet';
+        if (finished !== false) pivotActive.value = false;
+      };
+      if (clampedScale !== scale.value) {
+        // 손을 뗄 때 한계 밖에 있었다면(고무줄 늘어난 상태) 정확한 한계값으로 스프링처럼
+        // 튕겨 돌아간다. translate는 반응형으로 같이 따라오니 scale만 스프링시키면 된다.
+        scale.value = withSpring(clampedScale, BOUNCE_SPRING_CONFIG, stopTracking);
         savedScale.value = clampedScale;
-        savedTranslateX.value = target.x;
-        savedTranslateY.value = target.y;
       } else {
-        savedScale.value = scale.value;
-        savedTranslateX.value = translateX.value;
-        savedTranslateY.value = translateY.value;
+        // 한계 안에서 손을 뗐으면, 네이버지도처럼 놓는 순간 속도만큼 살짝 더 나아가다
+        // 멎는 확대 관성을 준다. RNGH의 pinch velocity는 배율의 초당 변화율(비율)이라
+        // scale.value를 곱해 절대 배율/초로 바꾼 뒤 계수를 곱해 정도를 조절한다.
+        const absoluteVelocity = e.velocity * scale.value * ZOOM_MOMENTUM_FACTOR;
+        scale.value = withDecay(
+          {
+            velocity: absoluteVelocity,
+            deceleration: ZOOM_DECELERATION,
+            clamp: [minScaleShared.value, maxScaleShared.value],
+          },
+          stopTracking
+        );
+        savedScale.value = clampedScale;
       }
     });
 
@@ -170,6 +205,9 @@ export function useMapGestures({
       translateY.value = translateY.value;
       savedTranslateX.value = translateX.value;
       savedTranslateY.value = translateY.value;
+      // 확대 관성/바운스가 아직 안 끝났는데 사용자가 직접 팬을 시작하면, 그쪽이 계속
+      // translate를 다시 계산하며 이 팬 업데이트와 충돌하니 여기서 넘겨받는다.
+      pivotActive.value = false;
     })
     .onUpdate((e) => {
       translateX.value = savedTranslateX.value + e.translationX;
@@ -186,15 +224,20 @@ export function useMapGestures({
   const rotationGesture = Gesture.Rotation()
     .onStart(() => {
       capturePivot();
+      pivotActive.value = true;
     })
     .onUpdate((e) => {
+      // translate는 위 useAnimatedReaction이 rotation 변화를 보고 자동으로 따라간다.
       rotation.value = savedRotation.value + e.rotation;
-      applyPivot();
     })
     .onEnd(() => {
       savedRotation.value = rotation.value;
       savedTranslateX.value = translateX.value;
       savedTranslateY.value = translateY.value;
+      // pivotActive를 여기서 끄지 않는다: 회전은 손가락 2개짜리 제스처라 핀치와 항상
+      // 같은 손 뗌에 같이 끝나는데, 어느 쪽 onEnd가 먼저 불릴지는 보장이 없다.
+      // 핀치 쪽엔 항상 확대 관성/바운스 스프링이 뒤따르므로, pivotActive를 언제 끌지는
+      // pinchGesture.onEnd가 그 애니메이션 완료 콜백에서 전담해서 결정한다.
     });
 
   const tapGesture = Gesture.Tap()
@@ -226,6 +269,9 @@ export function useMapGestures({
   /** 확대/이동/회전을 fitToContainer가 마지막으로 계산한 "화면에 꽉 맞춘" 상태로 되돌린다.
    *  뚝 끊기지 않도록 withTiming으로 부드럽게 애니메이션한다. */
   const resetTransform = useCallback(() => {
+    // 여기서 scale/translate를 직접 목표로 애니메이션하므로, pivot 반응형 추적은 꺼서
+    // useAnimatedReaction이 옛 pivotLocalX/Y 기준으로 translate를 덮어쓰지 않게 한다.
+    pivotActive.value = false;
     scale.value = withTiming(minScaleShared.value, { duration: 300 });
     translateX.value = withTiming(fitOffsetX.value, { duration: 300 });
     translateY.value = withTiming(fitOffsetY.value, { duration: 300 });
@@ -254,6 +300,7 @@ export function useMapGestures({
     minScaleShared,
     fitOffsetX,
     fitOffsetY,
+    pivotActive,
   ]);
 
   /**
