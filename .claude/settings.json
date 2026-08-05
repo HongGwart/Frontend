@@ -20,7 +20,8 @@
       "Bash(qlmanage -t -s 2400 -o /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/B_1_crop2.svg)",
       "Bash(qlmanage -t -s 2200 -o /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/B_1_grid.svg)",
       "Bash(node scripts/processFloor.js src/assets/svgs/floors/B_2.svg)",
-      "Bash(qlmanage -t -s 2000 -o /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/B_2_grid.svg)"
+      "Bash(qlmanage -t -s 2000 -o /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/B_2_grid.svg)",
+      "Bash(node scripts/processFloor.js src/assets/svgs/floors/B_3.svg)"
     ]
   },
   "enabledPlugins": {
