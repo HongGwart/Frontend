@@ -14,7 +14,11 @@
       "Bash(security find-identity *)",
       "Bash(python3 -c ' *)",
       "Bash(ps -p 23139 -o pid,ppid,command)",
-      "Bash(qlmanage -t -s 2000 -o /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/A_2_grid.svg)"
+      "Bash(qlmanage -t -s 2000 -o /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/A_2_grid.svg)",
+      "Bash(node scripts/processFloor.js src/assets/svgs/floors/B_1.svg)",
+      "Bash(sed 's/viewBox=\"0 0 1920 1080\"/viewBox=\"950 380 700 320\"/; s/width=\"1920\" height=\"1080\"/width=\"700\" height=\"320\"/' /Users/choijeong-in/Desktop/map/Frontend-merge/src/assets/svgs/floors/B_1.svg)",
+      "Bash(qlmanage -t -s 2400 -o /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/B_1_crop2.svg)",
+      "Bash(qlmanage -t -s 2200 -o /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/B_1_grid.svg)"
     ]
   },
   "enabledPlugins": {
