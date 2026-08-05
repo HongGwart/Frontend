@@ -90,7 +90,7 @@ export function IndoorMapView({
   minScale = 1,
   maxScale = 5,
   iconSize,
-  labelFontSize,
+  labelFontSize = 5,
 }: Props) {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 

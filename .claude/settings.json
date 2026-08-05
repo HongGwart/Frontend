@@ -1,4 +1,19 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(xcode-select -p)",
+      "Bash(xcrun xctrace *)",
+      "Bash(xcrun devicectl *)",
+      "Bash(open -a Xcode)",
+      "Bash(npx expo *)",
+      "Bash(tee /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/expo-run-ios.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/expo-run-ios-2.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/expo-run-ios-3.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-choijeong-in-Desktop-map-Frontend-merge/84c83f25-cda6-4326-b8dd-5ecbb657e9f5/scratchpad/expo-run-ios-4.log)",
+      "Bash(codesign -dv /Users/choijeong-in/Library/Developer/Xcode/DerivedData/Frontend-eroebskmoqnwqzftqwisbjhpdlyj/Build/Products/Debug-iphoneos/Frontend.app/Frameworks/hermesvm.framework)",
+      "Bash(security find-identity *)"
+    ]
+  },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
   }

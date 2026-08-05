@@ -47,23 +47,70 @@ export function useMapGestures({
   // 화면에 맞춘 배율보다 더 축소하지 못하게, fitToContainer가 호출되면 여기가 갱신됨
   const minScaleShared = useSharedValue(minScale);
   const maxScaleShared = useSharedValue(maxScale);
+  // fitToContainer(onLayout)에서 갱신. 핀치/회전 축을 화면 중앙으로 잡을 때 필요
+  const containerWidthShared = useSharedValue(0);
+  const containerHeightShared = useSharedValue(0);
+  // 두 손가락 제스처가 시작된 시점에 "화면 중앙"이 가리키던 지도 좌표(원본 SVG 기준).
+  // 확대/회전 도중 이 지도 좌표가 항상 화면 중앙에 그대로 있도록 매 프레임 translate를
+  // 다시 풀어서, "지도 한쪽 구석(원점) 기준으로 도는" 대신 "화면 중앙 기준으로 도는" 느낌을 만든다.
+  const pivotLocalX = useSharedValue(0);
+  const pivotLocalY = useSharedValue(0);
 
   const clamp = (value: number, min: number, max: number) => {
     'worklet';
     return Math.min(Math.max(value, min), max);
   };
 
+  // 지금 화면 중앙에 있는 지도 좌표를 pivotLocalX/Y에 기록한다. 핀치/회전 제스처가
+  // 시작될 때(두 손가락이 처음 닿는 순간) 한 번만 호출해서 회전축을 고정한다.
+  const capturePivot = () => {
+    'worklet';
+    if (!containerWidthShared.value || !containerHeightShared.value) return;
+    const cx = containerWidthShared.value / 2;
+    const cy = containerHeightShared.value / 2;
+    const cos = Math.cos(rotation.value);
+    const sin = Math.sin(rotation.value);
+    const dx = (cx - translateX.value) / scale.value;
+    const dy = (cy - translateY.value) / scale.value;
+    // R(-rotation) * (dx, dy) : 화면 좌표 -> "회전 안 된" 지도 좌표로 역변환
+    pivotLocalX.value = dx * cos + dy * sin;
+    pivotLocalY.value = -dx * sin + dy * cos;
+  };
+
+  // pivotLocalX/Y가 scale/rotation이 얼마든 항상 화면 중앙에 오도록 translate를 다시 계산.
+  // scale.value/rotation.value를 갱신한 "다음"에 호출해야 한다.
+  const applyPivot = () => {
+    'worklet';
+    if (!containerWidthShared.value || !containerHeightShared.value) return;
+    const cx = containerWidthShared.value / 2;
+    const cy = containerHeightShared.value / 2;
+    const cos = Math.cos(rotation.value);
+    const sin = Math.sin(rotation.value);
+    const rotatedX = pivotLocalX.value * cos - pivotLocalY.value * sin;
+    const rotatedY = pivotLocalX.value * sin + pivotLocalY.value * cos;
+    translateX.value = cx - rotatedX * scale.value;
+    translateY.value = cy - rotatedY * scale.value;
+  };
+
   const pinchGesture = Gesture.Pinch()
+    .onStart(() => {
+      capturePivot();
+    })
     .onUpdate((e) => {
       scale.value = clamp(savedScale.value * e.scale, minScaleShared.value, maxScaleShared.value);
+      applyPivot();
     })
     .onEnd(() => {
       savedScale.value = scale.value;
+      savedTranslateX.value = translateX.value;
+      savedTranslateY.value = translateY.value;
     });
 
   const panGesture = Gesture.Pan()
+    // 두 손가락 팬은 핀치/회전 쪽(화면 중앙 축 고정)이 전담하므로 여기서는 한 손가락만 받는다.
+    // 안 그러면 두 제스처가 같은 프레임에 translateX/Y를 서로 다른 공식으로 덮어써서 떨린다.
     .minPointers(1)
-    .maxPointers(2)
+    .maxPointers(1)
     // 손가락이 이 정도 움직여야 팬으로 인정 -> 그 전까지는 탭 제스처에 기회를 준다
     .minDistance(6)
     .onUpdate((e) => {
@@ -76,11 +123,17 @@ export function useMapGestures({
     });
 
   const rotationGesture = Gesture.Rotation()
+    .onStart(() => {
+      capturePivot();
+    })
     .onUpdate((e) => {
       rotation.value = savedRotation.value + e.rotation;
+      applyPivot();
     })
     .onEnd(() => {
       savedRotation.value = rotation.value;
+      savedTranslateX.value = translateX.value;
+      savedTranslateY.value = translateY.value;
     });
 
   const tapGesture = Gesture.Tap()
@@ -131,6 +184,8 @@ export function useMapGestures({
 
       minScaleShared.value = fitScale;
       maxScaleShared.value = Math.max(maxScale, fitScale * 5);
+      containerWidthShared.value = containerWidth;
+      containerHeightShared.value = containerHeight;
 
       scale.value = savedScale.value = fitScale;
       translateX.value = savedTranslateX.value = offsetX;
@@ -151,6 +206,8 @@ export function useMapGestures({
       savedRotation,
       minScaleShared,
       maxScaleShared,
+      containerWidthShared,
+      containerHeightShared,
     ]
   );
 
