@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  initialWindowMetrics,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { ThemeProvider } from 'styled-components/native';
 import { theme } from '@theme';
 import NavigationBar, { NavigationTab } from '@components/common/NavigationBar';
@@ -18,6 +22,7 @@ function App() {
 }
 
 function AppContent() {
+  const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<NavigationTab>('map');
 
   // TODO: 캠퍼스맵 페이지로 이동
@@ -55,7 +60,11 @@ function AppContent() {
   return (
     <View style={styles.container}>
       <View style={styles.screen} />
-      <NavigationBar activeTab={activeTab} onTabPress={handleTabPress} />
+      <NavigationBar
+        activeTab={activeTab}
+        onTabPress={handleTabPress}
+        bottomInset={insets.bottom}
+      />
     </View>
   );
 }

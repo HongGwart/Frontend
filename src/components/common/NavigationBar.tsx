@@ -19,6 +19,7 @@ export type NavigationTab =
 interface NavigationBarProps {
   activeTab: NavigationTab;
   onTabPress?: (tab: NavigationTab) => void;
+  bottomInset?: number;
 }
 
 const TABS: {
@@ -53,11 +54,12 @@ const TABS: {
   { key: 'mypage', label: 'MY', Icon: MypageIcon, iconWidth: 20, iconHeight: 19 },
 ];
 
-const Container = styled.View`
+const Container = styled.View<{ bottomInset: number }>`
   flex-direction: row;
-  height: 98px;
+  min-height: 98px;
   padding-horizontal: 8px;
   padding-top: 8px;
+  padding-bottom: ${({ bottomInset }) => bottomInset}px;
   background-color: ${({ theme }) => theme.blue[900]};
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
@@ -103,11 +105,12 @@ const Label = styled.Text<{ active: boolean }>`
 export default function NavigationBar({
   activeTab,
   onTabPress,
+  bottomInset = 0,
 }: NavigationBarProps) {
   const theme = useTheme();
 
   return (
-    <Container>
+    <Container bottomInset={bottomInset}>
       {TABS.map(({ key, label, Icon, iconWidth, iconHeight }) => {
         const isActive = key === activeTab;
         const color = isActive ? theme.sub.beige : theme.grayscale[600];
