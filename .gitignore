@@ -9,6 +9,8 @@ dist/
 web-build/
 expo-env.d.ts
 
+# IntelliJ - 팀 공유 설정은 커밋하고, 개인 설정만 .idea/.gitignore 에서 제외
+
 # Native
 .kotlin/
 *.orig.*
@@ -35,6 +37,7 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
 
 # generated native folders
 /ios
