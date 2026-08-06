@@ -30,6 +30,9 @@ import C_3_Doors from '@assets/svgs/floors/C_3_doors.svg';
 import C_4_data from '@assets/svgs/floors/C_4.json';
 import C_4_Background from '@assets/svgs/floors/C_4_bg.svg';
 import C_4_Doors from '@assets/svgs/floors/C_4_doors.svg';
+import C_5_data from '@assets/svgs/floors/C_5.json';
+import C_5_Background from '@assets/svgs/floors/C_5_bg.svg';
+import C_5_Doors from '@assets/svgs/floors/C_5_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -85,6 +88,11 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     Background: C_4_Background,
     Doors: C_4_Doors,
   },
+  C_5: {
+    data: C_5_data as FloorMapData,
+    Background: C_5_Background,
+    Doors: C_5_Doors,
+  },
 };
 
 /** "C_2" -> { building: "C", floorNum: 2 }. "A_1_test"처럼 접미사가 붙어도 앞의 건물/층만 읽는다. */
@@ -111,7 +119,7 @@ const SLIDE_DURATION = 260;
 
 export default function IndoorMapTestScreen() {
   const [query, setQuery] = useState('');
-  const [floorId, setFloorId] = useState<keyof typeof FLOORS>('C_4');
+  const [floorId, setFloorId] = useState<keyof typeof FLOORS>('C_5');
 
   const building = parseFloorId(floorId).building;
   const floor = FLOORS[floorId];
