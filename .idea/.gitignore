@@ -1,0 +1,13 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+
+# Personal / machine-specific settings (do not commit)
+/caches/
+/deviceManager.xml
+/usage.statistics.xml
+/tasks.xml
+/dictionaries/
+/httpRequests/
+/sonarlint/
+/contentModel.xml
