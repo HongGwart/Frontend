@@ -1,4 +1,4 @@
-import React, { Children, Fragment, cloneElement, isValidElement, useCallback, useState } from 'react';
+import React, { Children, Fragment, cloneElement, isValidElement, useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
@@ -95,6 +95,15 @@ export function IndoorMapView({
 }: Props) {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
+  // label을 ""로 비워둔 방(화장실처럼 배경에 이미 아이콘이 있거나, 아직 번호를 못 붙인 방)은
+  // 강의실이 아니므로 탭해도 하이라이팅되면 안 된다. findRoomAtPoint에 애초에 이 방들을
+  // 안 넘겨서 히트테스트 자체가 통과하지 않게 막는다 (RoomLabelsLayer가 라벨을 숨기는 것과
+  // 같은 label !== '' 기준을 그대로 재사용).
+  const selectableRooms = useMemo(
+    () => mapData.rooms.filter((room) => room.label !== ''),
+    [mapData.rooms]
+  );
+
   const handleMapTap = useCallback(
     (room: RoomShape | null) => {
       setSelectedRoomId((prev) => {
@@ -120,7 +129,7 @@ export function IndoorMapView({
     translateY,
     rotation,
   } = useMapGestures({
-    rooms: mapData.rooms,
+    rooms: selectableRooms,
     onMapTap: handleMapTap,
     mapWidth: mapData.width,
     mapHeight: mapData.height,
