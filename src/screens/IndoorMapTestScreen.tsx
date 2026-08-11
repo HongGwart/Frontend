@@ -46,6 +46,10 @@ import C_9_data from '@assets/svgs/floors/C_9.json';
 import C_9_Background from '@assets/svgs/floors/C_9_bg.svg';
 import C_9_Doors from '@assets/svgs/floors/C_9_doors.svg';
 
+import D_B1_data from '@assets/svgs/floors/D_B1.json';
+import D_B1_Background from '@assets/svgs/floors/D_B1_bg.svg';
+import D_B1_Doors from '@assets/svgs/floors/D_B1_doors.svg';
+
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
 import { FloorMapData } from '@appTypes/room';
@@ -125,12 +129,24 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     Background: C_9_Background,
     Doors: C_9_Doors,
   },
+  D_B1: {
+    data: D_B1_data as FloorMapData,
+    Background: D_B1_Background,
+    Doors: D_B1_Doors,
+  },
 };
 
-/** "C_2" -> { building: "C", floorNum: 2 }. "A_1_test"처럼 접미사가 붙어도 앞의 건물/층만 읽는다. */
-function parseFloorId(id: string): { building: string; floorNum: number } {
-  const m = id.match(/^([A-Za-z]+)_(\d+)/);
-  return m ? { building: m[1], floorNum: Number(m[2]) } : { building: id, floorNum: 0 };
+/**
+ * "C_2" -> { building: "C", floorNum: 2, label: "2F" }. "A_1_test"처럼 접미사가 붙어도 앞의 건물/층만 읽는다.
+ * "D_B1"처럼 지하층은 floorNum을 음수(-1)로 둬서 1F보다 아래로 정렬되게 하고, label은 "B1"로 표시한다.
+ */
+function parseFloorId(id: string): { building: string; floorNum: number; label: string } {
+  const m = id.match(/^([A-Za-z]+)_(B)?(\d+)/);
+  if (!m) return { building: id, floorNum: 0, label: id };
+  const [, building, basement, num] = m;
+  const floorNum = basement ? -Number(num) : Number(num);
+  const label = basement ? `B${num}` : `${num}F`;
+  return { building, floorNum, label };
 }
 
 const FLOOR_IDS = Object.keys(FLOORS);
@@ -215,7 +231,7 @@ export default function IndoorMapTestScreen() {
             style={[styles.floorButton, id === floorId && styles.floorButtonActive]}
           >
             <Text style={[styles.floorButtonText, id === floorId && styles.floorButtonTextActive]}>
-              {parseFloorId(id).floorNum}F
+              {parseFloorId(id).label}
             </Text>
           </Pressable>
         ))}
