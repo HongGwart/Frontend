@@ -104,6 +104,36 @@ export function IndoorMapView({
     [mapData.rooms]
   );
 
+  // SVG 캔버스(mapData.width/height)는 도면 크기와 무관하게 항상 같은 크기라, 그대로
+  // fitToContainer 기준으로 쓰면 도면이 캔버스보다 훨씬 작은 층은 여백이 크게 남는다.
+  // 실제로 그려진 방/아이콘들의 바운딩 박스(=네이비 테두리 도면 영역)를 직접 구해서 넘긴다.
+  const contentBounds = useMemo(() => {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const room of mapData.rooms) {
+      for (const [x, y] of room.points) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+    for (const icon of mapData.icons ?? []) {
+      const half = icon.size / 2;
+      const [cx, cy] = icon.center;
+      if (cx - half < minX) minX = cx - half;
+      if (cx + half > maxX) maxX = cx + half;
+      if (cy - half < minY) minY = cy - half;
+      if (cy + half > maxY) maxY = cy + half;
+    }
+    if (!Number.isFinite(minX) || !Number.isFinite(minY)) {
+      return { minX: 0, minY: 0, width: mapData.width, height: mapData.height };
+    }
+    return { minX, minY, width: maxX - minX, height: maxY - minY };
+  }, [mapData.rooms, mapData.icons, mapData.width, mapData.height]);
+
   const handleMapTap = useCallback(
     (room: RoomShape | null) => {
       setSelectedRoomId((prev) => {
@@ -133,6 +163,7 @@ export function IndoorMapView({
     onMapTap: handleMapTap,
     mapWidth: mapData.width,
     mapHeight: mapData.height,
+    contentBounds,
     minScale,
     maxScale,
   });

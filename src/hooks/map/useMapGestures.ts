@@ -29,16 +29,27 @@ const PAN_DECELERATION = 0.9975;
 const ZOOM_MOMENTUM_FACTOR = 0.6;
 /** 확대 관성이 멎는 속도. 팬보다 살짝 빠르게 멎도록 조금 더 낮게 잡았다 */
 const ZOOM_DECELERATION = 0.996;
-/** 처음 화면을 열었을 때 "전체가 다 보이는" 배율(fitScale)보다 얼마나 더 확대해서 보여줄지 */
-const DEFAULT_ZOOM_MULTIPLIER = 1.3;
+/**
+ * 처음 화면을 열었을 때(그리고 리셋 버튼을 눌렀을 때) 지도 양옆 끝과 화면 끝 사이에 둘 간격(px).
+ * 지도마다 가로세로 비율이 달라서 fitScale*배율 방식으로는 지도마다 이 간격이 들쭉날쭉했다 —
+ * 대신 이 값으로 "가로 폭이 containerWidth - margin*2가 되는 배율"을 직접 계산해서 고정한다.
+ */
+const DEFAULT_HORIZONTAL_MARGIN = 20;
 
 interface UseMapGesturesOptions {
   rooms: RoomShape[];
   /** 지도 탭 시 호출. 방을 찾았으면 그 방, 빈 공간을 탭했으면 null이 온다 (선택 해제용) */
   onMapTap: (room: RoomShape | null) => void;
-  /** 원본 SVG(=mapData) 크기. fitToContainer 계산에 필요 */
+  /** 원본 SVG(=mapData) 크기. contentBounds가 없을 때의 fallback 및 pivot 계산에 쓰인다 */
   mapWidth: number;
   mapHeight: number;
+  /**
+   * 실제로 그려진 건물 도면(네이비색 테두리)의 원본 SVG 좌표계 기준 바운딩 박스.
+   * SVG 캔버스(mapWidth/mapHeight)는 도면 크기와 무관하게 항상 같은 크기라, 이 값이
+   * 없으면 작은 도면일수록 fitToContainer가 여백을 훨씬 크게 잡는다. 생략 시 캔버스
+   * 전체({0,0,mapWidth,mapHeight})를 도면으로 간주한다.
+   */
+  contentBounds?: { minX: number; minY: number; width: number; height: number };
   minScale?: number;
   maxScale?: number;
 }
@@ -57,6 +68,7 @@ export function useMapGestures({
   onMapTap,
   mapWidth,
   mapHeight,
+  contentBounds,
   minScale = 1,
   maxScale = 5,
 }: UseMapGesturesOptions) {
@@ -317,15 +329,32 @@ export function useMapGestures({
   const fitToContainer = useCallback(
     (containerWidth: number, containerHeight: number) => {
       if (!containerWidth || !containerHeight || !mapWidth || !mapHeight) return;
-      const fitScale = Math.min(containerWidth / mapWidth, containerHeight / mapHeight) * 0.98;
-      const maxScaleValue = Math.max(maxScale, fitScale * 5);
-      // 처음 보여줄 배율은 "전체가 다 보이는" fitScale보다 살짝 더 확대해서 지도가
-      // 화면을 더 꽉 채우도록 한다. maxScale을 넘기지는 않는다.
-      const initialScale = Math.min(fitScale * DEFAULT_ZOOM_MULTIPLIER, maxScaleValue);
-      const offsetX = (containerWidth - mapWidth * initialScale) / 2;
-      const offsetY = (containerHeight - mapHeight * initialScale) / 2;
+      // fitScale/여백 계산은 SVG 캔버스 전체가 아니라 실제 도면(네이비 테두리) 바운딩 박스
+      // 기준으로 해야, 캔버스 안에서 도면이 작게 그려진 층(=여백처럼 보이는 빈 공간이 큰 층)도
+      // 다른 층과 같은 배율/여백으로 보인다.
+      const { minX: contentMinX, minY: contentMinY, width: contentWidth, height: contentHeight } =
+        contentBounds ?? { minX: 0, minY: 0, width: mapWidth, height: mapHeight };
+      // "전체 도면이 다 보이는" 축소 한계. pinch-out으로 더는 못 나가는 하한이자,
+      // widthFitScale이 이보다 작을 때(도면이 세로로 긴 층 등) 기본 배율의 하한으로도 쓴다.
+      const fitScale = Math.min(containerWidth / contentWidth, containerHeight / contentHeight) * 0.98;
+      // 처음 보여줄 배율은 도면 가로 폭이 "화면 폭 - 좌우 여백*2"가 되도록 직접 계산한다.
+      // fitScale*배율 방식이나 fitScale과 max를 취하는 방식은 지도마다 가로세로 비율이 달라
+      // (특히 캔버스 안에서 도면이 작게 그려진 층일수록) 실제 여백이 20px에서 계속 어긋났다 —
+      // 이 값을 그대로 기본 배율로 써야 어떤 층이든 항상 정확히 20px가 나온다.
+      const widthFitScale = (containerWidth - DEFAULT_HORIZONTAL_MARGIN * 2) / contentWidth;
+      // maxScale(prop 기본값 1.5)에 막혀 목표 여백까지 못 커지는 일이 없도록 widthFitScale도
+      // 같이 고려해서 pinch 확대 상한을 정한다 — 그래야 아래 min()이 widthFitScale을 깎지 않는다.
+      const maxScaleValue = Math.max(maxScale, fitScale * 5, widthFitScale);
+      const initialScale = Math.min(widthFitScale, maxScaleValue);
+      // 도면 바운딩 박스를 컨테이너 중앙에 놓는 translate. 캔버스 원점(0,0)이 도면 시작점과
+      // 다를 수 있어서(contentMinX/Y) 그만큼 먼저 빼준다.
+      const offsetX = (containerWidth - contentWidth * initialScale) / 2 - contentMinX * initialScale;
+      const offsetY = (containerHeight - contentHeight * initialScale) / 2 - contentMinY * initialScale;
 
-      minScaleShared.value = fitScale;
+      // pinch-out 하한은 "전체가 다 보이는" fitScale과 기본 배율 중 더 작은 쪽으로 잡는다.
+      // widthFitScale이 fitScale보다 작은 층(도면이 세로로 길어 높이가 먼저 꽉 차는 경우)에서
+      // 기본 배율보다 더 못 축소되는 상황을 막는다.
+      minScaleShared.value = Math.min(fitScale, initialScale);
       maxScaleShared.value = maxScaleValue;
       defaultScaleShared.value = initialScale;
       containerWidthShared.value = containerWidth;
@@ -341,6 +370,7 @@ export function useMapGestures({
     [
       mapWidth,
       mapHeight,
+      contentBounds,
       maxScale,
       scale,
       savedScale,
