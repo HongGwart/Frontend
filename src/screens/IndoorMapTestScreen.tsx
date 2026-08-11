@@ -49,6 +49,9 @@ import C_9_Doors from '@assets/svgs/floors/C_9_doors.svg';
 import D_B1_data from '@assets/svgs/floors/D_B1.json';
 import D_B1_Background from '@assets/svgs/floors/D_B1_bg.svg';
 import D_B1_Doors from '@assets/svgs/floors/D_B1_doors.svg';
+import D_B2_data from '@assets/svgs/floors/D_B2.json';
+import D_B2_Background from '@assets/svgs/floors/D_B2_bg.svg';
+import D_B2_Doors from '@assets/svgs/floors/D_B2_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -133,6 +136,11 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     data: D_B1_data as FloorMapData,
     Background: D_B1_Background,
     Doors: D_B1_Doors,
+  },
+  D_B2: {
+    data: D_B2_data as FloorMapData,
+    Background: D_B2_Background,
+    Doors: D_B2_Doors,
   },
 };
 
