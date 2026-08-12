@@ -4,6 +4,14 @@
  * Figma에서 export한 평면도 SVG를 읽어서 `room_{이름}` 그룹 안의 <rect>를
  * 4개 모서리 좌표 + RN-SVG용 path 문자열로 변환한 JSON을 만든다.
  *
+ * "Hitbox" 레이어 지원: Visual 레이어의 배경 도형(rect)만으로는 대각선/복잡한 벽 모양이나
+ * 여러 조각으로 나뉜 방을 정확히 못 잡는 경우가 많아서, Figma에 `Visual`과 나란히
+ * `Hitbox`라는 최상위 레이어를 두고 그 안에 `<path id="room_{방번호}" d="...">` 형태로
+ * 방마다 정확한 hitbox 도형을 직접 그려두면(M/L/H/V/Z만 사용, 곡선 불가) 그걸 최우선으로
+ * 사용한다 — 같은 방번호가 Visual 쪽에서 이미 추출됐으면 덮어쓰고, 없으면 새로 추가한다.
+ * (도형에 fill/stroke가 전혀 없으면 Figma가 export 시 통째로 생략해버리니, 아주 옅은
+ * fill-opacity라도 넣어둬야 한다.)
+ *
  * 사용법:
  *   node svgToRoomShapes.js <입력.svg> [출력.json]
  *
@@ -92,6 +100,75 @@ function extractLabelId(inner) {
   return ids[0];
 }
 
+/** "M1140 564H1352V612..." 같은 rectilinear(직각) path의 d 속성을 [[x,y],...] 점 배열로 바꾼다.
+ *  Hitbox 레이어 도형은 Figma에서 항상 M/L/H/V/Z 절대좌표 명령만 쓰므로 이 정도만 지원하면 충분하다.
+ *  곡선(C/Q/A)이 섞여 있으면 그 구간은 건너뛰고 경고만 남긴다. */
+function parsePathToPoints(d) {
+  const tokens = d.match(/[MLHVZ]|-?\d+(?:\.\d+)?/gi);
+  if (!tokens) return null;
+  const points = [];
+  let cx = 0;
+  let cy = 0;
+  let i = 0;
+  let sawCurve = false;
+  while (i < tokens.length) {
+    const cmd = tokens[i].toUpperCase();
+    if (cmd === 'M' || cmd === 'L') {
+      cx = parseFloat(tokens[i + 1]);
+      cy = parseFloat(tokens[i + 2]);
+      points.push([cx, cy]);
+      i += 3;
+    } else if (cmd === 'H') {
+      cx = parseFloat(tokens[i + 1]);
+      points.push([cx, cy]);
+      i += 2;
+    } else if (cmd === 'V') {
+      cy = parseFloat(tokens[i + 1]);
+      points.push([cx, cy]);
+      i += 2;
+    } else if (cmd === 'Z') {
+      i += 1;
+    } else {
+      sawCurve = true;
+      i += 1;
+    }
+  }
+  if (sawCurve) {
+    console.warn('[경고] Hitbox path에 곡선(C/Q/A) 명령이 섞여 있어 일부 정밀도가 떨어질 수 있습니다.');
+  }
+  // 시작점과 끝점이 같으면(자동 닫힘) 중복 제거
+  if (points.length > 1) {
+    const [fx, fy] = points[0];
+    const [lx, ly] = points[points.length - 1];
+    if (fx === lx && fy === ly) points.pop();
+  }
+  return points.length >= 3 ? points : null;
+}
+
+/** `<g id="Hitbox">` 안의 `<path id="room_XXX" d="...">` 들을 방 도형으로 뽑는다.
+ *  Visual 레이어의 배경 조각들을 짜맞춰 추정하는 것보다 훨씬 정확한 소스이므로,
+ *  같은 방 id가 있으면 이 값으로 덮어쓰고, 없으면 새로 추가한다. */
+function extractHitboxRooms(svgText) {
+  const hitboxMatch = svgText.match(/<g id="Hitbox">([\s\S]*?)<\/g>\s*<\/g>/);
+  if (!hitboxMatch) return [];
+  const inner = hitboxMatch[1];
+  const pathRegex = /<path id="room_([^"]+)"[^>]*\sd="([^"]*)"/g;
+  const rooms = [];
+  let m;
+  while ((m = pathRegex.exec(inner)) !== null) {
+    const roomId = m[1];
+    const points = parsePathToPoints(m[2]);
+    if (!points) {
+      console.warn(`[경고] Hitbox "room_${roomId}" path를 파싱하지 못해 건너뜀`);
+      continue;
+    }
+    const path =
+      'M' + points.map(([x, y]) => `${x},${y}`).join(' L') + ' Z';
+    rooms.push({ id: roomId, placeId: null, points, path });
+  }
+  return rooms;
+}
+
 function rectToRoomShape(groupId, rect, labelId) {
   const { x, y, width, height } = rect;
   const points = [
@@ -154,6 +231,27 @@ function main() {
     }
     seen.add(shape.id);
     rooms.push(shape);
+  }
+
+  // Hitbox 레이어(<g id="Hitbox"><path id="room_XXX" d="..."/></g>)가 있으면 그 정밀한
+  // 도형으로 같은 id의 방을 덮어쓰고, 없던 방이면 새로 추가한다.
+  const hitboxRooms = extractHitboxRooms(svgText);
+  if (hitboxRooms.length > 0) {
+    const byId = new Map(rooms.map((r, idx) => [r.id, idx]));
+    let overwritten = 0;
+    let added = 0;
+    for (const hitboxRoom of hitboxRooms) {
+      const existingIdx = byId.get(hitboxRoom.id);
+      if (existingIdx !== undefined) {
+        rooms[existingIdx] = hitboxRoom;
+        overwritten += 1;
+      } else {
+        rooms.push(hitboxRoom);
+        byId.set(hitboxRoom.id, rooms.length - 1);
+        added += 1;
+      }
+    }
+    console.log(`✓ Hitbox 레이어에서 방 ${hitboxRooms.length}개 반영 (덮어씀 ${overwritten} / 새로 추가 ${added})`);
   }
 
   if (rooms.length === 0) {

@@ -268,6 +268,33 @@ import P_7_Doors from '@assets/svgs/floors/P_7_doors.svg';
 import P_8_data from '@assets/svgs/floors/P_8.json';
 import P_8_Background from '@assets/svgs/floors/P_8_bg.svg';
 import P_8_Doors from '@assets/svgs/floors/P_8_doors.svg';
+import Q_1_data from '@assets/svgs/floors/Q_1.json';
+import Q_1_Background from '@assets/svgs/floors/Q_1_bg.svg';
+import Q_1_Doors from '@assets/svgs/floors/Q_1_doors.svg';
+import Q_2_data from '@assets/svgs/floors/Q_2.json';
+import Q_2_Background from '@assets/svgs/floors/Q_2_bg.svg';
+import Q_2_Doors from '@assets/svgs/floors/Q_2_doors.svg';
+import Q_4_data from '@assets/svgs/floors/Q_4.json';
+import Q_4_Background from '@assets/svgs/floors/Q_4_bg.svg';
+import Q_4_Doors from '@assets/svgs/floors/Q_4_doors.svg';
+import Q_5_data from '@assets/svgs/floors/Q_5.json';
+import Q_5_Background from '@assets/svgs/floors/Q_5_bg.svg';
+import Q_5_Doors from '@assets/svgs/floors/Q_5_doors.svg';
+import Q_6_data from '@assets/svgs/floors/Q_6.json';
+import Q_6_Background from '@assets/svgs/floors/Q_6_bg.svg';
+import Q_6_Doors from '@assets/svgs/floors/Q_6_doors.svg';
+import Q_7_data from '@assets/svgs/floors/Q_7.json';
+import Q_7_Background from '@assets/svgs/floors/Q_7_bg.svg';
+import Q_7_Doors from '@assets/svgs/floors/Q_7_doors.svg';
+import Q_8_data from '@assets/svgs/floors/Q_8.json';
+import Q_8_Background from '@assets/svgs/floors/Q_8_bg.svg';
+import Q_8_Doors from '@assets/svgs/floors/Q_8_doors.svg';
+import Q_9_data from '@assets/svgs/floors/Q_9.json';
+import Q_9_Background from '@assets/svgs/floors/Q_9_bg.svg';
+import Q_9_Doors from '@assets/svgs/floors/Q_9_doors.svg';
+import Q_10_data from '@assets/svgs/floors/Q_10.json';
+import Q_10_Background from '@assets/svgs/floors/Q_10_bg.svg';
+import Q_10_Doors from '@assets/svgs/floors/Q_10_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -712,6 +739,51 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     data: P_8_data as FloorMapData,
     Background: P_8_Background,
     Doors: P_8_Doors,
+  },
+  Q_1: {
+    data: Q_1_data as FloorMapData,
+    Background: Q_1_Background,
+    Doors: Q_1_Doors,
+  },
+  Q_2: {
+    data: Q_2_data as FloorMapData,
+    Background: Q_2_Background,
+    Doors: Q_2_Doors,
+  },
+  Q_4: {
+    data: Q_4_data as FloorMapData,
+    Background: Q_4_Background,
+    Doors: Q_4_Doors,
+  },
+  Q_5: {
+    data: Q_5_data as FloorMapData,
+    Background: Q_5_Background,
+    Doors: Q_5_Doors,
+  },
+  Q_6: {
+    data: Q_6_data as FloorMapData,
+    Background: Q_6_Background,
+    Doors: Q_6_Doors,
+  },
+  Q_7: {
+    data: Q_7_data as FloorMapData,
+    Background: Q_7_Background,
+    Doors: Q_7_Doors,
+  },
+  Q_8: {
+    data: Q_8_data as FloorMapData,
+    Background: Q_8_Background,
+    Doors: Q_8_Doors,
+  },
+  Q_9: {
+    data: Q_9_data as FloorMapData,
+    Background: Q_9_Background,
+    Doors: Q_9_Doors,
+  },
+  Q_10: {
+    data: Q_10_data as FloorMapData,
+    Background: Q_10_Background,
+    Doors: Q_10_Doors,
   },
 };
 
