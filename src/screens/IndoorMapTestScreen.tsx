@@ -108,6 +108,12 @@ import F_4_Doors from '@assets/svgs/floors/F_4_doors.svg';
 import F_5_data from '@assets/svgs/floors/F_5.json';
 import F_5_Background from '@assets/svgs/floors/F_5_bg.svg';
 import F_5_Doors from '@assets/svgs/floors/F_5_doors.svg';
+import F_6_data from '@assets/svgs/floors/F_6.json';
+import F_6_Background from '@assets/svgs/floors/F_6_bg.svg';
+import F_6_Doors from '@assets/svgs/floors/F_6_doors.svg';
+import F_7_data from '@assets/svgs/floors/F_7.json';
+import F_7_Background from '@assets/svgs/floors/F_7_bg.svg';
+import F_7_Doors from '@assets/svgs/floors/F_7_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -287,6 +293,16 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     data: F_5_data as FloorMapData,
     Background: F_5_Background,
     Doors: F_5_Doors,
+  },
+  F_6: {
+    data: F_6_data as FloorMapData,
+    Background: F_6_Background,
+    Doors: F_6_Doors,
+  },
+  F_7: {
+    data: F_7_data as FloorMapData,
+    Background: F_7_Background,
+    Doors: F_7_Doors,
   },
 };
 
