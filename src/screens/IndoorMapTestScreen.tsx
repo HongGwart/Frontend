@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
@@ -151,6 +151,9 @@ import I_5_Doors from '@assets/svgs/floors/I_5_doors.svg';
 import I_6_data from '@assets/svgs/floors/I_6.json';
 import I_6_Background from '@assets/svgs/floors/I_6_bg.svg';
 import I_6_Doors from '@assets/svgs/floors/I_6_doors.svg';
+import K_B1_data from '@assets/svgs/floors/K_B1.json';
+import K_B1_Background from '@assets/svgs/floors/K_B1_bg.svg';
+import K_B1_Doors from '@assets/svgs/floors/K_B1_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -401,6 +404,11 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     Background: I_6_Background,
     Doors: I_6_Doors,
   },
+  K_B1: {
+    data: K_B1_data as FloorMapData,
+    Background: K_B1_Background,
+    Doors: K_B1_Doors,
+  },
 };
 
 /**
@@ -462,7 +470,11 @@ export default function IndoorMapTestScreen() {
     <View style={styles.container}>
       <SafeAreaView edges={['top']} style={styles.searchBarWrapper}>
         {/* <SearchBar value={query} onChangeText={setQuery} /> */}
-        <View style={styles.buildingSwitcher}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.buildingSwitcher}
+        >
           {BUILDINGS.map((b) => (
             <Pressable
               key={b}
@@ -474,7 +486,7 @@ export default function IndoorMapTestScreen() {
               </Text>
             </Pressable>
           ))}
-        </View>
+        </ScrollView>
       </SafeAreaView>
 
       <Animated.View style={[styles.mapArea, slideStyle]}>
