@@ -295,6 +295,54 @@ import Q_9_Doors from '@assets/svgs/floors/Q_9_doors.svg';
 import Q_10_data from '@assets/svgs/floors/Q_10.json';
 import Q_10_Background from '@assets/svgs/floors/Q_10_bg.svg';
 import Q_10_Doors from '@assets/svgs/floors/Q_10_doors.svg';
+import R_B4_data from '@assets/svgs/floors/R_B4.json';
+import R_B4_Background from '@assets/svgs/floors/R_B4_bg.svg';
+import R_B4_Doors from '@assets/svgs/floors/R_B4_doors.svg';
+import R_B3_data from '@assets/svgs/floors/R_B3.json';
+import R_B3_Background from '@assets/svgs/floors/R_B3_bg.svg';
+import R_B3_Doors from '@assets/svgs/floors/R_B3_doors.svg';
+import R_B2_data from '@assets/svgs/floors/R_B2.json';
+import R_B2_Background from '@assets/svgs/floors/R_B2_bg.svg';
+import R_B2_Doors from '@assets/svgs/floors/R_B2_doors.svg';
+import R_1_data from '@assets/svgs/floors/R_1.json';
+import R_1_Background from '@assets/svgs/floors/R_1_bg.svg';
+import R_1_Doors from '@assets/svgs/floors/R_1_doors.svg';
+import R_2_data from '@assets/svgs/floors/R_2.json';
+import R_2_Background from '@assets/svgs/floors/R_2_bg.svg';
+import R_2_Doors from '@assets/svgs/floors/R_2_doors.svg';
+import R_3_data from '@assets/svgs/floors/R_3.json';
+import R_3_Background from '@assets/svgs/floors/R_3_bg.svg';
+import R_3_Doors from '@assets/svgs/floors/R_3_doors.svg';
+import R_4_data from '@assets/svgs/floors/R_4.json';
+import R_4_Background from '@assets/svgs/floors/R_4_bg.svg';
+import R_4_Doors from '@assets/svgs/floors/R_4_doors.svg';
+import R_5_data from '@assets/svgs/floors/R_5.json';
+import R_5_Background from '@assets/svgs/floors/R_5_bg.svg';
+import R_5_Doors from '@assets/svgs/floors/R_5_doors.svg';
+import R_6_data from '@assets/svgs/floors/R_6.json';
+import R_6_Background from '@assets/svgs/floors/R_6_bg.svg';
+import R_6_Doors from '@assets/svgs/floors/R_6_doors.svg';
+import R_7_data from '@assets/svgs/floors/R_7.json';
+import R_7_Background from '@assets/svgs/floors/R_7_bg.svg';
+import R_7_Doors from '@assets/svgs/floors/R_7_doors.svg';
+import R_8_data from '@assets/svgs/floors/R_8.json';
+import R_8_Background from '@assets/svgs/floors/R_8_bg.svg';
+import R_8_Doors from '@assets/svgs/floors/R_8_doors.svg';
+import R_9_data from '@assets/svgs/floors/R_9.json';
+import R_9_Background from '@assets/svgs/floors/R_9_bg.svg';
+import R_9_Doors from '@assets/svgs/floors/R_9_doors.svg';
+import R_10_data from '@assets/svgs/floors/R_10.json';
+import R_10_Background from '@assets/svgs/floors/R_10_bg.svg';
+import R_10_Doors from '@assets/svgs/floors/R_10_doors.svg';
+import R_11_data from '@assets/svgs/floors/R_11.json';
+import R_11_Background from '@assets/svgs/floors/R_11_bg.svg';
+import R_11_Doors from '@assets/svgs/floors/R_11_doors.svg';
+import R_12_data from '@assets/svgs/floors/R_12.json';
+import R_12_Background from '@assets/svgs/floors/R_12_bg.svg';
+import R_12_Doors from '@assets/svgs/floors/R_12_doors.svg';
+import R_13_data from '@assets/svgs/floors/R_13.json';
+import R_13_Background from '@assets/svgs/floors/R_13_bg.svg';
+import R_13_Doors from '@assets/svgs/floors/R_13_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -784,6 +832,86 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     data: Q_10_data as FloorMapData,
     Background: Q_10_Background,
     Doors: Q_10_Doors,
+  },
+  R_B4: {
+    data: R_B4_data as FloorMapData,
+    Background: R_B4_Background,
+    Doors: R_B4_Doors,
+  },
+  R_B3: {
+    data: R_B3_data as FloorMapData,
+    Background: R_B3_Background,
+    Doors: R_B3_Doors,
+  },
+  R_B2: {
+    data: R_B2_data as FloorMapData,
+    Background: R_B2_Background,
+    Doors: R_B2_Doors,
+  },
+  R_1: {
+    data: R_1_data as FloorMapData,
+    Background: R_1_Background,
+    Doors: R_1_Doors,
+  },
+  R_2: {
+    data: R_2_data as FloorMapData,
+    Background: R_2_Background,
+    Doors: R_2_Doors,
+  },
+  R_3: {
+    data: R_3_data as FloorMapData,
+    Background: R_3_Background,
+    Doors: R_3_Doors,
+  },
+  R_4: {
+    data: R_4_data as FloorMapData,
+    Background: R_4_Background,
+    Doors: R_4_Doors,
+  },
+  R_5: {
+    data: R_5_data as FloorMapData,
+    Background: R_5_Background,
+    Doors: R_5_Doors,
+  },
+  R_6: {
+    data: R_6_data as FloorMapData,
+    Background: R_6_Background,
+    Doors: R_6_Doors,
+  },
+  R_7: {
+    data: R_7_data as FloorMapData,
+    Background: R_7_Background,
+    Doors: R_7_Doors,
+  },
+  R_8: {
+    data: R_8_data as FloorMapData,
+    Background: R_8_Background,
+    Doors: R_8_Doors,
+  },
+  R_9: {
+    data: R_9_data as FloorMapData,
+    Background: R_9_Background,
+    Doors: R_9_Doors,
+  },
+  R_10: {
+    data: R_10_data as FloorMapData,
+    Background: R_10_Background,
+    Doors: R_10_Doors,
+  },
+  R_11: {
+    data: R_11_data as FloorMapData,
+    Background: R_11_Background,
+    Doors: R_11_Doors,
+  },
+  R_12: {
+    data: R_12_data as FloorMapData,
+    Background: R_12_Background,
+    Doors: R_12_Doors,
+  },
+  R_13: {
+    data: R_13_data as FloorMapData,
+    Background: R_13_Background,
+    Doors: R_13_Doors,
   },
 };
 

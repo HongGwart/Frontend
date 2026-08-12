@@ -28,7 +28,9 @@ function main() {
   // 라벨 전체(여러 글자의 획이 합쳐진 한 개 path)인 경우만 대상으로 한다.
   // svgToRoomShapes.js의 extractLabelId와 동일하게, G동 "B110"처럼 앞에 알파벳 한 글자가
   // 붙는 번호 체계도 허용한다.
-  const labelPathRegex = /<path id="[A-Za-z]?\d+(?:-\d+)?"[^>]*\/>\s*/g;
+  // Figma에서 같은 라벨 이름이 겹치면 "106_2"처럼 뒤에 "_숫자"가 자동으로 붙는데,
+  // 이것도 결국 같은 종류의 baked 숫자 라벨이므로 같이 제거 대상에 포함한다.
+  const labelPathRegex = /<path id="[A-Za-z]?\d+(?:-\d+)?(?:_\d+)?"[^>]*\/>\s*/g;
 
   const removedIds = [];
   const result = svgText.replace(labelPathRegex, (match) => {
