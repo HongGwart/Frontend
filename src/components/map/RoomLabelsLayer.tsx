@@ -65,8 +65,9 @@ interface Props {
   rotation: SharedValue<number>;
   /** 고정 폰트 크기. 확대/축소해도 이 값은 안 바뀐다 */
   fontSize?: number;
-  /** 하이라이팅된 방의 id. 이 방의 라벨만 흰색으로 바뀐다 (진한 배경 위라 검정 글자는 안 보임) */
-  selectedRoomId?: string | null;
+  /** 하이라이팅된 방들의 id. 같은 라벨을 공유하는 방이 여러 개면 전부 넘겨서 다 같이
+   *  흰색으로 바뀌게 한다 (진한 배경 위라 검정 글자는 안 보임) */
+  selectedRoomIds?: string[];
 }
 
 export function RoomLabelsLayer({
@@ -76,7 +77,7 @@ export function RoomLabelsLayer({
   translateY,
   rotation,
   fontSize = 7,
-  selectedRoomId = null,
+  selectedRoomIds = [],
 }: Props) {
   if (rooms.length === 0) return null;
   return (
@@ -89,7 +90,7 @@ export function RoomLabelsLayer({
             room={room}
             fontSize={fontSize}
             boxWidth={48}
-            isSelected={room.id === selectedRoomId}
+            isSelected={selectedRoomIds.includes(room.id)}
             scale={scale}
             translateX={translateX}
             translateY={translateY}

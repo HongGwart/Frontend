@@ -93,7 +93,7 @@ export function IndoorMapView({
   iconSize,
   labelFontSize = 5,
 }: Props) {
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
 
   // label을 ""로 비워둔 방(화장실처럼 배경에 이미 아이콘이 있거나, 아직 번호를 못 붙인 방)은
   // 강의실이 아니므로 탭해도 하이라이팅되면 안 된다. findRoomAtPoint에 애초에 이 방들을
@@ -136,17 +136,25 @@ export function IndoorMapView({
 
   const handleMapTap = useCallback(
     (room: RoomShape | null) => {
-      setSelectedRoomId((prev) => {
+      setSelectedRoomIds((prev) => {
         // 빈 공간을 탭하면 room이 null로 들어와서 무조건 선택 해제.
         // 이미 선택된 방을 다시 탭하면 토글 해제, 다른 방을 탭하면 그 방으로 교체.
-        const next = room && prev !== room.id ? room.id : null;
-        if (next !== prev) {
-          onRoomSelect?.(next ? room : null);
+        // 같은 라벨(room.label ?? room.id)을 공유하는 방이 여러 개 있으면(하나의 강의실이
+        // 도면상 두 조각으로 나뉜 경우 등) 전부 같이 선택해서 한 번에 하이라이트한다.
+        const wasSelected = room && prev.includes(room.id);
+        if (!room || wasSelected) {
+          if (prev.length > 0) onRoomSelect?.(null);
+          return [];
         }
-        return next;
+        const targetLabel = room.label ?? room.id;
+        const group = selectableRooms
+          .filter((r) => (r.label ?? r.id) === targetLabel)
+          .map((r) => r.id);
+        onRoomSelect?.(room);
+        return group;
       });
     },
-    [onRoomSelect]
+    [onRoomSelect, selectableRooms]
   );
 
   const {
@@ -187,7 +195,7 @@ export function IndoorMapView({
             width={mapData.width}
             height={mapData.height}
             rooms={mapData.rooms}
-            selectedRoomId={selectedRoomId}
+            selectedRoomIds={selectedRoomIds}
           />
           {renderForeground && <AbsoluteLayer>{renderForeground(size)}</AbsoluteLayer>}
         </Animated.View>
@@ -213,7 +221,7 @@ export function IndoorMapView({
         translateY={translateY}
         rotation={rotation}
         fontSize={labelFontSize}
-        selectedRoomId={selectedRoomId}
+        selectedRoomIds={selectedRoomIds}
       />
       <ResetViewButton rotation={rotation} onPress={resetTransform} />
     </View>
