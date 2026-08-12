@@ -154,6 +154,24 @@ import I_6_Doors from '@assets/svgs/floors/I_6_doors.svg';
 import K_B1_data from '@assets/svgs/floors/K_B1.json';
 import K_B1_Background from '@assets/svgs/floors/K_B1_bg.svg';
 import K_B1_Doors from '@assets/svgs/floors/K_B1_doors.svg';
+import K_1_data from '@assets/svgs/floors/K_1.json';
+import K_1_Background from '@assets/svgs/floors/K_1_bg.svg';
+import K_1_Doors from '@assets/svgs/floors/K_1_doors.svg';
+import K_2_data from '@assets/svgs/floors/K_2.json';
+import K_2_Background from '@assets/svgs/floors/K_2_bg.svg';
+import K_2_Doors from '@assets/svgs/floors/K_2_doors.svg';
+import K_3_data from '@assets/svgs/floors/K_3.json';
+import K_3_Background from '@assets/svgs/floors/K_3_bg.svg';
+import K_3_Doors from '@assets/svgs/floors/K_3_doors.svg';
+import K_4_data from '@assets/svgs/floors/K_4.json';
+import K_4_Background from '@assets/svgs/floors/K_4_bg.svg';
+import K_4_Doors from '@assets/svgs/floors/K_4_doors.svg';
+import K_5_data from '@assets/svgs/floors/K_5.json';
+import K_5_Background from '@assets/svgs/floors/K_5_bg.svg';
+import K_5_Doors from '@assets/svgs/floors/K_5_doors.svg';
+import K_6_data from '@assets/svgs/floors/K_6.json';
+import K_6_Background from '@assets/svgs/floors/K_6_bg.svg';
+import K_6_Doors from '@assets/svgs/floors/K_6_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -408,6 +426,36 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     data: K_B1_data as FloorMapData,
     Background: K_B1_Background,
     Doors: K_B1_Doors,
+  },
+  K_1: {
+    data: K_1_data as FloorMapData,
+    Background: K_1_Background,
+    Doors: K_1_Doors,
+  },
+  K_2: {
+    data: K_2_data as FloorMapData,
+    Background: K_2_Background,
+    Doors: K_2_Doors,
+  },
+  K_3: {
+    data: K_3_data as FloorMapData,
+    Background: K_3_Background,
+    Doors: K_3_Doors,
+  },
+  K_4: {
+    data: K_4_data as FloorMapData,
+    Background: K_4_Background,
+    Doors: K_4_Doors,
+  },
+  K_5: {
+    data: K_5_data as FloorMapData,
+    Background: K_5_Background,
+    Doors: K_5_Doors,
+  },
+  K_6: {
+    data: K_6_data as FloorMapData,
+    Background: K_6_Background,
+    Doors: K_6_Doors,
   },
 };
 
