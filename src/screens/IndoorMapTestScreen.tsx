@@ -172,6 +172,33 @@ import K_5_Doors from '@assets/svgs/floors/K_5_doors.svg';
 import K_6_data from '@assets/svgs/floors/K_6.json';
 import K_6_Background from '@assets/svgs/floors/K_6_bg.svg';
 import K_6_Doors from '@assets/svgs/floors/K_6_doors.svg';
+import L_2_data from '@assets/svgs/floors/L_2.json';
+import L_2_Background from '@assets/svgs/floors/L_2_bg.svg';
+import L_2_Doors from '@assets/svgs/floors/L_2_doors.svg';
+import L_3_data from '@assets/svgs/floors/L_3.json';
+import L_3_Background from '@assets/svgs/floors/L_3_bg.svg';
+import L_3_Doors from '@assets/svgs/floors/L_3_doors.svg';
+import L_4_data from '@assets/svgs/floors/L_4.json';
+import L_4_Background from '@assets/svgs/floors/L_4_bg.svg';
+import L_4_Doors from '@assets/svgs/floors/L_4_doors.svg';
+import L_5_data from '@assets/svgs/floors/L_5.json';
+import L_5_Background from '@assets/svgs/floors/L_5_bg.svg';
+import L_5_Doors from '@assets/svgs/floors/L_5_doors.svg';
+import L_6_data from '@assets/svgs/floors/L_6.json';
+import L_6_Background from '@assets/svgs/floors/L_6_bg.svg';
+import L_6_Doors from '@assets/svgs/floors/L_6_doors.svg';
+import L_7_data from '@assets/svgs/floors/L_7.json';
+import L_7_Background from '@assets/svgs/floors/L_7_bg.svg';
+import L_7_Doors from '@assets/svgs/floors/L_7_doors.svg';
+import L_8_data from '@assets/svgs/floors/L_8.json';
+import L_8_Background from '@assets/svgs/floors/L_8_bg.svg';
+import L_8_Doors from '@assets/svgs/floors/L_8_doors.svg';
+import L_9_data from '@assets/svgs/floors/L_9.json';
+import L_9_Background from '@assets/svgs/floors/L_9_bg.svg';
+import L_9_Doors from '@assets/svgs/floors/L_9_doors.svg';
+import L_10_data from '@assets/svgs/floors/L_10.json';
+import L_10_Background from '@assets/svgs/floors/L_10_bg.svg';
+import L_10_Doors from '@assets/svgs/floors/L_10_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -456,6 +483,51 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     data: K_6_data as FloorMapData,
     Background: K_6_Background,
     Doors: K_6_Doors,
+  },
+  L_2: {
+    data: L_2_data as FloorMapData,
+    Background: L_2_Background,
+    Doors: L_2_Doors,
+  },
+  L_3: {
+    data: L_3_data as FloorMapData,
+    Background: L_3_Background,
+    Doors: L_3_Doors,
+  },
+  L_4: {
+    data: L_4_data as FloorMapData,
+    Background: L_4_Background,
+    Doors: L_4_Doors,
+  },
+  L_5: {
+    data: L_5_data as FloorMapData,
+    Background: L_5_Background,
+    Doors: L_5_Doors,
+  },
+  L_6: {
+    data: L_6_data as FloorMapData,
+    Background: L_6_Background,
+    Doors: L_6_Doors,
+  },
+  L_7: {
+    data: L_7_data as FloorMapData,
+    Background: L_7_Background,
+    Doors: L_7_Doors,
+  },
+  L_8: {
+    data: L_8_data as FloorMapData,
+    Background: L_8_Background,
+    Doors: L_8_Doors,
+  },
+  L_9: {
+    data: L_9_data as FloorMapData,
+    Background: L_9_Background,
+    Doors: L_9_Doors,
+  },
+  L_10: {
+    data: L_10_data as FloorMapData,
+    Background: L_10_Background,
+    Doors: L_10_Doors,
   },
 };
 
