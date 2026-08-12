@@ -68,6 +68,9 @@ import E_1_Doors from '@assets/svgs/floors/E_1_doors.svg';
 import E_2_data from '@assets/svgs/floors/E_2.json';
 import E_2_Background from '@assets/svgs/floors/E_2_bg.svg';
 import E_2_Doors from '@assets/svgs/floors/E_2_doors.svg';
+import E_3_data from '@assets/svgs/floors/E_3.json';
+import E_3_Background from '@assets/svgs/floors/E_3_bg.svg';
+import E_3_Doors from '@assets/svgs/floors/E_3_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -182,6 +185,11 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     data: E_2_data as FloorMapData,
     Background: E_2_Background,
     Doors: E_2_Doors,
+  },
+  E_3: {
+    data: E_3_data as FloorMapData,
+    Background: E_3_Background,
+    Doors: E_3_Doors,
   },
 };
 
