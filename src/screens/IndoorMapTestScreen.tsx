@@ -343,6 +343,36 @@ import R_12_Doors from '@assets/svgs/floors/R_12_doors.svg';
 import R_13_data from '@assets/svgs/floors/R_13.json';
 import R_13_Background from '@assets/svgs/floors/R_13_bg.svg';
 import R_13_Doors from '@assets/svgs/floors/R_13_doors.svg';
+import T_1_data from '@assets/svgs/floors/T_1.json';
+import T_1_Background from '@assets/svgs/floors/T_1_bg.svg';
+import T_1_Doors from '@assets/svgs/floors/T_1_doors.svg';
+import T_2_data from '@assets/svgs/floors/T_2.json';
+import T_2_Background from '@assets/svgs/floors/T_2_bg.svg';
+import T_2_Doors from '@assets/svgs/floors/T_2_doors.svg';
+import T_3_data from '@assets/svgs/floors/T_3.json';
+import T_3_Background from '@assets/svgs/floors/T_3_bg.svg';
+import T_3_Doors from '@assets/svgs/floors/T_3_doors.svg';
+import T_4_data from '@assets/svgs/floors/T_4.json';
+import T_4_Background from '@assets/svgs/floors/T_4_bg.svg';
+import T_4_Doors from '@assets/svgs/floors/T_4_doors.svg';
+import T_5_data from '@assets/svgs/floors/T_5.json';
+import T_5_Background from '@assets/svgs/floors/T_5_bg.svg';
+import T_5_Doors from '@assets/svgs/floors/T_5_doors.svg';
+import T_6_data from '@assets/svgs/floors/T_6.json';
+import T_6_Background from '@assets/svgs/floors/T_6_bg.svg';
+import T_6_Doors from '@assets/svgs/floors/T_6_doors.svg';
+import T_7_data from '@assets/svgs/floors/T_7.json';
+import T_7_Background from '@assets/svgs/floors/T_7_bg.svg';
+import T_7_Doors from '@assets/svgs/floors/T_7_doors.svg';
+import T_8_data from '@assets/svgs/floors/T_8.json';
+import T_8_Background from '@assets/svgs/floors/T_8_bg.svg';
+import T_8_Doors from '@assets/svgs/floors/T_8_doors.svg';
+import T_9_data from '@assets/svgs/floors/T_9.json';
+import T_9_Background from '@assets/svgs/floors/T_9_bg.svg';
+import T_9_Doors from '@assets/svgs/floors/T_9_doors.svg';
+import T_10_data from '@assets/svgs/floors/T_10.json';
+import T_10_Background from '@assets/svgs/floors/T_10_bg.svg';
+import T_10_Doors from '@assets/svgs/floors/T_10_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -912,6 +942,56 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     data: R_13_data as FloorMapData,
     Background: R_13_Background,
     Doors: R_13_Doors,
+  },
+  T_1: {
+    data: T_1_data as FloorMapData,
+    Background: T_1_Background,
+    Doors: T_1_Doors,
+  },
+  T_2: {
+    data: T_2_data as FloorMapData,
+    Background: T_2_Background,
+    Doors: T_2_Doors,
+  },
+  T_3: {
+    data: T_3_data as FloorMapData,
+    Background: T_3_Background,
+    Doors: T_3_Doors,
+  },
+  T_4: {
+    data: T_4_data as FloorMapData,
+    Background: T_4_Background,
+    Doors: T_4_Doors,
+  },
+  T_5: {
+    data: T_5_data as FloorMapData,
+    Background: T_5_Background,
+    Doors: T_5_Doors,
+  },
+  T_6: {
+    data: T_6_data as FloorMapData,
+    Background: T_6_Background,
+    Doors: T_6_Doors,
+  },
+  T_7: {
+    data: T_7_data as FloorMapData,
+    Background: T_7_Background,
+    Doors: T_7_Doors,
+  },
+  T_8: {
+    data: T_8_data as FloorMapData,
+    Background: T_8_Background,
+    Doors: T_8_Doors,
+  },
+  T_9: {
+    data: T_9_data as FloorMapData,
+    Background: T_9_Background,
+    Doors: T_9_Doors,
+  },
+  T_10: {
+    data: T_10_data as FloorMapData,
+    Background: T_10_Background,
+    Doors: T_10_Doors,
   },
 };
 

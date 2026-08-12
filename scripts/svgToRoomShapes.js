@@ -30,6 +30,21 @@ const fs = require('fs');
 const path = require('path');
 
 /** 태그 문자열에서 attr="value" 쌍을 전부 뽑아낸다 (속성 순서에 의존하지 않음) */
+/** Figma에서 room_멀티미디어실 처럼 한글 id를 쓰면 export 시 "&#235;&#169;..." 같은
+ *  숫자 HTML 엔티티(UTF-8 바이트 단위)로 깨져 나오는 경우가 있다. id에서 그런 엔티티를
+ *  발견하면 원래 문자로 복원한다. */
+function decodeHtmlEntities(str) {
+  if (!str || !str.includes('&#')) return str;
+  const withoutEntities = str.replace(/&#(\d+);/g, '');
+  if (withoutEntities !== '') return str; // 엔티티 외 다른 문자가 섞여있으면 손대지 않는다
+  const bytes = [...str.matchAll(/&#(\d+);/g)].map((m) => Number(m[1]));
+  try {
+    return Buffer.from(bytes).toString('utf8');
+  } catch {
+    return str;
+  }
+}
+
 function parseAttrs(tag) {
   const attrs = {};
   const attrRegex = /([\w:-]+)="([^"]*)"/g;
@@ -248,7 +263,8 @@ function extractHitboxRooms(svgText) {
   const rooms = [];
   let m;
   while ((m = elRegex.exec(inner)) !== null) {
-    const [, tag, roomId, attrsStr] = m;
+    const [, tag, rawRoomId, attrsStr] = m;
+    const roomId = decodeHtmlEntities(rawRoomId);
     const attrs = parseAttrs(`<${tag}${attrsStr}>`);
     const points = tag === 'rect' ? rectElementToPoints(attrs) : parsePathToPoints(attrs.d || '');
     if (!points) {

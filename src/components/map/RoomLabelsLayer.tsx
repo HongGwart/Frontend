@@ -80,10 +80,23 @@ export function RoomLabelsLayer({
   selectedRoomIds = [],
 }: Props) {
   if (rooms.length === 0) return null;
+
+  // 하나의 강의실이 도면상 여러 조각으로 나뉜 경우(같은 label을 공유) 텍스트는
+  // 한 번만 그린다 — 안 그러면 조각 개수만큼 같은 번호가 겹쳐 보인다.
+  // 선택(클릭) 자체는 label이 같은 모든 조각에 걸리므로(IndoorMapView의 그룹핑 로직)
+  // 텍스트를 하나로 줄여도 "함께 클릭되는" 동작에는 영향이 없다.
+  const seenLabels = new Set<string>();
+  const labeledRooms = rooms.filter((room) => {
+    if (room.label === '') return false;
+    const key = room.label ?? room.id;
+    if (seenLabels.has(key)) return false;
+    seenLabels.add(key);
+    return true;
+  });
+
   return (
     <Animated.View style={styles.overlay} pointerEvents="none">
-      {rooms
-        .filter((room) => room.label !== '')
+      {labeledRooms
         .map((room) => (
           <RoomLabel
             key={room.id}
