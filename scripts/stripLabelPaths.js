@@ -26,7 +26,9 @@ function main() {
   const svgText = fs.readFileSync(inputPath, 'utf8');
   // svgToRoomShapes.js의 extractLabelId와 동일한 id 패턴. self-closing <path .../> 하나가
   // 라벨 전체(여러 글자의 획이 합쳐진 한 개 path)인 경우만 대상으로 한다.
-  const labelPathRegex = /<path id="\d+(?:-\d+)?"[^>]*\/>\s*/g;
+  // svgToRoomShapes.js의 extractLabelId와 동일하게, G동 "B110"처럼 앞에 알파벳 한 글자가
+  // 붙는 번호 체계도 허용한다.
+  const labelPathRegex = /<path id="[A-Za-z]?\d+(?:-\d+)?"[^>]*\/>\s*/g;
 
   const removedIds = [];
   const result = svgText.replace(labelPathRegex, (match) => {

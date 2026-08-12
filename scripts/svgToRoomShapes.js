@@ -77,7 +77,9 @@ function extractFirstRect(inner) {
  *  hitbox 그룹 이름을 Figma에서 일일이 안 바꿔도, 화면에 보이는 번호 텍스트의 id를 그대로
  *  방 이름으로 재활용하기 위함. Union/Rectangle/stair/door 같은 다른 path id는 걸러진다. */
 function extractLabelId(inner) {
-  const labelRegex = /<path id="(\d+(?:-\d+)?)"/g;
+  // 대부분은 순수 숫자("103", "402-1")지만 G동처럼 "B110"같이 건물 접두 알파벳 하나가
+  // 붙는 번호 체계도 있어서 앞에 알파벳 한 글자를 선택적으로 허용한다.
+  const labelRegex = /<path id="([A-Za-z]?\d+(?:-\d+)?)"/g;
   const ids = [];
   let m;
   while ((m = labelRegex.exec(inner)) !== null) {
