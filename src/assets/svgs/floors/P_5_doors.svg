@@ -1,0 +1,221 @@
+<svg width="1920" height="1235" viewBox="0 0 1920 1235" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g>
+<g id="door">
+<path id="Intersect" d="M464 492L464 476C455.163 476 448 483.163 448 492L464 492Z" fill="white"/>
+<path id="Intersect_2" d="M464 492L448 492C448 483.163 455.163 476 464 476" stroke="#1D2056"/>
+<rect id="Rectangle 240653104" width="15" height="0.5" transform="matrix(4.37114e-08 1 1 -4.37114e-08 464 476.5)" fill="white"/>
+<rect id="Rectangle 240653105" width="1" height="0.5" transform="matrix(4.37114e-08 1 1 -4.37114e-08 464 475.5)" fill="#1D2056"/>
+<rect id="Rectangle 240653106" width="1" height="0.5" transform="matrix(4.37114e-08 1 1 -4.37114e-08 464 491.5)" fill="#1D2056"/>
+</g>
+<g id="door_2">
+<path id="Intersect_3" d="M608 612H592C592 620.837 599.163 628 608 628V612Z" fill="white"/>
+<path id="Intersect_4" d="M608 612V628C599.163 628 592 620.837 592 612" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_2" width="15" height="0.5" transform="matrix(1 0 0 -1 592.5 612)" fill="white"/>
+<rect id="Rectangle 240653105_2" width="1" height="0.5" transform="matrix(1 0 0 -1 591.5 612)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_2" width="1" height="0.5" transform="matrix(1 0 0 -1 607.5 612)" fill="#1D2056"/>
+</g>
+<g id="door_3">
+<path id="Intersect_5" d="M1319 612H1303C1303 620.837 1310.16 628 1319 628V612Z" fill="white"/>
+<path id="Intersect_6" d="M1319 612V628C1310.16 628 1303 620.837 1303 612" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_3" width="15" height="0.5" transform="matrix(1 0 0 -1 1303.5 612)" fill="white"/>
+<rect id="Rectangle 240653105_3" width="1" height="0.5" transform="matrix(1 0 0 -1 1302.5 612)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_3" width="1" height="0.5" transform="matrix(1 0 0 -1 1318.5 612)" fill="#1D2056"/>
+</g>
+<g id="door_4">
+<path id="Intersect_7" d="M686 681H670C670 689.837 677.163 697 686 697V681Z" fill="white"/>
+<path id="Intersect_8" d="M686 681V697C677.163 697 670 689.837 670 681" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_4" width="15" height="0.5" transform="matrix(1 0 0 -1 670.5 681)" fill="white"/>
+<rect id="Rectangle 240653105_4" width="1" height="0.5" transform="matrix(1 0 0 -1 669.5 681)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_4" width="1" height="0.5" transform="matrix(1 0 0 -1 685.5 681)" fill="#1D2056"/>
+</g>
+<g id="door_5">
+<path id="Intersect_9" d="M640 632L656 632C656 623.163 648.837 616 640 616L640 632Z" fill="white"/>
+<path id="Intersect_10" d="M640 632L640 616C648.837 616 656 623.163 656 632" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_5" width="15" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 655.5 632)" fill="white"/>
+<rect id="Rectangle 240653105_5" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 656.5 632)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_5" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 640.5 632)" fill="#1D2056"/>
+</g>
+<g id="door_6">
+<path id="Intersect_11" d="M1200 492L1216 492C1216 483.163 1208.84 476 1200 476L1200 492Z" fill="white"/>
+<path id="Intersect_12" d="M1200 492L1200 476C1208.84 476 1216 483.163 1216 492" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_6" width="15" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 1215.5 492)" fill="white"/>
+<rect id="Rectangle 240653105_6" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 1216.5 492)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_6" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 1200.5 492)" fill="#1D2056"/>
+</g>
+<g id="door_7">
+<path id="Intersect_13" d="M806 632L822 632C822 623.163 814.837 616 806 616L806 632Z" fill="white"/>
+<path id="Intersect_14" d="M806 632L806 616C814.837 616 822 623.163 822 632" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_7" width="15" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 821.5 632)" fill="white"/>
+<rect id="Rectangle 240653105_7" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 822.5 632)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_7" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 806.5 632)" fill="#1D2056"/>
+</g>
+<g id="door_8">
+<path id="Intersect_15" d="M1003 632L987 632C987 623.163 994.163 616 1003 616L1003 632Z" fill="white"/>
+<path id="Intersect_16" d="M1003 632L1003 616C994.163 616 987 623.163 987 632" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_8" x="987.5" y="632" width="15" height="0.5" fill="white"/>
+<rect id="Rectangle 240653105_8" x="986.5" y="632" width="1" height="0.5" fill="#1D2056"/>
+<rect id="Rectangle 240653106_8" x="1002.5" y="632" width="1" height="0.5" fill="#1D2056"/>
+</g>
+<g id="door_9">
+<path id="Intersect_17" d="M773 632L757 632C757 623.163 764.163 616 773 616L773 632Z" fill="white"/>
+<path id="Intersect_18" d="M773 632L773 616C764.163 616 757 623.163 757 632" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_9" x="757.5" y="632" width="15" height="0.5" fill="white"/>
+<rect id="Rectangle 240653105_9" x="756.5" y="632" width="1" height="0.5" fill="#1D2056"/>
+<rect id="Rectangle 240653106_9" x="772.5" y="632" width="1" height="0.5" fill="#1D2056"/>
+</g>
+<g id="door_10">
+<path id="Intersect_19" d="M877 632L893 632C893 623.163 885.837 616 877 616L877 632Z" fill="white"/>
+<path id="Intersect_20" d="M877 632L877 616C885.837 616 893 623.163 893 632" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_10" width="15" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 892.5 632)" fill="white"/>
+<rect id="Rectangle 240653105_10" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 893.5 632)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_10" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 877.5 632)" fill="#1D2056"/>
+</g>
+<g id="door_11">
+<path id="Intersect_21" d="M1040 632L1056 632C1056 623.163 1048.84 616 1040 616L1040 632Z" fill="white"/>
+<path id="Intersect_22" d="M1040 632L1040 616C1048.84 616 1056 623.163 1056 632" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_11" width="15" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 1055.5 632)" fill="white"/>
+<rect id="Rectangle 240653105_11" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 1056.5 632)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_11" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 1040.5 632)" fill="#1D2056"/>
+</g>
+<g id="door_12">
+<path id="Intersect_23" d="M1123 632L1139 632C1139 623.163 1131.84 616 1123 616L1123 632Z" fill="white"/>
+<path id="Intersect_24" d="M1123 632L1123 616C1131.84 616 1139 623.163 1139 632" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_12" width="15" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 1138.5 632)" fill="white"/>
+<rect id="Rectangle 240653105_12" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 1139.5 632)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_12" width="1" height="0.5" transform="matrix(-1 -8.74228e-08 -8.74228e-08 1 1123.5 632)" fill="#1D2056"/>
+</g>
+<g id="door_13">
+<path id="Intersect_25" d="M1266 632L1250 632C1250 623.163 1257.16 616 1266 616L1266 632Z" fill="white"/>
+<path id="Intersect_26" d="M1266 632L1266 616C1257.16 616 1250 623.163 1250 632" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_13" x="1250.5" y="632" width="15" height="0.5" fill="white"/>
+<rect id="Rectangle 240653105_13" x="1249.5" y="632" width="1" height="0.5" fill="#1D2056"/>
+<rect id="Rectangle 240653106_13" x="1265.5" y="632" width="1" height="0.5" fill="#1D2056"/>
+</g>
+<g id="door_14">
+<path id="Intersect_27" d="M721 681H737C737 689.837 729.837 697 721 697V681Z" fill="white"/>
+<path id="Intersect_28" d="M721 681V697C729.837 697 737 689.837 737 681" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_14" x="736.5" y="681" width="15" height="0.5" transform="rotate(180 736.5 681)" fill="white"/>
+<rect id="Rectangle 240653105_14" x="737.5" y="681" width="1" height="0.5" transform="rotate(180 737.5 681)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_14" x="721.5" y="681" width="1" height="0.5" transform="rotate(180 721.5 681)" fill="#1D2056"/>
+</g>
+<g id="door_15">
+<path id="Intersect_29" d="M960 681H976C976 689.837 968.837 697 960 697V681Z" fill="white"/>
+<path id="Intersect_30" d="M960 681V697C968.837 697 976 689.837 976 681" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_15" x="975.5" y="681" width="15" height="0.5" transform="rotate(180 975.5 681)" fill="white"/>
+<rect id="Rectangle 240653105_15" x="976.5" y="681" width="1" height="0.5" transform="rotate(180 976.5 681)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_15" x="960.5" y="681" width="1" height="0.5" transform="rotate(180 960.5 681)" fill="#1D2056"/>
+</g>
+<g id="door_16">
+<path id="Intersect_31" d="M810 681H826C826 689.837 818.837 697 810 697V681Z" fill="white"/>
+<path id="Intersect_32" d="M810 681V697C818.837 697 826 689.837 826 681" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_16" x="825.5" y="681" width="15" height="0.5" transform="rotate(180 825.5 681)" fill="white"/>
+<rect id="Rectangle 240653105_16" x="826.5" y="681" width="1" height="0.5" transform="rotate(180 826.5 681)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_16" x="810.5" y="681" width="1" height="0.5" transform="rotate(180 810.5 681)" fill="#1D2056"/>
+</g>
+<g id="door_17">
+<path id="Intersect_33" d="M1415 681H1399C1399 689.837 1406.16 697 1415 697V681Z" fill="white"/>
+<path id="Intersect_34" d="M1415 681V697C1406.16 697 1399 689.837 1399 681" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_17" width="15" height="0.5" transform="matrix(1 0 0 -1 1399.5 681)" fill="white"/>
+<rect id="Rectangle 240653105_17" width="1" height="0.5" transform="matrix(1 0 0 -1 1398.5 681)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_17" width="1" height="0.5" transform="matrix(1 0 0 -1 1414.5 681)" fill="#1D2056"/>
+</g>
+<g id="door_18">
+<path id="Intersect_35" d="M1205 681H1221C1221 689.837 1213.84 697 1205 697V681Z" fill="white"/>
+<path id="Intersect_36" d="M1205 681V697C1213.84 697 1221 689.837 1221 681" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_18" x="1220.5" y="681" width="15" height="0.5" transform="rotate(180 1220.5 681)" fill="white"/>
+<rect id="Rectangle 240653105_18" x="1221.5" y="681" width="1" height="0.5" transform="rotate(180 1221.5 681)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_18" x="1205.5" y="681" width="1" height="0.5" transform="rotate(180 1205.5 681)" fill="#1D2056"/>
+</g>
+<g id="door_19">
+<path id="Intersect_37" d="M1175 681H1159C1159 689.837 1166.16 697 1175 697V681Z" fill="white"/>
+<path id="Intersect_38" d="M1175 681V697C1166.16 697 1159 689.837 1159 681" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_19" width="15" height="0.5" transform="matrix(1 0 0 -1 1159.5 681)" fill="white"/>
+<rect id="Rectangle 240653105_19" width="1" height="0.5" transform="matrix(1 0 0 -1 1158.5 681)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_19" width="1" height="0.5" transform="matrix(1 0 0 -1 1174.5 681)" fill="#1D2056"/>
+</g>
+<g id="door_20">
+<path id="Intersect_39" d="M1083 681H1067C1067 689.837 1074.16 697 1083 697V681Z" fill="white"/>
+<path id="Intersect_40" d="M1083 681V697C1074.16 697 1067 689.837 1067 681" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_20" width="15" height="0.5" transform="matrix(1 0 0 -1 1067.5 681)" fill="white"/>
+<rect id="Rectangle 240653105_20" width="1" height="0.5" transform="matrix(1 0 0 -1 1066.5 681)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_20" width="1" height="0.5" transform="matrix(1 0 0 -1 1082.5 681)" fill="#1D2056"/>
+</g>
+<g id="door_21">
+<path id="Intersect_41" d="M1400 576L1384 576C1384 567.163 1391.16 560 1400 560L1400 576Z" fill="white"/>
+<path id="Intersect_42" d="M1400 576L1400 560C1391.16 560 1384 567.163 1384 576" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_21" x="1384.5" y="576" width="15" height="0.5" fill="white"/>
+<rect id="Rectangle 240653105_21" x="1383.5" y="576" width="1" height="0.5" fill="#1D2056"/>
+<rect id="Rectangle 240653106_21" x="1399.5" y="576" width="1" height="0.5" fill="#1D2056"/>
+</g>
+<g id="door_22">
+<path id="Intersect_43" d="M1419 576L1435 576C1435 567.163 1427.84 560 1419 560L1419 576Z" fill="white"/>
+<path id="Intersect_44" d="M1419 576L1419 560C1427.84 560 1435 567.163 1435 576" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_22" width="15" height="0.5" transform="matrix(-1 1.74846e-07 1.74846e-07 1 1434.5 576)" fill="white"/>
+<rect id="Rectangle 240653105_22" width="1" height="0.5" transform="matrix(-1 1.74846e-07 1.74846e-07 1 1435.5 576)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_22" width="1" height="0.5" transform="matrix(-1 1.74846e-07 1.74846e-07 1 1419.5 576)" fill="#1D2056"/>
+</g>
+<g id="door_23">
+<path id="Intersect_45" d="M480 681H496C496 689.837 488.837 697 480 697V681Z" fill="white"/>
+<path id="Intersect_46" d="M480 681V697C488.837 697 496 689.837 496 681" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_23" x="495.5" y="681" width="15" height="0.5" transform="rotate(180 495.5 681)" fill="white"/>
+<rect id="Rectangle 240653105_23" x="496.5" y="681" width="1" height="0.5" transform="rotate(180 496.5 681)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_23" x="480.5" y="681" width="1" height="0.5" transform="rotate(180 480.5 681)" fill="#1D2056"/>
+</g>
+<g id="door_24">
+<path id="Intersect_47" d="M512 681H496C496 689.837 503.163 697 512 697V681Z" fill="white"/>
+<path id="Intersect_48" d="M512 681V697C503.163 697 496 689.837 496 681" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_24" width="15" height="0.5" transform="matrix(1 0 0 -1 496.5 681)" fill="white"/>
+<rect id="Rectangle 240653105_24" width="1" height="0.5" transform="matrix(1 0 0 -1 495.5 681)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_24" width="1" height="0.5" transform="matrix(1 0 0 -1 511.5 681)" fill="#1D2056"/>
+</g>
+<g id="door_25">
+<path id="Intersect_49" d="M864 697L864 713C855.163 713 848 705.837 848 697L864 697Z" fill="white"/>
+<path id="Intersect_50" d="M864 697L848 697C848 705.837 855.163 713 864 713" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_25" x="864" y="712.5" width="15" height="0.5" transform="rotate(-90 864 712.5)" fill="white"/>
+<rect id="Rectangle 240653105_25" x="864" y="713.5" width="1" height="0.5" transform="rotate(-90 864 713.5)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_25" x="864" y="697.5" width="1" height="0.5" transform="rotate(-90 864 697.5)" fill="#1D2056"/>
+</g>
+<g id="door_26">
+<path id="Intersect_51" d="M1024 697L1024 713C1015.16 713 1008 705.837 1008 697L1024 697Z" fill="white"/>
+<path id="Intersect_52" d="M1024 697L1008 697C1008 705.837 1015.16 713 1024 713" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_26" x="1024" y="712.5" width="15" height="0.5" transform="rotate(-90 1024 712.5)" fill="white"/>
+<rect id="Rectangle 240653105_26" x="1024" y="713.5" width="1" height="0.5" transform="rotate(-90 1024 713.5)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_26" x="1024" y="697.5" width="1" height="0.5" transform="rotate(-90 1024 697.5)" fill="#1D2056"/>
+</g>
+<g id="door_27">
+<path id="Intersect_53" d="M924 681H908C908 689.837 915.163 697 924 697V681Z" fill="white"/>
+<path id="Intersect_54" d="M924 681V697C915.163 697 908 689.837 908 681" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_27" width="15" height="0.5" transform="matrix(1 0 0 -1 908.5 681)" fill="white"/>
+<rect id="Rectangle 240653105_27" width="1" height="0.5" transform="matrix(1 0 0 -1 907.5 681)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_27" width="1" height="0.5" transform="matrix(1 0 0 -1 923.5 681)" fill="#1D2056"/>
+</g>
+<g id="door_28">
+<path id="Intersect_55" d="M576 612H592C592 620.837 584.837 628 576 628V612Z" fill="white"/>
+<path id="Intersect_56" d="M576 612V628C584.837 628 592 620.837 592 612" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_28" x="591.5" y="612" width="15" height="0.5" transform="rotate(180 591.5 612)" fill="white"/>
+<rect id="Rectangle 240653105_28" x="592.5" y="612" width="1" height="0.5" transform="rotate(180 592.5 612)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_28" x="576.5" y="612" width="1" height="0.5" transform="rotate(180 576.5 612)" fill="#1D2056"/>
+</g>
+<g id="door_29">
+<path id="Intersect_57" d="M1287 612H1303C1303 620.837 1295.84 628 1287 628V612Z" fill="white"/>
+<path id="Intersect_58" d="M1287 612V628C1295.84 628 1303 620.837 1303 612" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_29" x="1302.5" y="612" width="15" height="0.5" transform="rotate(180 1302.5 612)" fill="white"/>
+<rect id="Rectangle 240653105_29" x="1303.5" y="612" width="1" height="0.5" transform="rotate(180 1303.5 612)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_29" x="1287.5" y="612" width="1" height="0.5" transform="rotate(180 1287.5 612)" fill="#1D2056"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_1131_33562">
+<rect width="32" height="32" fill="white" transform="translate(575.853 536.764)"/>
+</clipPath>
+<clipPath id="clip1_1131_33562">
+<rect width="32" height="32" fill="white" transform="translate(1286.85 536.764)"/>
+</clipPath>
+<clipPath id="clip2_1131_33562">
+<rect width="32" height="32" fill="white" transform="translate(421 535)"/>
+</clipPath>
+<clipPath id="clip3_1131_33562">
+<rect width="32" height="32" fill="white" transform="translate(421 587)"/>
+</clipPath>
+</defs>
+</svg>

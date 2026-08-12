@@ -238,6 +238,36 @@ import MH_14_Doors from '@assets/svgs/floors/MH_14_doors.svg';
 import MH_15_data from '@assets/svgs/floors/MH_15.json';
 import MH_15_Background from '@assets/svgs/floors/MH_15_bg.svg';
 import MH_15_Doors from '@assets/svgs/floors/MH_15_doors.svg';
+import P_B2_data from '@assets/svgs/floors/P_B2.json';
+import P_B2_Background from '@assets/svgs/floors/P_B2_bg.svg';
+import P_B2_Doors from '@assets/svgs/floors/P_B2_doors.svg';
+import P_B1_data from '@assets/svgs/floors/P_B1.json';
+import P_B1_Background from '@assets/svgs/floors/P_B1_bg.svg';
+import P_B1_Doors from '@assets/svgs/floors/P_B1_doors.svg';
+import P_1_data from '@assets/svgs/floors/P_1.json';
+import P_1_Background from '@assets/svgs/floors/P_1_bg.svg';
+import P_1_Doors from '@assets/svgs/floors/P_1_doors.svg';
+import P_2_data from '@assets/svgs/floors/P_2.json';
+import P_2_Background from '@assets/svgs/floors/P_2_bg.svg';
+import P_2_Doors from '@assets/svgs/floors/P_2_doors.svg';
+import P_3_data from '@assets/svgs/floors/P_3.json';
+import P_3_Background from '@assets/svgs/floors/P_3_bg.svg';
+import P_3_Doors from '@assets/svgs/floors/P_3_doors.svg';
+import P_4_data from '@assets/svgs/floors/P_4.json';
+import P_4_Background from '@assets/svgs/floors/P_4_bg.svg';
+import P_4_Doors from '@assets/svgs/floors/P_4_doors.svg';
+import P_5_data from '@assets/svgs/floors/P_5.json';
+import P_5_Background from '@assets/svgs/floors/P_5_bg.svg';
+import P_5_Doors from '@assets/svgs/floors/P_5_doors.svg';
+import P_6_data from '@assets/svgs/floors/P_6.json';
+import P_6_Background from '@assets/svgs/floors/P_6_bg.svg';
+import P_6_Doors from '@assets/svgs/floors/P_6_doors.svg';
+import P_7_data from '@assets/svgs/floors/P_7.json';
+import P_7_Background from '@assets/svgs/floors/P_7_bg.svg';
+import P_7_Doors from '@assets/svgs/floors/P_7_doors.svg';
+import P_8_data from '@assets/svgs/floors/P_8.json';
+import P_8_Background from '@assets/svgs/floors/P_8_bg.svg';
+import P_8_Doors from '@assets/svgs/floors/P_8_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -632,6 +662,56 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     data: MH_15_data as FloorMapData,
     Background: MH_15_Background,
     Doors: MH_15_Doors,
+  },
+  P_B2: {
+    data: P_B2_data as FloorMapData,
+    Background: P_B2_Background,
+    Doors: P_B2_Doors,
+  },
+  P_B1: {
+    data: P_B1_data as FloorMapData,
+    Background: P_B1_Background,
+    Doors: P_B1_Doors,
+  },
+  P_1: {
+    data: P_1_data as FloorMapData,
+    Background: P_1_Background,
+    Doors: P_1_Doors,
+  },
+  P_2: {
+    data: P_2_data as FloorMapData,
+    Background: P_2_Background,
+    Doors: P_2_Doors,
+  },
+  P_3: {
+    data: P_3_data as FloorMapData,
+    Background: P_3_Background,
+    Doors: P_3_Doors,
+  },
+  P_4: {
+    data: P_4_data as FloorMapData,
+    Background: P_4_Background,
+    Doors: P_4_Doors,
+  },
+  P_5: {
+    data: P_5_data as FloorMapData,
+    Background: P_5_Background,
+    Doors: P_5_Doors,
+  },
+  P_6: {
+    data: P_6_data as FloorMapData,
+    Background: P_6_Background,
+    Doors: P_6_Doors,
+  },
+  P_7: {
+    data: P_7_data as FloorMapData,
+    Background: P_7_Background,
+    Doors: P_7_Doors,
+  },
+  P_8: {
+    data: P_8_data as FloorMapData,
+    Background: P_8_Background,
+    Doors: P_8_Doors,
   },
 };
 
