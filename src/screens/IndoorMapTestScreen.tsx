@@ -373,6 +373,33 @@ import T_9_Doors from '@assets/svgs/floors/T_9_doors.svg';
 import T_10_data from '@assets/svgs/floors/T_10.json';
 import T_10_Background from '@assets/svgs/floors/T_10_bg.svg';
 import T_10_Doors from '@assets/svgs/floors/T_10_doors.svg';
+import U_B2_data from '@assets/svgs/floors/U_B2.json';
+import U_B2_Background from '@assets/svgs/floors/U_B2_bg.svg';
+import U_B2_Doors from '@assets/svgs/floors/U_B2_doors.svg';
+import U_B1_data from '@assets/svgs/floors/U_B1.json';
+import U_B1_Background from '@assets/svgs/floors/U_B1_bg.svg';
+import U_B1_Doors from '@assets/svgs/floors/U_B1_doors.svg';
+import U_1_data from '@assets/svgs/floors/U_1.json';
+import U_1_Background from '@assets/svgs/floors/U_1_bg.svg';
+import U_1_Doors from '@assets/svgs/floors/U_1_doors.svg';
+import U_2_data from '@assets/svgs/floors/U_2.json';
+import U_2_Background from '@assets/svgs/floors/U_2_bg.svg';
+import U_2_Doors from '@assets/svgs/floors/U_2_doors.svg';
+import U_3_data from '@assets/svgs/floors/U_3.json';
+import U_3_Background from '@assets/svgs/floors/U_3_bg.svg';
+import U_3_Doors from '@assets/svgs/floors/U_3_doors.svg';
+import U_4_data from '@assets/svgs/floors/U_4.json';
+import U_4_Background from '@assets/svgs/floors/U_4_bg.svg';
+import U_4_Doors from '@assets/svgs/floors/U_4_doors.svg';
+import U_5_data from '@assets/svgs/floors/U_5.json';
+import U_5_Background from '@assets/svgs/floors/U_5_bg.svg';
+import U_5_Doors from '@assets/svgs/floors/U_5_doors.svg';
+import U_6_data from '@assets/svgs/floors/U_6.json';
+import U_6_Background from '@assets/svgs/floors/U_6_bg.svg';
+import U_6_Doors from '@assets/svgs/floors/U_6_doors.svg';
+import U_7_data from '@assets/svgs/floors/U_7.json';
+import U_7_Background from '@assets/svgs/floors/U_7_bg.svg';
+import U_7_Doors from '@assets/svgs/floors/U_7_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -992,6 +1019,51 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     data: T_10_data as FloorMapData,
     Background: T_10_Background,
     Doors: T_10_Doors,
+  },
+  U_B2: {
+    data: U_B2_data as FloorMapData,
+    Background: U_B2_Background,
+    Doors: U_B2_Doors,
+  },
+  U_B1: {
+    data: U_B1_data as FloorMapData,
+    Background: U_B1_Background,
+    Doors: U_B1_Doors,
+  },
+  U_1: {
+    data: U_1_data as FloorMapData,
+    Background: U_1_Background,
+    Doors: U_1_Doors,
+  },
+  U_2: {
+    data: U_2_data as FloorMapData,
+    Background: U_2_Background,
+    Doors: U_2_Doors,
+  },
+  U_3: {
+    data: U_3_data as FloorMapData,
+    Background: U_3_Background,
+    Doors: U_3_Doors,
+  },
+  U_4: {
+    data: U_4_data as FloorMapData,
+    Background: U_4_Background,
+    Doors: U_4_Doors,
+  },
+  U_5: {
+    data: U_5_data as FloorMapData,
+    Background: U_5_Background,
+    Doors: U_5_Doors,
+  },
+  U_6: {
+    data: U_6_data as FloorMapData,
+    Background: U_6_Background,
+    Doors: U_6_Doors,
+  },
+  U_7: {
+    data: U_7_data as FloorMapData,
+    Background: U_7_Background,
+    Doors: U_7_Doors,
   },
 };
 
