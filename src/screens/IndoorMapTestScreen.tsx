@@ -199,6 +199,45 @@ import L_9_Doors from '@assets/svgs/floors/L_9_doors.svg';
 import L_10_data from '@assets/svgs/floors/L_10.json';
 import L_10_Background from '@assets/svgs/floors/L_10_bg.svg';
 import L_10_Doors from '@assets/svgs/floors/L_10_doors.svg';
+import MH_1_data from '@assets/svgs/floors/MH_1.json';
+import MH_1_Background from '@assets/svgs/floors/MH_1_bg.svg';
+import MH_1_Doors from '@assets/svgs/floors/MH_1_doors.svg';
+import MH_3_data from '@assets/svgs/floors/MH_3.json';
+import MH_3_Background from '@assets/svgs/floors/MH_3_bg.svg';
+import MH_3_Doors from '@assets/svgs/floors/MH_3_doors.svg';
+import MH_4_data from '@assets/svgs/floors/MH_4.json';
+import MH_4_Background from '@assets/svgs/floors/MH_4_bg.svg';
+import MH_4_Doors from '@assets/svgs/floors/MH_4_doors.svg';
+import MH_5_data from '@assets/svgs/floors/MH_5.json';
+import MH_5_Background from '@assets/svgs/floors/MH_5_bg.svg';
+import MH_5_Doors from '@assets/svgs/floors/MH_5_doors.svg';
+import MH_6_data from '@assets/svgs/floors/MH_6.json';
+import MH_6_Background from '@assets/svgs/floors/MH_6_bg.svg';
+import MH_6_Doors from '@assets/svgs/floors/MH_6_doors.svg';
+import MH_7_data from '@assets/svgs/floors/MH_7.json';
+import MH_7_Background from '@assets/svgs/floors/MH_7_bg.svg';
+import MH_7_Doors from '@assets/svgs/floors/MH_7_doors.svg';
+import MH_8_data from '@assets/svgs/floors/MH_8.json';
+import MH_8_Background from '@assets/svgs/floors/MH_8_bg.svg';
+import MH_8_Doors from '@assets/svgs/floors/MH_8_doors.svg';
+import MH_9_data from '@assets/svgs/floors/MH_9.json';
+import MH_9_Background from '@assets/svgs/floors/MH_9_bg.svg';
+import MH_9_Doors from '@assets/svgs/floors/MH_9_doors.svg';
+import MH_10_data from '@assets/svgs/floors/MH_10.json';
+import MH_10_Background from '@assets/svgs/floors/MH_10_bg.svg';
+import MH_10_Doors from '@assets/svgs/floors/MH_10_doors.svg';
+import MH_12_data from '@assets/svgs/floors/MH_12.json';
+import MH_12_Background from '@assets/svgs/floors/MH_12_bg.svg';
+import MH_12_Doors from '@assets/svgs/floors/MH_12_doors.svg';
+import MH_13_data from '@assets/svgs/floors/MH_13.json';
+import MH_13_Background from '@assets/svgs/floors/MH_13_bg.svg';
+import MH_13_Doors from '@assets/svgs/floors/MH_13_doors.svg';
+import MH_14_data from '@assets/svgs/floors/MH_14.json';
+import MH_14_Background from '@assets/svgs/floors/MH_14_bg.svg';
+import MH_14_Doors from '@assets/svgs/floors/MH_14_doors.svg';
+import MH_15_data from '@assets/svgs/floors/MH_15.json';
+import MH_15_Background from '@assets/svgs/floors/MH_15_bg.svg';
+import MH_15_Doors from '@assets/svgs/floors/MH_15_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -528,6 +567,71 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     data: L_10_data as FloorMapData,
     Background: L_10_Background,
     Doors: L_10_Doors,
+  },
+  MH_1: {
+    data: MH_1_data as FloorMapData,
+    Background: MH_1_Background,
+    Doors: MH_1_Doors,
+  },
+  MH_3: {
+    data: MH_3_data as FloorMapData,
+    Background: MH_3_Background,
+    Doors: MH_3_Doors,
+  },
+  MH_4: {
+    data: MH_4_data as FloorMapData,
+    Background: MH_4_Background,
+    Doors: MH_4_Doors,
+  },
+  MH_5: {
+    data: MH_5_data as FloorMapData,
+    Background: MH_5_Background,
+    Doors: MH_5_Doors,
+  },
+  MH_6: {
+    data: MH_6_data as FloorMapData,
+    Background: MH_6_Background,
+    Doors: MH_6_Doors,
+  },
+  MH_7: {
+    data: MH_7_data as FloorMapData,
+    Background: MH_7_Background,
+    Doors: MH_7_Doors,
+  },
+  MH_8: {
+    data: MH_8_data as FloorMapData,
+    Background: MH_8_Background,
+    Doors: MH_8_Doors,
+  },
+  MH_9: {
+    data: MH_9_data as FloorMapData,
+    Background: MH_9_Background,
+    Doors: MH_9_Doors,
+  },
+  MH_10: {
+    data: MH_10_data as FloorMapData,
+    Background: MH_10_Background,
+    Doors: MH_10_Doors,
+  },
+  MH_12: {
+    data: MH_12_data as FloorMapData,
+    Background: MH_12_Background,
+    Doors: MH_12_Doors,
+  },
+  MH_13: {
+    data: MH_13_data as FloorMapData,
+    Background: MH_13_Background,
+    Doors: MH_13_Doors,
+  },
+  MH_14: {
+    data: MH_14_data as FloorMapData,
+    Background: MH_14_Background,
+    Doors: MH_14_Doors,
+  },
+  MH_15: {
+    data: MH_15_data as FloorMapData,
+    Background: MH_15_Background,
+    Doors: MH_15_Doors,
   },
 };
 
