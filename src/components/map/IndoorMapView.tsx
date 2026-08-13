@@ -42,6 +42,16 @@ function flattenChildren(children: React.ReactNode): React.ReactElement[] {
   return result;
 }
 
+/**
+ * mapLayer(배경 SVG + RoomPolygons)를 실제로 그릴 때 이 dp를 넘지 않도록 캡한다. Android는
+ * View를 화면에 합성하기 전에 "레이아웃 dp × 화면 밀도"만큼 캔버스를 먼저 할당하는데, C/K동처럼
+ * 도면이 큰 층(2200dp 이상)은 고밀도(xxhdpi 등) 기기에서 그 캔버스가 Android의 하드 리밋인
+ * 100MB(RecordingCanvas.MAX_BITMAP_SIZE)를 넘어 크래시가 난다. 방/문/벽은 전부 벡터(SVG path)라
+ * dp를 줄이고 나중에 pinch-zoom transform으로 다시 확대해도 화질 손실이 없어서, 렌더링 dp
+ * 자체를 이 값 이하로 캡하고 viewBox로 원본 좌표계를 유지하는 쪽을 택했다.
+ */
+const MAX_RENDER_DP = 1000;
+
 function AbsoluteLayer({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -157,6 +167,12 @@ export function IndoorMapView({
     [onRoomSelect, selectableRooms]
   );
 
+  // 긴 변이 MAX_RENDER_DP를 넘는 층만 축소해서 그린다 (대부분의 층은 1을 넘지 않으므로 그대로).
+  const renderScale = useMemo(
+    () => Math.min(1, MAX_RENDER_DP / Math.max(mapData.width, mapData.height)),
+    [mapData.width, mapData.height]
+  );
+
   const {
     composedGesture,
     animatedStyle,
@@ -174,9 +190,15 @@ export function IndoorMapView({
     contentBounds,
     minScale,
     maxScale,
+    renderScale,
   });
 
-  const size = { width: mapData.width, height: mapData.height };
+  // mapLayer(Animated.View)와 그 안의 배경 SVG에 실제로 넘길 dp 크기. renderScale이 1이면
+  // 기존과 동일하게 원본 크기 그대로다.
+  const size = {
+    width: mapData.width * renderScale,
+    height: mapData.height * renderScale,
+  };
 
   const handleContainerLayout = useCallback(
     (e: LayoutChangeEvent) => {
@@ -192,8 +214,10 @@ export function IndoorMapView({
         <Animated.View style={[size, styles.mapLayer, animatedStyle]}>
           <AbsoluteLayer>{renderBackground(size)}</AbsoluteLayer>
           <RoomPolygons
-            width={mapData.width}
-            height={mapData.height}
+            width={size.width}
+            height={size.height}
+            viewBoxWidth={mapData.width}
+            viewBoxHeight={mapData.height}
             rooms={mapData.rooms}
             selectedRoomIds={selectedRoomIds}
           />

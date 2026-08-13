@@ -13,8 +13,17 @@ const HIGHLIGHT_OPACITY = 1;
 const DEFAULT_HIGHLIGHT_FILL = theme.blue[800];
 
 interface Props {
+  /** 실제로 렌더링될 dp 크기 (Android 캔버스 크기 제한 때문에 원본보다 작을 수 있다) */
   width: number;
   height: number;
+  /**
+   * room.path의 좌표가 기준으로 하는 원본 SVG 좌표계 크기. 생략하면 width/height와
+   * 같다고 본다(=축소 렌더링을 안 쓰는 기존 동작). IndoorMapView가 렌더링 dp를
+   * 원본보다 작게 줄일 때(renderScale) 이 값에 원본 mapData.width/height를 넘겨서,
+   * Svg가 room.path 좌표를 축소된 박스에 맞게 자동으로 스케일하도록 한다.
+   */
+  viewBoxWidth?: number;
+  viewBoxHeight?: number;
   rooms: RoomShape[];
   /**
    * 하이라이트할 방 id들. 같은 라벨(예: "407")을 공유하는 방이 여러 개 있으면(하나의
@@ -34,6 +43,8 @@ interface Props {
 export function RoomPolygons({
   width,
   height,
+  viewBoxWidth = width,
+  viewBoxHeight = height,
   rooms,
   selectedRoomIds,
   highlightFill = DEFAULT_HIGHLIGHT_FILL,
@@ -63,7 +74,7 @@ export function RoomPolygons({
     <Svg
       width={width}
       height={height}
-      viewBox={`0 0 ${width} ${height}`}
+      viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
       style={{ position: 'absolute', top: 0, left: 0 }}
       pointerEvents="none"
     >
