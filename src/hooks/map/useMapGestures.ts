@@ -52,6 +52,15 @@ interface UseMapGesturesOptions {
   contentBounds?: { minX: number; minY: number; width: number; height: number };
   minScale?: number;
   maxScale?: number;
+  /**
+   * mapLayer(배경 SVG를 감싼 Animated.View)가 원본 mapWidth/mapHeight 그대로가 아니라
+   * 그보다 작게(예: 0.4배) 렌더링될 때 그 배율을 넘겨준다. Android는 View를 화면에 그리기
+   * 전에 레이아웃 dp × 화면 밀도만큼 캔버스를 먼저 할당하는데, 도면이 큰 층(2200dp 이상)은
+   * 고밀도 기기에서 그 캔버스가 Android의 하드 리밋(100MB)을 넘어 크래시가 난다. 렌더링
+   * dp 자체를 줄이고(IndoorMapView가 viewBox로 보정) 여기서는 그만큼 화면에 다시 확대해
+   * 보여주는 보정치만 받는다 — 생략(1)하면 기존과 동일하게 동작한다.
+   */
+  renderScale?: number;
 }
 
 /**
@@ -71,6 +80,7 @@ export function useMapGestures({
   contentBounds,
   minScale = 1,
   maxScale = 5,
+  renderScale = 1,
 }: UseMapGesturesOptions) {
   const scale = useSharedValue(1);
   const savedScale = useSharedValue(1);
@@ -261,8 +271,10 @@ export function useMapGestures({
   const tapGesture = Gesture.Tap()
     .maxDuration(250)
     .onEnd((e) => {
-      // 방을 못 찾으면 null -> 빈 공간 탭으로 선택 해제
-      const room = findRoomAtPoint(e.x, e.y, rooms);
+      // e.x/e.y는 mapLayer의 "실제 레이아웃 dp" 기준이다. renderScale로 줄여서 그렸다면
+      // 그 좌표도 축소된 공간(0..mapWidth*renderScale)에 있으므로, room.points(원본 SVG
+      // 좌표)와 비교하려면 다시 나눠서 원본 좌표계로 복원해야 한다.
+      const room = findRoomAtPoint(e.x / renderScale, e.y / renderScale, rooms);
       runOnJS(onMapTap)(room);
     });
 
@@ -280,7 +292,9 @@ export function useMapGestures({
       { translateX: translateX.value },
       { translateY: translateY.value },
       { rotate: `${rotation.value}rad` },
-      { scale: scale.value },
+      // mapLayer 자체가 renderScale만큼 이미 축소돼서 그려지므로, 그만큼 더 확대해서
+      // scale.value가 뜻하는 "원본 좌표 1단위 = 화면 dp"가 그대로 유지되게 보정한다.
+      { scale: scale.value / renderScale },
     ],
   }));
 
