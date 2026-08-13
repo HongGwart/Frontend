@@ -8,7 +8,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "org.reactjs.native.example.HongGwart",
+      "bundleIdentifier": "com.anonymous.Frontend",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSExceptionDomains": {
@@ -32,7 +32,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.honggwart"
+      "package": "com.anonymous.Frontend"
     },
     "web": {
       "favicon": "./assets/favicon.png"
