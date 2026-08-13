@@ -3,9 +3,6 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
-import A_1_test_data from '@assets/svgs/floors/A_1_test.json';
-import A_1_test_Background from '@assets/svgs/floors/A_1_test_bg.svg';
-import A_1_test_Doors from '@assets/svgs/floors/A_1_test_doors.svg';
 import A_2_data from '@assets/svgs/floors/A_2.json';
 import A_2_Background from '@assets/svgs/floors/A_2_bg.svg';
 import A_2_Doors from '@assets/svgs/floors/A_2_doors.svg';
@@ -434,11 +431,6 @@ import { FloorMapData } from '@appTypes/room';
  * 임시 토글. 층이 늘어날 때마다 여기 한 줄씩 추가하면 됨.
  */
 const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentType<any>; Doors: React.ComponentType<any> }> = {
-  A_1_test: {
-    data: A_1_test_data as FloorMapData,
-    Background: A_1_test_Background,
-    Doors: A_1_test_Doors,
-  },
   A_2: {
     data: A_2_data as FloorMapData,
     Background: A_2_Background,
@@ -1132,7 +1124,7 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
 };
 
 /**
- * "C_2" -> { building: "C", floorNum: 2, label: "2F" }. "A_1_test"처럼 접미사가 붙어도 앞의 건물/층만 읽는다.
+ * "C_2" -> { building: "C", floorNum: 2, label: "2F" }.
  * "D_B1"처럼 지하층은 floorNum을 음수(-1)로 둬서 1F보다 아래로 정렬되게 하고, label은 "B1"로 표시한다.
  */
 function parseFloorId(id: string): { building: string; floorNum: number; label: string } {
