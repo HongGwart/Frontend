@@ -1,4 +1,4 @@
-import { RoomShape } from "@types/room";
+import { RoomShape } from "@appTypes/room";
 
 /**
  * 레이 캐스팅으로 (x, y)가 폴리곤 내부인지 판정.

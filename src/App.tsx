@@ -1,23 +1,46 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   SafeAreaProvider,
   initialWindowMetrics,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { ThemeProvider } from 'styled-components/native';
+import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '@theme';
+import { useAppFonts } from '@hooks/useAppFonts';
 import NavigationBar, { NavigationTab } from '@components/common/NavigationBar';
+import IndoorMapTestScreen from '@screens/IndoorMapTestScreen';
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
+  const fontsLoaded = useAppFonts();
+
+  const onLayoutRootView = useCallback(() => {
+    if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
+  }, [fontsLoaded]);
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
+  }, [fontsLoaded]);
+
+  // Pretendard가 아직 등록되기 전에 그리면 semiBold/medium 구분이 안 되는 기본
+  // 시스템 폰트로 한 프레임 반짝였다가 바뀌어 보이므로, 로드 끝날 때까지 아무것도
+  // 안 그린다 (스플래시 화면이 그 자리를 대신 채운다).
+  if (!fontsLoaded) return null;
+
   return (
-    <ThemeProvider theme={theme}>
-      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <AppContent />
-      </SafeAreaProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
+      <ThemeProvider theme={theme}>
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          <AppContent />
+        </SafeAreaProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -25,8 +48,6 @@ function AppContent() {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<NavigationTab>('map');
 
-  // TODO: 캠퍼스맵 페이지로 이동
-  const goToMap = () => {};
   // TODO: 길찾기 페이지로 이동
   const goToNavigation = () => {};
   // TODO: 편의시설 페이지로 이동
@@ -39,9 +60,6 @@ function AppContent() {
   const handleTabPress = (tab: NavigationTab) => {
     setActiveTab(tab);
     switch (tab) {
-      case 'map':
-        goToMap();
-        break;
       case 'navigation':
         goToNavigation();
         break;
@@ -59,7 +77,7 @@ function AppContent() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.screen} />
+      <View style={styles.screen}>{activeTab === 'map' && <IndoorMapTestScreen />}</View>
       <NavigationBar
         activeTab={activeTab}
         onTabPress={handleTabPress}

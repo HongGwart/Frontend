@@ -1,0 +1,150 @@
+<svg width="1920" height="1235" viewBox="0 0 1920 1235" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g>
+<g id="Union">
+<mask id="path-1-outside-1_1250_35418" maskUnits="userSpaceOnUse" x="212" y="300" width="1520" height="316" fill="black">
+<rect fill="white" x="212" y="300" width="1520" height="316"/>
+<path d="M1129 392H1729V613H215V392H743V303H1129V392Z"/>
+</mask>
+<path d="M1129 392H1729V613H215V392H743V303H1129V392Z" fill="white"/>
+<path d="M1129 392H1126V395H1129V392ZM1729 392H1732V389H1729V392ZM1729 613V616H1732V613H1729ZM215 613H212V616H215V613ZM215 392V389H212V392H215ZM743 392V395H746V392H743ZM743 303V300H740V303H743ZM1129 303H1132V300H1129V303ZM1129 392V395H1729V392V389H1129V392ZM1729 392H1726V613H1729H1732V392H1729ZM1729 613V610H215V613V616H1729V613ZM215 613H218V392H215H212V613H215ZM215 392V395H743V392V389H215V392ZM743 392H746V303H743H740V392H743ZM743 303V306H1129V303V300H743V303ZM1129 303H1126V392H1129H1132V303H1129Z" fill="#1D2056" mask="url(#path-1-outside-1_1250_35418)"/>
+</g>
+<g id="Union_2">
+<path d="M1129 392H1729V613H215V392H743V303H1129V392Z" fill="white"/>
+<path d="M1129 392H1128V393H1129V392ZM1729 392H1730V391H1729V392ZM1729 613V614H1730V613H1729ZM215 613H214V614H215V613ZM215 392V391H214V392H215ZM743 392V393H744V392H743ZM743 303V302H742V303H743ZM1129 303H1130V302H1129V303ZM1129 392V393H1729V392V391H1129V392ZM1729 392H1728V613H1729H1730V392H1729ZM1729 613V612H215V613V614H1729V613ZM215 613H216V392H215H214V613H215ZM215 392V393H743V392V391H215V392ZM743 392H744V303H743H742V392H743ZM743 303V304H1129V303V302H743V303ZM1129 303H1128V392H1129H1130V303H1129Z" fill="#1D2056"/>
+</g>
+<rect id="Rectangle 240653313" x="504" y="470" width="5" height="32" transform="rotate(-90 504 470)" fill="white"/>
+<rect id="Rectangle 240653306" x="1219" y="472" width="5" height="32" transform="rotate(-90 1219 472)" fill="white"/>
+<g id="room">
+<rect x="215" y="462" width="225" height="150" fill="#EBEBF5"/>
+<rect x="215" y="462" width="225" height="150" stroke="#1D2056"/>
+</g>
+<g id="room_2">
+<rect x="440" y="462" width="229" height="150" fill="#EBEBF5"/>
+<rect x="440" y="462" width="229" height="150" stroke="#1D2056"/>
+</g>
+<g id="room_3">
+<rect x="669" y="462" width="154" height="150" fill="#EBEBF5"/>
+<rect x="669" y="462" width="154" height="150" stroke="#1D2056"/>
+</g>
+<g id="room_4">
+<rect x="823" y="462" width="153" height="150" fill="#EBEBF5"/>
+<rect x="823" y="462" width="153" height="150" stroke="#1D2056"/>
+</g>
+<g id="room_5">
+<rect x="1120" y="462" width="152" height="150" fill="#EBEBF5"/>
+<rect x="1120" y="462" width="152" height="150" stroke="#1D2056"/>
+</g>
+<g id="room_6">
+<rect x="1272" y="462" width="152" height="150" fill="#EBEBF5"/>
+<rect x="1272" y="462" width="152" height="150" stroke="#1D2056"/>
+</g>
+<g id="room_7">
+<rect x="1424" y="462" width="152" height="150" fill="#EBEBF5"/>
+<rect x="1424" y="462" width="152" height="150" stroke="#1D2056"/>
+</g>
+<g id="room_8">
+<rect x="1576" y="462" width="153" height="150" fill="#EBEBF5"/>
+<rect x="1576" y="462" width="153" height="150" stroke="#1D2056"/>
+</g>
+<g id="room_9">
+<rect x="744" y="304" width="152" height="88" fill="#EBEBF5"/>
+<rect x="744" y="304" width="152" height="88" stroke="#1D2056"/>
+</g>
+<g id="room_10">
+<rect x="976" y="304" width="152" height="88" fill="#F5F7FA"/>
+<rect x="976" y="304" width="152" height="88" stroke="#1D2056"/>
+<g id="map_toilet_female">
+<path id="Vector" fill-rule="evenodd" clip-rule="evenodd" d="M1052 344.209C1050.75 344.209 1049.74 344.603 1048.92 345.276C1048.11 345.936 1047.51 346.851 1047.02 347.862C1046.32 349.325 1045.88 351.182 1045.68 352.883C1045.53 354.245 1046.65 355.312 1047.96 355.312H1048.22L1048.75 358.584C1048.88 359.351 1049.27 360.049 1049.87 360.552C1050.46 361.056 1051.22 361.333 1052 361.333C1052.78 361.333 1053.53 361.056 1054.13 360.552C1054.72 360.049 1055.12 359.351 1055.24 358.584L1055.77 355.312H1056.04C1057.35 355.312 1058.47 354.245 1058.32 352.883C1058.12 351.182 1057.68 349.325 1056.98 347.862C1056.49 346.851 1055.89 345.938 1055.08 345.274C1054.26 344.603 1053.25 344.207 1052 344.207V344.209ZM1056.08 338.71C1056.08 341.296 1054.62 342.752 1052.02 342.752C1049.41 342.752 1047.95 341.296 1047.95 338.71C1047.95 336.121 1049.41 334.666 1052.02 334.666C1054.62 334.666 1056.08 336.121 1056.08 338.71Z" fill="#FF338B"/>
+</g>
+</g>
+<g id="room_11">
+<rect x="896" y="304" width="80" height="88" fill="#F5F7FA"/>
+<rect x="896" y="304" width="80" height="88" stroke="#1D2056"/>
+<g id="map_toilet_male">
+<path id="Vector_2" fill-rule="evenodd" clip-rule="evenodd" d="M932.43 344.126C933.256 344.059 934.43 344 936 344C937.571 344 938.744 344.059 939.57 344.126C940.658 344.213 941.552 344.912 941.894 345.912C942.585 347.945 943.063 350.041 943.32 352.167C943.45 353.262 942.602 354.207 941.48 354.276C941.153 354.295 940.784 354.316 940.379 354.335L939.987 359.477C939.916 360.408 939.195 361.185 938.218 361.281C938.039 361.298 937.847 361.316 937.646 361.331C937.528 361.34 937.408 361.325 937.296 361.288C937.183 361.251 937.079 361.192 936.99 361.115C936.902 361.038 936.83 360.944 936.779 360.84C936.729 360.735 936.7 360.622 936.696 360.506L936.472 355.297C936.469 355.222 936.436 355.152 936.381 355.1C936.325 355.048 936.251 355.019 936.174 355.019H935.826C935.749 355.019 935.675 355.048 935.619 355.1C935.563 355.152 935.53 355.223 935.527 355.298L935.304 360.506C935.3 360.622 935.272 360.735 935.221 360.84C935.171 360.944 935.099 361.038 935.01 361.115C934.921 361.192 934.817 361.251 934.705 361.288C934.592 361.325 934.473 361.34 934.354 361.331C934.163 361.316 933.972 361.299 933.781 361.28C932.805 361.185 932.085 360.408 932.013 359.477L931.621 354.335C931.215 354.316 930.848 354.296 930.52 354.276C929.398 354.207 928.55 353.262 928.68 352.167C928.937 350.041 929.414 347.946 930.105 345.913C930.448 344.912 931.343 344.213 932.43 344.126Z" fill="#2297EB"/>
+<path id="Vector_3" d="M936.016 342.752C938.616 342.752 940.08 341.296 940.08 338.71C940.08 336.121 938.618 334.666 936.016 334.666C933.413 334.666 931.949 336.121 931.949 338.71C931.949 341.296 933.413 342.752 936.016 342.752Z" fill="#2297EB"/>
+</g>
+</g>
+<g id="room_12">
+<path d="M976 470H1120V612H976V470Z" fill="#F5F7FA"/>
+<path d="M1120 612V612.5H1120.5V612H1120ZM976 612H975.5V612.5H976V612ZM1120 470H1119.5V612H1120H1120.5V470H1120ZM1120 612V611.5H976V612V612.5H1120V612ZM976 612H976.5V470H976H975.5V612H976Z" fill="#1D2056"/>
+</g>
+<g id="Frame 2087332192">
+<g id="stair">
+<rect id="Rectangle 240653086" x="1049" y="494" width="6" height="73" transform="rotate(90 1049 494)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_2">
+<rect id="Rectangle 240653086_2" x="1049" y="500" width="6" height="73" transform="rotate(90 1049 500)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_3">
+<rect id="Rectangle 240653086_3" x="1049" y="506" width="6" height="73" transform="rotate(90 1049 506)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_4">
+<rect id="Rectangle 240653086_4" x="1049" y="512" width="6" height="73" transform="rotate(90 1049 512)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_5">
+<rect id="Rectangle 240653086_5" x="1049" y="518" width="6" height="73" transform="rotate(90 1049 518)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_6">
+<rect id="Rectangle 240653086_6" x="1049" y="524" width="6" height="73" transform="rotate(90 1049 524)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_7">
+<rect id="Rectangle 240653086_7" x="1049" y="530" width="6" height="73" transform="rotate(90 1049 530)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_8">
+<rect id="Rectangle 240653086_8" x="1049" y="536" width="6" height="73" transform="rotate(90 1049 536)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_9">
+<rect id="Rectangle 240653086_9" x="1049" y="542" width="6" height="73" transform="rotate(90 1049 542)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_10">
+<rect id="Rectangle 240653086_10" x="1049" y="548" width="6" height="73" transform="rotate(90 1049 548)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_11">
+<rect id="Rectangle 240653086_11" x="1049" y="554" width="6" height="73" transform="rotate(90 1049 554)" fill="white" stroke="#1D2056"/>
+</g>
+</g>
+<g id="Frame 2087332193">
+<g id="stair_12">
+<rect id="Rectangle 240653086_12" x="1120" y="494" width="6" height="71" transform="rotate(90 1120 494)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_13">
+<rect id="Rectangle 240653086_13" x="1120" y="500" width="6" height="71" transform="rotate(90 1120 500)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_14">
+<rect id="Rectangle 240653086_14" x="1120" y="506" width="6" height="71" transform="rotate(90 1120 506)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_15">
+<rect id="Rectangle 240653086_15" x="1120" y="512" width="6" height="71" transform="rotate(90 1120 512)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_16">
+<rect id="Rectangle 240653086_16" x="1120" y="518" width="6" height="71" transform="rotate(90 1120 518)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_17">
+<rect id="Rectangle 240653086_17" x="1120" y="524" width="6" height="71" transform="rotate(90 1120 524)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_18">
+<rect id="Rectangle 240653086_18" x="1120" y="530" width="6" height="71" transform="rotate(90 1120 530)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_19">
+<rect id="Rectangle 240653086_19" x="1120" y="536" width="6" height="71" transform="rotate(90 1120 536)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_20">
+<rect id="Rectangle 240653086_20" x="1120" y="542" width="6" height="71" transform="rotate(90 1120 542)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_21">
+<rect id="Rectangle 240653086_21" x="1120" y="548" width="6" height="71" transform="rotate(90 1120 548)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_22">
+<rect id="Rectangle 240653086_22" x="1120" y="554" width="6" height="71" transform="rotate(90 1120 554)" fill="white" stroke="#1D2056"/>
+</g>
+</g>
+<rect id="Rectangle 240653316" x="1732" y="444" width="5" height="32" transform="rotate(-180 1732 444)" fill="white"/>
+<rect id="Rectangle 240653317" x="211" y="412" width="5" height="32" fill="white"/>
+</g>
+<defs>
+<clipPath id="clip0_1250_35418">
+<rect width="32" height="32" fill="white" transform="translate(1033 511)"/>
+</clipPath>
+</defs>
+</svg>
