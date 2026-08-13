@@ -642,6 +642,14 @@
 <path id="Vector 29336" d="M1164 738V798" stroke="#1D2056"/>
 <path id="Vector 29337" d="M960 738V798" stroke="#1D2056"/>
 </g>
+<g id="Hitbox">
+<rect id="room_502" x="471" y="283" width="335" height="283" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_501" x="929" y="283" width="121" height="234" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_503" x="1274" y="565" width="77" height="116" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_J001-2" x="588" y="798" width="108" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_J001-1" x="696" y="798" width="123" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_J001" x="920" y="798" width="202" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1098_25167">

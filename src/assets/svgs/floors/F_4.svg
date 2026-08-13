@@ -534,6 +534,17 @@
 <path id="Rectangle 240653275" d="M851.5 802.5V851.5H844.5V802.5H851.5Z" fill="white" stroke="#1D2056"/>
 <path id="Rectangle 240653276" d="M851.5 920.5V969.5H844.5V920.5H851.5Z" fill="white" stroke="#1D2056"/>
 </g>
+<g id="Hitbox">
+<circle id="room_407" cx="465.5" cy="427.5" r="168.5" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_403-2" x="531" y="778" width="218" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_403-2_2" x="847" y="778" width="210" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_406" x="632" y="424" width="216" height="209" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_405" d="M1373 633H998V688H848V424H1373V633Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_404" x="1373" y="424" width="214" height="209" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_402-2" x="852" y="1075" width="207" height="221" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_402-1" x="475" y="1076" width="273" height="220" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_401" d="M1059 1608H434V1380H477V1379H475V1296H748V1379H1059V1608Z" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1075_15856">

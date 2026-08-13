@@ -248,6 +248,13 @@
 <rect id="Rectangle 240653106_7" x="1055" y="931.5" width="1" height="0.5" transform="rotate(-90 1055 931.5)" fill="#1D2056"/>
 </g>
 </g>
+<g id="Hitbox">
+<rect id="room_201" x="1055" y="1157" width="207" height="121" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_202" x="1055" y="1047" width="207" height="110" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_203" x="1055" y="743" width="207" height="221" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_205" x="678" y="744" width="273" height="220" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_206" d="M950 1276H637V1048H680V966H950V1276Z" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1072_55139">

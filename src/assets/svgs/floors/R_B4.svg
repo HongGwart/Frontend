@@ -525,8 +525,8 @@
 </g>
 <g id="Hitbox">
 <rect id="room_403" x="1696.49" y="726.684" width="126.038" height="82.9557" transform="rotate(10.0628 1696.49 726.684)" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_404" d="M1694.59 726.385L1680.1 808.064L1568 788.171V706.547L1568.45 704L1694.59 726.385Z" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_405" x="2620.45" y="758" width="106.787" height="162.821" transform="rotate(10.0628 2620.45 758)" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_404" d="M1694.59 726.385L1680.1 808.064L1568 788.171V706.547L1568.45 704L1694.59 726.385Z" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_411" x="1056" y="613" width="120" height="83" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_410" x="1056" y="1152" width="120" height="160" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_409" x="1056" y="1312" width="80" height="96" fill="#D9D9D9" fill-opacity="0.01"/>

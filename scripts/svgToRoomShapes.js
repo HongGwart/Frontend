@@ -354,9 +354,28 @@ function main() {
     let overwritten = 0;
     let added = 0;
     for (const hitboxRoom of hitboxRooms) {
-      const existingIdx = byId.get(hitboxRoom.id);
+      // R_B3/R_B4처럼 지하층 Hitbox 방 이름에 "B"가 안 붙어있는 경우(room_404 -> "404")가
+      // 있는데, Visual 레이어 쪽은 이미 "B404"로 뽑혀있어서 id가 정확히 안 맞아 서로 다른
+      // 방인 줄 알고 따로 남는 버그가 있었다(그 결과 부정확한 Visual 사각형이 남고 정밀한
+      // Hitbox 도형이 중복으로 취급돼 지워짐). "B" 유무만 다른 id가 이미 있으면 그것도
+      // 같은 방으로 보고 덮어쓴다 — Hitbox 쪽 도형이 항상 더 정확하므로 Hitbox를 우선한다.
+      let existingIdx = byId.get(hitboxRoom.id);
+      let displayId = hitboxRoom.id;
+      if (existingIdx === undefined && !hitboxRoom.id.startsWith('B')) {
+        const withB = 'B' + hitboxRoom.id;
+        if (byId.has(withB)) {
+          existingIdx = byId.get(withB);
+          displayId = withB; // 기존에 쓰던 표시 번호(B접두)는 그대로 유지
+        }
+      } else if (existingIdx === undefined && hitboxRoom.id.startsWith('B')) {
+        const withoutB = hitboxRoom.id.slice(1);
+        if (byId.has(withoutB)) {
+          existingIdx = byId.get(withoutB);
+          displayId = withoutB;
+        }
+      }
       if (existingIdx !== undefined) {
-        rooms[existingIdx] = hitboxRoom;
+        rooms[existingIdx] = { ...hitboxRoom, id: displayId };
         overwritten += 1;
       } else {
         rooms.push(hitboxRoom);

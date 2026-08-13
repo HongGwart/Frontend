@@ -398,7 +398,7 @@
 <rect id="room_1103" x="516" y="919" width="73" height="122" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_1102" x="590" y="919" width="65" height="122" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_1101" x="655" y="877" width="83" height="164" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1009" x="737" y="654" width="242" height="174" fill="#D9D9D9" fill-opacity="0.33"/>
+<rect id="room_1009" x="737" y="654" width="242" height="174" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_1108" x="738" y="449" width="241" height="205" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_1107" opacity="0.1" x="452" y="827" width="158" height="50" fill="#D9D9D9" fill-opacity="0.01"/>
 <path id="room_1112" d="M738 446V282H467V446H738Z" fill="#D9D9D9" fill-opacity="0.01"/>

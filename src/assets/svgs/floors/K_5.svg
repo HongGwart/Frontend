@@ -600,6 +600,28 @@
 </g>
 <rect id="Rectangle 240653308" x="2314" y="432" width="3" height="32" fill="#F5F7FA"/>
 </g>
+<g id="Hitbox">
+<rect id="room_522" x="104" y="426" width="176" height="198" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_521" x="280" y="468" width="56" height="156" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_520" x="336" y="468" width="56" height="156" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_519" x="392" y="468" width="69" height="156" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_517" x="613" y="469" width="174" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_516" x="786" y="469" width="163" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_515" x="949" y="469" width="56" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_514" x="1005" y="469" width="56" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_513" x="1061" y="469" width="139" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_512" x="1200" y="469" width="64" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_511" x="1264" y="469" width="128" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_510" x="1393" y="469" width="52" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_509" x="1445" y="469" width="51" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_508" x="1496" y="469" width="57" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_507" x="1553" y="469" width="57" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_506" x="1609" y="469" width="57" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_505" x="1667" y="469" width="57" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_504" x="1724" y="469" width="61" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_502" x="1958" y="469" width="169" height="155" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_501" d="M2180 470H2316V624H2128V426H2180V470Z" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1094_39011">

@@ -518,6 +518,12 @@
 <rect id="Rectangle 240653106_10" width="1" height="0.5" transform="matrix(1 -8.74228e-08 -8.74228e-08 -1 1385.5 681)" fill="#1D2056"/>
 </g>
 </g>
+<g id="Hitbox">
+<rect id="room_801" x="472" y="283" width="803" height="281" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_803" x="1274" y="565" width="77" height="116" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_802" x="1274" y="680" width="131" height="119" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_J301" d="M596 798H1165V1012H393V742H596V798Z" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1098_32874">

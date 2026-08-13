@@ -12,6 +12,12 @@ export interface RoomShape {
   points: [number, number][];
   /** react-native-svg <Path d={...}>에 바로 넣을 수 있는 문자열 */
   path: string;
+  /**
+   * 라벨 텍스트를 그릴 위치를 강제로 지정하고 싶을 때만 채운다. 없으면 points의
+   * 평균(centroid)을 쓰는데, L자처럼 각이 진 방은 centroid가 실제 방 안쪽이 아니라
+   * 노치(파낸 부분) 쪽으로 치우쳐 보일 수 있어서 수동으로 보정할 때 쓴다.
+   */
+  labelAnchor?: [number, number];
 }
 
 export type IconMarkerType = 'elevator' | 'stairs';

@@ -27,7 +27,7 @@ interface LabelProps {
  * 지도가 회전해도 글자는 항상 똑바로 보인다.
  */
 function RoomLabel({ room, fontSize, boxWidth, isSelected, scale, translateX, translateY, rotation }: LabelProps) {
-  const [cx, cy] = centroid(room.points);
+  const [cx, cy] = room.labelAnchor ?? centroid(room.points);
   const text = room.label ?? room.id;
 
   const animatedStyle = useAnimatedStyle(() => {

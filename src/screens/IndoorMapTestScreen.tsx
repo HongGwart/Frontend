@@ -400,6 +400,30 @@ import U_6_Doors from '@assets/svgs/floors/U_6_doors.svg';
 import U_7_data from '@assets/svgs/floors/U_7.json';
 import U_7_Background from '@assets/svgs/floors/U_7_bg.svg';
 import U_7_Doors from '@assets/svgs/floors/U_7_doors.svg';
+import Z1_1_data from '@assets/svgs/floors/Z1_1.json';
+import Z1_1_Background from '@assets/svgs/floors/Z1_1_bg.svg';
+import Z1_1_Doors from '@assets/svgs/floors/Z1_1_doors.svg';
+import Z1_2_data from '@assets/svgs/floors/Z1_2.json';
+import Z1_2_Background from '@assets/svgs/floors/Z1_2_bg.svg';
+import Z1_2_Doors from '@assets/svgs/floors/Z1_2_doors.svg';
+import Z2_1_data from '@assets/svgs/floors/Z2_1.json';
+import Z2_1_Background from '@assets/svgs/floors/Z2_1_bg.svg';
+import Z2_1_Doors from '@assets/svgs/floors/Z2_1_doors.svg';
+import Z2_2_data from '@assets/svgs/floors/Z2_2.json';
+import Z2_2_Background from '@assets/svgs/floors/Z2_2_bg.svg';
+import Z2_2_Doors from '@assets/svgs/floors/Z2_2_doors.svg';
+import Z2_3_data from '@assets/svgs/floors/Z2_3.json';
+import Z2_3_Background from '@assets/svgs/floors/Z2_3_bg.svg';
+import Z2_3_Doors from '@assets/svgs/floors/Z2_3_doors.svg';
+import Z2_4_data from '@assets/svgs/floors/Z2_4.json';
+import Z2_4_Background from '@assets/svgs/floors/Z2_4_bg.svg';
+import Z2_4_Doors from '@assets/svgs/floors/Z2_4_doors.svg';
+import Z2_5_data from '@assets/svgs/floors/Z2_5.json';
+import Z2_5_Background from '@assets/svgs/floors/Z2_5_bg.svg';
+import Z2_5_Doors from '@assets/svgs/floors/Z2_5_doors.svg';
+import Z2_6_data from '@assets/svgs/floors/Z2_6.json';
+import Z2_6_Background from '@assets/svgs/floors/Z2_6_bg.svg';
+import Z2_6_Doors from '@assets/svgs/floors/Z2_6_doors.svg';
 
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { SearchBar } from '@components/common/SearchBar';
@@ -1065,6 +1089,46 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
     Background: U_7_Background,
     Doors: U_7_Doors,
   },
+  Z1_1: {
+    data: Z1_1_data as FloorMapData,
+    Background: Z1_1_Background,
+    Doors: Z1_1_Doors,
+  },
+  Z1_2: {
+    data: Z1_2_data as FloorMapData,
+    Background: Z1_2_Background,
+    Doors: Z1_2_Doors,
+  },
+  Z2_1: {
+    data: Z2_1_data as FloorMapData,
+    Background: Z2_1_Background,
+    Doors: Z2_1_Doors,
+  },
+  Z2_2: {
+    data: Z2_2_data as FloorMapData,
+    Background: Z2_2_Background,
+    Doors: Z2_2_Doors,
+  },
+  Z2_3: {
+    data: Z2_3_data as FloorMapData,
+    Background: Z2_3_Background,
+    Doors: Z2_3_Doors,
+  },
+  Z2_4: {
+    data: Z2_4_data as FloorMapData,
+    Background: Z2_4_Background,
+    Doors: Z2_4_Doors,
+  },
+  Z2_5: {
+    data: Z2_5_data as FloorMapData,
+    Background: Z2_5_Background,
+    Doors: Z2_5_Doors,
+  },
+  Z2_6: {
+    data: Z2_6_data as FloorMapData,
+    Background: Z2_6_Background,
+    Doors: Z2_6_Doors,
+  },
 };
 
 /**
@@ -1072,7 +1136,9 @@ const FLOORS: Record<string, { data: FloorMapData; Background: React.ComponentTy
  * "D_B1"처럼 지하층은 floorNum을 음수(-1)로 둬서 1F보다 아래로 정렬되게 하고, label은 "B1"로 표시한다.
  */
 function parseFloorId(id: string): { building: string; floorNum: number; label: string } {
-  const m = id.match(/^([A-Za-z]+)_(B)?(\d+)/);
+  // Z1, Z2처럼 건물 이름 자체에 숫자가 들어가는 경우도 있어서(끝의 "_(B)?숫자층"만
+  // 층 표시로 떼어내고 나머지를 건물명으로 삼는다) 건물명 부분은 [A-Za-z]+로 제한하지 않는다.
+  const m = id.match(/^(.+)_(B)?(\d+)$/);
   if (!m) return { building: id, floorNum: 0, label: id };
   const [, building, basement, num] = m;
   const floorNum = basement ? -Number(num) : Number(num);
@@ -1157,19 +1223,27 @@ export default function IndoorMapTestScreen() {
         />
       </Animated.View>
 
-      {/* 엘리베이터 버튼처럼 세로로 쌓은 층 스위처. 위로 갈수록 높은 층. */}
+      {/* 엘리베이터 버튼처럼 세로로 쌓은 층 스위처. 위로 갈수록 높은 층.
+          층이 많은 건물(R동, T동 등)은 화면 높이를 넘어서 아래쪽 버튼이 안 보이므로
+          세로 스크롤 가능하게 감싼다. */}
       <View style={styles.floorSwitcher} pointerEvents="box-none">
-        {FLOORS_BY_BUILDING[building].map((id) => (
-          <Pressable
-            key={id}
-            onPress={() => setFloorId(id)}
-            style={[styles.floorButton, id === floorId && styles.floorButtonActive]}
-          >
-            <Text style={[styles.floorButtonText, id === floorId && styles.floorButtonTextActive]}>
-              {parseFloorId(id).label}
-            </Text>
-          </Pressable>
-        ))}
+        <ScrollView
+          style={styles.floorSwitcherScroll}
+          contentContainerStyle={styles.floorSwitcherContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {FLOORS_BY_BUILDING[building].map((id) => (
+            <Pressable
+              key={id}
+              onPress={() => setFloorId(id)}
+              style={[styles.floorButton, id === floorId && styles.floorButtonActive]}
+            >
+              <Text style={[styles.floorButtonText, id === floorId && styles.floorButtonTextActive]}>
+                {parseFloorId(id).label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
       </View>
     </View>
   );
@@ -1192,10 +1266,12 @@ const styles = StyleSheet.create({
   floorSwitcher: {
     position: 'absolute',
     right: 16,
-    top: '50%',
-    transform: [{ translateY: -100 }],
-    gap: 8,
+    top: 80,
+    bottom: 80,
+    justifyContent: 'center',
   },
+  floorSwitcherScroll: { flexGrow: 0 },
+  floorSwitcherContent: { gap: 8, paddingVertical: 4 },
   floorButton: {
     width: 44,
     height: 44,
