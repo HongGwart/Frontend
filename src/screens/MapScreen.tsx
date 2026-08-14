@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -43,41 +43,52 @@ export default function MapScreen({ onSearchPress }: Props) {
 
   // 더미 데이터의 favorite 값을 그대로 두고, 토글한 것만 id 기준으로 덮어써서 들고 있는다.
   const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
-  const isFavorite = (marker: { id: string; favorite?: boolean }) =>
-    favoriteOverrides[marker.id] ?? marker.favorite ?? false;
+  const isFavorite = useCallback(
+    (marker: { id: string; favorite?: boolean }) => favoriteOverrides[marker.id] ?? marker.favorite ?? false,
+    [favoriteOverrides],
+  );
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const toggleFavorite = (marker: { id: string; favorite?: boolean }, name: string) => {
-    const nextIsFavorite = !isFavorite(marker);
-    setFavoriteOverrides(prev => ({ ...prev, [marker.id]: nextIsFavorite }));
+  const toggleFavorite = useCallback(
+    (marker: { id: string; favorite?: boolean }, name: string) => {
+      const nextIsFavorite = !isFavorite(marker);
+      setFavoriteOverrides(prev => ({ ...prev, [marker.id]: nextIsFavorite }));
 
-    setToastMessage(`${name}의 즐겨찾기가 ${nextIsFavorite ? '등록' : '해제'}되었습니다.`);
-    clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
-  };
+      setToastMessage(`${name}의 즐겨찾기가 ${nextIsFavorite ? '등록' : '해제'}되었습니다.`);
+      clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
+    },
+    [isFavorite],
+  );
 
   // 지도 바닥을 탭했을 때도 스와이프로 닫을 때와 동일하게 부드럽게 슬라이드다운시킨다.
   // (state를 바로 null로 바꾸면 애니메이션 없이 뚝 끊겨서 사라진다.)
-  const closeFacilitySheet = () => {
+  const closeFacilitySheet = useCallback(() => {
     if (selectedFacility) bottomSheetRef.current?.close();
-  };
+  }, [selectedFacility]);
 
   // 동(건물) 마커는 칩이 하나도 안 켜져 있을 때만 보여준다. 특정 카테고리를 고르면 그
   // 카테고리 마커만 남기고, 동 마커는 화면에서 사라진다.
-  const dongMarkers = selectedKey === null ? DUMMY_MAP_MARKERS : [];
+  const dongMarkers = useMemo(() => (selectedKey === null ? DUMMY_MAP_MARKERS : []), [selectedKey]);
 
   // "즐겨찾기" 칩은 시설 카테고리가 아니라 상태라서, 동 마커/카테고리 마커 중
   // isFavorite인 것들만 모아서 보여준다.
-  const categoryMarkers =
-    selectedKey === null
-      ? []
-      : selectedKey === 'favorite'
-        ? DUMMY_CATEGORY_MARKERS.filter(isFavorite)
-        : DUMMY_CATEGORY_MARKERS.filter(marker => marker.category === selectedKey);
+  const categoryMarkers = useMemo(
+    () =>
+      selectedKey === null
+        ? []
+        : selectedKey === 'favorite'
+          ? DUMMY_CATEGORY_MARKERS.filter(isFavorite)
+          : DUMMY_CATEGORY_MARKERS.filter(marker => marker.category === selectedKey),
+    [selectedKey, isFavorite],
+  );
 
-  const favoriteDongMarkers = selectedKey === 'favorite' ? DUMMY_MAP_MARKERS.filter(isFavorite) : [];
+  const favoriteDongMarkers = useMemo(
+    () => (selectedKey === 'favorite' ? DUMMY_MAP_MARKERS.filter(isFavorite) : []),
+    [selectedKey, isFavorite],
+  );
 
   return (
     <View style={styles.container}>

@@ -23,17 +23,22 @@ export function useVoiceSearch({ onResult, onUnavailable }: UseVoiceSearchOption
   const onResultRef = useRef(onResult);
   onResultRef.current = onResult;
 
-  useSpeechRecognitionEvent('start', () => setIsListening(true));
-  useSpeechRecognitionEvent('end', () => setIsListening(false));
-  useSpeechRecognitionEvent('result', (event) => {
+  const handleStart = useCallback(() => setIsListening(true), []);
+  const handleEnd = useCallback(() => setIsListening(false), []);
+  const handleResult = useCallback((event: { results: { transcript: string }[] }) => {
     const transcript = event.results[0]?.transcript;
     if (transcript !== undefined) onResultRef.current(transcript);
-  });
-  useSpeechRecognitionEvent('error', (event) => {
+  }, []);
+  const handleError = useCallback((event: { error: string; message: string }) => {
     // "no-speech"(아무 말도 안 하고 끝남) 같은 흔한 케이스도 전부 여기로 오므로,
     // 사용자에게 알림을 띄우기보다 콘솔에만 남긴다.
     console.warn('[voice search] error:', event.error, event.message);
-  });
+  }, []);
+
+  useSpeechRecognitionEvent('start', handleStart);
+  useSpeechRecognitionEvent('end', handleEnd);
+  useSpeechRecognitionEvent('result', handleResult);
+  useSpeechRecognitionEvent('error', handleError);
 
   const startListening = useCallback(async () => {
     const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
