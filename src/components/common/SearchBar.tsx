@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Pressable, TextInput as RNTextInput } from 'react-native';
 import styled, { useTheme } from 'styled-components/native';
 import SearchIcon from '@assets/svgs/icons/search.svg';
@@ -41,12 +41,15 @@ export function SearchBar({
   const theme = useTheme();
   const isActive = variant === 'active';
   const inputRef = useRef<RNTextInput>(null);
+  // active 검색창은 실제로 포커스가 잡혀 있을 때만 파란 테두리를 쓰고, 포커스가
+  // 빠지면 메인홈 기본 검색창과 동일한 테두리로 돌아간다.
+  const [isFocused, setIsFocused] = useState(Boolean(autoFocus));
   // 바운스가 필요한 경우(home 탭-이동형이거나 active 검색창) 눌림 판정을 바깥 Pressable이
   // 전담하도록 TextInput의 터치를 막는다. active일 때는 대신 ref로 직접 focus를 준다.
   const wrapsWithBounce = Boolean(onPress) || isActive;
 
   const content = (
-    <Container active={isActive}>
+    <Container active={isActive && isFocused}>
       <SearchIcon width={20} height={20} />
       <Input
         // styled-components native의 TextInput 타입 선언이 ref를 허용하지 않지만
@@ -58,6 +61,8 @@ export function SearchBar({
         placeholder={placeholder}
         placeholderTextColor={theme.semantic.text.tertiary}
         onSubmitEditing={onSubmitEditing}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         returnKeyType="search"
         autoFocus={autoFocus}
         editable={!onPress}
@@ -108,12 +113,15 @@ const Container = styled.View<{ active: boolean }>`
   border-radius: 12px;
 `;
 
-const Input = styled.TextInput`
+const Input = styled.TextInput.attrs({
+  textAlignVertical: 'center',
+})`
   flex: 1;
+  align-self: stretch;
   padding: 0px;
+  margin: 0px;
   font-family: ${({ theme }) => theme.typography.bodyNormal.medium.fontFamily};
   font-size: ${({ theme }) => theme.typography.bodyNormal.medium.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.bodyNormal.medium.lineHeight}px;
   letter-spacing: ${({ theme }) => theme.typography.bodyNormal.medium.letterSpacing}px;
   color: ${({ theme }) => theme.semantic.text.primary};
 `;
