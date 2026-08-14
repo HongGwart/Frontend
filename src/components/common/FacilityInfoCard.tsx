@@ -78,7 +78,7 @@ export function FacilityInfoCard({
     <Container variant={variant}>
       <Grabber />
       <Content>
-        <Body>
+        <Body isRoom={isRoom}>
           <Header>
             <TitleRow>
               <TitleGroup>
@@ -89,7 +89,12 @@ export function FacilityInfoCard({
               <FavoriteToggle isFavorite={isFavorite} onPress={onToggleFavorite} />
             </TitleRow>
             <DescriptionText numberOfLines={1}>{description}</DescriptionText>
-            {isRoom && <OperatingHoursRow operatingHours={operatingHours} />}
+            {/* Header 자체 gap(4px)에 2px를 더해서 room에서만 설명-운영시간 간격을 6px로 맞춘다 */}
+            {isRoom && (
+              <RoomOperatingHoursSpacer>
+                <OperatingHoursRow operatingHours={operatingHours} />
+              </RoomOperatingHoursSpacer>
+            )}
           </Header>
 
           <ActionButtonRow>
@@ -248,9 +253,14 @@ const Content = styled.View`
   gap: 12px;
 `;
 
-const Body = styled.View`
+// outside/inside는 제목/설명 블록과 출발·도착 버튼 사이 gap이 4px, room은 16px로 Figma 스펙이 다르다.
+const Body = styled.View<{ isRoom: boolean }>`
   width: 100%;
-  gap: 12px;
+  gap: ${({ isRoom }) => (isRoom ? '16px' : '4px')};
+`;
+
+const RoomOperatingHoursSpacer = styled.View`
+  margin-top: 2px;
 `;
 
 const Header = styled.View`
