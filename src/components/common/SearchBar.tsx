@@ -3,6 +3,7 @@ import { Pressable, TextInput as RNTextInput } from 'react-native';
 import styled, { useTheme } from 'styled-components/native';
 import SearchIcon from '@assets/svgs/icons/search.svg';
 import VoiceIcon from '@assets/svgs/icons/voice.svg';
+import XCircleIcon from '@assets/svgs/icons/xCircle.svg';
 import { BouncyPressable } from './BouncyPressable';
 
 interface Props {
@@ -16,6 +17,8 @@ interface Props {
    */
   variant?: 'default' | 'active';
   onVoicePress?: () => void;
+  /** 음성 인식이 진행 중인지. true면 마이크 아이콘 색이 강조색으로 바뀐다 */
+  isListening?: boolean;
   autoFocus?: boolean;
   /**
    * 전달하면 검색창이 입력 불가 상태(editable=false)가 되고, 탭 시 텍스트 입력 대신
@@ -31,6 +34,7 @@ export function SearchBar({
   onSubmitEditing,
   variant = 'default',
   onVoicePress,
+  isListening = false,
   autoFocus,
   onPress,
 }: Props) {
@@ -59,11 +63,20 @@ export function SearchBar({
         editable={!onPress}
         pointerEvents={wrapsWithBounce ? 'none' : 'auto'}
       />
-      {isActive && (
-        <VoiceButton onPress={onVoicePress} hitSlop={8}>
-          <VoiceIcon width={16} height={20} />
-        </VoiceButton>
-      )}
+      {isActive &&
+        (value.length > 0 ? (
+          <VoiceButton onPress={() => onChangeText('')} hitSlop={8}>
+            <XCircleIcon width={18} height={18} color={theme.semantic.text.tertiary} />
+          </VoiceButton>
+        ) : (
+          <VoiceButton onPress={onVoicePress} hitSlop={8}>
+            <VoiceIcon
+              width={16}
+              height={20}
+              color={isListening ? theme.blue[500] : theme.semantic.text.tertiary}
+            />
+          </VoiceButton>
+        ))}
     </Container>
   );
 

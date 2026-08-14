@@ -10,6 +10,7 @@ interface Props {
   placeholder?: string;
   onSubmitEditing?: () => void;
   onVoicePress?: () => void;
+  isListening?: boolean;
   onBackPress?: () => void;
 }
 
@@ -23,6 +24,7 @@ export function SearchPageHeader({
   placeholder,
   onSubmitEditing,
   onVoicePress,
+  isListening,
   onBackPress,
 }: Props) {
   return (
@@ -37,6 +39,7 @@ export function SearchPageHeader({
           placeholder={placeholder}
           onSubmitEditing={onSubmitEditing}
           onVoicePress={onVoicePress}
+          isListening={isListening}
           variant="active"
           autoFocus
         />
