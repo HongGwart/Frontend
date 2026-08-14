@@ -1,4 +1,7 @@
+import { FC } from 'react';
+import { SvgProps } from 'react-native-svg';
 import { CategoryKey } from './categoryChips';
+import { DUMMY_FACILITY_IMAGES } from './dummyFacilityInfo';
 
 export interface DummyMapMarker {
   id: string;
@@ -10,6 +13,8 @@ export interface DummyMapMarker {
   /** FacilityInfoCard(outside)에 넘길 건물명/설명. label이 "동" 코드라면 이건 정식 명칭. */
   buildingName: string;
   description: string;
+  /** 건물 사진 2장. 아직 등록 안 된 건물은 생략하면 FacilityInfoCard에서 이미지 영역 자체가 빠진다. */
+  images?: [FC<SvgProps>, FC<SvgProps>];
 }
 
 // 실제 건물 좌표 연동 전까지 지도 마커 UI 확인용으로 쓰는 더미 데이터.
@@ -22,6 +27,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'G동',
     buildingName: '학생회관',
     description: '학생 복지 시설 및 동아리방',
+    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'm2',
@@ -31,6 +37,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     favorite: true,
     buildingName: '중앙도서관',
     description: '열람실 및 자료실',
+    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'm3',
@@ -40,6 +47,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     count: 2,
     buildingName: '과학관',
     description: '자연과학대학 강의실 및 실습실',
+    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'm4',
@@ -50,6 +58,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     count: 3,
     buildingName: '학생회관',
     description: '학생 복지 시설 및 동아리방',
+    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'm5',
@@ -58,6 +67,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'E동',
     buildingName: '공학관',
     description: '공과대학 전공 강의실 및 실습실',
+    // 일부러 이미지를 안 넣어서 "사진 미등록 건물" 케이스를 확인할 수 있게 했다.
   },
 ];
 

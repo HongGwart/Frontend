@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Pressable } from 'react-native';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
-import StarIcon from '@assets/svgs/icons/star.svg';
-import StarOutlineIcon from '@assets/svgs/icons/starOutline.svg';
 import BuildingViewIcon from '@assets/svgs/icons/buildingView.svg';
 import { Button } from './Button';
+import { FavoriteToggle } from './FavoriteToggle';
+import { FacilityImagePair } from './FacilityImagePair';
 
 export interface FacilityCountItem {
   icon: React.FC<SvgProps>;
@@ -110,15 +110,7 @@ export function FacilityInfoCard({
 
         {hasBuildingDetails && (
           <DetailSection>
-            {images && (
-              <ImageRow>
-                {images.map((ImageIcon, index) => (
-                  <BuildingImageSlot key={index} first={index === 0}>
-                    <ImageIcon width="100%" height="100%" />
-                  </BuildingImageSlot>
-                ))}
-              </ImageRow>
-            )}
+            {images && <FacilityImagePair images={images} />}
 
             {facilityCounts && facilityCounts.length > 0 && (
               <FacilityCountPill>
@@ -174,34 +166,6 @@ function OperatingHoursRow({ operatingHours }: { operatingHours: OperatingHoursI
       <HoursDotSeparator>·</HoursDotSeparator>
       <HoursDetailText>{operatingHours.detailText}</HoursDetailText>
     </HoursGroup>
-  );
-}
-
-function FavoriteToggle({ isFavorite, onPress }: { isFavorite: boolean; onPress?: () => void }) {
-  const theme = useTheme();
-  // Pressable의 style-as-function은 styled-components를 거치면서 못 쓰게 되므로,
-  // 누르는 동안의 회색 강조 상태는 직접 상태로 들고 있는다.
-  const [isPressed, setIsPressed] = useState(false);
-
-  return (
-    <FavoriteCircle
-      isFavorite={isFavorite}
-      isPressed={isPressed}
-      onPress={onPress}
-      onPressIn={() => setIsPressed(true)}
-      onPressOut={() => setIsPressed(false)}
-      hitSlop={8}
-    >
-      {isFavorite ? (
-        <StarIcon width={16} height={16} />
-      ) : (
-        <StarOutlineIcon
-          width={16}
-          height={16}
-          color={isPressed ? theme.semantic.text.tertiary : theme.semantic.line.primary}
-        />
-      )}
-    </FavoriteCircle>
   );
 }
 
@@ -299,16 +263,6 @@ const DescriptionText = styled.Text`
   color: ${({ theme }) => theme.semantic.text.secondary};
 `;
 
-const FavoriteCircle = styled(Pressable)<{ isFavorite: boolean; isPressed: boolean }>`
-  width: 24px;
-  height: 24px;
-  border-radius: 100px;
-  align-items: center;
-  justify-content: center;
-  border-width: 1.5px;
-  border-color: ${({ theme, isFavorite, isPressed }) =>
-    isFavorite ? theme.sub.beige : isPressed ? theme.semantic.line.primary : theme.semantic.line.secondary};
-`;
 
 const ActionButtonRow = styled.View`
   flex-direction: row;
@@ -338,23 +292,6 @@ const SubButtonText = styled.Text<{ variant: 'primary' | 'secondary' }>`
 
 const DetailSection = styled.View`
   width: 100%;
-`;
-
-const ImageRow = styled.View`
-  flex-direction: row;
-  gap: 4px;
-  height: 100px;
-  width: 100%;
-`;
-
-const BuildingImageSlot = styled.View<{ first?: boolean }>`
-  flex: 1;
-  height: 100%;
-  overflow: hidden;
-  border-top-left-radius: ${({ first }) => (first ? '4px' : '0px')};
-  border-bottom-left-radius: ${({ first }) => (first ? '4px' : '0px')};
-  border-top-right-radius: ${({ first }) => (first ? '0px' : '4px')};
-  border-bottom-right-radius: ${({ first }) => (first ? '0px' : '4px')};
 `;
 
 const FacilityCountPill = styled.View`

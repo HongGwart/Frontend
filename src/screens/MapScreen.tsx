@@ -19,12 +19,7 @@ import {
   DummyMapMarker,
   DummyCategoryMarker,
 } from '@constant/dummyMapMarkers';
-import {
-  DUMMY_FACILITY_IMAGES,
-  DUMMY_FACILITY_COUNTS,
-  DUMMY_MAIN_ENTRANCE,
-  DUMMY_OPERATING_HOURS,
-} from '@constant/dummyFacilityInfo';
+import { DUMMY_FACILITY_COUNTS, DUMMY_MAIN_ENTRANCE, DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
 
 interface Props {
   onSearchPress?: () => void;
@@ -118,7 +113,7 @@ export default function MapScreen({ onSearchPress }: Props) {
               buildingName={selectedFacility.marker.buildingName}
               description={selectedFacility.marker.description}
               isFavorite={selectedFacility.marker.favorite}
-              images={DUMMY_FACILITY_IMAGES}
+              images={selectedFacility.marker.images}
               facilityCounts={DUMMY_FACILITY_COUNTS}
               mainEntrance={DUMMY_MAIN_ENTRANCE}
               operatingHours={DUMMY_OPERATING_HOURS}
