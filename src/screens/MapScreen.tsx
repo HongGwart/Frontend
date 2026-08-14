@@ -6,6 +6,7 @@ import { NaverMapView } from '@mj-studio/react-native-naver-map';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
+import { FacilityListSheet, FacilityListSheetItem } from '@components/common/FacilityListSheet';
 import { Toast } from '@components/common/Toast';
 import {
   DismissibleBottomSheet,
@@ -22,15 +23,20 @@ import {
   DummyCategoryMarker,
 } from '@constant/dummyMapMarkers';
 import { DUMMY_FACILITY_COUNTS, DUMMY_MAIN_ENTRANCE, DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
+import { DUMMY_FACILITY_LIST_ITEMS } from '@constant/dummyFacilityListItems';
 
 interface Props {
   onSearchPress?: () => void;
 }
 
 // 지도 위 마커를 탭하면 아래에서 올려줄 시설 정보 바텀시트가 어떤 마커에 대한 것인지.
+// 'list'는 숫자 배지가 붙은(군집된) 마커를 탭했을 때의 건물/시설 리스트, 'item'은 그
+// 리스트에서 항목 하나를 골랐을 때 보여줄 상세 카드다.
 type SelectedFacility =
   | { type: 'dong'; marker: DummyMapMarker }
-  | { type: 'category'; marker: DummyCategoryMarker };
+  | { type: 'category'; marker: DummyCategoryMarker }
+  | { type: 'list'; items: FacilityListSheetItem[] }
+  | { type: 'item'; item: FacilityListSheetItem };
 
 const TOAST_DURATION_MS = 2000;
 
@@ -62,6 +68,20 @@ export default function MapScreen({ onSearchPress }: Props) {
     },
     [isFavorite],
   );
+
+  // 숫자 배지가 붙은(군집된) 마커는 건물/시설 하나의 정보가 아니라 그 자리에 겹친 여러
+  // 건물/시설의 리스트를 보여줘야 한다. 더미 리스트가 있으면 리스트를, 없으면(방금 만든
+  // 예시 몇 개 말고 나머지 count 마커들) 기존 단일 카드로 fallback한다.
+  const openMarkerSheet = useCallback((type: 'dong' | 'category', marker: DummyMapMarker | DummyCategoryMarker) => {
+    const listItems = marker.count !== undefined ? DUMMY_FACILITY_LIST_ITEMS[marker.id] : undefined;
+    if (listItems) {
+      setSelectedFacility({ type: 'list', items: listItems });
+    } else if (type === 'dong') {
+      setSelectedFacility({ type: 'dong', marker: marker as DummyMapMarker });
+    } else {
+      setSelectedFacility({ type: 'category', marker: marker as DummyCategoryMarker });
+    }
+  }, []);
 
   // 지도 바닥을 탭했을 때도 스와이프로 닫을 때와 동일하게 부드럽게 슬라이드다운시킨다.
   // (state를 바로 null로 바꾸면 애니메이션 없이 뚝 끊겨서 사라진다.)
@@ -110,7 +130,7 @@ export default function MapScreen({ onSearchPress }: Props) {
             label={marker.label}
             favorite={isFavorite(marker)}
             count={marker.count}
-            onPress={() => setSelectedFacility({ type: 'dong', marker })}
+            onPress={() => openMarkerSheet('dong', marker)}
           />
         ))}
         {categoryMarkers.map(marker => (
@@ -120,7 +140,7 @@ export default function MapScreen({ onSearchPress }: Props) {
             longitude={marker.longitude}
             favorite={isFavorite(marker)}
             count={marker.count}
-            onPress={() => setSelectedFacility({ type: 'category', marker })}
+            onPress={() => openMarkerSheet('category', marker)}
             {...CATEGORY_MARKER_ICONS[marker.category]}
           />
         ))}
@@ -162,7 +182,7 @@ export default function MapScreen({ onSearchPress }: Props) {
               operatingHours={DUMMY_OPERATING_HOURS}
               onViewInsidePress={() => {}}
             />
-          ) : (
+          ) : selectedFacility.type === 'category' ? (
             <FacilityInfoCard
               variant="facility"
               buildingCode={selectedFacility.marker.buildingCode}
@@ -171,6 +191,32 @@ export default function MapScreen({ onSearchPress }: Props) {
               isFavorite={isFavorite(selectedFacility.marker)}
               onToggleFavorite={() => toggleFavorite(selectedFacility.marker, selectedFacility.marker.room)}
               images={selectedFacility.marker.images}
+              operatingHours={DUMMY_OPERATING_HOURS}
+              onViewInsidePress={() => {}}
+            />
+          ) : selectedFacility.type === 'list' ? (
+            <FacilityListSheet
+              items={selectedFacility.items.map(item => ({
+                ...item,
+                isFavorite: favoriteOverrides[item.id] ?? item.isFavorite,
+              }))}
+              onSelectItem={item => setSelectedFacility({ type: 'item', item })}
+              onToggleFavorite={item => toggleFavorite({ id: item.id, favorite: item.isFavorite }, item.room ?? item.place)}
+            />
+          ) : (
+            <FacilityInfoCard
+              variant="facility"
+              buildingCode={selectedFacility.item.building}
+              buildingName={selectedFacility.item.place}
+              facilityName={selectedFacility.item.room ?? selectedFacility.item.place}
+              isFavorite={favoriteOverrides[selectedFacility.item.id] ?? selectedFacility.item.isFavorite}
+              onToggleFavorite={() =>
+                toggleFavorite(
+                  { id: selectedFacility.item.id, favorite: selectedFacility.item.isFavorite },
+                  selectedFacility.item.room ?? selectedFacility.item.place,
+                )
+              }
+              images={selectedFacility.item.images}
               operatingHours={DUMMY_OPERATING_HOURS}
               onViewInsidePress={() => {}}
             />
