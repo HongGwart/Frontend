@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NaverMapView } from '@mj-studio/react-native-naver-map';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
+import {
+  DismissibleBottomSheet,
+  DismissibleBottomSheetRef,
+} from '@components/common/DismissibleBottomSheet';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { CategoryKey } from '@constant/categoryChips';
@@ -36,6 +40,13 @@ export default function MapScreen({ onSearchPress }: Props) {
   // 추후 지도 데이터가 준비되면 여기 selectedKey를 그대로 넘기면 된다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
+  const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
+
+  // 지도 바닥을 탭했을 때도 스와이프로 닫을 때와 동일하게 부드럽게 슬라이드다운시킨다.
+  // (state를 바로 null로 바꾸면 애니메이션 없이 뚝 끊겨서 사라진다.)
+  const closeFacilitySheet = () => {
+    if (selectedFacility) bottomSheetRef.current?.close();
+  };
 
   // 동(건물) 마커는 칩이 하나도 안 켜져 있을 때만 보여준다. 특정 카테고리를 고르면 그
   // 카테고리 마커만 남기고, 동 마커는 화면에서 사라진다.
@@ -63,7 +74,7 @@ export default function MapScreen({ onSearchPress }: Props) {
           zoom: 16,
         }}
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
-        onTapMap={() => setSelectedFacility(null)}
+        onTapMap={closeFacilitySheet}
       >
         {[...dongMarkers, ...favoriteDongMarkers].map(marker => (
           <NaverMapMarker
@@ -95,7 +106,11 @@ export default function MapScreen({ onSearchPress }: Props) {
         <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} />
       </SafeAreaView>
       {selectedFacility && (
-        <View style={styles.facilityCardWrapper} pointerEvents="box-none">
+        <DismissibleBottomSheet
+          ref={bottomSheetRef}
+          onClose={() => setSelectedFacility(null)}
+          style={styles.facilityCardWrapper}
+        >
           {selectedFacility.type === 'dong' ? (
             <FacilityInfoCard
               variant="outside"
@@ -120,7 +135,7 @@ export default function MapScreen({ onSearchPress }: Props) {
               operatingHours={DUMMY_OPERATING_HOURS}
             />
           )}
-        </View>
+        </DismissibleBottomSheet>
       )}
     </View>
   );
