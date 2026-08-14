@@ -52,9 +52,6 @@ export function SearchBar({
     <Container active={isActive && isFocused}>
       <SearchIcon width={20} height={20} />
       <Input
-        // styled-components native의 TextInput 타입 선언이 ref를 허용하지 않지만
-        // 런타임에는 그대로 forwardRef 되므로 안전하게 캐스팅한다.
-        // @ts-expect-error styled-components ref typing
         ref={inputRef}
         value={value}
         onChangeText={onChangeText}
