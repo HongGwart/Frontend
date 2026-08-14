@@ -9,7 +9,10 @@ import NavigationBar, { NavigationTab } from './NavigationBar';
  * 화면이 자체적으로 상단 UI(검색바 등)를 갖고 있는 경우(map)는 헤더를 쓰지 않는다.
  */
 const HEADER_TITLE_BY_TAB: Partial<Record<NavigationTab, string>> = {
+  navigation: '길찾기',
   facility: '편의시설',
+  hongdae: '주변상권',
+  mypage: '마이페이지',
 };
 
 interface AppLayoutProps {
