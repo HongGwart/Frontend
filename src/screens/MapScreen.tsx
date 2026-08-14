@@ -4,7 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NaverMapView } from '@mj-studio/react-native-naver-map';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
+import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { CategoryKey } from '@constant/categoryChips';
+import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
 
 interface Props {
   onSearchPress?: () => void;
@@ -24,7 +26,18 @@ export default function MapScreen({ onSearchPress }: Props) {
           longitude: 126.9251,
           zoom: 16,
         }}
-      />
+      >
+        {DUMMY_MAP_MARKERS.map(marker => (
+          <NaverMapMarker
+            key={marker.id}
+            latitude={marker.latitude}
+            longitude={marker.longitude}
+            label={marker.label}
+            favorite={marker.favorite}
+            count={marker.count}
+          />
+        ))}
+      </NaverMapView>
       <SafeAreaView edges={['top']} style={styles.searchBarWrapper} pointerEvents="box-none">
         <View style={styles.searchBarPadding}>
           <SearchBar value="" onChangeText={() => {}} onPress={onSearchPress} />
