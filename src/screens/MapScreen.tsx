@@ -121,13 +121,14 @@ export default function MapScreen({ onSearchPress }: Props) {
             />
           ) : (
             <FacilityInfoCard
-              variant="room"
+              variant="facility"
               buildingCode={selectedFacility.marker.buildingCode}
               buildingName={selectedFacility.marker.buildingName}
-              roomNumber={selectedFacility.marker.room}
-              description={selectedFacility.marker.description}
+              facilityName={selectedFacility.marker.room}
               isFavorite={selectedFacility.marker.favorite}
+              images={selectedFacility.marker.images}
               operatingHours={DUMMY_OPERATING_HOURS}
+              onViewInsidePress={() => {}}
             />
           )}
         </DismissibleBottomSheet>

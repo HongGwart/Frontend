@@ -78,11 +78,13 @@ export interface DummyCategoryMarker {
   category: Exclude<CategoryKey, 'favorite'>;
   favorite?: boolean;
   count?: number;
-  /** FacilityInfoCard(room)에 넘길 정보 */
+  /** FacilityInfoCard(facility)에 넘길 정보. room이 카드 제목(facilityName)으로 쓰인다. */
   buildingCode: string;
   buildingName: string;
   room: string;
   description: string;
+  /** 시설 사진 2장. 생략하면 이미지 영역 없이 카드가 뜬다. */
+  images?: [FC<SvgProps>, FC<SvgProps>];
 }
 
 // 카테고리 칩(CategoryChipList)을 눌렀을 때 지도에 뿌려줄 카테고리 마커 더미 데이터.
@@ -118,6 +120,7 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     buildingName: '학생회관',
     room: '학생 식당',
     description: '학생 할인이 적용되는 교내 식당',
+    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'c4',
@@ -128,6 +131,7 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     buildingName: '학생회관',
     room: '카페',
     description: '교내 카페',
+    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'c5',
