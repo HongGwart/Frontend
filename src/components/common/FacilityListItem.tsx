@@ -101,10 +101,11 @@ const TitleSection = styled.View`
 `;
 
 const IconAvatar = styled.View<{ emphasized: boolean }>`
+  width: 36px;
+  height: 36px;
   align-items: center;
   justify-content: center;
   border-radius: 100px;
-  ${({ emphasized }) => (emphasized ? 'width: 36px; height: 36px;' : 'padding: 6px;')}
   background-color: ${({ theme, emphasized }) => (emphasized ? theme.blue[500] : theme.semantic.background.color)};
 `;
 
@@ -116,8 +117,12 @@ const TextBlock = styled.View`
 const TitleRow = styled.View`
   flex-direction: row;
   align-items: center;
-  gap: 2px;
+  /* NameGroup(S동-학생회관 사이 2px)의 2배: 학생회관-동아리방 사이는 4px */
+  gap: 4px;
   width: 100%;
+  /* room이 있으면 RoomText(flex:1)가 이미 남는 공간을 채워서 즐겨찾기를 끝으로 밀어내지만,
+     room이 없는(emphasized 건물 항목 등) 경우엔 밀어줄 요소가 없어서 이걸로 대신 처리한다. */
+  justify-content: space-between;
 `;
 
 const NameGroup = styled.View`

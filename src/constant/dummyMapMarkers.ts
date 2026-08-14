@@ -9,7 +9,6 @@ export interface DummyMapMarker {
   longitude: number;
   label?: string;
   favorite?: boolean;
-  count?: number;
   /** FacilityInfoCard(outside)에 넘길 건물명/설명. label이 "동" 코드라면 이건 정식 명칭. */
   buildingName: string;
   description: string;
@@ -44,7 +43,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5498,
     longitude: 126.9262,
     label: 'I동',
-    count: 2,
     buildingName: '과학관',
     description: '자연과학대학 강의실 및 실습실',
     images: DUMMY_FACILITY_IMAGES,
@@ -55,7 +53,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9268,
     label: 'S동',
     favorite: true,
-    count: 3,
     buildingName: '학생회관',
     description: '학생 복지 시설 및 동아리방',
     images: DUMMY_FACILITY_IMAGES,
@@ -148,7 +145,7 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     latitude: 37.5489,
     longitude: 126.9255,
     category: 'pcRoom',
-    count: 2,
+    count: 8,
     buildingCode: 'E동',
     buildingName: '공학관',
     room: 'PC실',

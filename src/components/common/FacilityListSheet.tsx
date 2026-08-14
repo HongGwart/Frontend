@@ -1,7 +1,15 @@
 import React from 'react';
+import { Dimensions, StyleSheet } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import styled from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
 import { FacilityListItem } from './FacilityListItem';
+
+// 화면 높이의 70%를 넘어가면 스크롤되게 한다. DismissibleBottomSheet가 이 시트를 스와이프로
+// 닫는 제스처도 같이 처리하는데, 일반 ScrollView(react-native)를 쓰면 그 팬 제스처와 스크롤이
+// 서로 터치를 뺏으려고 충돌하기 쉬워서, 같은 gesture-handler 트리에서 잘 어우러지는
+// react-native-gesture-handler의 ScrollView를 쓴다.
+const MAX_HEIGHT = Dimensions.get('window').height * 0.7;
 
 export interface FacilityListSheetItem {
   id: string;
@@ -33,7 +41,12 @@ export function FacilityListSheet({ items, onSelectItem, onToggleFavorite, rende
   return (
     <Container>
       <Grabber />
-      <List>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
         {items.map((item, index) =>
           renderItem ? (
             <React.Fragment key={item.id}>
@@ -49,7 +62,7 @@ export function FacilityListSheet({ items, onSelectItem, onToggleFavorite, rende
             />
           ),
         )}
-      </List>
+      </ScrollView>
     </Container>
   );
 }
@@ -108,6 +121,12 @@ const Grabber = styled.View`
   background-color: ${({ theme }) => theme.semantic.line.primary};
 `;
 
-const List = styled.View`
-  width: 100%;
-`;
+const styles = StyleSheet.create({
+  scrollView: {
+    width: '100%',
+    maxHeight: MAX_HEIGHT,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+});

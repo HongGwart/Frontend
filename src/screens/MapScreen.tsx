@@ -69,17 +69,20 @@ export default function MapScreen({ onSearchPress }: Props) {
     [isFavorite],
   );
 
-  // 숫자 배지가 붙은(군집된) 마커는 건물/시설 하나의 정보가 아니라 그 자리에 겹친 여러
-  // 건물/시설의 리스트를 보여줘야 한다. 더미 리스트가 있으면 리스트를, 없으면(방금 만든
-  // 예시 몇 개 말고 나머지 count 마커들) 기존 단일 카드로 fallback한다.
-  const openMarkerSheet = useCallback((type: 'dong' | 'category', marker: DummyMapMarker | DummyCategoryMarker) => {
+  // 숫자 배지가 붙은(군집된) 카테고리 마커는 시설 하나의 정보가 아니라 그 자리에 겹친 여러
+  // 시설의 리스트를 보여줘야 한다. 더미 리스트가 있으면 리스트를, 없으면(방금 만든 예시 말고
+  // 나머지 count 마커들) 기존 단일 카드로 fallback한다. 동(건물) 마커는 한 지점 = 한 건물이라
+  // 애초에 count/리스트 개념이 없어서 항상 단일 카드로 연다.
+  const openDongMarkerSheet = useCallback((marker: DummyMapMarker) => {
+    setSelectedFacility({ type: 'dong', marker });
+  }, []);
+
+  const openCategoryMarkerSheet = useCallback((marker: DummyCategoryMarker) => {
     const listItems = marker.count !== undefined ? DUMMY_FACILITY_LIST_ITEMS[marker.id] : undefined;
     if (listItems) {
       setSelectedFacility({ type: 'list', items: listItems });
-    } else if (type === 'dong') {
-      setSelectedFacility({ type: 'dong', marker: marker as DummyMapMarker });
     } else {
-      setSelectedFacility({ type: 'category', marker: marker as DummyCategoryMarker });
+      setSelectedFacility({ type: 'category', marker });
     }
   }, []);
 
@@ -129,8 +132,7 @@ export default function MapScreen({ onSearchPress }: Props) {
             longitude={marker.longitude}
             label={marker.label}
             favorite={isFavorite(marker)}
-            count={marker.count}
-            onPress={() => openMarkerSheet('dong', marker)}
+            onPress={() => openDongMarkerSheet(marker)}
           />
         ))}
         {categoryMarkers.map(marker => (
@@ -140,7 +142,7 @@ export default function MapScreen({ onSearchPress }: Props) {
             longitude={marker.longitude}
             favorite={isFavorite(marker)}
             count={marker.count}
-            onPress={() => openMarkerSheet('category', marker)}
+            onPress={() => openCategoryMarkerSheet(marker)}
             {...CATEGORY_MARKER_ICONS[marker.category]}
           />
         ))}
