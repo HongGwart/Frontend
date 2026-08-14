@@ -4,20 +4,38 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NaverMapView } from '@mj-studio/react-native-naver-map';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
+import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
-import { DUMMY_MAP_MARKERS, DUMMY_CATEGORY_MARKERS } from '@constant/dummyMapMarkers';
+import {
+  DUMMY_MAP_MARKERS,
+  DUMMY_CATEGORY_MARKERS,
+  DummyMapMarker,
+  DummyCategoryMarker,
+} from '@constant/dummyMapMarkers';
+import {
+  DUMMY_FACILITY_IMAGES,
+  DUMMY_FACILITY_COUNTS,
+  DUMMY_MAIN_ENTRANCE,
+  DUMMY_OPERATING_HOURS,
+} from '@constant/dummyFacilityInfo';
 
 interface Props {
   onSearchPress?: () => void;
 }
 
+// 지도 위 마커를 탭하면 아래에서 올려줄 시설 정보 바텀시트가 어떤 마커에 대한 것인지.
+type SelectedFacility =
+  | { type: 'dong'; marker: DummyMapMarker }
+  | { type: 'category'; marker: DummyCategoryMarker };
+
 export default function MapScreen({ onSearchPress }: Props) {
   // 메인홈 카테고리 칩은 한 번에 하나만 선택된다. 실제 지도 필터링과의 연결은
   // 추후 지도 데이터가 준비되면 여기 selectedKey를 그대로 넘기면 된다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
+  const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
 
   // 동(건물) 마커는 칩이 하나도 안 켜져 있을 때만 보여준다. 특정 카테고리를 고르면 그
   // 카테고리 마커만 남기고, 동 마커는 화면에서 사라진다.
@@ -44,6 +62,8 @@ export default function MapScreen({ onSearchPress }: Props) {
           longitude: 126.9251,
           zoom: 16,
         }}
+        // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
+        onTapMap={() => setSelectedFacility(null)}
       >
         {[...dongMarkers, ...favoriteDongMarkers].map(marker => (
           <NaverMapMarker
@@ -53,6 +73,7 @@ export default function MapScreen({ onSearchPress }: Props) {
             label={marker.label}
             favorite={marker.favorite}
             count={marker.count}
+            onPress={() => setSelectedFacility({ type: 'dong', marker })}
           />
         ))}
         {categoryMarkers.map(marker => (
@@ -62,6 +83,7 @@ export default function MapScreen({ onSearchPress }: Props) {
             longitude={marker.longitude}
             favorite={marker.favorite}
             count={marker.count}
+            onPress={() => setSelectedFacility({ type: 'category', marker })}
             {...CATEGORY_MARKER_ICONS[marker.category]}
           />
         ))}
@@ -72,6 +94,34 @@ export default function MapScreen({ onSearchPress }: Props) {
         </View>
         <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} />
       </SafeAreaView>
+      {selectedFacility && (
+        <View style={styles.facilityCardWrapper} pointerEvents="box-none">
+          {selectedFacility.type === 'dong' ? (
+            <FacilityInfoCard
+              variant="outside"
+              buildingCode={selectedFacility.marker.label ?? ''}
+              buildingName={selectedFacility.marker.buildingName}
+              description={selectedFacility.marker.description}
+              isFavorite={selectedFacility.marker.favorite}
+              images={DUMMY_FACILITY_IMAGES}
+              facilityCounts={DUMMY_FACILITY_COUNTS}
+              mainEntrance={DUMMY_MAIN_ENTRANCE}
+              operatingHours={DUMMY_OPERATING_HOURS}
+              onViewInsidePress={() => {}}
+            />
+          ) : (
+            <FacilityInfoCard
+              variant="room"
+              buildingCode={selectedFacility.marker.buildingCode}
+              buildingName={selectedFacility.marker.buildingName}
+              roomNumber={selectedFacility.marker.room}
+              description={selectedFacility.marker.description}
+              isFavorite={selectedFacility.marker.favorite}
+              operatingHours={DUMMY_OPERATING_HOURS}
+            />
+          )}
+        </View>
+      )}
     </View>
   );
 }
@@ -88,5 +138,11 @@ const styles = StyleSheet.create({
   },
   searchBarPadding: {
     paddingHorizontal: 20,
+  },
+  facilityCardWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });

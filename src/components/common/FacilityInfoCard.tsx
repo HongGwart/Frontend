@@ -1,5 +1,5 @@
-import React from 'react';
-import { Image, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable } from 'react-native';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
 import StarIcon from '@assets/svgs/icons/star.svg';
@@ -37,7 +37,7 @@ interface Props {
   onDeparturePress?: () => void;
   onArrivalPress?: () => void;
   /** outside/inside에서만 쓰인다 */
-  images?: [string, string];
+  images?: [React.FC<SvgProps>, React.FC<SvgProps>];
   /** outside/inside에서만 쓰인다 (예: 프린터 2, PC실 1) */
   facilityCounts?: FacilityCountItem[];
   /** outside/inside에서만 쓰인다 (예: "정문(1층), 후문(지하1층)") */
@@ -103,8 +103,11 @@ export function FacilityInfoCard({
           <DetailSection>
             {images && (
               <ImageRow>
-                <BuildingImage source={{ uri: images[0] }} first />
-                <BuildingImage source={{ uri: images[1] }} />
+                {images.map((ImageIcon, index) => (
+                  <BuildingImageSlot key={index} first={index === 0}>
+                    <ImageIcon width="100%" height="100%" />
+                  </BuildingImageSlot>
+                ))}
               </ImageRow>
             )}
 
@@ -166,12 +169,27 @@ function OperatingHoursRow({ operatingHours }: { operatingHours: OperatingHoursI
 
 function FavoriteToggle({ isFavorite, onPress }: { isFavorite: boolean; onPress?: () => void }) {
   const theme = useTheme();
+  // Pressable의 style-as-function은 styled-components를 거치면서 못 쓰게 되므로,
+  // 누르는 동안의 회색 강조 상태는 직접 상태로 들고 있는다.
+  const [isPressed, setIsPressed] = useState(false);
+
   return (
-    <FavoriteCircle isFavorite={isFavorite} onPress={onPress} hitSlop={8}>
+    <FavoriteCircle
+      isFavorite={isFavorite}
+      isPressed={isPressed}
+      onPress={onPress}
+      onPressIn={() => setIsPressed(true)}
+      onPressOut={() => setIsPressed(false)}
+      hitSlop={8}
+    >
       {isFavorite ? (
         <StarIcon width={16} height={16} />
       ) : (
-        <StarOutlineIcon width={16} height={16} color={theme.semantic.line.primary} />
+        <StarOutlineIcon
+          width={16}
+          height={16}
+          color={isPressed ? theme.semantic.text.tertiary : theme.semantic.line.primary}
+        />
       )}
     </FavoriteCircle>
   );
@@ -202,6 +220,11 @@ const Container = styled.View<{ variant: Props['variant'] }>`
   padding-top: 8px;
   padding-bottom: 32px;
   gap: 24px;
+  shadow-color: #000;
+  shadow-offset: 0px -4px;
+  shadow-opacity: 0.05;
+  shadow-radius: 20px;
+  elevation: 8;
   ${({ variant }) => (variant === 'inside' ? 'height: 400px;' : '')}
 `;
 
@@ -261,14 +284,15 @@ const DescriptionText = styled.Text`
   color: ${({ theme }) => theme.semantic.text.secondary};
 `;
 
-const FavoriteCircle = styled(Pressable)<{ isFavorite: boolean }>`
+const FavoriteCircle = styled(Pressable)<{ isFavorite: boolean; isPressed: boolean }>`
   width: 24px;
   height: 24px;
   border-radius: 100px;
   align-items: center;
   justify-content: center;
   border-width: 1.5px;
-  border-color: ${({ theme, isFavorite }) => (isFavorite ? theme.blue[300] : theme.semantic.line.secondary)};
+  border-color: ${({ theme, isFavorite, isPressed }) =>
+    isFavorite ? theme.sub.beige : isPressed ? theme.semantic.line.primary : theme.semantic.line.secondary};
 `;
 
 const ActionButtonRow = styled.View`
@@ -299,7 +323,6 @@ const SubButtonText = styled.Text<{ variant: 'primary' | 'secondary' }>`
 
 const DetailSection = styled.View`
   width: 100%;
-  gap: 16px;
 `;
 
 const ImageRow = styled.View`
@@ -309,9 +332,10 @@ const ImageRow = styled.View`
   width: 100%;
 `;
 
-const BuildingImage = styled(Image)<{ first?: boolean }>`
+const BuildingImageSlot = styled.View<{ first?: boolean }>`
   flex: 1;
   height: 100%;
+  overflow: hidden;
   border-top-left-radius: ${({ first }) => (first ? '4px' : '0px')};
   border-bottom-left-radius: ${({ first }) => (first ? '4px' : '0px')};
   border-top-right-radius: ${({ first }) => (first ? '0px' : '4px')};
@@ -324,6 +348,7 @@ const FacilityCountPill = styled.View`
   align-items: center;
   gap: 12px;
   width: 100%;
+  margin-top: 8px;
   padding: 12px 16px;
   border-radius: 8px;
   background-color: ${({ theme }) => theme.semantic.background.fill};
@@ -362,6 +387,7 @@ const Divider = styled.View`
 const InfoList = styled.View`
   width: 100%;
   gap: 4px;
+  margin-top: 16px;
 `;
 
 const InfoRow = styled.View`
