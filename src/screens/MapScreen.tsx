@@ -1,10 +1,12 @@
 import React, { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NaverMapView } from '@mj-studio/react-native-naver-map';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
+import { Toast } from '@components/common/Toast';
 import {
   DismissibleBottomSheet,
   DismissibleBottomSheetRef,
@@ -30,12 +32,31 @@ type SelectedFacility =
   | { type: 'dong'; marker: DummyMapMarker }
   | { type: 'category'; marker: DummyCategoryMarker };
 
+const TOAST_DURATION_MS = 2000;
+
 export default function MapScreen({ onSearchPress }: Props) {
   // 메인홈 카테고리 칩은 한 번에 하나만 선택된다. 실제 지도 필터링과의 연결은
   // 추후 지도 데이터가 준비되면 여기 selectedKey를 그대로 넘기면 된다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
+
+  // 더미 데이터의 favorite 값을 그대로 두고, 토글한 것만 id 기준으로 덮어써서 들고 있는다.
+  const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
+  const isFavorite = (marker: { id: string; favorite?: boolean }) =>
+    favoriteOverrides[marker.id] ?? marker.favorite ?? false;
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const toggleFavorite = (marker: { id: string; favorite?: boolean }, name: string) => {
+    const nextIsFavorite = !isFavorite(marker);
+    setFavoriteOverrides(prev => ({ ...prev, [marker.id]: nextIsFavorite }));
+
+    setToastMessage(`${name}의 즐겨찾기가 ${nextIsFavorite ? '등록' : '해제'}되었습니다.`);
+    clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
+  };
 
   // 지도 바닥을 탭했을 때도 스와이프로 닫을 때와 동일하게 부드럽게 슬라이드다운시킨다.
   // (state를 바로 null로 바꾸면 애니메이션 없이 뚝 끊겨서 사라진다.)
@@ -53,11 +74,10 @@ export default function MapScreen({ onSearchPress }: Props) {
     selectedKey === null
       ? []
       : selectedKey === 'favorite'
-        ? DUMMY_CATEGORY_MARKERS.filter(marker => marker.favorite)
+        ? DUMMY_CATEGORY_MARKERS.filter(isFavorite)
         : DUMMY_CATEGORY_MARKERS.filter(marker => marker.category === selectedKey);
 
-  const favoriteDongMarkers =
-    selectedKey === 'favorite' ? DUMMY_MAP_MARKERS.filter(marker => marker.favorite) : [];
+  const favoriteDongMarkers = selectedKey === 'favorite' ? DUMMY_MAP_MARKERS.filter(isFavorite) : [];
 
   return (
     <View style={styles.container}>
@@ -77,7 +97,7 @@ export default function MapScreen({ onSearchPress }: Props) {
             latitude={marker.latitude}
             longitude={marker.longitude}
             label={marker.label}
-            favorite={marker.favorite}
+            favorite={isFavorite(marker)}
             count={marker.count}
             onPress={() => setSelectedFacility({ type: 'dong', marker })}
           />
@@ -87,7 +107,7 @@ export default function MapScreen({ onSearchPress }: Props) {
             key={marker.id}
             latitude={marker.latitude}
             longitude={marker.longitude}
-            favorite={marker.favorite}
+            favorite={isFavorite(marker)}
             count={marker.count}
             onPress={() => setSelectedFacility({ type: 'category', marker })}
             {...CATEGORY_MARKER_ICONS[marker.category]}
@@ -99,6 +119,15 @@ export default function MapScreen({ onSearchPress }: Props) {
           <SearchBar value="" onChangeText={() => {}} onPress={onSearchPress} />
         </View>
         <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} />
+        {toastMessage && (
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            exiting={FadeOut.duration(200)}
+            style={styles.toastWrapper}
+          >
+            <Toast text={toastMessage} variant="success" />
+          </Animated.View>
+        )}
       </SafeAreaView>
       {selectedFacility && (
         <DismissibleBottomSheet
@@ -112,7 +141,10 @@ export default function MapScreen({ onSearchPress }: Props) {
               buildingCode={selectedFacility.marker.label ?? ''}
               buildingName={selectedFacility.marker.buildingName}
               description={selectedFacility.marker.description}
-              isFavorite={selectedFacility.marker.favorite}
+              isFavorite={isFavorite(selectedFacility.marker)}
+              onToggleFavorite={() =>
+                toggleFavorite(selectedFacility.marker, selectedFacility.marker.buildingName)
+              }
               images={selectedFacility.marker.images}
               facilityCounts={DUMMY_FACILITY_COUNTS}
               mainEntrance={DUMMY_MAIN_ENTRANCE}
@@ -125,7 +157,8 @@ export default function MapScreen({ onSearchPress }: Props) {
               buildingCode={selectedFacility.marker.buildingCode}
               buildingName={selectedFacility.marker.buildingName}
               facilityName={selectedFacility.marker.room}
-              isFavorite={selectedFacility.marker.favorite}
+              isFavorite={isFavorite(selectedFacility.marker)}
+              onToggleFavorite={() => toggleFavorite(selectedFacility.marker, selectedFacility.marker.room)}
               images={selectedFacility.marker.images}
               operatingHours={DUMMY_OPERATING_HOURS}
               onViewInsidePress={() => {}}
@@ -148,6 +181,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   searchBarPadding: {
+    paddingHorizontal: 20,
+  },
+  toastWrapper: {
     paddingHorizontal: 20,
   },
   facilityCardWrapper: {
