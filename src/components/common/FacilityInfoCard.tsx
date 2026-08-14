@@ -5,6 +5,7 @@ import { SvgProps } from 'react-native-svg';
 import StarIcon from '@assets/svgs/icons/star.svg';
 import StarOutlineIcon from '@assets/svgs/icons/starOutline.svg';
 import BuildingViewIcon from '@assets/svgs/icons/buildingView.svg';
+import { Button } from './Button';
 
 export interface FacilityCountItem {
   icon: React.FC<SvgProps>;
@@ -158,10 +159,7 @@ export function FacilityInfoCard({
 
       {variant === 'outside' && (
         <CtaWrapper>
-          <CtaButton onPress={onViewInsidePress}>
-            <CtaButtonText>건물 내부 보기</CtaButtonText>
-            <BuildingViewIcon width={17} height={18} color="white" />
-          </CtaButton>
+          <Button label="건물 내부 보기" icon={BuildingViewIcon} iconWidth={17} iconHeight={18} onPress={onViewInsidePress} />
         </CtaWrapper>
       )}
     </Container>
@@ -462,23 +460,4 @@ const HoursDetailText = styled(HoursStatusText)``;
 const CtaWrapper = styled.View`
   width: 100%;
   padding-horizontal: 20px;
-`;
-
-const CtaButton = styled(Pressable)`
-  width: 100%;
-  height: 56px;
-  border-radius: 12px;
-  background-color: ${({ theme }) => theme.blue[800]};
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-`;
-
-const CtaButtonText = styled.Text`
-  font-family: ${({ theme }) => theme.typography.headline.semiBold.fontFamily};
-  font-size: ${({ theme }) => theme.typography.headline.semiBold.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.headline.semiBold.lineHeight}px;
-  letter-spacing: ${({ theme }) => theme.typography.headline.semiBold.letterSpacing}px;
-  color: ${({ theme }) => theme.semantic.text.white};
 `;
