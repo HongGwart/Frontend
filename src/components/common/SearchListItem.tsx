@@ -3,7 +3,7 @@ import { Pressable } from 'react-native';
 import styled, { css, useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
 import BookIcon from '@assets/svgs/icons/book.svg';
-import StarIcon from '@assets/svgs/icons/star.svg';
+import StarIcon from '@assets/svgs/icons/starBadge.svg';
 import CloseThinIcon from '@assets/svgs/icons/closeThin.svg';
 import CheckCircleIcon from '@assets/svgs/icons/checkCircle.svg';
 
