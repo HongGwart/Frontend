@@ -8,6 +8,9 @@ import BuildingViewIcon from '@assets/svgs/icons/buildingView.svg';
 
 export interface FacilityCountItem {
   icon: React.FC<SvgProps>;
+  /** 아이콘별 원본 비율을 유지한 채 넣을 크기. 생략하면 17x17로 렌더링된다. */
+  iconWidth?: number;
+  iconHeight?: number;
   label: string;
   count: number;
 }
@@ -116,7 +119,11 @@ export function FacilityInfoCard({
                 {facilityCounts.map((item, index) => (
                   <React.Fragment key={item.label}>
                     <FacilityCountItemRow>
-                      <item.icon width={20} height={20} color={theme.blue[800]} />
+                      <item.icon
+                        width={item.iconWidth ?? 17}
+                        height={item.iconHeight ?? 17}
+                        color={theme.blue[300]}
+                      />
                       <FacilityCountText>
                         <FacilityLabelText>{item.label}</FacilityLabelText>
                         <FacilityCountValueText>{item.count}</FacilityCountValueText>

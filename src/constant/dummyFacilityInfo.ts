@@ -10,9 +10,10 @@ import { FacilityCountItem, OperatingHoursInfo } from '@components/common/Facili
 // 지금은 건물마다 다른 데이터가 없어서 모든 동 마커에 동일하게 재사용한다.
 export const DUMMY_FACILITY_IMAGES: [FC<SvgProps>, FC<SvgProps>] = [DummyImage1, DummyImage2];
 
+// printer.svg(원본 20x18)/pc.svg(원본 20x20) 비율을 유지한 채 Figma 실제 크기(약 17px)에 맞춘 값.
 export const DUMMY_FACILITY_COUNTS: FacilityCountItem[] = [
-  { icon: PrinterIcon, label: '프린터', count: 2 },
-  { icon: PcIcon, label: 'PC실', count: 1 },
+  { icon: PrinterIcon, iconWidth: 17, iconHeight: 15, label: '프린터', count: 2 },
+  { icon: PcIcon, iconWidth: 17, iconHeight: 17, label: 'PC실', count: 1 },
 ];
 
 export const DUMMY_MAIN_ENTRANCE = '정문(1층), 후문(지하1층)';
