@@ -8,7 +8,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.Frontend",
+      "bundleIdentifier": "com.honggwart.frontend",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSExceptionDomains": {
@@ -32,7 +32,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.Frontend"
+      "package": "com.honggwart.frontend"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -59,7 +59,14 @@
       ],
       "expo-status-bar",
       "expo-font",
-      "expo-splash-screen"
+      "expo-splash-screen",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "음성으로 검색하려면 마이크 접근 권한이 필요합니다.",
+          "speechRecognitionPermission": "음성을 텍스트로 변환하려면 음성 인식 권한이 필요합니다."
+        }
+      ]
     ]
   }
 }

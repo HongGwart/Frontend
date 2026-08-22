@@ -1,17 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { StatusBar, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import {
-  SafeAreaProvider,
-  initialWindowMetrics,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { ThemeProvider } from 'styled-components/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '@theme';
 import { useAppFonts } from '@hooks/useAppFonts';
-import NavigationBar, { NavigationTab } from '@components/common/NavigationBar';
-import IndoorMapTestScreen from '@screens/IndoorMapTestScreen';
+import AppLayout from '@components/layout/AppLayout';
+import { NavigationTab } from '@components/layout/NavigationBar';
+import MapScreen from '@screens/MapScreen';
+import FacilityScreen from '@screens/FacilityScreen';
+import SearchScreen from '@screens/SearchScreen';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -45,8 +44,9 @@ function App() {
 }
 
 function AppContent() {
-  const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<NavigationTab>('map');
+  const [isSearchPage, setIsSearchPage] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // TODO: 길찾기 페이지로 이동
   const goToNavigation = () => {};
@@ -75,21 +75,27 @@ function AppContent() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.screen}>{activeTab === 'map' && <IndoorMapTestScreen />}</View>
-      <NavigationBar
-        activeTab={activeTab}
-        onTabPress={handleTabPress}
-        bottomInset={insets.bottom}
+  // 검색 페이지는 탭 화면들과 별개로, 하단 내비게이션 바 없이 전체 화면으로 뜬다.
+  if (isSearchPage) {
+    return (
+      <SearchScreen
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        onBackPress={() => setIsSearchPage(false)}
       />
-    </View>
+    );
+  }
+
+  return (
+    <AppLayout
+      activeTab={activeTab}
+      onTabPress={handleTabPress}
+      onHeaderBackPress={() => setActiveTab('map')}
+    >
+      {activeTab === 'map' && <MapScreen onSearchPress={() => setIsSearchPage(true)} />}
+      {activeTab === 'facility' && <FacilityScreen />}
+    </AppLayout>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  screen: { flex: 1 },
-});
 
 export default App;
