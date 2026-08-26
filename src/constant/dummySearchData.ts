@@ -58,16 +58,16 @@ export interface RecentSearchItem extends SearchResultItem {
 // SEARCH_ITEM_ICONS에 있는 카테고리(열람실/강의실/건물/식당/카페/편의점/PC실/프린터기/도서 반납기/흡연 구역)를
 // 최근 검색어·검색 결과 양쪽에 최소 하나씩 넣어서 모든 아이콘 상태를 확인할 수 있게 한다.
 export const DUMMY_RECENT_SEARCHES: RecentSearchItem[] = [
-  { id: 'r1', building: 'H동', place: '중앙도서관', room: '314호', category: 'readingRoom', isFavorite: true, date: '04.10' },
-  { id: 'r2', building: 'I동', place: '과학관', room: '305호', category: 'classroom', date: '04.10' },
-  { id: 'r3', building: 'G동', place: '학생회관', category: 'building', isFavorite: true, date: '04.10' },
-  { id: 'r4', building: 'S동', place: '학생회관', room: '식당', category: 'restaurant', date: '04.08' },
-  { id: 'r5', building: 'S동', place: '학생회관', room: '카페', category: 'cafe', date: '04.08' },
-  { id: 'r6', building: 'S동', place: '학생회관', room: '편의점', category: 'store', isFavorite: true, date: '04.07' },
-  { id: 'r7', building: 'E동', place: '공학관', room: 'PC실', category: 'pcRoom', date: '04.03' },
-  { id: 'r8', building: 'E동', place: '공학관', room: '프린터기', category: 'printer', date: '04.03' },
-  { id: 'r9', building: 'H동', place: '중앙도서관', category: 'bookReturn', date: '04.01' },
-  { id: 'r10', building: 'S동', place: '학생회관', room: '흡연 구역', category: 'smokingArea', date: '03.28' },
+  { id: 'r1', building: 'H동', place: '중앙도서관', room: '314호', category: 'readingRoom', isFavorite: true, date: '08.26' },
+  { id: 'r2', building: 'I동', place: '과학관', room: '305호', category: 'classroom', date: '08.26' },
+  { id: 'r3', building: 'G동', place: '학생회관', category: 'building', isFavorite: true, date: '08.26' },
+  { id: 'r4', building: 'S동', place: '학생회관', room: '식당', category: 'restaurant', date: '08.26' },
+  { id: 'r5', building: 'S동', place: '학생회관', room: '카페', category: 'cafe', date: '08.26' },
+  { id: 'r6', building: 'S동', place: '학생회관', room: '편의점', category: 'store', isFavorite: true, date: '08.26' },
+  { id: 'r7', building: 'E동', place: '공학관', room: 'PC실', category: 'pcRoom', date: '08.26' },
+  { id: 'r8', building: 'E동', place: '공학관', room: '프린터기', category: 'printer', date: '08.26' },
+  { id: 'r9', building: 'H동', place: '중앙도서관', category: 'bookReturn', date: '08.26' },
+  { id: 'r10', building: 'S동', place: '학생회관', room: '흡연 구역', category: 'smokingArea', date: '08.26' },
 ];
 
 export const DUMMY_SEARCH_RESULTS: SearchResultItem[] = [

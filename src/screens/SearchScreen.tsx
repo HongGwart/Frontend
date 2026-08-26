@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import styled from 'styled-components/native';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
 import { SearchListItem } from '@components/common/SearchListItem';
 import { useVoiceSearch } from '@hooks/useVoiceSearch';
@@ -54,6 +55,7 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
         />
       </View>
       <View style={styles.content}>
+        {!isSearching && <RecentSearchesTitle>최근 검색한 장소</RecentSearchesTitle>}
         {isSearching
           ? searchResults.map((item, index) => (
               <SearchListItem
@@ -90,5 +92,14 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   searchHeaderWrapper: { marginTop: 8 },
-  content: { flex: 1, marginTop: 8 },
+  content: { flex: 1, marginTop: 16 },
 });
+
+const RecentSearchesTitle = styled.Text`
+  padding: 4px 20px;
+  font-family: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontFamily};
+  font-size: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.bodyNormal.semiBold.lineHeight}px;
+  letter-spacing: ${({ theme }) => theme.typography.bodyNormal.semiBold.letterSpacing}px;
+  color: ${({ theme }) => theme.semantic.text.secondary};
+`;
