@@ -1,7 +1,7 @@
 ---
 name: '[ Bug ] - Bug report'
 about: 'Bug Template'
-title: '[ Bug ] - '
+title: 'fix: '
 labels: 'bug'
 assignees: ''
 ---
