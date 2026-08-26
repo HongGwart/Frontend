@@ -1,8 +1,16 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Dimensions,
+  Keyboard,
+  LayoutChangeEvent,
+  ScrollView,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled, { useTheme } from 'styled-components/native';
-import { NaverMapView } from '@mj-studio/react-native-naver-map';
+import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import SearchIcon from '@assets/svgs/icons/search.svg';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
@@ -91,7 +99,36 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
   // 검색 결과를 탭하면 다른 화면으로 이동하지 않고, 검색 뷰 안의 리스트(흰 배경)를
   // 네이버 지도로 바꿔치기한 뒤 그 위에 시설 정보 카드를 띄운다.
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
+  const mapViewRef = useRef<NaverMapViewRef>(null);
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
+
+  // 마커가 시설 카드에 가리지 않도록, 검색창+카테고리 칩 아래쪽 끝(chipsBottomY)과 시설
+  // 카드 위쪽 끝(cardTopY) 사이의 세로 중앙에 마커가 오도록 카메라 pivot을 계산한다.
+  const [chipsBottomY, setChipsBottomY] = useState(0);
+  const [cardHeight, setCardHeight] = useState(0);
+  const handleTopOverlayLayout = (event: LayoutChangeEvent) => {
+    const { y, height } = event.nativeEvent.layout;
+    setChipsBottomY(y + height);
+  };
+  const handleFacilityCardLayout = (event: LayoutChangeEvent) => {
+    setCardHeight(event.nativeEvent.layout.height);
+  };
+
+  // NaverMapView는 selectedFacility가 바뀌어도 언마운트되지 않고 그대로 유지되므로,
+  // initialCamera(최초 마운트에만 적용됨)만으로는 다른 마커를 선택했을 때 카메라가 안
+  // 옮겨간다. selectedFacility/카드 높이가 바뀔 때마다 명시적으로 카메라를 이동시킨다.
+  useEffect(() => {
+    if (!selectedFacility || chipsBottomY === 0 || cardHeight === 0) return;
+    const windowHeight = Dimensions.get('window').height;
+    const cardTopY = windowHeight - cardHeight;
+    const pivotY = (chipsBottomY + cardTopY) / 2 / windowHeight;
+    mapViewRef.current?.animateCameraTo({
+      latitude: selectedFacility.marker.latitude,
+      longitude: selectedFacility.marker.longitude,
+      zoom: 16,
+      pivot: { x: 0.5, y: pivotY },
+    });
+  }, [selectedFacility, chipsBottomY, cardHeight]);
   // 지도 모드 상단 카테고리 칩. 실제 마커 필터링과의 연결 없이 Figma와 동일한 UI만 우선 갖춘다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const insets = useSafeAreaInsets();
@@ -102,6 +139,7 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
     return (
       <View style={styles.container}>
         <NaverMapView
+          ref={mapViewRef}
           style={StyleSheet.absoluteFill}
           initialCamera={{
             latitude: selectedFacility.marker.latitude,
@@ -133,7 +171,12 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
         </NaverMapView>
         {/* 지도 위에 검색창 + 카테고리 칩(캠퍼스맵 메인홈과 동일한 형태)이 떠 있다.
             검색창을 탭하면 지도를 벗어나 다시 검색 리스트/입력 상태로 돌아간다. */}
-        <SafeAreaView edges={['top']} style={styles.mapTopOverlay} pointerEvents="box-none">
+        <SafeAreaView
+          edges={['top']}
+          style={styles.mapTopOverlay}
+          pointerEvents="box-none"
+          onLayout={handleTopOverlayLayout}
+        >
           <View style={styles.searchBarPadding}>
             <SearchBar value={value} onChangeText={onChangeText} onPress={() => setSelectedFacility(null)} />
           </View>
@@ -147,31 +190,33 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
           onClose={() => setSelectedFacility(null)}
           style={styles.facilityCardWrapper}
         >
-          {selectedFacility.type === 'dong' ? (
-            <FacilityInfoCard
-              variant="outside"
-              buildingCode={selectedFacility.marker.label ?? ''}
-              buildingName={selectedFacility.marker.buildingName}
-              description={selectedFacility.marker.description}
-              isFavorite={selectedFacility.marker.favorite}
-              images={selectedFacility.marker.images}
-              facilityCounts={DUMMY_FACILITY_COUNTS}
-              mainEntrance={DUMMY_MAIN_ENTRANCE}
-              operatingHours={DUMMY_OPERATING_HOURS}
-              onViewInsidePress={() => {}}
-            />
-          ) : (
-            <FacilityInfoCard
-              variant="facility"
-              buildingCode={selectedFacility.marker.buildingCode}
-              buildingName={selectedFacility.marker.buildingName}
-              facilityName={selectedFacility.marker.room}
-              isFavorite={selectedFacility.marker.favorite}
-              images={selectedFacility.marker.images}
-              operatingHours={DUMMY_OPERATING_HOURS}
-              onViewInsidePress={() => {}}
-            />
-          )}
+          <View onLayout={handleFacilityCardLayout}>
+            {selectedFacility.type === 'dong' ? (
+              <FacilityInfoCard
+                variant="outside"
+                buildingCode={selectedFacility.marker.label ?? ''}
+                buildingName={selectedFacility.marker.buildingName}
+                description={selectedFacility.marker.description}
+                isFavorite={selectedFacility.marker.favorite}
+                images={selectedFacility.marker.images}
+                facilityCounts={DUMMY_FACILITY_COUNTS}
+                mainEntrance={DUMMY_MAIN_ENTRANCE}
+                operatingHours={DUMMY_OPERATING_HOURS}
+                onViewInsidePress={() => {}}
+              />
+            ) : (
+              <FacilityInfoCard
+                variant="facility"
+                buildingCode={selectedFacility.marker.buildingCode}
+                buildingName={selectedFacility.marker.buildingName}
+                facilityName={selectedFacility.marker.room}
+                isFavorite={selectedFacility.marker.favorite}
+                images={selectedFacility.marker.images}
+                operatingHours={DUMMY_OPERATING_HOURS}
+                onViewInsidePress={() => {}}
+              />
+            )}
+          </View>
         </DismissibleBottomSheet>
       </View>
     );
