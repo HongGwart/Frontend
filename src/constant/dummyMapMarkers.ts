@@ -228,15 +228,16 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     description: '지정 흡연 구역',
   },
   // H동 중앙도서관도 "열람실 1/2" 외에 검색 더미에 나오는 "314호"를 실제 마커로 채워둔다.
+  // 314호는 열람실이 아니라 강의실이라 category를 classroom으로 둔다.
   {
     id: 'c14',
     latitude: 37.5514,
     longitude: 126.9251,
-    category: 'readingRoom',
+    category: 'classroom',
     buildingCode: 'H동',
     buildingName: '중앙도서관',
     room: '314호',
-    description: '지정 좌석제 열람실',
+    description: '지정 좌석제 강의실',
   },
   {
     id: 'c15',

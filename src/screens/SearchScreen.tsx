@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { NaverMapView } from '@mj-studio/react-native-naver-map';
@@ -177,52 +177,61 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
-      <View style={styles.searchHeaderWrapper}>
-        <SearchPageHeader
-          value={value}
-          onChangeText={onChangeText}
-          onVoicePress={toggleListening}
-          isListening={isListening}
-          onBackPress={onBackPress}
-        />
-      </View>
-      <View style={styles.content}>
-        {!isSearching && <RecentSearchesTitle>최근 검색한 장소</RecentSearchesTitle>}
-        {isSearching
-          ? searchResults.map((item, index) => (
-              <SearchListItem
-                key={item.id}
-                building={item.building}
-                place={item.place}
-                room={item.room}
-                isFavorite={item.isFavorite}
-                onPress={() => {
-                  const facility = findFacilityForSearchItem(item);
-                  if (facility) setSelectedFacility(facility);
-                }}
-                showDivider={index !== searchResults.length - 1}
-                {...SEARCH_ITEM_ICONS[item.category]}
-              />
-            ))
-          : recentSearches.map((item, index) => (
-              <SearchListItem
-                key={item.id}
-                building={item.building}
-                place={item.place}
-                room={item.room}
-                isFavorite={item.isFavorite}
-                history
-                date={item.date}
-                showDivider={index !== recentSearches.length - 1}
-                onPress={() => {
-                  const facility = findFacilityForSearchItem(item);
-                  if (facility) setSelectedFacility(facility);
-                }}
-                onDeletePress={() => removeRecentSearch(item.id)}
-                {...SEARCH_ITEM_ICONS[item.category]}
-              />
-            ))}
-      </View>
+      {/* 리스트 항목이 아닌 빈 영역을 탭하면 키보드를 내린다. 각 리스트 항목은 자체
+          Pressable이 터치를 먼저 가져가므로 항목을 누르는 동작과는 겹치지 않는다. */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.container}>
+          <View style={styles.searchHeaderWrapper}>
+            <SearchPageHeader
+              value={value}
+              onChangeText={onChangeText}
+              onVoicePress={toggleListening}
+              isListening={isListening}
+              onBackPress={onBackPress}
+            />
+          </View>
+          <View style={styles.content}>
+            {/* "최근 검색한 장소" 타이틀은 고정, 그 아래 리스트만 스크롤된다. */}
+            {!isSearching && <RecentSearchesTitle>최근 검색한 장소</RecentSearchesTitle>}
+            <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+              {isSearching
+                ? searchResults.map((item, index) => (
+                    <SearchListItem
+                      key={item.id}
+                      building={item.building}
+                      place={item.place}
+                      room={item.room}
+                      isFavorite={item.isFavorite}
+                      onPress={() => {
+                        const facility = findFacilityForSearchItem(item);
+                        if (facility) setSelectedFacility(facility);
+                      }}
+                      showDivider={index !== searchResults.length - 1}
+                      {...SEARCH_ITEM_ICONS[item.category]}
+                    />
+                  ))
+                : recentSearches.map((item, index) => (
+                    <SearchListItem
+                      key={item.id}
+                      building={item.building}
+                      place={item.place}
+                      room={item.room}
+                      isFavorite={item.isFavorite}
+                      history
+                      date={item.date}
+                      showDivider={index !== recentSearches.length - 1}
+                      onPress={() => {
+                        const facility = findFacilityForSearchItem(item);
+                        if (facility) setSelectedFacility(facility);
+                      }}
+                      onDeletePress={() => removeRecentSearch(item.id)}
+                      {...SEARCH_ITEM_ICONS[item.category]}
+                    />
+                  ))}
+            </ScrollView>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }

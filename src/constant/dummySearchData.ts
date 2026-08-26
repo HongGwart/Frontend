@@ -58,7 +58,7 @@ export interface RecentSearchItem extends SearchResultItem {
 // SEARCH_ITEM_ICONS에 있는 카테고리(열람실/강의실/건물/식당/카페/편의점/PC실/프린터기/도서 반납기/흡연 구역)를
 // 최근 검색어·검색 결과 양쪽에 최소 하나씩 넣어서 모든 아이콘 상태를 확인할 수 있게 한다.
 export const DUMMY_RECENT_SEARCHES: RecentSearchItem[] = [
-  { id: 'r1', building: 'H동', place: '중앙도서관', room: '314호', category: 'readingRoom', isFavorite: true, date: '08.26' },
+  { id: 'r1', building: 'H동', place: '중앙도서관', room: '314호', category: 'classroom', isFavorite: true, date: '08.26' },
   { id: 'r2', building: 'I동', place: '과학관', room: '305호', category: 'classroom', date: '08.26' },
   { id: 'r3', building: 'G동', place: '학생회관', category: 'building', isFavorite: true, date: '08.26' },
   { id: 'r4', building: 'S동', place: '학생회관', room: '식당', category: 'restaurant', date: '08.26' },
@@ -71,7 +71,7 @@ export const DUMMY_RECENT_SEARCHES: RecentSearchItem[] = [
 ];
 
 export const DUMMY_SEARCH_RESULTS: SearchResultItem[] = [
-  { id: 's1', building: 'H동', place: '중앙도서관', room: '314호', category: 'readingRoom' },
+  { id: 's1', building: 'H동', place: '중앙도서관', room: '314호', category: 'classroom' },
   { id: 's2', building: 'H동', place: '중앙도서관', room: '열람실 2', category: 'readingRoom', isFavorite: true },
   { id: 's3', building: 'H동', place: '중앙도서관', room: '도서 반납기', category: 'bookReturn' },
   { id: 's4', building: 'I동', place: '과학관', room: '305호', category: 'classroom' },
