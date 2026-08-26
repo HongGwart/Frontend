@@ -38,6 +38,13 @@ type SelectedFacility =
   | { type: 'list'; items: FacilityListSheetItem[] }
   | { type: 'item'; item: FacilityListSheetItem };
 
+// "즐겨찾기" 칩에서 지도에 찍을 동 하나의 정보. 그 동 자체가 즐겨찾기됐을 수도 있고,
+// 그 동 안의 시설(카테고리 마커) 중 일부만 즐겨찾기됐을 수도 있어서 둘을 같이 들고 있는다.
+interface FavoriteMapEntry {
+  dongMarker: DummyMapMarker;
+  facilityItems: DummyCategoryMarker[];
+}
+
 const TOAST_DURATION_MS = 2000;
 
 // 겹쳐진 마커 리스트 시트는 카테고리 칩 아래로 이 간격(피그마 기준)만큼 띄우고, 그 지점부터
@@ -85,8 +92,9 @@ export default function MapScreen({ onSearchPress }: Props) {
 
   // 숫자 배지가 붙은(군집된) 카테고리 마커는 시설 하나의 정보가 아니라 그 자리에 겹친 여러
   // 시설의 리스트를 보여줘야 한다. 더미 리스트가 있으면 리스트를, 없으면(방금 만든 예시 말고
-  // 나머지 count 마커들) 기존 단일 카드로 fallback한다. 동(건물) 마커는 한 지점 = 한 건물이라
-  // 애초에 count/리스트 개념이 없어서 항상 단일 카드로 연다.
+  // 나머지 count 마커들) 기존 단일 카드로 fallback한다. 동(건물) 마커 자체는 위치가 서로
+  // 겹칠 일이 없어서 평소엔 항상 단일 카드로 연다("즐겨찾기" 칩에서 동 안 시설이 여러 개
+  // 즐겨찾기된 경우는 openFavoriteDongSheet가 별도로 처리한다).
   const openDongMarkerSheet = useCallback((marker: DummyMapMarker) => {
     setSelectedFacility({ type: 'dong', marker });
   }, []);
@@ -100,6 +108,37 @@ export default function MapScreen({ onSearchPress }: Props) {
     }
   }, []);
 
+  // 카테고리 마커를 리스트 시트 항목 형태로 바꾼다. "즐겨찾기" 칩에서 같은 동에 즐겨찾기가
+  // 여러 개 묶였을 때, 그 묶음을 FacilityListSheet에 그대로 넘기기 위해 쓴다.
+  const toFacilityListItem = useCallback(
+    (marker: DummyCategoryMarker): FacilityListSheetItem => ({
+      id: marker.id,
+      ...CATEGORY_MARKER_ICONS[marker.category],
+      building: marker.buildingCode,
+      place: marker.buildingName,
+      room: marker.room,
+      description: marker.description,
+      isFavorite: isFavorite(marker),
+      images: marker.images,
+    }),
+    [isFavorite],
+  );
+
+  const openFavoriteClusterSheet = useCallback(
+    (group: DummyCategoryMarker[]) => {
+      setSelectedFacility({ type: 'list', items: group.map(toFacilityListItem) });
+    },
+    [toFacilityListItem],
+  );
+
+  const openFavoriteDongSheet = useCallback((entry: FavoriteMapEntry) => {
+    if (entry.facilityItems.length > 0) {
+      openFavoriteClusterSheet(entry.facilityItems);
+    } else {
+      openDongMarkerSheet(entry.dongMarker);
+    }
+  }, [openFavoriteClusterSheet, openDongMarkerSheet]);
+
   // 지도 바닥을 탭했을 때도 스와이프로 닫을 때와 동일하게 부드럽게 슬라이드다운시킨다.
   // (state를 바로 null로 바꾸면 애니메이션 없이 뚝 끊겨서 사라진다.)
   const closeFacilitySheet = useCallback(() => {
@@ -107,25 +146,45 @@ export default function MapScreen({ onSearchPress }: Props) {
   }, [selectedFacility]);
 
   // 동(건물) 마커는 칩이 하나도 안 켜져 있을 때만 보여준다. 특정 카테고리를 고르면 그
-  // 카테고리 마커만 남기고, 동 마커는 화면에서 사라진다.
+  // 카테고리 마커만 남기고, 동 마커는 화면에서 사라진다. "즐겨찾기" 칩은 아래 favoriteEntries가
+  // 동 마커 자리를 대신 맡아서 그린다.
   const dongMarkers = useMemo(() => (selectedKey === null ? DUMMY_MAP_MARKERS : []), [selectedKey]);
 
-  // "즐겨찾기" 칩은 시설 카테고리가 아니라 상태라서, 동 마커/카테고리 마커 중
-  // isFavorite인 것들만 모아서 보여준다.
+  // 특정 카테고리 칩(즐겨찾기 제외)을 골랐을 때만 그 카테고리의 마커를 그대로 보여준다.
   const categoryMarkers = useMemo(
     () =>
-      selectedKey === null
+      selectedKey === null || selectedKey === 'favorite'
         ? []
-        : selectedKey === 'favorite'
-          ? DUMMY_CATEGORY_MARKERS.filter(isFavorite)
-          : DUMMY_CATEGORY_MARKERS.filter(marker => marker.category === selectedKey),
-    [selectedKey, isFavorite],
+        : DUMMY_CATEGORY_MARKERS.filter(marker => marker.category === selectedKey),
+    [selectedKey],
   );
 
-  const favoriteDongMarkers = useMemo(
-    () => (selectedKey === 'favorite' ? DUMMY_MAP_MARKERS.filter(isFavorite) : []),
-    [selectedKey, isFavorite],
-  );
+  // "즐겨찾기" 칩은 새 마커를 만들지 않고, 실제 그 동(건물) 마커 위치에 그대로 표시한다.
+  // 동 자체가 즐겨찾기됐을 수도 있고, 동 안의 시설(카테고리 마커) 중 일부만 즐겨찾기됐을
+  // 수도 있어서(예: G동 식당·카페·편의점만 즐겨찾기) 둘을 동 단위로 합친다. 좌표 근접도가
+  // 아니라 "같은 동 소속인지"로 묶는 것 — 실제 좌표 클러스터링(줌 레벨 기반)은 별도 이슈.
+  const favoriteEntries = useMemo<FavoriteMapEntry[]>(() => {
+    if (selectedKey !== 'favorite') return [];
+
+    const entryByLabel = new Map<string, FavoriteMapEntry>();
+    DUMMY_MAP_MARKERS.forEach(dongMarker => {
+      if (dongMarker.favorite) {
+        entryByLabel.set(dongMarker.label ?? dongMarker.id, { dongMarker, facilityItems: [] });
+      }
+    });
+    DUMMY_CATEGORY_MARKERS.forEach(marker => {
+      if (!isFavorite(marker)) return;
+      let entry = entryByLabel.get(marker.buildingCode);
+      if (!entry) {
+        const dongMarker = DUMMY_MAP_MARKERS.find(dong => dong.label === marker.buildingCode);
+        if (!dongMarker) return; // 매칭되는 동 마커가 없으면(더미 데이터 누락 등) 표시할 자리가 없어 건너뜀
+        entry = { dongMarker, facilityItems: [] };
+        entryByLabel.set(marker.buildingCode, entry);
+      }
+      entry.facilityItems.push(marker);
+    });
+    return Array.from(entryByLabel.values());
+  }, [selectedKey, isFavorite]);
 
   return (
     <View style={styles.container}>
@@ -139,7 +198,7 @@ export default function MapScreen({ onSearchPress }: Props) {
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
         onTapMap={closeFacilitySheet}
       >
-        {[...dongMarkers, ...favoriteDongMarkers].map(marker => (
+        {dongMarkers.map(marker => (
           <NaverMapMarker
             key={marker.id}
             latitude={marker.latitude}
@@ -147,6 +206,17 @@ export default function MapScreen({ onSearchPress }: Props) {
             label={marker.label}
             favorite={isFavorite(marker)}
             onPress={() => openDongMarkerSheet(marker)}
+          />
+        ))}
+        {favoriteEntries.map(entry => (
+          <NaverMapMarker
+            key={entry.dongMarker.id}
+            latitude={entry.dongMarker.latitude}
+            longitude={entry.dongMarker.longitude}
+            label={entry.dongMarker.label}
+            favorite={isFavorite(entry.dongMarker)}
+            count={entry.facilityItems.length || undefined}
+            onPress={() => openFavoriteDongSheet(entry)}
           />
         ))}
         {categoryMarkers.map(marker => (

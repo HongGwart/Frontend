@@ -108,11 +108,14 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     room: '열람실 2',
     description: '조용히 공부할 수 있는 개인 열람실',
   },
+  // c3~c5: 전부 G동(학생회관) 소속. 셋 다 즐겨찾기해둬서, "즐겨찾기" 칩을 켰을 때 같은
+  // 동 안에 즐겨찾기가 여러 개 있으면 겹쳐진 마커(카운트 배지)로 묶이는 예시로 쓴다.
   {
     id: 'c3',
     latitude: 37.5515,
     longitude: 126.9257,
     category: 'restaurant',
+    favorite: true,
     buildingCode: 'G동',
     buildingName: '학생회관',
     room: '학생 식당',
@@ -124,6 +127,7 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     latitude: 37.5497,
     longitude: 126.9241,
     category: 'cafe',
+    favorite: true,
     buildingCode: 'G동',
     buildingName: '학생회관',
     room: '카페',
@@ -135,6 +139,7 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     latitude: 37.5511,
     longitude: 126.9238,
     category: 'store',
+    favorite: true,
     buildingCode: 'G동',
     buildingName: '학생회관',
     room: '편의점',
