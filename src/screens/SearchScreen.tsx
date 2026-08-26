@@ -1,8 +1,9 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import styled from 'styled-components/native';
+import styled, { useTheme } from 'styled-components/native';
 import { NaverMapView } from '@mj-studio/react-native-naver-map';
+import SearchIcon from '@assets/svgs/icons/search.svg';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
 import { SearchListItem } from '@components/common/SearchListItem';
@@ -64,6 +65,7 @@ interface Props {
 }
 
 export default function SearchScreen({ value, onChangeText, onBackPress }: Props) {
+  const theme = useTheme();
   // 마이크 버튼 -> 듣기 시작 -> 인식된 텍스트로 검색창 내용을 그대로 갱신(중간 결과 포함).
   // expo-speech-recognition은 네이티브 모듈이라 Expo Go가 아니라 dev-client 빌드에서만 동작한다.
   const { isListening, toggleListening } = useVoiceSearch({ onResult: onChangeText });
@@ -193,9 +195,15 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
           <View style={styles.content}>
             {/* "최근 검색한 장소" 타이틀은 고정, 그 아래 리스트만 스크롤된다. */}
             {!isSearching && <RecentSearchesTitle>최근 검색한 장소</RecentSearchesTitle>}
-            <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-              {isSearching
-                ? searchResults.map((item, index) => (
+            <ScrollView
+              style={styles.scrollView}
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+            >
+              {isSearching ? (
+                searchResults.length > 0 ? (
+                  searchResults.map((item, index) => (
                     <SearchListItem
                       key={item.id}
                       building={item.building}
@@ -210,24 +218,35 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
                       {...SEARCH_ITEM_ICONS[item.category]}
                     />
                   ))
-                : recentSearches.map((item, index) => (
-                    <SearchListItem
-                      key={item.id}
-                      building={item.building}
-                      place={item.place}
-                      room={item.room}
-                      isFavorite={item.isFavorite}
-                      history
-                      date={item.date}
-                      showDivider={index !== recentSearches.length - 1}
-                      onPress={() => {
-                        const facility = findFacilityForSearchItem(item);
-                        if (facility) setSelectedFacility(facility);
-                      }}
-                      onDeletePress={() => removeRecentSearch(item.id)}
-                      {...SEARCH_ITEM_ICONS[item.category]}
-                    />
-                  ))}
+                ) : (
+                  <EmptyResultView>
+                    <EmptyIconCircle>
+                      <SearchIcon width={28} height={28} color={theme.semantic.text.tertiary} />
+                    </EmptyIconCircle>
+                    <EmptyTitleText>검색 결과가 없어요</EmptyTitleText>
+                    <EmptySubtitleText>다른 검색어로 다시 시도해보세요</EmptySubtitleText>
+                  </EmptyResultView>
+                )
+              ) : (
+                recentSearches.map((item, index) => (
+                  <SearchListItem
+                    key={item.id}
+                    building={item.building}
+                    place={item.place}
+                    room={item.room}
+                    isFavorite={item.isFavorite}
+                    history
+                    date={item.date}
+                    showDivider={index !== recentSearches.length - 1}
+                    onPress={() => {
+                      const facility = findFacilityForSearchItem(item);
+                      if (facility) setSelectedFacility(facility);
+                    }}
+                    onDeletePress={() => removeRecentSearch(item.id)}
+                    {...SEARCH_ITEM_ICONS[item.category]}
+                  />
+                ))
+              )}
             </ScrollView>
           </View>
         </View>
@@ -240,6 +259,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   searchHeaderWrapper: { marginTop: 8 },
   content: { flex: 1, marginTop: 16 },
+  scrollView: { flex: 1 },
+  // 검색 결과가 없을 때 EmptyResultView를 검색창 아래 여백의 정중앙에 오도록
+  // 스크롤 콘텐츠 자체가 (위 scrollView의 flex:1로 확보된) 남은 공간을 다 채우게 한다.
+  scrollContent: { flexGrow: 1 },
   mapTopOverlay: {
     position: 'absolute',
     top: 0,
@@ -260,4 +283,38 @@ const RecentSearchesTitle = styled.Text`
   line-height: ${({ theme }) => theme.typography.bodyNormal.semiBold.lineHeight}px;
   letter-spacing: ${({ theme }) => theme.typography.bodyNormal.semiBold.letterSpacing}px;
   color: ${({ theme }) => theme.semantic.text.secondary};
+`;
+
+// 검색어에 해당하는 결과가 하나도 없을 때 보여주는 빈 상태 화면.
+const EmptyResultView = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 40px 96px;
+`;
+
+const EmptyIconCircle = styled.View`
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 100px;
+  background-color: ${({ theme }) => theme.semantic.background.fill};
+`;
+
+const EmptyTitleText = styled.Text`
+  font-family: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontFamily};
+  font-size: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.bodyNormal.semiBold.lineHeight}px;
+  letter-spacing: ${({ theme }) => theme.typography.bodyNormal.semiBold.letterSpacing}px;
+  color: ${({ theme }) => theme.semantic.text.primary};
+`;
+
+const EmptySubtitleText = styled.Text`
+  font-family: ${({ theme }) => theme.typography.labelNormal.medium.fontFamily};
+  font-size: ${({ theme }) => theme.typography.labelNormal.medium.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.labelNormal.medium.lineHeight}px;
+  letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
+  color: ${({ theme }) => theme.semantic.text.tertiary};
 `;
