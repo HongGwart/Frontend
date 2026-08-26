@@ -124,7 +124,8 @@ const Container = styled(Pressable)<{ selected: boolean; pressed: boolean; showD
 const IconAvatar = styled.View<{ isBrand: boolean }>`
   align-items: center;
   justify-content: center;
-  padding: 6px;
+  width: 36px;
+  height: 36px;
   border-radius: 100px;
   background-color: ${({ theme, isBrand }) =>
     isBrand ? theme.blue[500] : theme.semantic.background.color};

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
@@ -23,6 +23,9 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
     setRecentSearches(prev => prev.filter(item => item.id !== id));
   };
 
+  // 검색 결과 리스트에서 선택(체크)된 항목. 검색어가 바뀌면 선택을 초기화한다.
+  const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
+
   const trimmedValue = value.trim();
   const searchResults = useMemo(() => {
     if (!trimmedValue) return [];
@@ -30,6 +33,10 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
     return DUMMY_SEARCH_RESULTS.filter(item =>
       `${item.building}${item.place}${item.room ?? ''}`.toLowerCase().includes(keyword),
     );
+  }, [trimmedValue]);
+  // 검색어가 바뀌어 결과 목록이 달라지면 이전 선택은 더 이상 유효하지 않으므로 초기화한다.
+  useEffect(() => {
+    setSelectedResultId(null);
   }, [trimmedValue]);
 
   // 검색어가 없으면 최근 검색어를, 있으면 검색 결과를 보여준다.
@@ -55,6 +62,8 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
                 place={item.place}
                 room={item.room}
                 isFavorite={item.isFavorite}
+                selected={item.id === selectedResultId}
+                onPress={() => setSelectedResultId(item.id)}
                 showDivider={index !== searchResults.length - 1}
                 {...SEARCH_ITEM_ICONS[item.category]}
               />
