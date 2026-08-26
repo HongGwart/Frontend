@@ -5,6 +5,7 @@ import styled from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
 import { FacilityListItem } from './FacilityListItem';
 
+// fillHeight가 아닐 때(부모가 높이를 고정해주지 않을 때)를 위한 fallback 상한선.
 // 화면 높이의 70%를 넘어가면 스크롤되게 한다. DismissibleBottomSheet가 이 시트를 스와이프로
 // 닫는 제스처도 같이 처리하는데, 일반 ScrollView(react-native)를 쓰면 그 팬 제스처와 스크롤이
 // 서로 터치를 뺏으려고 충돌하기 쉬워서, 같은 gesture-handler 트리에서 잘 어우러지는
@@ -31,18 +32,24 @@ interface Props {
   onToggleFavorite?: (item: FacilityListSheetItem) => void;
   /** FacilityListItem을 대신 넘기고 싶을 때 쓰는 렌더 함수. 생략하면 기본 FacilityListItem을 쓴다. */
   renderItem?: (item: FacilityListSheetItem, index: number, isLast: boolean) => React.ReactNode;
+  /**
+   * true면 부모가 이미 고정 높이(예: 카테고리 칩 아래 235px 지점 ~ 화면 끝)를 잡아준다고
+   * 보고, 그 높이를 그대로 채운다(항목이 적어도 빈 공간이 남지 않고 시트가 그 높이를 가짐).
+   * 기본값(false)은 기존처럼 내용물 크기대로 커지다가 화면 70% 지점부터 스크롤된다.
+   */
+  fillHeight?: boolean;
 }
 
 /**
  * 숫자 배지가 붙은(군집된) 마커를 탭했을 때 뜨는, 건물/시설 여러 개를 나열하는 바텀시트.
  * Figma "facility list"(716:2935, 811:6250). 그래버 + FacilityListItem 목록으로만 구성된다.
  */
-export function FacilityListSheet({ items, onSelectItem, onToggleFavorite, renderItem }: Props) {
+export function FacilityListSheet({ items, onSelectItem, onToggleFavorite, renderItem, fillHeight }: Props) {
   return (
-    <Container>
+    <Container style={fillHeight ? styles.fillContainer : undefined}>
       <Grabber />
       <ScrollView
-        style={styles.scrollView}
+        style={fillHeight ? styles.scrollViewFill : styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
@@ -122,9 +129,16 @@ const Grabber = styled.View`
 `;
 
 const styles = StyleSheet.create({
+  fillContainer: {
+    flex: 1,
+  },
   scrollView: {
     width: '100%',
     maxHeight: MAX_HEIGHT,
+  },
+  scrollViewFill: {
+    width: '100%',
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
