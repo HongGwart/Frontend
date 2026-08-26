@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { SvgProps } from 'react-native-svg';
 import StarIcon from '@assets/svgs/icons/star.svg';
 import BookIcon from '@assets/svgs/icons/book.svg';
+import ClassroomIcon from '@assets/svgs/icons/classroom.svg';
 import RestaurantIcon from '@assets/svgs/icons/restaurant.svg';
 import CafeIcon from '@assets/svgs/icons/cafe.svg';
 import StoreIcon from '@assets/svgs/icons/store.svg';
@@ -13,6 +14,7 @@ import SmokeIcon from '@assets/svgs/icons/smoke.svg';
 export type CategoryKey =
   | 'favorite'
   | 'readingRoom'
+  | 'classroom'
   | 'restaurant'
   | 'cafe'
   | 'store'
@@ -33,6 +35,7 @@ interface CategoryChipConfig {
 export const CATEGORY_CHIPS: CategoryChipConfig[] = [
   { key: 'favorite', label: '즐겨찾기', icon: StarIcon, iconWidth: 16, iconHeight: 16 },
   { key: 'readingRoom', label: '열람실', icon: BookIcon, iconWidth: 14, iconHeight: 16 },
+  { key: 'classroom', label: '강의실', icon: ClassroomIcon, iconWidth: 14, iconHeight: 16 },
   { key: 'restaurant', label: '식당', icon: RestaurantIcon, iconWidth: 13, iconHeight: 16 },
   { key: 'cafe', label: '카페', icon: CafeIcon, iconWidth: 16, iconHeight: 15 },
   { key: 'store', label: '편의점', icon: StoreIcon, iconWidth: 16, iconHeight: 15 },

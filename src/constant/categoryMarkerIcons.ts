@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { SvgProps } from 'react-native-svg';
 import BookIcon from '@assets/svgs/icons/book.svg';
+import ClassroomIcon from '@assets/svgs/icons/classroom.svg';
 import RestaurantIcon from '@assets/svgs/icons/restaurant.svg';
 import CafeIcon from '@assets/svgs/icons/cafe.svg';
 import StoreIcon from '@assets/svgs/icons/store.svg';
@@ -22,6 +23,7 @@ interface CategoryMarkerIconSpec {
 // "즐겨찾기"는 시설 종류가 아니라 상태(별 배지)라서 여기엔 없다 - CategoryMarker의 favorite prop으로 표현한다.
 export const CATEGORY_MARKER_ICONS: Record<Exclude<CategoryKey, 'favorite'>, CategoryMarkerIconSpec> = {
   readingRoom: { icon: BookIcon, iconWidth: 16, iconHeight: 18 },
+  classroom: { icon: ClassroomIcon, iconWidth: 19, iconHeight: 21 },
   restaurant: { icon: RestaurantIcon, iconWidth: 15, iconHeight: 19 },
   cafe: { icon: CafeIcon, iconWidth: 19, iconHeight: 18 },
   store: { icon: StoreIcon, iconWidth: 19, iconHeight: 18 },

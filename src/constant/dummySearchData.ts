@@ -66,14 +66,14 @@ export const DUMMY_RECENT_SEARCHES: RecentSearchItem[] = [
   { id: 'r6', building: 'S동', place: '학생회관', room: '편의점', category: 'store', isFavorite: true, date: '08.26' },
   { id: 'r7', building: 'E동', place: '공학관', room: 'PC실', category: 'pcRoom', date: '08.26' },
   { id: 'r8', building: 'E동', place: '공학관', room: '프린터기', category: 'printer', date: '08.26' },
-  { id: 'r9', building: 'H동', place: '중앙도서관', category: 'bookReturn', date: '08.26' },
+  { id: 'r9', building: 'H동', place: '중앙도서관', room: '도서 반납기', category: 'bookReturn', date: '08.26' },
   { id: 'r10', building: 'S동', place: '학생회관', room: '흡연 구역', category: 'smokingArea', date: '08.26' },
 ];
 
 export const DUMMY_SEARCH_RESULTS: SearchResultItem[] = [
   { id: 's1', building: 'H동', place: '중앙도서관', room: '314호', category: 'readingRoom' },
   { id: 's2', building: 'H동', place: '중앙도서관', room: '열람실 2', category: 'readingRoom', isFavorite: true },
-  { id: 's3', building: 'H동', place: '중앙도서관', category: 'bookReturn' },
+  { id: 's3', building: 'H동', place: '중앙도서관', room: '도서 반납기', category: 'bookReturn' },
   { id: 's4', building: 'I동', place: '과학관', room: '305호', category: 'classroom' },
   { id: 's5', building: 'G동', place: '학생회관', category: 'building', isFavorite: true },
   { id: 's6', building: 'S동', place: '학생회관', room: '식당', category: 'restaurant' },
