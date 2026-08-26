@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NaverMapView } from '@mj-studio/react-native-naver-map';
@@ -40,12 +40,26 @@ type SelectedFacility =
 
 const TOAST_DURATION_MS = 2000;
 
+// 겹쳐진 마커 리스트 시트는 카테고리 칩 아래로 이 간격(피그마 기준)만큼 띄우고, 그 지점부터
+// 화면 끝까지를 항상 채운다(항목이 적어도 빈 공간으로 남지 않고 시트 자체가 그 높이를 가짐).
+const LIST_SHEET_GAP_FROM_CHIPS = 235;
+
 export default function MapScreen({ onSearchPress }: Props) {
   // 메인홈 카테고리 칩은 한 번에 하나만 선택된다. 실제 지도 필터링과의 연결은
   // 추후 지도 데이터가 준비되면 여기 selectedKey를 그대로 넘기면 된다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
+
+  // 검색창+카테고리 칩 영역의 화면상 y 좌표(하단)를 재서, 리스트 시트를 그 지점 + 235px
+  // 아래에서부터 시작하도록 top으로 직접 고정한다(window 높이로 역산하는 방식은 여러
+  // 화면 크기/세이프에어리어에서 오차가 생기기 쉬워서, top을 직접 고정하는 쪽이 정확하다).
+  const [chipsBottomY, setChipsBottomY] = useState(0);
+  const handleChipsAreaLayout = useCallback((event: LayoutChangeEvent) => {
+    const { y, height } = event.nativeEvent.layout;
+    setChipsBottomY(y + height);
+  }, []);
+  const listSheetTop = chipsBottomY + LIST_SHEET_GAP_FROM_CHIPS;
 
   // 더미 데이터의 favorite 값을 그대로 두고, 토글한 것만 id 기준으로 덮어써서 들고 있는다.
   const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
@@ -147,7 +161,12 @@ export default function MapScreen({ onSearchPress }: Props) {
           />
         ))}
       </NaverMapView>
-      <SafeAreaView edges={['top']} style={styles.searchBarWrapper} pointerEvents="box-none">
+      <SafeAreaView
+        edges={['top']}
+        style={styles.searchBarWrapper}
+        pointerEvents="box-none"
+        onLayout={handleChipsAreaLayout}
+      >
         <View style={styles.searchBarPadding}>
           <SearchBar value="" onChangeText={() => {}} onPress={onSearchPress} />
         </View>
@@ -166,7 +185,10 @@ export default function MapScreen({ onSearchPress }: Props) {
         <DismissibleBottomSheet
           ref={bottomSheetRef}
           onClose={() => setSelectedFacility(null)}
-          style={styles.facilityCardWrapper}
+          style={[
+            styles.facilityCardWrapper,
+            selectedFacility.type === 'list' ? { top: listSheetTop } : null,
+          ]}
         >
           {selectedFacility.type === 'dong' ? (
             <FacilityInfoCard
@@ -204,6 +226,7 @@ export default function MapScreen({ onSearchPress }: Props) {
               }))}
               onSelectItem={item => setSelectedFacility({ type: 'item', item })}
               onToggleFavorite={item => toggleFavorite({ id: item.id, favorite: item.isFavorite }, item.room ?? item.place)}
+              fillHeight
             />
           ) : (
             <FacilityInfoCard
