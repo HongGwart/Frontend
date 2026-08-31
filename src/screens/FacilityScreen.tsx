@@ -1,10 +1,7 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import ComingSoonScreen from './ComingSoonScreen';
 
+// TODO: 실제 편의시설 화면이 나오면 이 컴포넌트 대신 그 화면으로 바꿔 끼운다.
 export default function FacilityScreen() {
-  return <View style={styles.content} />;
+  return <ComingSoonScreen title="편의시설" />;
 }
-
-const styles = StyleSheet.create({
-  content: { flex: 1, backgroundColor: '#fff' },
-});

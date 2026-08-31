@@ -1,0 +1,146 @@
+import React from 'react';
+import { Dimensions, StyleSheet } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import styled from 'styled-components/native';
+import { SvgProps } from 'react-native-svg';
+import { FacilityListItem } from './FacilityListItem';
+
+// fillHeight가 아닐 때(부모가 높이를 고정해주지 않을 때)를 위한 fallback 상한선.
+// 화면 높이의 70%를 넘어가면 스크롤되게 한다. DismissibleBottomSheet가 이 시트를 스와이프로
+// 닫는 제스처도 같이 처리하는데, 일반 ScrollView(react-native)를 쓰면 그 팬 제스처와 스크롤이
+// 서로 터치를 뺏으려고 충돌하기 쉬워서, 같은 gesture-handler 트리에서 잘 어우러지는
+// react-native-gesture-handler의 ScrollView를 쓴다.
+const MAX_HEIGHT = Dimensions.get('window').height * 0.7;
+
+export interface FacilityListSheetItem {
+  id: string;
+  icon: React.FC<SvgProps>;
+  iconWidth?: number;
+  iconHeight?: number;
+  emphasized?: boolean;
+  building: string;
+  place: string;
+  room?: string;
+  description: string;
+  isFavorite?: boolean;
+  images?: [React.FC<SvgProps>, React.FC<SvgProps>];
+}
+
+interface Props {
+  items: FacilityListSheetItem[];
+  onSelectItem?: (item: FacilityListSheetItem) => void;
+  onToggleFavorite?: (item: FacilityListSheetItem) => void;
+  /** FacilityListItem을 대신 넘기고 싶을 때 쓰는 렌더 함수. 생략하면 기본 FacilityListItem을 쓴다. */
+  renderItem?: (item: FacilityListSheetItem, index: number, isLast: boolean) => React.ReactNode;
+  /**
+   * true면 부모가 이미 고정 높이(예: 카테고리 칩 아래 235px 지점 ~ 화면 끝)를 잡아준다고
+   * 보고, 그 높이를 그대로 채운다(항목이 적어도 빈 공간이 남지 않고 시트가 그 높이를 가짐).
+   * 기본값(false)은 기존처럼 내용물 크기대로 커지다가 화면 70% 지점부터 스크롤된다.
+   */
+  fillHeight?: boolean;
+}
+
+/**
+ * 숫자 배지가 붙은(군집된) 마커를 탭했을 때 뜨는, 건물/시설 여러 개를 나열하는 바텀시트.
+ * Figma "facility list"(716:2935, 811:6250). 그래버 + FacilityListItem 목록으로만 구성된다.
+ */
+export function FacilityListSheet({ items, onSelectItem, onToggleFavorite, renderItem, fillHeight }: Props) {
+  return (
+    <Container style={fillHeight ? styles.fillContainer : undefined}>
+      <Grabber />
+      <ScrollView
+        style={fillHeight ? styles.scrollViewFill : styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
+        {items.map((item, index) =>
+          renderItem ? (
+            <React.Fragment key={item.id}>
+              {renderItem(item, index, index === items.length - 1)}
+            </React.Fragment>
+          ) : (
+            <DefaultFacilityListItem
+              key={item.id}
+              item={item}
+              showDivider={index !== items.length - 1}
+              onPress={() => onSelectItem?.(item)}
+              onToggleFavorite={() => onToggleFavorite?.(item)}
+            />
+          ),
+        )}
+      </ScrollView>
+    </Container>
+  );
+}
+
+// 기본 렌더러를 분리해두면 renderItem prop으로 다른 카드 컴포넌트로도 쉽게 바꿔 쓸 수 있다.
+function DefaultFacilityListItem({
+  item,
+  showDivider,
+  onPress,
+  onToggleFavorite,
+}: {
+  item: FacilityListSheetItem;
+  showDivider: boolean;
+  onPress: () => void;
+  onToggleFavorite: () => void;
+}) {
+  return (
+    <FacilityListItem
+      icon={item.icon}
+      iconWidth={item.iconWidth}
+      iconHeight={item.iconHeight}
+      emphasized={item.emphasized}
+      building={item.building}
+      place={item.place}
+      room={item.room}
+      description={item.description}
+      isFavorite={item.isFavorite}
+      images={item.images}
+      showDivider={showDivider}
+      onPress={onPress}
+      onToggleFavorite={onToggleFavorite}
+    />
+  );
+}
+
+const Container = styled.View`
+  width: 100%;
+  background-color: ${({ theme }) => theme.semantic.background.primary};
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  gap: 16px;
+  shadow-color: #000;
+  shadow-offset: 0px -4px;
+  shadow-opacity: 0.05;
+  shadow-radius: 20px;
+  elevation: 8;
+`;
+
+const Grabber = styled.View`
+  width: 36px;
+  height: 4px;
+  border-radius: 100px;
+  background-color: ${({ theme }) => theme.semantic.line.primary};
+`;
+
+const styles = StyleSheet.create({
+  fillContainer: {
+    flex: 1,
+  },
+  scrollView: {
+    width: '100%',
+    maxHeight: MAX_HEIGHT,
+  },
+  scrollViewFill: {
+    width: '100%',
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+});

@@ -155,7 +155,6 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
               longitude={marker.longitude}
               label={marker.label}
               favorite={marker.favorite}
-              count={marker.count}
               onPress={() => setSelectedFacility({ type: 'dong', marker })}
             />
           ))}

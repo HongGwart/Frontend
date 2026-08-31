@@ -10,9 +10,15 @@ interface Props {
   icon: React.FC<SvgProps>;
   iconWidth?: number;
   iconHeight?: number;
+  /**
+   * true면 아바타가 남색으로 꽉 채워지고 아이콘이 흰색이 된다(건물 자체를 가리키는 항목).
+   * false(기본)면 옅은 남색 배경 + 남색 아이콘(특정 호실/시설을 가리키는 항목).
+   */
+  emphasized?: boolean;
   building: string;
   place: string;
-  room: string;
+  /** 특정 호실 등 세부 정보. 건물 자체가 결과인 경우(emphasized일 때가 많다)엔 생략한다. */
+  room?: string;
   description: string;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
@@ -32,6 +38,7 @@ export function FacilityListItem({
   icon: Icon,
   iconWidth = 14,
   iconHeight = 16,
+  emphasized = false,
   building,
   place,
   room,
@@ -56,8 +63,8 @@ export function FacilityListItem({
       showDivider={showDivider}
     >
       <TitleSection>
-        <IconAvatar>
-          <Icon width={iconWidth} height={iconHeight} color={theme.blue[500]} />
+        <IconAvatar emphasized={emphasized}>
+          <Icon width={iconWidth} height={iconHeight} color={emphasized ? theme.semantic.text.white : theme.blue[500]} />
         </IconAvatar>
         <TextBlock>
           <TitleRow>
@@ -65,7 +72,7 @@ export function FacilityListItem({
               <BuildingText>{building}</BuildingText>
               <PlaceText>{place}</PlaceText>
             </NameGroup>
-            <RoomText numberOfLines={1}>{room}</RoomText>
+            {room && <RoomText numberOfLines={1}>{room}</RoomText>}
             <FavoriteToggle isFavorite={isFavorite} onPress={onToggleFavorite} />
           </TitleRow>
           <DescriptionText numberOfLines={1}>{description}</DescriptionText>
@@ -93,12 +100,13 @@ const TitleSection = styled.View`
   width: 100%;
 `;
 
-const IconAvatar = styled.View`
+const IconAvatar = styled.View<{ emphasized: boolean }>`
+  width: 36px;
+  height: 36px;
   align-items: center;
   justify-content: center;
-  padding: 6px;
   border-radius: 100px;
-  background-color: ${({ theme }) => theme.semantic.background.color};
+  background-color: ${({ theme, emphasized }) => (emphasized ? theme.blue[500] : theme.semantic.background.color)};
 `;
 
 const TextBlock = styled.View`
@@ -109,8 +117,12 @@ const TextBlock = styled.View`
 const TitleRow = styled.View`
   flex-direction: row;
   align-items: center;
-  gap: 2px;
+  /* NameGroup(S동-학생회관 사이 2px)의 2배: 학생회관-동아리방 사이는 4px */
+  gap: 4px;
   width: 100%;
+  /* room이 있으면 RoomText(flex:1)가 이미 남는 공간을 채워서 즐겨찾기를 끝으로 밀어내지만,
+     room이 없는(emphasized 건물 항목 등) 경우엔 밀어줄 요소가 없어서 이걸로 대신 처리한다. */
+  justify-content: space-between;
 `;
 
 const NameGroup = styled.View`
