@@ -178,7 +178,7 @@ export default function MapScreen({ onSearchPress }: Props) {
 
     const entryByLabel = new Map<string, FavoriteMapEntry>();
     DUMMY_MAP_MARKERS.forEach(dongMarker => {
-      if (dongMarker.favorite) {
+      if (isFavorite(dongMarker)) {
         entryByLabel.set(dongMarker.label ?? dongMarker.id, { dongMarker, facilityItems: [] });
       }
     });
