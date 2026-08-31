@@ -145,6 +145,16 @@ export default function MapScreen({ onSearchPress }: Props) {
     if (selectedFacility) bottomSheetRef.current?.close();
   }, [selectedFacility]);
 
+  // 카테고리 칩을 누르면(활성/비활성 어느 방향이든) 지도 위 마커 구성 자체가 바뀌므로,
+  // 열려있던 시설 정보 카드는 이전 마커를 가리키는 채로 남지 않게 항상 닫는다.
+  const handleSelectCategory = useCallback(
+    (key: CategoryKey | null) => {
+      closeFacilitySheet();
+      setSelectedKey(key);
+    },
+    [closeFacilitySheet],
+  );
+
   // 동(건물) 마커는 칩이 하나도 안 켜져 있을 때만 보여준다. 특정 카테고리를 고르면 그
   // 카테고리 마커만 남기고, 동 마커는 화면에서 사라진다. "즐겨찾기" 칩은 아래 favoriteEntries가
   // 동 마커 자리를 대신 맡아서 그린다.
@@ -240,7 +250,7 @@ export default function MapScreen({ onSearchPress }: Props) {
         <View style={styles.searchBarPadding}>
           <SearchBar value="" onChangeText={() => {}} onPress={onSearchPress} />
         </View>
-        <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} />
+        <CategoryChipList selectedKey={selectedKey} onSelect={handleSelectCategory} />
         {toastMessage && (
           <Animated.View
             entering={FadeIn.duration(200)}
