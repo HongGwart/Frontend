@@ -15,7 +15,12 @@ export default function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-      <Stack.Screen name="Search" component={SearchScreen} options={{ animation: 'fade' }} />
+      <Stack.Screen
+        name="Search"
+        component={SearchScreen}
+        // 기본 350ms 정도라 검색창 누를 때마다 느리게 느껴져서 확 줄였다.
+        options={{ animation: 'fade', animationDuration: 150 }}
+      />
     </Stack.Navigator>
   );
 }
