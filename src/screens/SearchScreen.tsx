@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import styled, { useTheme } from 'styled-components/native';
 import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import SearchIcon from '@assets/svgs/icons/search.svg';
@@ -66,17 +67,15 @@ function findFacilityForSearchItem(item: SearchResultItem): SelectedFacility | n
   return dongMarker ? { type: 'dong', marker: dongMarker } : null;
 }
 
-interface Props {
-  value: string;
-  onChangeText: (text: string) => void;
-  onBackPress?: () => void;
-}
-
-export default function SearchScreen({ value, onChangeText, onBackPress }: Props) {
+// react-navigation 스택 화면으로 등록되기 전까지는 App.tsx가 이 값을 들고 있었는데,
+// 다른 화면에서 쓰지 않아서 스택 전환으로 옮기며 그냥 이 화면 로컬 상태로 내렸다.
+export default function SearchScreen() {
   const theme = useTheme();
+  const navigation = useNavigation();
+  const [value, setValue] = useState('');
   // 마이크 버튼 -> 듣기 시작 -> 인식된 텍스트로 검색창 내용을 그대로 갱신(중간 결과 포함).
   // expo-speech-recognition은 네이티브 모듈이라 Expo Go가 아니라 dev-client 빌드에서만 동작한다.
-  const { isListening, toggleListening } = useVoiceSearch({ onResult: onChangeText });
+  const { isListening, toggleListening } = useVoiceSearch({ onResult: setValue });
 
   // 삭제 가능한 "최근 검색어"는 화면 로컬 상태로 들고 있는다. 실제 API 연동 전까지의 더미 데이터.
   const [recentSearches, setRecentSearches] = useState(DUMMY_RECENT_SEARCHES);
@@ -177,7 +176,7 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
           onLayout={handleTopOverlayLayout}
         >
           <View style={styles.searchBarPadding}>
-            <SearchBar value={value} onChangeText={onChangeText} onPress={() => setSelectedFacility(null)} />
+            <SearchBar value={value} onChangeText={setValue} onPress={() => setSelectedFacility(null)} />
           </View>
           <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} />
         </SafeAreaView>
@@ -230,10 +229,10 @@ export default function SearchScreen({ value, onChangeText, onBackPress }: Props
           <View style={styles.searchHeaderWrapper}>
             <SearchPageHeader
               value={value}
-              onChangeText={onChangeText}
+              onChangeText={setValue}
               onVoicePress={toggleListening}
               isListening={isListening}
-              onBackPress={onBackPress}
+              onBackPress={() => navigation.goBack()}
             />
           </View>
           <View style={styles.content}>

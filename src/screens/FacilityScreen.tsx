@@ -1,7 +1,27 @@
 import React from 'react';
-import ComingSoonScreen from './ComingSoonScreen';
+import styled from 'styled-components/native';
 
-// TODO: 실제 편의시설 화면이 나오면 이 컴포넌트 대신 그 화면으로 바꿔 끼운다.
+// TODO: 실제 편의시설 화면이 나오면 이 자리에 구현한다. 상단 헤더는 이미
+// MainTabNavigator가 타이틀("편의시설")을 보여주고 있어서, 여기서는 본문만 그린다.
 export default function FacilityScreen() {
-  return <ComingSoonScreen title="편의시설" />;
+  return (
+    <Container>
+      <PlaceholderText>편의시설</PlaceholderText>
+    </Container>
+  );
 }
+
+const Container = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  background-color: ${({ theme }) => theme.semantic.background.primary};
+`;
+
+const PlaceholderText = styled.Text`
+  font-family: ${({ theme }) => theme.typography.labelNormal.medium.fontFamily};
+  font-size: ${({ theme }) => theme.typography.labelNormal.medium.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.labelNormal.medium.lineHeight}px;
+  letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
+  color: ${({ theme }) => theme.semantic.text.tertiary};
+`;
