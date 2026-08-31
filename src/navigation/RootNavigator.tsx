@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabNavigator from './MainTabNavigator';
 import SearchScreen from '@screens/SearchScreen';
@@ -18,7 +19,14 @@ export default function RootNavigator() {
       <Stack.Screen
         name="Search"
         component={SearchScreen}
-        options={{ animation: 'fade', animationDuration: 150 }}
+        // native-stack의 animationDuration은 iOS 전용이라(안드로이드는 무시됨),
+        // 안드로이드는 커스텀 duration을 줄 수 없는 대신 애니메이션 자체를 꺼서
+        // 두 플랫폼 다 확실히 빠르게 전환되도록 한다.
+        options={
+          Platform.OS === 'ios'
+            ? { animation: 'fade', animationDuration: 150 }
+            : { animation: 'none' }
+        }
       />
     </Stack.Navigator>
   );
