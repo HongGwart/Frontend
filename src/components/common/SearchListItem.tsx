@@ -18,7 +18,12 @@ interface Props {
   icon?: React.FC<SvgProps>;
   iconWidth?: number;
   iconHeight?: number;
-  /** 즐겨찾기로 등록된 건물/시설인지. true면 아바타가 남색으로 채워지고 별 배지가 붙는다. */
+  /**
+   * 아바타 배경색. 'brand'면 남색 배경 + 흰 아이콘(건물 자체 카테고리), 'default'면
+   * 회색 배경 + 남색 아이콘. 즐겨찾기 여부와는 무관하다.
+   */
+  avatarVariant?: 'brand' | 'default';
+  /** 즐겨찾기로 등록된 건물/시설인지. true면 아바타 우상단에 별 배지가 붙는다(배경색과는 무관). */
   isFavorite?: boolean;
   /**
    * true면 "최근 검색어" 형태로 렌더링되어 오른쪽에 날짜 + 삭제(x) 버튼이 붙는다.
@@ -48,6 +53,7 @@ export function SearchListItem({
   icon: Icon = BookIcon,
   iconWidth = 14,
   iconHeight = 16,
+  avatarVariant = 'default',
   isFavorite = false,
   history = false,
   date,
@@ -60,7 +66,8 @@ export function SearchListItem({
   // Pressable의 style-as-function은 styled-components를 거치면서 못 쓰게 되므로,
   // 누르고 있는 동안의 배경(background_fill) 전환은 직접 상태로 들고 있는다.
   const [isPressed, setIsPressed] = useState(false);
-  const iconColor = isFavorite ? theme.semantic.text.white : theme.blue[500];
+  const isBrandAvatar = avatarVariant === 'brand';
+  const iconColor = isBrandAvatar ? theme.semantic.text.white : theme.blue[500];
 
   return (
     <Container
@@ -71,7 +78,7 @@ export function SearchListItem({
       pressed={isPressed}
       showDivider={showDivider}
     >
-      <IconAvatar isFavorite={isFavorite}>
+      <IconAvatar isBrand={isBrandAvatar}>
         <Icon width={iconWidth} height={iconHeight} color={iconColor} />
         {isFavorite && (
           <FavoriteBadge>
@@ -114,13 +121,14 @@ const Container = styled(Pressable)<{ selected: boolean; pressed: boolean; showD
   border-bottom-color: ${({ theme }) => theme.semantic.line.tertiary};
 `;
 
-const IconAvatar = styled.View<{ isFavorite: boolean }>`
+const IconAvatar = styled.View<{ isBrand: boolean }>`
   align-items: center;
   justify-content: center;
-  padding: 6px;
+  width: 36px;
+  height: 36px;
   border-radius: 100px;
-  background-color: ${({ theme, isFavorite }) =>
-    isFavorite ? theme.blue[500] : theme.semantic.background.color};
+  background-color: ${({ theme, isBrand }) =>
+    isBrand ? theme.blue[500] : theme.semantic.background.color};
 `;
 
 const FavoriteBadge = styled.View`

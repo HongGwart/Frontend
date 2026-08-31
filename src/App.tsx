@@ -76,6 +76,8 @@ function AppContent() {
   };
 
   // 검색 페이지는 탭 화면들과 별개로, 하단 내비게이션 바 없이 전체 화면으로 뜬다.
+  // (검색 결과를 탭했을 때도 지도 화면으로 라우팅하지 않고 검색 뷰 안에서 지도+카드를 보여준다.
+  // SearchScreen.tsx 참고.)
   if (isSearchPage) {
     return (
       <SearchScreen
