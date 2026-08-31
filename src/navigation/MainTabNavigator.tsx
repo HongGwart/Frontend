@@ -16,7 +16,6 @@ import { MainTabParamList, RootStackParamList } from './types';
 /**
  * 탭(경로)별 상단 헤더 타이틀. 여기 없는 탭은 헤더 없이 화면을 그대로 그린다.
  * 화면이 자체적으로 상단 UI(검색바 등)를 갖고 있는 map은 헤더를 쓰지 않는다.
- * 기존 AppLayout.tsx의 HEADER_TITLE_BY_TAB과 동일한 설정을 여기로 옮겼다.
  */
 const HEADER_TITLE_BY_TAB: Partial<Record<NavigationTab, string>> = {
   navigation: '길찾기',

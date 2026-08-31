@@ -6,9 +6,6 @@ import { ThemeProvider } from 'styled-components/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '@theme';
 import { useAppFonts } from '@hooks/useAppFonts';
-// import DevThemeCheckScreen from '@screens/DevThemeCheck.screen';
-import MapScreen from '@screens/MapScreen';
-import DevThemeCheckScreen from '@screens/DevThemeCheck.screen';
 import IndoorMapTestScreen from '@screens/IndoorMapTestScreen';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
