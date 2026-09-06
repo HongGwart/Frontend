@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import styled from 'styled-components/native';
 import { SectionHeader } from '@components/mypage/SectionHeader';
 import { DefaultDepartureCard } from '@components/mypage/DefaultDepartureCard';
@@ -9,6 +10,7 @@ import { DUMMY_DEFAULT_DEPARTURE, DUMMY_FAVORITE_PLACES } from '@constant/dummyM
 // 상단 헤더("마이페이지" + 뒤로가기)와 하단 탭 바(NavigationBar)는 MainTabNavigator가
 // 이미 그려주고 있어서, 여기서는 스크롤되는 본문만 담당한다.
 export default function MypageScreen() {
+  const navigation = useNavigation();
   // 즐겨찾기 토글을 누르면 목록에서 빼는 정도로만 우선 동작시킨다(실제 연동 전 더미).
   const [favorites, setFavorites] = useState(DUMMY_FAVORITE_PLACES);
   const removeFavorite = (id: string) => {
@@ -34,7 +36,12 @@ export default function MypageScreen() {
         </DepartureSection>
 
         <FavoritesSection>
-          <SectionHeader title="즐겨찾기" action="더보기" onActionPress={() => {}} filled />
+          <SectionHeader
+            title="즐겨찾기"
+            action="더보기"
+            onActionPress={() => navigation.navigate('FavoriteList')}
+            filled
+          />
           {favorites.map((item, index) => (
             <FavoritePlaceCard
               key={item.id}

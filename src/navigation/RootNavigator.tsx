@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabNavigator from './MainTabNavigator';
 import SearchScreen from '@screens/SearchScreen';
+import FavoriteListScreen from '@screens/FavoriteListScreen';
 import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -28,6 +29,7 @@ export default function RootNavigator() {
             : { animation: 'none' }
         }
       />
+      <Stack.Screen name="FavoriteList" component={FavoriteListScreen} />
     </Stack.Navigator>
   );
 }
