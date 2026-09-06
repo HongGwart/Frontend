@@ -2,20 +2,29 @@ import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from 'styled-components/native';
 import Header from '@components/layout/Header';
 import { FavoritePlaceCard } from '@components/mypage/FavoritePlaceCard';
-import { DUMMY_FAVORITE_PLACES } from '@constant/dummyMypage';
+import { DUMMY_FAVORITE_PLACES, favoritePlaceToFocusParam } from '@constant/dummyMypage';
+import { RootStackParamList } from '@navigation/types';
 
 // 마이페이지 "즐겨찾기" 섹션의 "더보기"를 누르면 오는 전체 목록 화면(Figma "마이페이지_즐겨찾기 목록").
 // 탭 바 없이 전체화면으로 뜨고, 상단은 공통 Header(뒤로가기 + "즐겨찾기"), 본문은 마이페이지와
 // 같은 FavoritePlaceCard 리스트다. 새로 만든 컴포넌트는 없다.
 export default function FavoriteListScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const [favorites, setFavorites] = useState(DUMMY_FAVORITE_PLACES);
   const removeFavorite = (id: string) => {
     setFavorites(prev => prev.filter(item => item.id !== id));
+  };
+
+  const openFacilityOnMap = (place: (typeof favorites)[number]) => {
+    navigation.navigate('MainTabs', {
+      screen: 'map',
+      params: { focusFacility: favoritePlaceToFocusParam(place) },
+    });
   };
 
   return (
@@ -41,7 +50,7 @@ export default function FavoriteListScreen() {
             hours={item.hours}
             isFavorite
             onToggleFavorite={() => removeFavorite(item.id)}
-            onPress={() => {}}
+            onPress={() => openFacilityOnMap(item)}
             showDivider={index !== favorites.length - 1}
           />
         ))}

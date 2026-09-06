@@ -1,20 +1,35 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from 'styled-components/native';
 import { SectionHeader } from '@components/mypage/SectionHeader';
 import { DefaultDepartureCard } from '@components/mypage/DefaultDepartureCard';
 import { FavoritePlaceCard } from '@components/mypage/FavoritePlaceCard';
-import { DUMMY_DEFAULT_DEPARTURE, DUMMY_FAVORITE_PLACES } from '@constant/dummyMypage';
+import { DUMMY_DEFAULT_DEPARTURE, DUMMY_FAVORITE_PLACES, favoritePlaceToFocusParam } from '@constant/dummyMypage';
+import { RootStackParamList } from '@navigation/types';
+
+// 마이페이지 즐겨찾기 섹션에서 보여줄 최대 개수
+const MAX_FAVORITES_ON_MYPAGE = 5;
 
 // 상단 헤더("마이페이지" + 뒤로가기)와 하단 탭 바(NavigationBar)는 MainTabNavigator가
 // 이미 그려주고 있어서, 여기서는 스크롤되는 본문만 담당한다.
 export default function MypageScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // 즐겨찾기 토글을 누르면 목록에서 빼는 정도로만 우선 동작시킨다(실제 연동 전 더미).
   const [favorites, setFavorites] = useState(DUMMY_FAVORITE_PLACES);
   const removeFavorite = (id: string) => {
     setFavorites(prev => prev.filter(item => item.id !== id));
+  };
+
+  // 마이페이지에서는 즐겨찾기를 최대 5개까지만 보여준다(전체는 "더보기" → FavoriteListScreen).
+  const visibleFavorites = favorites.slice(0, MAX_FAVORITES_ON_MYPAGE);
+
+  const openFacilityOnMap = (place: (typeof favorites)[number]) => {
+    navigation.navigate('MainTabs', {
+      screen: 'map',
+      params: { focusFacility: favoritePlaceToFocusParam(place) },
+    });
   };
 
   return (
@@ -42,7 +57,7 @@ export default function MypageScreen() {
             onActionPress={() => navigation.navigate('FavoriteList')}
             filled
           />
-          {favorites.map((item, index) => (
+          {visibleFavorites.map((item, index) => (
             <FavoritePlaceCard
               key={item.id}
               name={item.name}
@@ -58,8 +73,8 @@ export default function MypageScreen() {
               hours={item.hours}
               isFavorite
               onToggleFavorite={() => removeFavorite(item.id)}
-              onPress={() => {}}
-              showDivider={index !== favorites.length - 1}
+              onPress={() => openFacilityOnMap(item)}
+              showDivider={index !== visibleFavorites.length - 1}
             />
           ))}
         </FavoritesSection>

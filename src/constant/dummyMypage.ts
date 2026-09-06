@@ -4,6 +4,7 @@ import BuildingIcon from '@assets/svgs/icons/building.svg';
 import CafeIcon from '@assets/svgs/icons/cafe.svg';
 import DummyImage1 from '@assets/svgs/dummy/T_dummy1.svg';
 import DummyImage2 from '@assets/svgs/dummy/T_dummy2.svg';
+import { FocusFacilityParam } from '@navigation/types';
 import { SearchResultItem } from './dummySearchData';
 
 // 실제 API 연동 전까지 마이페이지 UI 확인용으로 쓰는 더미 데이터.
@@ -80,6 +81,20 @@ export const DUMMY_FAVORITE_PLACES: FavoritePlace[] = [
     hours: '08:30 - 19:00',
   },
 ];
+
+/**
+ * 즐겨찾기 카드를 탭했을 때 map 탭으로 넘길 파라미터로 변환한다.
+ * 편의시설명(name)이 있으면 그게 제목, 없으면 "동 + 건물명"을 제목으로 쓴다.
+ */
+export function favoritePlaceToFocusParam(place: FavoritePlace): FocusFacilityParam {
+  return {
+    id: place.id,
+    buildingCode: place.buildingCode,
+    buildingName: place.buildingName,
+    facilityName: place.name ?? `${place.buildingCode} ${place.buildingName}`,
+    isFavorite: true,
+  };
+}
 
 // "기본 출발지 설정" 화면에서 검색했을 때 나오는 결과 더미.
 // SearchResultItem 타입과 SEARCH_ITEM_ICONS(아바타 아이콘 프리셋)을 검색 페이지에서 그대로 가져다 쓴다.

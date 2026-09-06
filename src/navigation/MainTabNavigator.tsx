@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Header from '@components/layout/Header';
@@ -30,7 +30,14 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 // Search는 이 탭 내비게이터의 형제(RootNavigator)에 있어서 부모 스택 쪽 navigation이 필요하다.
 function MapTabScreen() {
   const rootNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  return <MapScreen onSearchPress={() => rootNavigation.navigate('Search')} />;
+  // 마이페이지/즐겨찾기 목록에서 시설을 탭하고 넘어오면 focusFacility가 실려 온다.
+  const { params } = useRoute<RouteProp<MainTabParamList, 'map'>>();
+  return (
+    <MapScreen
+      onSearchPress={() => rootNavigation.navigate('Search')}
+      focusFacility={params?.focusFacility}
+    />
+  );
 }
 
 export default function MainTabNavigator() {

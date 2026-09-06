@@ -1,8 +1,20 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
 
+/**
+ * 마이페이지/즐겨찾기 목록에서 시설을 탭했을 때 map 탭으로 넘겨줄 시설 정보.
+ * map 탭이 이 값을 받으면 해당 시설의 정보 바텀시트(FacilityInfoCard)를 열어준다.
+ */
+export interface FocusFacilityParam {
+  id: string;
+  buildingCode: string;
+  buildingName: string;
+  facilityName: string;
+  isFavorite?: boolean;
+}
+
 // 하단 탭 5개. 기존 NavigationBar.tsx의 NavigationTab과 이름을 맞춰서 헷갈리지 않게 한다.
 export type MainTabParamList = {
-  map: undefined;
+  map: { focusFacility?: FocusFacilityParam } | undefined;
   navigation: undefined;
   facility: undefined;
   hongdae: undefined;

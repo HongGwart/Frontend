@@ -1,7 +1,9 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NaverMapView } from '@mj-studio/react-native-naver-map';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
@@ -22,11 +24,19 @@ import {
   DummyMapMarker,
   DummyCategoryMarker,
 } from '@constant/dummyMapMarkers';
-import { DUMMY_FACILITY_COUNTS, DUMMY_MAIN_ENTRANCE, DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
+import {
+  DUMMY_FACILITY_COUNTS,
+  DUMMY_FACILITY_IMAGES,
+  DUMMY_MAIN_ENTRANCE,
+  DUMMY_OPERATING_HOURS,
+} from '@constant/dummyFacilityInfo';
 import { DUMMY_FACILITY_LIST_ITEMS } from '@constant/dummyFacilityListItems';
+import { FocusFacilityParam, MainTabParamList } from '@navigation/types';
 
 interface Props {
   onSearchPress?: () => void;
+  /** 마이페이지/즐겨찾기 목록에서 시설을 탭하고 넘어왔을 때, 열어줄 시설 정보 */
+  focusFacility?: FocusFacilityParam;
 }
 
 // 지도 위 마커를 탭하면 아래에서 올려줄 시설 정보 바텀시트가 어떤 마커에 대한 것인지.
@@ -36,7 +46,9 @@ type SelectedFacility =
   | { type: 'dong'; marker: DummyMapMarker }
   | { type: 'category'; marker: DummyCategoryMarker }
   | { type: 'list'; items: FacilityListSheetItem[] }
-  | { type: 'item'; item: FacilityListSheetItem };
+  | { type: 'item'; item: FacilityListSheetItem }
+  // 마이페이지/즐겨찾기 목록에서 넘어온 시설(지도 마커가 아니라 라우트 파라미터로 들어옴)
+  | { type: 'external'; facility: FocusFacilityParam };
 
 // "즐겨찾기" 칩에서 지도에 찍을 동 하나의 정보. 그 동 자체가 즐겨찾기됐을 수도 있고,
 // 그 동 안의 시설(카테고리 마커) 중 일부만 즐겨찾기됐을 수도 있어서 둘을 같이 들고 있는다.
@@ -51,7 +63,8 @@ const TOAST_DURATION_MS = 2000;
 // 화면 끝까지를 항상 채운다(항목이 적어도 빈 공간으로 남지 않고 시트 자체가 그 높이를 가짐).
 const LIST_SHEET_GAP_FROM_CHIPS = 235;
 
-export default function MapScreen({ onSearchPress }: Props) {
+export default function MapScreen({ onSearchPress, focusFacility }: Props) {
+  const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList, 'map'>>();
   // 메인홈 카테고리 칩은 한 번에 하나만 선택된다. 실제 지도 필터링과의 연결은
   // 추후 지도 데이터가 준비되면 여기 selectedKey를 그대로 넘기면 된다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
@@ -196,6 +209,17 @@ export default function MapScreen({ onSearchPress }: Props) {
     return Array.from(entryByLabel.values());
   }, [selectedKey, isFavorite]);
 
+  // 마이페이지/즐겨찾기 목록에서 시설을 탭하고 넘어오면, 그 시설 정보 바텀시트를 연다.
+  // 한 번 소비한 뒤에는 파라미터를 비워서(같은 시설을 다시 눌러도 id가 바뀌면 다시 열리도록)
+  // 탭을 평범하게 다시 방문했을 때 카드가 되살아나지 않게 한다.
+  const consumedFocusIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focusFacility || consumedFocusIdRef.current === focusFacility.id) return;
+    consumedFocusIdRef.current = focusFacility.id;
+    setSelectedFacility({ type: 'external', facility: focusFacility });
+    navigation.setParams({ focusFacility: undefined });
+  }, [focusFacility, navigation]);
+
   return (
     <View style={styles.container}>
       <NaverMapView
@@ -307,6 +331,25 @@ export default function MapScreen({ onSearchPress }: Props) {
               onSelectItem={item => setSelectedFacility({ type: 'item', item })}
               onToggleFavorite={item => toggleFavorite({ id: item.id, favorite: item.isFavorite }, item.room ?? item.place)}
               fillHeight
+            />
+          ) : selectedFacility.type === 'external' ? (
+            <FacilityInfoCard
+              variant="facility"
+              buildingCode={selectedFacility.facility.buildingCode}
+              buildingName={selectedFacility.facility.buildingName}
+              facilityName={selectedFacility.facility.facilityName}
+              isFavorite={
+                favoriteOverrides[selectedFacility.facility.id] ?? selectedFacility.facility.isFavorite
+              }
+              onToggleFavorite={() =>
+                toggleFavorite(
+                  { id: selectedFacility.facility.id, favorite: selectedFacility.facility.isFavorite },
+                  selectedFacility.facility.facilityName,
+                )
+              }
+              images={DUMMY_FACILITY_IMAGES}
+              operatingHours={DUMMY_OPERATING_HOURS}
+              onViewInsidePress={() => {}}
             />
           ) : (
             <FacilityInfoCard
