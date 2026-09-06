@@ -4,6 +4,7 @@ import BuildingIcon from '@assets/svgs/icons/building.svg';
 import CafeIcon from '@assets/svgs/icons/cafe.svg';
 import DummyImage1 from '@assets/svgs/dummy/T_dummy1.svg';
 import DummyImage2 from '@assets/svgs/dummy/T_dummy2.svg';
+import { SearchResultItem } from './dummySearchData';
 
 // 실제 API 연동 전까지 마이페이지 UI 확인용으로 쓰는 더미 데이터.
 
@@ -78,4 +79,13 @@ export const DUMMY_FAVORITE_PLACES: FavoritePlace[] = [
     statusText: '운영 종료',
     hours: '08:30 - 19:00',
   },
+];
+
+// "기본 출발지 설정" 화면에서 검색했을 때 나오는 결과 더미.
+// SearchResultItem 타입과 SEARCH_ITEM_ICONS(아바타 아이콘 프리셋)을 검색 페이지에서 그대로 가져다 쓴다.
+// 화면에서 keyword로 필터링하므로, "중앙" 등을 입력하면 아래 항목이 뜬다.
+export const DUMMY_DEPARTURE_SEARCH_RESULTS: SearchResultItem[] = [
+  { id: 'dep-1', building: 'H동', place: '중앙도서관', category: 'building', isFavorite: true },
+  { id: 'dep-2', building: 'H동', place: '중앙도서관', room: '403호', category: 'classroom', isFavorite: true },
+  { id: 'dep-3', building: 'H동', place: '중앙도서관', room: '501호', category: 'classroom' },
 ];

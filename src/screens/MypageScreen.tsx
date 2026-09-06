@@ -31,7 +31,7 @@ export default function MypageScreen() {
             buildingName={DUMMY_DEFAULT_DEPARTURE.buildingName}
             roomNumber={DUMMY_DEFAULT_DEPARTURE.roomNumber}
             description={DUMMY_DEFAULT_DEPARTURE.description}
-            onEditPress={() => {}}
+            onEditPress={() => navigation.navigate('DepartureSetting')}
           />
         </DepartureSection>
 

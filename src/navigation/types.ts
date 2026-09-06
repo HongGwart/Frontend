@@ -14,6 +14,7 @@ export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   Search: undefined;
   FavoriteList: undefined;
+  DepartureSetting: undefined;
 };
 
 declare global {
