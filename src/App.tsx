@@ -7,6 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '@theme';
 import { useAppFonts } from '@hooks/useAppFonts';
+import { FavoritesProvider } from '@hooks/useFavorites';
 import RootNavigator from '@navigation/RootNavigator';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -34,7 +35,9 @@ function App() {
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
           <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
           <NavigationContainer>
-            <RootNavigator />
+            <FavoritesProvider>
+              <RootNavigator />
+            </FavoritesProvider>
           </NavigationContainer>
         </SafeAreaProvider>
       </ThemeProvider>
