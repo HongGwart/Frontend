@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -6,7 +6,8 @@ import styled from 'styled-components/native';
 import { SectionHeader } from '@components/mypage/SectionHeader';
 import { DefaultDepartureCard } from '@components/mypage/DefaultDepartureCard';
 import { FavoritePlaceCard } from '@components/mypage/FavoritePlaceCard';
-import { DUMMY_DEFAULT_DEPARTURE, DUMMY_FAVORITE_PLACES, favoritePlaceToFocusParam } from '@constant/dummyMypage';
+import { useFavorites } from '@hooks/useFavorites';
+import { DUMMY_DEFAULT_DEPARTURE, FavoritePlace, favoritePlaceToFocusParam } from '@constant/dummyMypage';
 import { RootStackParamList } from '@navigation/types';
 
 // 마이페이지 즐겨찾기 섹션에서 보여줄 최대 개수
@@ -16,16 +17,13 @@ const MAX_FAVORITES_ON_MYPAGE = 5;
 // 이미 그려주고 있어서, 여기서는 스크롤되는 본문만 담당한다.
 export default function MypageScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  // 즐겨찾기 토글을 누르면 목록에서 빼는 정도로만 우선 동작시킨다(실제 연동 전 더미).
-  const [favorites, setFavorites] = useState(DUMMY_FAVORITE_PLACES);
-  const removeFavorite = (id: string) => {
-    setFavorites(prev => prev.filter(item => item.id !== id));
-  };
+  // 즐겨찾기 상태는 FavoriteListScreen과 공유(FavoritesProvider). 토글은 목록에서 제거하는 더미 동작.
+  const { favorites, removeFavorite } = useFavorites();
 
   // 마이페이지에서는 즐겨찾기를 최대 5개까지만 보여준다(전체는 "더보기" → FavoriteListScreen).
   const visibleFavorites = favorites.slice(0, MAX_FAVORITES_ON_MYPAGE);
 
-  const openFacilityOnMap = (place: (typeof favorites)[number]) => {
+  const openFacilityOnMap = (place: FavoritePlace) => {
     navigation.navigate('MainTabs', {
       screen: 'map',
       params: { focusFacility: favoritePlaceToFocusParam(place) },

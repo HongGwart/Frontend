@@ -214,7 +214,13 @@ export default function MapScreen({ onSearchPress, focusFacility }: Props) {
   // 탭을 평범하게 다시 방문했을 때 카드가 되살아나지 않게 한다.
   const consumedFocusIdRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!focusFacility || consumedFocusIdRef.current === focusFacility.id) return;
+    // 파라미터를 소비한 뒤 비워지면(setParams) 여기서 ref를 초기화해서, 같은 시설을
+    // 다시 선택했을 때도 카드가 다시 열리게 한다.
+    if (!focusFacility) {
+      consumedFocusIdRef.current = null;
+      return;
+    }
+    if (consumedFocusIdRef.current === focusFacility.id) return;
     consumedFocusIdRef.current = focusFacility.id;
     setSelectedFacility({ type: 'external', facility: focusFacility });
     navigation.setParams({ focusFacility: undefined });

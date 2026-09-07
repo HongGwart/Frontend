@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -6,7 +6,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from 'styled-components/native';
 import Header from '@components/layout/Header';
 import { FavoritePlaceCard } from '@components/mypage/FavoritePlaceCard';
-import { DUMMY_FAVORITE_PLACES, favoritePlaceToFocusParam } from '@constant/dummyMypage';
+import { useFavorites } from '@hooks/useFavorites';
+import { FavoritePlace, favoritePlaceToFocusParam } from '@constant/dummyMypage';
 import { RootStackParamList } from '@navigation/types';
 
 // 마이페이지 "즐겨찾기" 섹션의 "더보기"를 누르면 오는 전체 목록 화면(Figma "마이페이지_즐겨찾기 목록").
@@ -15,12 +16,10 @@ import { RootStackParamList } from '@navigation/types';
 export default function FavoriteListScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const [favorites, setFavorites] = useState(DUMMY_FAVORITE_PLACES);
-  const removeFavorite = (id: string) => {
-    setFavorites(prev => prev.filter(item => item.id !== id));
-  };
+  // 즐겨찾기 상태는 MypageScreen과 공유(FavoritesProvider).
+  const { favorites, removeFavorite } = useFavorites();
 
-  const openFacilityOnMap = (place: (typeof favorites)[number]) => {
+  const openFacilityOnMap = (place: FavoritePlace) => {
     navigation.navigate('MainTabs', {
       screen: 'map',
       params: { focusFacility: favoritePlaceToFocusParam(place) },

@@ -32,8 +32,12 @@ export function AnimatedToast({
   onHide,
 }: Props) {
   const progress = useRef(new Animated.Value(0)).current; // 0 = 숨김(아래), 1 = 표시
+  // onHide는 항상 최신 것을 쓰되, 종료 애니메이션 타이머는 재시작하지 않도록 ref로 들고 있는다.
+  // (렌더 중 ref를 건드리면 순수성 위반이라 effect에서 갱신한다.)
   const onHideRef = useRef(onHide);
-  onHideRef.current = onHide;
+  useEffect(() => {
+    onHideRef.current = onHide;
+  }, [onHide]);
 
   useEffect(() => {
     Animated.timing(progress, {

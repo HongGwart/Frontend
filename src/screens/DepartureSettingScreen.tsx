@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import styled from 'styled-components/native';
 import Header from '@components/layout/Header';
@@ -15,9 +15,12 @@ import { SEARCH_ITEM_ICONS } from '@constant/dummySearchData';
 // 항목을 누르면 선택 표시(배경/체크) + 하단 토스트가 2초간 떴다 사라진다.
 export default function DepartureSettingScreen() {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [value, setValue] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
+  // 선택할 때마다 증가시켜 AnimatedToast를 리마운트한다(이미 떠 있어도 2초 타이머가 재시작되도록).
+  const [toastKey, setToastKey] = useState(0);
 
   const keyword = value.trim().toLowerCase();
   const results = useMemo(() => {
@@ -31,6 +34,7 @@ export default function DepartureSettingScreen() {
     Keyboard.dismiss();
     setSelectedId(id);
     setToastVisible(true);
+    setToastKey(key => key + 1);
     // TODO: 실제 연동 시 선택한 위치를 기본 출발지로 저장하고, 필요하면 화면을 닫는다.
   };
 
@@ -44,7 +48,7 @@ export default function DepartureSettingScreen() {
           </SearchBarWrapper>
           <ScrollView
             style={styles.flex}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
           >
@@ -67,8 +71,10 @@ export default function DepartureSettingScreen() {
 
       {toastVisible && (
         <AnimatedToast
+          key={toastKey}
           text="기본 출발지로 설정되었습니다."
           variant="success"
+          bottomOffset={insets.bottom + 12}
           onHide={() => setToastVisible(false)}
         />
       )}

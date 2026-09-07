@@ -49,7 +49,7 @@ export function LocationName({ buildingCode, buildingName, detail, size = 14 }: 
 
   return (
     <Row style={{ gap: outerGap }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: innerGap, flexShrink: 0 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: innerGap, flexShrink: 1 }}>
         <CodeText style={textStyle} numberOfLines={1}>
           {buildingCode}
         </CodeText>
@@ -69,6 +69,8 @@ export function LocationName({ buildingCode, buildingName, detail, size = 14 }: 
 const Row = styled.View`
   flex-direction: row;
   align-items: center;
+  /* 긴 건물명이 들어와도 옆의 "수정"/즐겨찾기 버튼을 밀어내지 않고 이쪽이 줄어든다 */
+  flex-shrink: 1;
 `;
 
 const CodeText = styled.Text`
@@ -76,5 +78,6 @@ const CodeText = styled.Text`
 `;
 
 const NameText = styled.Text`
+  flex-shrink: 1;
   color: ${({ theme }) => theme.semantic.text.tertiary};
 `;
