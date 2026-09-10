@@ -8,17 +8,9 @@ import PrinterIcon from '@assets/svgs/icons/printer.svg';
 import BookReturnIcon from '@assets/svgs/icons/bookReturn.svg';
 import SmokeIcon from '@assets/svgs/icons/smoke.svg';
 import EtcIcon from '@assets/svgs/icons/etc.svg';
+import { FacilityCategoryId } from '@navigation/types';
 
-export type FacilityCategoryId =
-  | 'restaurant'
-  | 'cafe'
-  | 'store'
-  | 'readingRoom'
-  | 'pc'
-  | 'printer'
-  | 'bookReturn'
-  | 'smokingArea'
-  | 'etc';
+export type { FacilityCategoryId };
 
 export interface FacilityCategory {
   id: FacilityCategoryId;

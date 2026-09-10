@@ -5,6 +5,7 @@ import MainTabNavigator from './MainTabNavigator';
 import SearchScreen from '@screens/SearchScreen';
 import FavoriteListScreen from '@screens/FavoriteListScreen';
 import DepartureSettingScreen from '@screens/DepartureSettingScreen';
+import FacilityCategoryListScreen from '@screens/FacilityCategoryListScreen';
 import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -32,6 +33,7 @@ export default function RootNavigator() {
       />
       <Stack.Screen name="FavoriteList" component={FavoriteListScreen} />
       <Stack.Screen name="DepartureSetting" component={DepartureSettingScreen} />
+      <Stack.Screen name="FacilityCategoryList" component={FacilityCategoryListScreen} />
     </Stack.Navigator>
   );
 }
