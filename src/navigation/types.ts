@@ -27,7 +27,22 @@ export type RootStackParamList = {
   Search: undefined;
   FavoriteList: undefined;
   DepartureSetting: undefined;
+  // 편의시설 탭에서 카테고리(식당/카페 등)를 탭했을 때 뜨는 해당 카테고리 장소 목록.
+  FacilityCategoryList: { categoryId: FacilityCategoryId };
 };
+
+// 편의시설 카테고리 그리드(FacilityScreen)의 카테고리 id. 여기서 export해서
+// facilityCategories.ts와 네비게이션 타입이 같은 정의를 쓰게 한다.
+export type FacilityCategoryId =
+  | 'restaurant'
+  | 'cafe'
+  | 'store'
+  | 'readingRoom'
+  | 'pc'
+  | 'printer'
+  | 'bookReturn'
+  | 'smokingArea'
+  | 'etc';
 
 declare global {
   namespace ReactNavigation {
