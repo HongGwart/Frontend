@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from 'styled-components/native';
 import Header from '@components/layout/Header';
 import NavigationBar, { NavigationTab } from '@components/layout/NavigationBar';
 import MapScreen from '@screens/MapScreen';
@@ -42,6 +43,7 @@ function MapTabScreen() {
 
 export default function MainTabNavigator() {
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
 
   return (
     <Tab.Navigator
@@ -53,7 +55,7 @@ export default function MainTabNavigator() {
           // "map 탭으로 돌아가기"로 동작한다. Header 자체는 상단 세이프에어리어를
           // 신경 쓰지 않는 컴포넌트라, 기존 AppLayout처럼 paddingTop으로 감싸준다.
           header: () => (
-            <View style={{ paddingTop: insets.top }}>
+            <View style={{ paddingTop: insets.top, backgroundColor: theme.semantic.background.primary }}>
               <Header title={headerTitle ?? ''} onBackPress={() => navigation.navigate('map')} />
             </View>
           ),
