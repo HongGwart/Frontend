@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -111,19 +111,23 @@ export default function SearchScreen() {
   // 시설 카드를 위로 슬라이드하면 그 건물의 상세보기로 넘어간다. MapScreen과 동일한
   // 인터랙션 — 애니메이션 묶음은 훅으로 공유하고, buildingCode를 뽑아내는 부분만 이
   // 화면의 SelectedFacility 모양(dong/category 둘뿐)에 맞춰 여기 남겨둔다.
-  const swipeUpBuildingCode = selectedFacility
-    ? selectedFacility.type === 'dong'
-      ? (selectedFacility.marker.label ?? null)
-      : selectedFacility.marker.buildingCode
-    : null;
+  const swipeUpBuildingCode = useMemo(
+    () =>
+      selectedFacility
+        ? selectedFacility.type === 'dong'
+          ? (selectedFacility.marker.label ?? null)
+          : selectedFacility.marker.buildingCode
+        : null,
+    [selectedFacility],
+  );
 
-  const handleSwipeUp = () => {
+  const handleSwipeUp = useCallback(() => {
     if (!swipeUpBuildingCode) return;
     navigation.navigate('BuildingDetail', { buildingCode: swipeUpBuildingCode });
     // animateClose와 마찬가지로 슬라이드업 애니메이션이 끝난 뒤 호출되므로 여기서 바로
     // 닫아도 끊겨 보이지 않는다.
     setSelectedFacility(null);
-  };
+  }, [swipeUpBuildingCode, navigation]);
 
   const {
     swipeCardTranslateY,

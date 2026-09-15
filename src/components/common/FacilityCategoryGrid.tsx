@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import styled, { useTheme } from 'styled-components/native';
 import { BouncyPressable } from './BouncyPressable';
 import { FacilityCategory } from '@constant/facilityCategories';
@@ -16,30 +16,65 @@ const COLUMNS = 3;
 
 export function FacilityCategoryGrid({ categories, onSelectCategory }: Props) {
   const theme = useTheme();
-  const rows: FacilityCategory[][] = [];
-  for (let i = 0; i < categories.length; i += COLUMNS) {
-    rows.push(categories.slice(i, i + COLUMNS));
-  }
+
+  // categories는 부모에서 대개 상수 배열을 그대로 넘기지만, 다른 상태 변화로 이
+  // 컴포넌트가 리렌더될 때마다 같은 그룹핑을 다시 계산하지 않도록 memo화했다.
+  const rows = useMemo(() => {
+    const grouped: FacilityCategory[][] = [];
+    for (let i = 0; i < categories.length; i += COLUMNS) {
+      grouped.push(categories.slice(i, i + COLUMNS));
+    }
+    return grouped;
+  }, [categories]);
+
+  // 매 렌더마다 카드 개수만큼 새 클로저를 만들지 않도록, category를 인자로 받는
+  // 안정된 콜백 하나만 만들어 각 카드에는 category만 다르게 바인딩한다.
+  const handleSelectCategory = useCallback(
+    (category: FacilityCategory) => {
+      onSelectCategory?.(category);
+    },
+    [onSelectCategory],
+  );
 
   return (
     <Grid>
       {rows.map((row, rowIndex) => (
         <Row key={rowIndex}>
           {row.map(category => (
-            <CardWrapper key={category.id} onPress={() => onSelectCategory?.(category)}>
-              <Card>
-                <IconBadge>
-                  <category.icon width={category.iconWidth} height={category.iconHeight} color={theme.blue[500]} />
-                </IconBadge>
-                <Label>{category.label}</Label>
-              </Card>
-            </CardWrapper>
+            <CategoryCard
+              key={category.id}
+              category={category}
+              iconColor={theme.blue[500]}
+              onPress={handleSelectCategory}
+            />
           ))}
         </Row>
       ))}
     </Grid>
   );
 }
+
+const CategoryCard = React.memo(function CategoryCard({
+  category,
+  iconColor,
+  onPress,
+}: {
+  category: FacilityCategory;
+  iconColor: string;
+  onPress: (category: FacilityCategory) => void;
+}) {
+  const handlePress = useCallback(() => onPress(category), [onPress, category]);
+  return (
+    <CardWrapper onPress={handlePress}>
+      <Card>
+        <IconBadge>
+          <category.icon width={category.iconWidth} height={category.iconHeight} color={iconColor} />
+        </IconBadge>
+        <Label>{category.label}</Label>
+      </Card>
+    </CardWrapper>
+  );
+});
 
 const Grid = styled.View`
   width: 100%;

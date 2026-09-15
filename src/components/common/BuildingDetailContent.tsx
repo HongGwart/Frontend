@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled, { useTheme } from 'styled-components/native';
@@ -49,20 +49,32 @@ export function BuildingDetailHeader({ buildingCode, onBack }: { buildingCode: s
 export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
   const insets = useSafeAreaInsets();
 
-  const dongMarker = DUMMY_MAP_MARKERS.find(marker => marker.label === buildingCode);
-  const facilities = DUMMY_CATEGORY_MARKERS.filter(marker => marker.buildingCode === buildingCode);
+  // buildingCode가 바뀔 때만 다시 계산한다 — 즐겨찾기 토글처럼 buildingCode와
+  // 무관한 상태 변화로 리렌더될 때마다 정적 더미 배열을 다시 find/filter/그룹핑하지
+  // 않도록 memo화했다.
+  const dongMarker = useMemo(
+    () => DUMMY_MAP_MARKERS.find(marker => marker.label === buildingCode),
+    [buildingCode],
+  );
+  const facilities = useMemo(
+    () => DUMMY_CATEGORY_MARKERS.filter(marker => marker.buildingCode === buildingCode),
+    [buildingCode],
+  );
 
   // 마커 즐겨찾기와 마찬가지로, 실제 연동 전까지 이 컴포넌트 로컬에서만 토글 상태를 들고
   // 있는다(MapScreen의 favoriteOverrides와 같은 패턴).
   const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
-  const toggleFavorite = (id: string, current: boolean) => {
+  const toggleFavorite = useCallback((id: string, current: boolean) => {
     setFavoriteOverrides(prev => ({ ...prev, [id]: !current }));
-  };
+  }, []);
 
-  const rows: (typeof facilities)[] = [];
-  for (let i = 0; i < facilities.length; i += GRID_COLUMNS) {
-    rows.push(facilities.slice(i, i + GRID_COLUMNS));
-  }
+  const rows = useMemo(() => {
+    const grouped: (typeof facilities)[] = [];
+    for (let i = 0; i < facilities.length; i += GRID_COLUMNS) {
+      grouped.push(facilities.slice(i, i + GRID_COLUMNS));
+    }
+    return grouped;
+  }, [facilities]);
 
   if (!dongMarker) {
     return (
