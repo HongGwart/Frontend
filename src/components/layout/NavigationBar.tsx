@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable } from 'react-native';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import MapIcon from '@assets/svgs/navBarMap.svg';
 import MapDotIcon from '@assets/svgs/navBarMapDot.svg';
 import NavigationIcon from '@assets/svgs/navBarNavigation.svg';
@@ -76,7 +77,7 @@ const Tab = styled(Pressable)`
   gap: 4px;
 `;
 
-const IconBox = styled.View`
+const IconBox = styled(Animated.View)`
   width: 24px;
   height: 24px;
   align-items: center;
@@ -89,7 +90,7 @@ const MapDotWrapper = styled.View`
   left: 8.5px;
 `;
 
-const Label = styled.Text<{ active: boolean }>`
+const Label = styled(Animated.Text)<{ active: boolean }>`
   font-family: ${({ theme, active }) =>
     active
       ? theme.typography.caption.semiBold.fontFamily
@@ -107,32 +108,67 @@ export default function NavigationBar({
   onTabPress,
   bottomInset = 0,
 }: NavigationBarProps) {
-  const theme = useTheme();
-
   return (
     <Container bottomInset={bottomInset}>
-      {TABS.map(({ key, label, Icon, iconWidth, iconHeight }) => {
-        const isActive = key === activeTab;
-        const color = isActive ? theme.sub.beige : theme.grayscale[600];
-        return (
-          <Tab
-            key={key}
-            onPress={() => onTabPress?.(key)}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: isActive }}
-          >
-            <IconBox>
-              <Icon width={iconWidth} height={iconHeight} color={color} />
-              {key === 'map' && (
-                <MapDotWrapper>
-                  <MapDotIcon width={7} height={7} />
-                </MapDotWrapper>
-              )}
-            </IconBox>
-            <Label active={isActive}>{label}</Label>
-          </Tab>
-        );
-      })}
+      {TABS.map(tab => (
+        <TabButton
+          key={tab.key}
+          tab={tab}
+          isActive={tab.key === activeTab}
+          onPress={() => onTabPress?.(tab.key)}
+        />
+      ))}
     </Container>
+  );
+}
+
+// 눌렀을 때 살짝 눌렸다 튕기듯 돌아오는(토스 탭바 인터랙션) 바운스 — 아이콘과 라벨이
+// 같은 scale 값을 공유해서 한 덩어리처럼 같이 움직인다. 탭 5개가 전부 눌림 상태를
+// 각자 따로 갖고 있어야 해서(하나만 눌러도 나머지가 같이 움직이면 안 되니)
+// useSharedValue를 쓰는 애니메이션은 map 안이 아니라 이 컴포넌트 하나당 인스턴스로
+// 뽑아냈다 — BouncyPressable과 같은 패턴이다.
+function TabButton({
+  tab: { key, label, Icon, iconWidth, iconHeight },
+  isActive,
+  onPress,
+}: {
+  tab: (typeof TABS)[number];
+  isActive: boolean;
+  onPress: () => void;
+}) {
+  const theme = useTheme();
+  const color = isActive ? theme.sub.beige : theme.grayscale[600];
+  const scale = useSharedValue(1);
+
+  const tabAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Tab
+      onPress={onPress}
+      onPressIn={() => {
+        // BouncyPressable과 같은 이징/지속시간 — 아이콘 자체가 24px로 작아서 축소폭만
+        // (0.96 대신 0.9로) 조금 더 키워야 눌리는 느낌이 눈에 들어온다.
+        scale.value = withTiming(0.9, { duration: 80, easing: Easing.out(Easing.quad) });
+      }}
+      onPressOut={() => {
+        scale.value = withTiming(1, { duration: 150, easing: Easing.out(Easing.back(2)) });
+      }}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: isActive }}
+    >
+      <IconBox style={tabAnimatedStyle}>
+        <Icon width={iconWidth} height={iconHeight} color={color} />
+        {key === 'map' && (
+          <MapDotWrapper>
+            <MapDotIcon width={7} height={7} />
+          </MapDotWrapper>
+        )}
+      </IconBox>
+      <Label active={isActive} style={tabAnimatedStyle}>
+        {label}
+      </Label>
+    </Tab>
   );
 }
