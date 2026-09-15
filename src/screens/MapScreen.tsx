@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LayoutChangeEvent, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { NaverMapView } from '@mj-studio/react-native-naver-map';
+import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
+import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
@@ -71,15 +72,27 @@ export default function MapScreen({ onSearchPress, focusFacility }: Props) {
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
+  const mapViewRef = useRef<NaverMapViewRef>(null);
 
-  // 검색창+카테고리 칩 영역의 화면상 y 좌표(하단)를 재서, 리스트 시트를 그 지점 + 235px
-  // 아래에서부터 시작하도록 top으로 직접 고정한다(window 높이로 역산하는 방식은 여러
-  // 화면 크기/세이프에어리어에서 오차가 생기기 쉬워서, top을 직접 고정하는 쪽이 정확하다).
-  const [chipsBottomY, setChipsBottomY] = useState(0);
-  const handleChipsAreaLayout = useCallback((event: LayoutChangeEvent) => {
-    const { y, height } = event.nativeEvent.layout;
-    setChipsBottomY(y + height);
-  }, []);
+  // 마커(동/카테고리)를 탭했을 때만 좌표가 있어서 카메라를 옮길 수 있다. 리스트/외부에서
+  // 넘어온 시설은 지금은 카메라를 건드리지 않는다(검색 화면도 동일한 범위로만 지원).
+  const cameraFocusTarget = useMemo(() => {
+    if (!selectedFacility) return null;
+    if (selectedFacility.type === 'dong' || selectedFacility.type === 'category') {
+      return { latitude: selectedFacility.marker.latitude, longitude: selectedFacility.marker.longitude };
+    }
+    return null;
+  }, [selectedFacility]);
+
+  // 마커가 시설 카드에 가리지 않도록, 검색창+카테고리 칩 아래쪽 끝과 시설 카드 위쪽 끝
+  // 사이의 세로 중앙에 마커가 오도록 카메라를 옮긴다(SearchScreen과 공유하는 훅).
+  const { chipsBottomY, handleChipsAreaLayout, handleFacilityCardLayout } = useFacilityCardCameraFocus(
+    mapViewRef,
+    cameraFocusTarget,
+  );
+  // 리스트 시트는 그 지점 + 235px 아래에서부터 시작하도록 top으로 직접 고정한다(window
+  // 높이로 역산하는 방식은 여러 화면 크기/세이프에어리어에서 오차가 생기기 쉬워서, top을
+  // 직접 고정하는 쪽이 정확하다).
   const listSheetTop = chipsBottomY + LIST_SHEET_GAP_FROM_CHIPS;
 
   // 더미 데이터의 favorite 값을 그대로 두고, 토글한 것만 id 기준으로 덮어써서 들고 있는다.
@@ -230,6 +243,7 @@ export default function MapScreen({ onSearchPress, focusFacility }: Props) {
   return (
     <View style={styles.container}>
       <NaverMapView
+        ref={mapViewRef}
         style={StyleSheet.absoluteFill}
         initialCamera={{
           latitude: 37.5504,
@@ -315,6 +329,7 @@ export default function MapScreen({ onSearchPress, focusFacility }: Props) {
                 selectedFacility.type === 'list' ? { top: listSheetTop } : null,
               ]}
             >
+              <View onLayout={handleFacilityCardLayout}>
               {selectedFacility.type === 'dong' ? (
             <FacilityInfoCard
               variant="outside"
@@ -390,6 +405,7 @@ export default function MapScreen({ onSearchPress, focusFacility }: Props) {
               onViewInsidePress={() => {}}
             />
           )}
+              </View>
             </DismissibleBottomSheet>
           </GestureHandlerRootView>
         </Modal>
