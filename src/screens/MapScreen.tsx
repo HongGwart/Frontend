@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { LayoutChangeEvent, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -292,15 +293,29 @@ export default function MapScreen({ onSearchPress, focusFacility }: Props) {
         )}
       </SafeAreaView>
       {selectedFacility && (
-        <DismissibleBottomSheet
-          ref={bottomSheetRef}
-          onClose={() => setSelectedFacility(null)}
-          style={[
-            styles.facilityCardWrapper,
-            selectedFacility.type === 'list' ? { top: listSheetTop } : null,
-          ]}
-        >
-          {selectedFacility.type === 'dong' ? (
+        // 탭 내비게이터의 화면 컨테이너(react-native-screens)는 탭 바를 실제로 숨겨도
+        // 처음 잡은 크기를 그대로 들고 있어서, 카드를 그 안에 두면 탭 바가 차지하던
+        // 만큼 화면 바닥에 못 붙고 그 위에 지도가 살짝 보이는 문제가 있었다. Modal로
+        // 감싸면 탭 화면 크기와 완전히 무관하게 항상 진짜 디바이스 화면 전체를 기준으로
+        // 그려져서 이 문제가 아예 생기지 않는다.
+        <Modal transparent animationType="none" statusBarTranslucent onRequestClose={closeFacilitySheet}>
+          {/* Modal은 iOS에서 별도의 네이티브 윈도우라, 안에서 스와이프로 닫는 제스처가
+              동작하려면 gesture-handler 루트를 여기 한 번 더 둬야 한다. */}
+          <GestureHandlerRootView style={styles.modalRoot}>
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={closeFacilitySheet}
+              accessibilityLabel="시설 정보 닫기"
+            />
+            <DismissibleBottomSheet
+              ref={bottomSheetRef}
+              onClose={() => setSelectedFacility(null)}
+              style={[
+                styles.facilityCardWrapper,
+                selectedFacility.type === 'list' ? { top: listSheetTop } : null,
+              ]}
+            >
+              {selectedFacility.type === 'dong' ? (
             <FacilityInfoCard
               variant="outside"
               buildingCode={selectedFacility.marker.label ?? ''}
@@ -375,7 +390,9 @@ export default function MapScreen({ onSearchPress, focusFacility }: Props) {
               onViewInsidePress={() => {}}
             />
           )}
-        </DismissibleBottomSheet>
+            </DismissibleBottomSheet>
+          </GestureHandlerRootView>
+        </Modal>
       )}
     </View>
   );
@@ -402,5 +419,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  modalRoot: {
+    flex: 1,
   },
 });
