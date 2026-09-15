@@ -29,6 +29,9 @@ export type RootStackParamList = {
   DepartureSetting: undefined;
   // 편의시설 탭에서 카테고리(식당/카페 등)를 탭했을 때 뜨는 해당 카테고리 장소 목록.
   FacilityCategoryList: { categoryId: FacilityCategoryId };
+  // 지도 위 시설 정보 카드를 위로 슬라이드하면 뜨는 건물 상세보기. buildingCode는
+  // DummyMapMarker.label(예: "H동")과 매칭된다.
+  BuildingDetail: { buildingCode: string };
 };
 
 // 편의시설 카테고리 그리드(FacilityScreen)의 카테고리 id. 여기서 export해서

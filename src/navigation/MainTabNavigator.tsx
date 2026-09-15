@@ -36,6 +36,7 @@ function MapTabScreen() {
   return (
     <MapScreen
       onSearchPress={() => rootNavigation.navigate('Search')}
+      onOpenBuildingDetail={buildingCode => rootNavigation.navigate('BuildingDetail', { buildingCode })}
       focusFacility={params?.focusFacility}
     />
   );

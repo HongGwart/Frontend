@@ -198,7 +198,9 @@ export function FacilityInfoCard({
   );
 }
 
-function OperatingHoursRow({ operatingHours }: { operatingHours: OperatingHoursInfo }) {
+// 건물 상세보기 화면(BuildingDetailScreen)의 "운영 시간" 행도 이 카드와 똑같은 모양을
+// 써서 export한다.
+export function OperatingHoursRow({ operatingHours }: { operatingHours: OperatingHoursInfo }) {
   return (
     <HoursGroup>
       <StatusDot isOpen={operatingHours.isOpen} />

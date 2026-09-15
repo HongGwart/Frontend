@@ -6,6 +6,7 @@ import SearchScreen from '@screens/SearchScreen';
 import FavoriteListScreen from '@screens/FavoriteListScreen';
 import DepartureSettingScreen from '@screens/DepartureSettingScreen';
 import FacilityCategoryListScreen from '@screens/FacilityCategoryListScreen';
+import BuildingDetailScreen from '@screens/BuildingDetailScreen';
 import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -34,6 +35,13 @@ export default function RootNavigator() {
       <Stack.Screen name="FavoriteList" component={FavoriteListScreen} />
       <Stack.Screen name="DepartureSetting" component={DepartureSettingScreen} />
       <Stack.Screen name="FacilityCategoryList" component={FacilityCategoryListScreen} />
+      {/*
+        시설 정보 카드를 위로 슬라이드하면 뜨는 화면이라, 화면 전체가 밑에서 올라오는
+        기본 전환 대신 헤더는 바로 나타나고 그 아래 콘텐츠만 카드가 있던 자리에서 이어
+        받듯 아래에서 올라온다(BuildingDetailScreen 안의 SlideInDown 애니메이션). 그래서
+        여기서는 스택 자체의 전환 애니메이션을 끈다.
+      */}
+      <Stack.Screen name="BuildingDetail" component={BuildingDetailScreen} options={{ animation: 'none' }} />
     </Stack.Navigator>
   );
 }
