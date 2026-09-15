@@ -23,6 +23,9 @@ export type MainTabParamList = {
 
 // 최상위 스택. 탭 화면들(MainTabs)과, 탭 바 없이 전체화면으로 뜨는 화면(Search)을 구분한다.
 export type RootStackParamList = {
+  // 앱 첫 진입 시 보여주는 온보딩 화면. 브랜드 스플래시(골드 로고)로 시작해 한 화면
+  // 안에서 흰 배경/블루 로고 + 소개 문구/CTA로 크로스페이드된다(OnboardingScreen).
+  Onboarding: undefined;
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   Search: undefined;
   FavoriteList: undefined;

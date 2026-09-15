@@ -2,6 +2,7 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabNavigator from './MainTabNavigator';
+import OnboardingScreen from '@screens/OnboardingScreen';
 import SearchScreen from '@screens/SearchScreen';
 import FavoriteListScreen from '@screens/FavoriteListScreen';
 import DepartureSettingScreen from '@screens/DepartureSettingScreen';
@@ -18,8 +19,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  */
 export default function RootNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+    <Stack.Navigator initialRouteName="Onboarding" screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ animation: 'none' }} />
+      {/* 온보딩에서 넘어올 때 옆에서 슬라이드해 들어오는 기본 애니메이션을 잠시 끔. */}
+      <Stack.Screen name="MainTabs" component={MainTabNavigator} options={{ animation: 'none' }} />
       <Stack.Screen
         name="Search"
         component={SearchScreen}
