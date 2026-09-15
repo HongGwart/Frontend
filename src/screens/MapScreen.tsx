@@ -1,35 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, {
-  Extrapolation,
-  FadeIn,
-  FadeOut,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-} from 'react-native-reanimated';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
+import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { FacilityListSheet, FacilityListSheetItem } from '@components/common/FacilityListSheet';
 import { Toast } from '@components/common/Toast';
-import {
-  DismissibleBottomSheet,
-  DismissibleBottomSheetRef,
-  SWIPE_UP_DISTANCE,
-} from '@components/common/DismissibleBottomSheet';
-import {
-  BUILDING_DETAIL_HEADER_HEIGHT,
-  BuildingDetailBody,
-  BuildingDetailHeader,
-} from '@components/common/BuildingDetailContent';
+import { DismissibleBottomSheet, DismissibleBottomSheetRef } from '@components/common/DismissibleBottomSheet';
+import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { CategoryKey } from '@constant/categoryChips';
@@ -80,10 +66,6 @@ const TOAST_DURATION_MS = 2000;
 // 겹쳐진 마커 리스트 시트는 카테고리 칩 아래로 이 간격(피그마 기준)만큼 띄우고, 그 지점부터
 // 화면 끝까지를 항상 채운다(항목이 적어도 빈 공간으로 남지 않고 시트 자체가 그 높이를 가짐).
 const LIST_SHEET_GAP_FROM_CHIPS = 235;
-
-// 시설 카드를 위로 슬라이드할 때 뒤에 겹쳐 그리는 건물 상세보기 미리보기가 화면 아래
-// 어디서부터 올라오기 시작할지 계산하는 데 쓴다.
-const WINDOW_HEIGHT = Dimensions.get('window').height;
 
 export default function MapScreen({ onSearchPress, onOpenBuildingDetail, focusFacility }: Props) {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList, 'map'>>();
@@ -219,60 +201,16 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, focusFa
     setSelectedFacility(null);
   }, [swipeUpBuildingCode, onOpenBuildingDetail]);
 
-  // 카드를 드래그하는 동안(그리고 그 뒤 슬라이드업 애니메이션이 끝날 때까지) 실제
-  // 화면 전환을 기다리지 않고, 카드 바로 뒤에 다음(BuildingDetailScreen) 내용을 실시간
-  // 미리보기로 겹쳐 그려서 같이 딸려 올라오게 한다. DismissibleBottomSheet에 넘겨서
-  // 그 컴포넌트가 직접 쓰는 translateY를 여기서도 그대로 들여다본다.
-  const swipeCardTranslateY = useSharedValue(0);
-  useEffect(() => {
-    // 새 카드가 열릴 때마다(혹은 닫힐 때) 이전 드래그의 잔여값이 남아있지 않게 초기화한다.
-    swipeCardTranslateY.value = 0;
-  }, [selectedFacility, swipeCardTranslateY]);
-
-  // 헤더는 -SWIPE_UP_DISTANCE만큼(= 실제로 커밋되는 지점) 끌어올리면 검색창 자리 위로
-  // 빠르게 트랜지션해 나타난다. 본문과 달리 카드 이동 거리에 1:1로 붙지 않고 짧은
-  // 구간에서 훅 나타나는 편이 헤더답게 느껴져서 progress(0~1)로 페이드+슬라이드한다.
-  const insets = useSafeAreaInsets();
-  const detailHeaderHeight = BUILDING_DETAIL_HEADER_HEIGHT + insets.top;
-  const detailHeaderStyle = useAnimatedStyle(() => {
-    const progress = interpolate(
-      swipeCardTranslateY.value,
-      [0, -SWIPE_UP_DISTANCE],
-      [0, 1],
-      Extrapolation.CLAMP,
-    );
-    return {
-      opacity: progress,
-      transform: [{ translateY: (1 - progress) * -12 }],
-    };
-  });
-
-  // 본문은 헤더와 달리 카드 이동 거리를 그대로 따라간다 — 시설 카드의 bottom(항상 0,
-  // 화면 진짜 바닥)이 곧 본문의 top이 되도록, 카드가 위로 밀린 만큼(swipeCardTranslateY)
-  // 화면 바닥(WINDOW_HEIGHT)에서 그만큼 끌어올린 지점에 본문 상단이 오게 한다. 헤더
-  // 아래로는 파고들지 않도록 헤더 높이에서 멈춘다.
-  const detailBodyStyle = useAnimatedStyle(() => {
-    const topY = WINDOW_HEIGHT + swipeCardTranslateY.value;
-    const clampedTopY = Math.min(WINDOW_HEIGHT, Math.max(detailHeaderHeight, topY));
-    return {
-      transform: [{ translateY: clampedTopY }],
-    };
-  });
-
-  // 시설 카드와 상세보기 본문이 사진/설명/"건물 내부 보기" 버튼처럼 거의 같은 내용을
-  // 담고 있어서, 카드가 이동만 하고 그대로 안 사라지면 같은 정보가 두 겹으로 겹쳐
-  // 보인다. 헤더와 같은 구간(커밋 지점까지)에서 카드를 반대로 페이드아웃시켜서, 카드가
-  // 위로 밀려나며 사라지는 동시에 상세 내용이 그 자리를 이어받는 크로스페이드로 만든다.
-  const cardFadeStyle = useAnimatedStyle(() => {
-    if (!swipeUpBuildingCode) return { opacity: 1 };
-    const progress = interpolate(
-      swipeCardTranslateY.value,
-      [0, -SWIPE_UP_DISTANCE],
-      [0, 1],
-      Extrapolation.CLAMP,
-    );
-    return { opacity: 1 - progress };
-  });
+  // 카드를 드래그하는 동안(그리고 그 뒤 슬라이드업 애니메이션이 끝날 때까지) 실제 화면
+  // 전환을 기다리지 않고, 카드 바로 뒤/위에 다음(BuildingDetailScreen) 헤더·본문을
+  // 실시간 미리보기로 겹쳐 그려서 같이 딸려 올라오게 한다. SearchScreen과 공유하는 훅.
+  const {
+    swipeCardTranslateY,
+    detailHeaderStyle,
+    detailBodyStyle,
+    cardFadeStyle,
+    minSwipeUpDistance,
+  } = useBuildingDetailSwipeUp(swipeUpBuildingCode, selectedFacility);
 
   // 카테고리 칩을 누르면(활성/비활성 어느 방향이든) 지도 위 마커 구성 자체가 바뀌므로,
   // 열려있던 시설 정보 카드는 이전 마커를 가리키는 채로 남지 않게 항상 닫는다.
@@ -446,11 +384,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, focusFa
               onSwipeUp={swipeUpBuildingCode ? handleSwipeUp : undefined}
               translateY={swipeUpBuildingCode ? swipeCardTranslateY : undefined}
               rasterize={Boolean(swipeUpBuildingCode)}
-              // 상세 본문 미리보기(detailBodyStyle)가 완전히 자리잡으려면 화면 바닥에서
-              // 헤더 높이까지(WINDOW_HEIGHT - detailHeaderHeight)는 밀어올려야 한다 —
-              // 카드가 그보다 먼저 사라져서 화면 전환이 일어나면, 미리보기가 아직 덜
-              // 올라온 채로 실제 화면으로 툭 끊겨 바뀌어 보인다.
-              minSwipeUpDistance={swipeUpBuildingCode ? WINDOW_HEIGHT - detailHeaderHeight : undefined}
+              // 상세 본문 미리보기가 완전히 자리잡기 전에 카드가 먼저 사라져서 화면
+              // 전환이 일어나면(중간에 툭 끊겨 보임) 안 되니, 그만큼은 밀어올리게 한다.
+              minSwipeUpDistance={swipeUpBuildingCode ? minSwipeUpDistance : undefined}
               style={[
                 styles.facilityCardWrapper,
                 selectedFacility.type === 'list' ? { top: listSheetTop } : null,

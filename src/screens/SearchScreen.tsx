@@ -2,10 +2,13 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled, { useTheme } from 'styled-components/native';
+import Animated from 'react-native-reanimated';
 import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import SearchIcon from '@assets/svgs/icons/search.svg';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
+import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
@@ -16,6 +19,7 @@ import {
   DismissibleBottomSheet,
   DismissibleBottomSheetRef,
 } from '@components/common/DismissibleBottomSheet';
+import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
 import NavigationBar from '@components/layout/NavigationBar';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
@@ -35,6 +39,7 @@ import {
   SEARCH_ITEM_ICONS,
   SearchResultItem,
 } from '@constant/dummySearchData';
+import { RootStackParamList } from '@navigation/types';
 
 // 지도 화면(MapScreen)과 동일한 형태. 검색 뷰 안에서 지도를 띄울 때도 마커를 직접
 // 탭한 것과 같은 방식으로 시설 정보 바텀시트를 채운다.
@@ -65,7 +70,7 @@ function findFacilityForSearchItem(item: SearchResultItem): SelectedFacility | n
 // 다른 화면에서 쓰지 않아서 스택 전환으로 옮기며 그냥 이 화면 로컬 상태로 내렸다.
 export default function SearchScreen() {
   const theme = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [value, setValue] = useState('');
   // 마이크 버튼 -> 듣기 시작 -> 인식된 텍스트로 검색창 내용을 그대로 갱신(중간 결과 포함).
   // expo-speech-recognition은 네이티브 모듈이라 Expo Go가 아니라 dev-client 빌드에서만 동작한다.
@@ -102,6 +107,31 @@ export default function SearchScreen() {
   // 지도 모드 상단 카테고리 칩. 실제 마커 필터링과의 연결 없이 Figma와 동일한 UI만 우선 갖춘다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const insets = useSafeAreaInsets();
+
+  // 시설 카드를 위로 슬라이드하면 그 건물의 상세보기로 넘어간다. MapScreen과 동일한
+  // 인터랙션 — 애니메이션 묶음은 훅으로 공유하고, buildingCode를 뽑아내는 부분만 이
+  // 화면의 SelectedFacility 모양(dong/category 둘뿐)에 맞춰 여기 남겨둔다.
+  const swipeUpBuildingCode = selectedFacility
+    ? selectedFacility.type === 'dong'
+      ? (selectedFacility.marker.label ?? null)
+      : selectedFacility.marker.buildingCode
+    : null;
+
+  const handleSwipeUp = () => {
+    if (!swipeUpBuildingCode) return;
+    navigation.navigate('BuildingDetail', { buildingCode: swipeUpBuildingCode });
+    // animateClose와 마찬가지로 슬라이드업 애니메이션이 끝난 뒤 호출되므로 여기서 바로
+    // 닫아도 끊겨 보이지 않는다.
+    setSelectedFacility(null);
+  };
+
+  const {
+    swipeCardTranslateY,
+    detailHeaderStyle,
+    detailBodyStyle,
+    cardFadeStyle,
+    minSwipeUpDistance,
+  } = useBuildingDetailSwipeUp(swipeUpBuildingCode, selectedFacility);
 
   if (selectedFacility) {
     // MapScreen과 동일하게, 지도는 상태바 아래까지 풀블리드로 채우고 검색창/칩만
@@ -156,10 +186,26 @@ export default function SearchScreen() {
         <View style={styles.navBarWrapper}>
           <NavigationBar activeTab="map" bottomInset={insets.bottom} />
         </View>
+        {/* 본문은 카드보다 먼저(=아래에) 그려서, 카드 밑단이 밀려 올라간 만큼만 뒤에서
+            드러나는 것처럼 보이게 한다. 아직 실제 화면 전환 전이라 조작은 막아둔다. */}
+        {swipeUpBuildingCode && (
+          <Animated.View
+            style={[StyleSheet.absoluteFill, detailBodyStyle]}
+            pointerEvents="none"
+            renderToHardwareTextureAndroid
+            shouldRasterizeIOS
+          >
+            <BuildingDetailBody buildingCode={swipeUpBuildingCode} />
+          </Animated.View>
+        )}
         <DismissibleBottomSheet
           ref={bottomSheetRef}
           onClose={() => setSelectedFacility(null)}
-          style={styles.facilityCardWrapper}
+          onSwipeUp={swipeUpBuildingCode ? handleSwipeUp : undefined}
+          translateY={swipeUpBuildingCode ? swipeCardTranslateY : undefined}
+          rasterize={Boolean(swipeUpBuildingCode)}
+          minSwipeUpDistance={swipeUpBuildingCode ? minSwipeUpDistance : undefined}
+          style={[styles.facilityCardWrapper, cardFadeStyle]}
         >
           <View onLayout={handleFacilityCardLayout}>
             {selectedFacility.type === 'dong' ? (
@@ -189,6 +235,16 @@ export default function SearchScreen() {
             )}
           </View>
         </DismissibleBottomSheet>
+        {/* 헤더는 카드보다 나중에(=위에) 그려서, 카드가 위로 슬라이드하다 헤더 자리에
+            닿으면 그 속으로 사라지는 것처럼(헤더가 카드를 덮으며) 보이게 한다. */}
+        {swipeUpBuildingCode && (
+          <Animated.View
+            style={[{ position: 'absolute', top: 0, left: 0, right: 0 }, detailHeaderStyle]}
+            pointerEvents="none"
+          >
+            <BuildingDetailHeader buildingCode={swipeUpBuildingCode} />
+          </Animated.View>
+        )}
       </View>
     );
   }
