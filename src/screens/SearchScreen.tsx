@@ -6,6 +6,7 @@ import styled, { useTheme } from 'styled-components/native';
 import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import SearchIcon from '@assets/svgs/icons/search.svg';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
+import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
 import { SearchListItem } from '@components/common/SearchListItem';
@@ -115,6 +116,8 @@ export default function SearchScreen() {
             longitude: selectedFacility.marker.longitude,
             zoom: 16,
           }}
+          minZoom={MAP_MIN_ZOOM}
+          maxZoom={MAP_MAX_ZOOM}
           onTapMap={() => bottomSheetRef.current?.close()}
         >
           {DUMMY_MAP_MARKERS.map(marker => (
