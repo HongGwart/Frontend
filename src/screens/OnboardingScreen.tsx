@@ -181,13 +181,29 @@ const SEARCH_DEMO_FACILITY_ITEMS: FacilityListSheetItem[] = [
 // 온 아이콘에 맞는 편의시설 카드(FacilityInfoCard)가 아래에 크로스페이드로 바뀐다.
 // 폰 자체 크기/보이는 바닥 기준(288 캔버스 단위)은 검색 목업 페이지와 완전히 동일한
 // 스크린샷 구조라 그 상수들을 그대로 재사용한다.
-const FACILITY_RING_RADIUS = 108;
 const FACILITY_RING_ICON_BOX_SIZE = 48;
-// 맨 위(가운데) 슬롯 아이콘의 아래쪽 끝이 폰 상단에서 16px 위에 오도록 역산한 값
-// (center - radius + iconBox/2 = -16 이 되도록: center = -16 + radius - iconBox/2).
+// Figma(1257:45531/45533/45572)에서 실측한 좌/우 아이콘 중심 좌표를, 맨 위 슬롯에서부터의
+// 각도 거리(dist, 0=맨 위)별 키포인트로 옮긴 값이다 — 원 공식(sin/cos) 대신 이 실측
+// 간격을 그대로 보간해서 써야 Figma 배치와 일치한다. dist=0(맨 위 슬롯)은 측정값이 없어서
+// dist=0(맨 위 슬롯)은 아이콘 아래쪽 끝이 폰 상단(Scene 0,0)에서 16px 위에 오도록
+// 지정한 값이다(center = -16 - iconBox/2 = -40).
+// x는 중심(0)에서 좌우로 얼마나 벌어지는지(항상 양수, 부호는 좌/우에 따라 따로 곱한다),
+// y는 폰 상단(Scene 0,0) 기준 아이콘 중심의 세로 위치(위쪽일수록 음수).
 const FACILITY_RING_TOP_ICON_GAP = 16;
-const FACILITY_RING_CENTER_Y =
-  -FACILITY_RING_TOP_ICON_GAP + FACILITY_RING_RADIUS - FACILITY_RING_ICON_BOX_SIZE / 2;
+// 7개가 51.43°씩 떨어져 있으면 "쉬는" 위치의 dist는 최대 154.29°까지만 나오지만,
+// 회전 도중(한 슬롯에서 다음 슬롯으로 넘어가는 사이)에는 dist가 그보다 커져 180°(맨
+// 아래/뒤)까지 지나간다. 여기 마지막 키포인트(180)가 없으면 154.29 값에서 그대로
+// 멈춰(clamp) 왼쪽 끝 아이콘이 내려가다 만 것처럼 보인다 — 180까지 이어서 계속
+// 아래로 가라앉고(dx는 다시 0으로 모이고) 흰 배경 속으로 사라지게(opacity 0) 한다.
+const FACILITY_RING_DIST_KEYPOINTS = [0, 360 / 7, (360 / 7) * 2, (360 / 7) * 3, 180];
+const FACILITY_RING_DX_KEYPOINTS = [0, 68.5, 121.5, 136.5, 0];
+const FACILITY_RING_DY_KEYPOINTS = [
+  -FACILITY_RING_TOP_ICON_GAP - FACILITY_RING_ICON_BOX_SIZE / 2,
+  -18,
+  31,
+  88,
+  130,
+];
 const FACILITY_RING_ICON_COUNT = 7;
 const FACILITY_RING_ANGLE_STEP = 360 / FACILITY_RING_ICON_COUNT;
 const FACILITY_RING_TICK_MS = 2000;
@@ -379,20 +395,26 @@ function FacilityRingIcon({
   const style = useAnimatedStyle(() => {
     const baseAngle = index * FACILITY_RING_ANGLE_STEP;
     const angleDeg = baseAngle + rotation.value;
-    const angleRad = (angleDeg * Math.PI) / 180;
     const normalized = (((angleDeg % 360) + 540) % 360) - 180;
     const dist = Math.abs(normalized);
-    const opacity = interpolate(dist, [0, 15, 90, 130], [1, 0.33, 0.33, 0], Extrapolation.CLAMP);
+    const sign = normalized < 0 ? -1 : 1;
+    // 쉬는 위치(최대 154.29°)에서는 7개가 다 옅게라도 보이도록 0이 되지 않게 하되,
+    // 회전 중 154.29°를 지나 180°(맨 아래)까지 더 내려가는 동안에는 흰 배경 속으로
+    // 사르르 사라지도록 그 구간에서만 0으로 마저 페이드아웃한다.
+    const opacity = interpolate(
+      dist,
+      [0, 15, 90, 154.29, 180],
+      [1, 0.33, 0.33, 0.18, 0],
+      Extrapolation.CLAMP,
+    );
     const scale = interpolate(dist, [0, 15, 40], [1.12, 1.12, 1], Extrapolation.CLAMP);
-    const radius = FACILITY_RING_RADIUS;
+    const dx = interpolate(dist, FACILITY_RING_DIST_KEYPOINTS, FACILITY_RING_DX_KEYPOINTS, Extrapolation.CLAMP);
+    const dy = interpolate(dist, FACILITY_RING_DIST_KEYPOINTS, FACILITY_RING_DY_KEYPOINTS, Extrapolation.CLAMP);
     return {
       opacity,
       transform: [
-        { translateX: radius * Math.sin(angleRad) - FACILITY_RING_ICON_BOX_SIZE / 2 },
-        {
-          translateY:
-            FACILITY_RING_CENTER_Y - radius * Math.cos(angleRad) - FACILITY_RING_ICON_BOX_SIZE / 2,
-        },
+        { translateX: sign * dx - FACILITY_RING_ICON_BOX_SIZE / 2 },
+        { translateY: dy - FACILITY_RING_ICON_BOX_SIZE / 2 },
         { scale },
       ],
     };
@@ -662,10 +684,9 @@ export default function OnboardingScreen() {
           <PhoneMockupTopSpacer />
           <FadeInContent style={[{ width: '100%', alignItems: 'center' }, contentStyle]}>
             <SearchMockupScene>
-              <SearchMockupPhoneBox>
-                <SearchMockupImage source={OnboardingFacilityMockupImage} resizeMode="contain" />
-              </SearchMockupPhoneBox>
-
+              {/* 아이콘 링을 폰 스크린샷보다 먼저 그려서 폰 뒤에 깔리게 한다(회전하며
+                  폰 몸체 쪽으로 들어가는 아이콘은 폰에 가려지고, 옆으로 삐져나온
+                  부분만 보이는 게 Figma 의도와 맞다). */}
               <FacilityIconRing pointerEvents="none">
                 {FACILITY_DEMO_CATEGORIES.map((category, index) => (
                   <FacilityRingIcon
@@ -676,6 +697,10 @@ export default function OnboardingScreen() {
                   />
                 ))}
               </FacilityIconRing>
+
+              <SearchMockupPhoneBox>
+                <SearchMockupImage source={OnboardingFacilityMockupImage} resizeMode="contain" />
+              </SearchMockupPhoneBox>
 
               <FacilityInfoCardBox
                 style={[{ top: FACILITY_CARD_TOP_GAP_FROM_PHONE_TOP }, facilityInfoCardFadeStyle]}

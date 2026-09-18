@@ -281,11 +281,11 @@ const Container = styled.View<{ variant: Props['variant']; compact: boolean }>`
   padding-bottom: ${({ compact }) => (compact ? '21.163px' : '32px')};
   /* outside/inside/room은 그래버-본문-CTA 사이가 24px, facility만 16px로 Figma 스펙이 다르다. */
   gap: ${({ variant, compact }) => (compact ? '10.581px' : variant === 'facility' ? '16px' : '24px')};
-  /* compact(온보딩 편의시설 목업)만 Figma box-shadow 적용: 0 -2.645px 10px 0 rgba(0,0,0,0.10) */
+  /* compact(온보딩 편의시설 목업)만 Figma box-shadow 적용: 0 -2.645px 20px 0 rgba(0,0,0,0.10) */
   shadow-color: #000;
   shadow-offset: 0px ${({ compact }) => (compact ? '-2.645px' : '-4px')};
   shadow-opacity: ${({ compact }) => (compact ? 0.1 : 0.05)};
-  shadow-radius: ${({ compact }) => (compact ? '48px' : '20px')};
+  shadow-radius: 20px;
   elevation: 8;
   ${({ variant }) => (variant === 'inside' ? 'height: 400px;' : '')}
 `;

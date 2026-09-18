@@ -147,11 +147,12 @@ const Container = styled.View<{ compact: boolean }>`
   padding-top: ${({ compact }) => (compact ? '5.478px' : '8px')};
   padding-bottom: ${({ compact }) => (compact ? '5.478px' : '8px')};
   gap: ${({ compact }) => (compact ? '10.956px' : '16px')};
-  /* compact(온보딩 검색 목업)만 Figma box-shadow 적용: 0 -2.739px 40px 0 rgba(0,0,0,0.10) */
+  /* compact(온보딩 검색 목업)만 Figma box-shadow 적용: 0 -2.739px 20px 0 rgba(0,0,0,0.10) —
+     FacilityInfoCard와 같은 이유로 radius가 40px로 과하게 커져 있던 걸 20px로 맞춘다. */
   shadow-color: #000;
   shadow-offset: 0px ${({ compact }) => (compact ? '-2.739px' : '-4px')};
   shadow-opacity: ${({ compact }) => (compact ? 0.1 : 0.05)};
-  shadow-radius: ${({ compact }) => (compact ? '40px' : '20px')};
+  shadow-radius: 20px;
   elevation: 8;
 `;
 
