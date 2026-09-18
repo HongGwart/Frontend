@@ -676,23 +676,20 @@ export default function OnboardingScreen() {
                   />
                 ))}
               </FacilityIconRing>
-            </SearchMockupScene>
 
-            <FacilityInfoCardBox
-              style={[
-                { marginTop: FACILITY_CARD_TOP_GAP_FROM_PHONE_TOP - SEARCH_MOCKUP_SCENE_HEIGHT_PX },
-                facilityInfoCardFadeStyle,
-              ]}
-              pointerEvents="none"
-            >
-              <FacilityInfoCard
-                variant="facility"
-                isFavorite
-                compact
-                hideCta
-                {...FACILITY_DEMO_CATEGORIES[activeFacilityIndex].cardProps}
-              />
-            </FacilityInfoCardBox>
+              <FacilityInfoCardBox
+                style={[{ top: FACILITY_CARD_TOP_GAP_FROM_PHONE_TOP }, facilityInfoCardFadeStyle]}
+                pointerEvents="none"
+              >
+                <FacilityInfoCard
+                  variant="facility"
+                  isFavorite
+                  compact
+                  hideCta
+                  {...FACILITY_DEMO_CATEGORIES[activeFacilityIndex].cardProps}
+                />
+              </FacilityInfoCardBox>
+            </SearchMockupScene>
 
             <Caption style={{ marginTop: CAPTION_TO_PHONE_BOTTOM_GAP }}>
               지금 열려있는 시설을 확인하세요
@@ -920,7 +917,15 @@ const RingIconCircle = styled(Animated.View)`
   background-color: ${({ theme }) => theme.semantic.background.color};
 `;
 
+// SearchMockupScene(position:relative) 안에서 절대 위치로 얹는다 — 이전에는 Scene의
+// 형제 블록으로 흐름에 끼어 있어서, 그 실제 렌더 높이만큼 뒤따르는 Caption이 밀려나
+// 검색 목업 페이지의 Caption과 세로 위치가 달라지는 문제가 있었다. 가로 중앙 정렬은
+// transform: translateX 대신 left: 17%(=(100-66)/2)로 한다 — facilityInfoCardFadeStyle이
+// 이미 자기 transform(translateY)을 갖고 있어서, 여기서 transform을 또 주면 RN
+// 스타일 병합 시 나중 온 배열 값이 앞의 transform을 통째로 덮어써 버린다.
 const FacilityInfoCardBox = styled(Animated.View)`
+  position: absolute;
+  left: 17%;
   width: 66%;
 `;
 
