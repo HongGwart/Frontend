@@ -25,6 +25,13 @@ interface Props {
    * 이 콜백만 호출된다. 캠퍼스맵 메인홈처럼 "누르면 검색 페이지로 이동"하는 용도.
    */
   onPress?: () => void;
+  /**
+   * true면 온보딩 검색 목업(Figma 1257:44935)처럼 훨씬 작은 크기로 그린다
+   * (높이 34.79px, 세로 패딩 8.7px, 가로 패딩 11.6px, radius 8.7px, 폰트 11.6px).
+   * variant와 무관하게 끝에 x_search 아이콘도 항상 붙는다. 기본값 false는 앱
+   * 전역에서 쓰는 원래 크기(48px) 그대로.
+   */
+  compact?: boolean;
 }
 
 export function SearchBar({
@@ -37,6 +44,7 @@ export function SearchBar({
   isListening = false,
   autoFocus,
   onPress,
+  compact = false,
 }: Props) {
   const theme = useTheme();
   const isActive = variant === 'active';
@@ -47,12 +55,14 @@ export function SearchBar({
   // 바운스가 필요한 경우(home 탭-이동형이거나 active 검색창) 눌림 판정을 바깥 Pressable이
   // 전담하도록 TextInput의 터치를 막는다. active일 때는 대신 ref로 직접 focus를 준다.
   const wrapsWithBounce = Boolean(onPress) || isActive;
+  const iconSize = compact ? 15 : 20;
 
   const content = (
-    <Container active={isActive && isFocused}>
-      <SearchIcon width={20} height={20} />
+    <Container active={isActive && isFocused} compact={compact}>
+      <SearchIcon width={iconSize} height={iconSize} />
       <Input
         ref={inputRef}
+        compact={compact}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
@@ -79,6 +89,11 @@ export function SearchBar({
             />
           </VoiceButton>
         ))}
+      {/* compact(온보딩 검색 목업)는 항상 x_search 아이콘이 붙어 있는 Figma
+          디자인(1257:44935)이라, active 여부/입력값과 무관하게 그린다. */}
+      {compact && !isActive && (
+        <XCircleIcon width={iconSize} height={iconSize} color={theme.semantic.text.tertiary} />
+      )}
     </Container>
   );
 
@@ -98,28 +113,35 @@ export function SearchBar({
   return content;
 }
 
-const Container = styled.View<{ active: boolean }>`
+const Container = styled.View<{ active: boolean; compact: boolean }>`
   flex-direction: row;
   align-items: center;
-  gap: 8px;
-  height: 48px;
-  padding: 0px 16px;
+  gap: ${({ compact }) => (compact ? '5.799px' : '8px')};
+  height: ${({ compact }) => (compact ? '34.792px' : '48px')};
+  padding: ${({ compact }) => (compact ? '8.698px 11.597px' : '0px 16px')};
   background-color: ${({ theme }) => theme.semantic.background.fill};
   border-width: 1px;
   border-color: ${({ theme, active }) => (active ? theme.blue[300] : theme.semantic.line.primary)};
-  border-radius: 12px;
+  border-radius: ${({ compact }) => (compact ? '8.698px' : '12px')};
+  /* compact(온보딩 검색 목업)만 Figma box-shadow 적용: 0 4px 20px 0 rgba(0,0,0,0.10) */
+  shadow-color: ${({ compact }) => (compact ? '#000' : 'transparent')};
+  shadow-offset: 0px 4px;
+  shadow-opacity: ${({ compact }) => (compact ? 0.1 : 0)};
+  shadow-radius: 20px;
+  elevation: ${({ compact }) => (compact ? 8 : 0)};
 `;
 
 const Input = styled.TextInput.attrs({
   textAlignVertical: 'center',
-})`
+})<{ compact: boolean }>`
   flex: 1;
   align-self: stretch;
   padding: 0px;
   margin: 0px;
   font-family: ${({ theme }) => theme.typography.bodyNormal.medium.fontFamily};
-  font-size: ${({ theme }) => theme.typography.bodyNormal.medium.fontSize}px;
-  letter-spacing: ${({ theme }) => theme.typography.bodyNormal.medium.letterSpacing}px;
+  font-size: ${({ compact, theme }) => (compact ? '11.597px' : `${theme.typography.bodyNormal.medium.fontSize}px`)};
+  letter-spacing: ${({ compact, theme }) =>
+    compact ? '0px' : `${theme.typography.bodyNormal.medium.letterSpacing}px`};
   color: ${({ theme }) => theme.semantic.text.primary};
 `;
 
