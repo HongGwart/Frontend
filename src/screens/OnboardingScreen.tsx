@@ -425,7 +425,7 @@ function FacilityRingIcon({
 
   return (
     <RingIconCircle style={style} pointerEvents="none">
-      <Icon width={32} height={32} color={theme.blue[500]} />
+      <Icon width={24} height={24} color={theme.blue[500]} />
     </RingIconCircle>
   );
 }

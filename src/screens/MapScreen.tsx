@@ -393,7 +393,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, focusFa
                 cardFadeStyle,
               ]}
             >
-              <View onLayout={handleFacilityCardLayout}>
+              <View style={styles.facilityCardContent} onLayout={handleFacilityCardLayout}>
               {selectedFacility.type === 'dong' ? (
             <FacilityInfoCard
               variant="outside"
@@ -509,6 +509,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  // FacilityListSheet의 fillHeight는 부모가 flex:1로 실제 높이를 내려줘야 동작하는데,
+  // 카메라 포커스 측정용으로 감싼 onLayout View에 flex가 없으면 0에 가깝게 찌그러진다.
+  facilityCardContent: {
+    flex: 1,
   },
   modalRoot: {
     flex: 1,
