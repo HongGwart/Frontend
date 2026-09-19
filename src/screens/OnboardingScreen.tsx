@@ -184,30 +184,33 @@ const SEARCH_DEMO_FACILITY_ITEMS: FacilityListSheetItem[] = [
 const FACILITY_RING_ICON_BOX_SIZE = 48;
 // Figma(1257:45531/45533/45572)에서 실측한 좌/우 아이콘 중심 좌표를, 맨 위 슬롯에서부터의
 // 각도 거리(dist, 0=맨 위)별 키포인트로 옮긴 값이다 — 원 공식(sin/cos) 대신 이 실측
-// 간격을 그대로 보간해서 써야 Figma 배치와 일치한다. dist=0(맨 위 슬롯)은 측정값이 없어서
-// dist=0(맨 위 슬롯)은 아이콘 아래쪽 끝이 폰 상단(Scene 0,0)에서 16px 위에 오도록
-// 지정한 값이다(center = -16 - iconBox/2 = -40).
+// 간격을 그대로 보간해서 써야 Figma 배치와 일치한다. dist=0(맨 위 슬롯)은 아이콘 아래쪽
+// 끝이 폰 상단(Scene 0,0)에서 16px 위에 오도록 지정한 값이다(center = -16 - iconBox/2 = -40).
 // x는 중심(0)에서 좌우로 얼마나 벌어지는지(항상 양수, 부호는 좌/우에 따라 따로 곱한다),
 // y는 폰 상단(Scene 0,0) 기준 아이콘 중심의 세로 위치(위쪽일수록 음수).
 const FACILITY_RING_TOP_ICON_GAP = 16;
-// 7개가 51.43°씩 떨어져 있으면 "쉬는" 위치의 dist는 최대 154.29°까지만 나오지만,
-// 회전 도중(한 슬롯에서 다음 슬롯으로 넘어가는 사이)에는 dist가 그보다 커져 180°(맨
-// 아래/뒤)까지 지나간다. 여기 마지막 키포인트(180)가 없으면 154.29 값에서 그대로
-// 멈춰(clamp) 왼쪽 끝 아이콘이 내려가다 만 것처럼 보인다 — 180까지 이어서 계속
-// 아래로 가라앉고(dx는 다시 0으로 모이고) 흰 배경 속으로 사라지게(opacity 0) 한다.
-const FACILITY_RING_DIST_KEYPOINTS = [0, 360 / 7, (360 / 7) * 2, (360 / 7) * 3, 180];
-const FACILITY_RING_DX_KEYPOINTS = [0, 68.5, 121.5, 136.5, 0];
+// 7개가 51.43°씩 떨어져 있으면 "쉬는" 위치의 dist는 최대 154.29°까지만 나오지만, 회전
+// 도중(한 슬롯에서 다음 슬롯으로 넘어가는 사이)에는 dist가 그보다 커져 180°(맨 아래/뒤)
+// 까지 지나간다. 154.29(마지막 쉬는 위치)~160 구간에서 opacity를 0까지 마저 떨어뜨리고
+// dx는 그대로 붙잡아 둬서(136.5 유지) "제자리에서 사라지게" 하고, 완전히 안 보이게 된
+// 160~180 구간에서만 dx를 0으로 모으고 dy를 계속 내린다 — 이렇게 안 보이는 동안에만
+// 폰 뒤 중앙으로 가라앉게 해야, 사라지는 게 아니라 옆으로 슬라이드해 넘어가는 것처럼
+// 보이던 문제가 없어진다. 반대쪽(오른쪽)에서 나타날 때도 대칭이라 같은 지점(160)에서
+// 다시 튀어나온 뒤, 이후 정상 회전을 타고 위로 올라간다.
+const FACILITY_RING_DIST_KEYPOINTS = [0, 360 / 7, (360 / 7) * 2, (360 / 7) * 3, 160, 180];
+const FACILITY_RING_DX_KEYPOINTS = [0, 68.5, 121.5, 136.5, 136.5, 0];
 const FACILITY_RING_DY_KEYPOINTS = [
   -FACILITY_RING_TOP_ICON_GAP - FACILITY_RING_ICON_BOX_SIZE / 2,
   -18,
   31,
   88,
+  97,
   130,
 ];
 const FACILITY_RING_ICON_COUNT = 7;
 const FACILITY_RING_ANGLE_STEP = 360 / FACILITY_RING_ICON_COUNT;
 const FACILITY_RING_TICK_MS = 2000;
-const FACILITY_RING_ROTATE_DURATION_MS = 700;
+const FACILITY_RING_ROTATE_DURATION_MS = 550;
 const FACILITY_CARD_FADE_MS = 220;
 // 시설 카드 윗변이 폰 맨 윗부분(SearchMockupScene 상단)에서 152px 아래에 오게 한다.
 // FacilityInfoCardBox는 원래 Scene 바로 다음(=Scene 바닥, SEARCH_MOCKUP_SCENE_HEIGHT_PX)에서
@@ -403,8 +406,8 @@ function FacilityRingIcon({
     // 사르르 사라지도록 그 구간에서만 0으로 마저 페이드아웃한다.
     const opacity = interpolate(
       dist,
-      [0, 15, 90, 154.29, 180],
-      [1, 0.33, 0.33, 0.18, 0],
+      [0, 15, 90, 154.29, 160, 180],
+      [1, 0.33, 0.33, 0.18, 0, 0],
       Extrapolation.CLAMP,
     );
     const scale = interpolate(dist, [0, 15, 40], [1.12, 1.12, 1], Extrapolation.CLAMP);
@@ -528,6 +531,11 @@ export default function OnboardingScreen() {
       tick += 1;
       facilityRingRotation.value = withTiming(-tick * FACILITY_RING_ANGLE_STEP, {
         duration: FACILITY_RING_ROTATE_DURATION_MS,
+        // 기본(선형에 가까운) 이징은 안 보이는 구간(160~180°)을 빠르게 지나고 나서도
+        // 등속으로 계속 움직여, 반대쪽에서 다시 나타난 요소가 위로 올라오는 속도가
+        // 처음엔 덜 붙는 것처럼 보인다. ease-out으로 바꿔서 회전 시작 직후 속도를 한번에
+        // 붙이고 뒤로 갈수록 감속하게 하면 "튀어나와서 올라오는" 느낌이 더 산다.
+        easing: Easing.out(Easing.cubic),
       });
       facilityCardFade.value = withTiming(0, { duration: FACILITY_CARD_FADE_MS }, (finished) => {
         if (finished) {
