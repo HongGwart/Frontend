@@ -57,6 +57,17 @@ interface Props {
   operatingHours: OperatingHoursInfo;
   /** outside/facility에서만 쓰인다 */
   onViewInsidePress?: () => void;
+  /**
+   * CTA 버튼 라벨. 기본값은 "건물 내부 보기"지만, 캠퍼스 밖 상권(주변상권)처럼 건물 내부가
+   * 없는 시설은 "네이버 지도에서 열기"처럼 다른 문구로 바꿔서 쓴다.
+   */
+  ctaLabel?: string;
+  /** CTA 아이콘. 생략하면 건물 아이콘이 기본값이고, 아이콘 없이 텍스트만 보이려면 null을 넘긴다. */
+  ctaIcon?: React.FC<SvgProps> | null;
+  ctaIconWidth?: number;
+  ctaIconHeight?: number;
+  /** CTA 버튼 색상. 기본값 'primary'(남색). 주변상권처럼 톤 다운된 버튼이 필요하면 'secondary'. */
+  ctaVariant?: 'primary' | 'secondary';
   /** true면 "건물 내부 보기" CTA 버튼을 안 그린다(예: 온보딩처럼 CTA가 필요 없는 데모용). */
   hideCta?: boolean;
   /**
@@ -89,6 +100,11 @@ export function FacilityInfoCard({
   mainEntrance,
   operatingHours,
   onViewInsidePress,
+  ctaLabel = '건물 내부 보기',
+  ctaIcon,
+  ctaIconWidth = 17,
+  ctaIconHeight = 18,
+  ctaVariant = 'primary',
   hideCta = false,
   compact = false,
 }: Props) {
@@ -97,6 +113,7 @@ export function FacilityInfoCard({
   const isFacility = variant === 'facility';
   const hasBuildingDetails = variant === 'outside' || variant === 'inside';
   const showCta = !hideCta && (variant === 'outside' || variant === 'facility');
+  const resolvedCtaIcon = ctaIcon === undefined ? BuildingViewIcon : ctaIcon ?? undefined;
 
   const actionButtons = (
     <ActionButtonRow compact={compact}>
@@ -208,7 +225,15 @@ export function FacilityInfoCard({
 
       {showCta && (
         <CtaWrapper>
-          <Button label="건물 내부 보기" icon={BuildingViewIcon} iconWidth={17} iconHeight={18} onPress={onViewInsidePress} />
+          <Button
+            label={ctaLabel}
+            variant={ctaVariant}
+            icon={resolvedCtaIcon}
+            iconWidth={ctaIconWidth}
+            iconHeight={ctaIconHeight}
+            disabled={!onViewInsidePress}
+            onPress={onViewInsidePress}
+          />
         </CtaWrapper>
       )}
 

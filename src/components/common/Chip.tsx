@@ -30,6 +30,12 @@ interface Props {
   icon?: React.FC<SvgProps>;
   iconWidth?: number;
   iconHeight?: number;
+  /**
+   * true(기본)면 지도 위에 떠 있는 칩처럼 그림자를 깐다(검색 페이지 필터 칩).
+   * 화면 안에 정적으로 나열되는 칩(예: 주변상권 카테고리 칩)에서는 칩 사이 gap에
+   * 그림자가 번져 보이는 회색 띠로 보이니 false로 꺼서 쓴다.
+   */
+  elevated?: boolean;
 }
 
 /**
@@ -45,6 +51,7 @@ export function Chip({
   icon: Icon,
   iconWidth = 16,
   iconHeight = 16,
+  elevated = true,
 }: Props) {
   const theme = useTheme();
   const contentColor = active ? theme.semantic.text.white : theme.semantic.text.tertiary;
@@ -117,6 +124,7 @@ export function Chip({
         <Container
           active={active}
           hasIcon={Boolean(Icon)}
+          elevated={elevated}
           style={bounceOnActivate ? animatedContainerStyle : undefined}
         >
           {Icon && <Icon width={iconWidth} height={iconHeight} color={contentColor} />}
@@ -129,7 +137,7 @@ export function Chip({
   );
 }
 
-const Container = styled(Animated.View)<{ active: boolean; hasIcon: boolean }>`
+const Container = styled(Animated.View)<{ active: boolean; hasIcon: boolean; elevated: boolean }>`
   flex-direction: row;
   align-items: center;
   gap: 4px;
@@ -142,12 +150,12 @@ const Container = styled(Animated.View)<{ active: boolean; hasIcon: boolean }>`
     active ? theme.blue[800] : theme.semantic.background.primary};
   border-width: 1px;
   border-color: ${({ theme, active }) => (active ? 'transparent' : theme.semantic.line.primary)};
-  /* Figma box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.10) */
+  /* Figma box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.10) - 지도 위에 뜨는 칩에서만 쓴다 */
   shadow-color: #000;
   shadow-offset: 0px 4px;
-  shadow-opacity: 0.1;
-  shadow-radius: 20px;
-  elevation: 8;
+  shadow-opacity: ${({ elevated }) => (elevated ? 0.1 : 0)};
+  shadow-radius: ${({ elevated }) => (elevated ? 20 : 0)}px;
+  elevation: ${({ elevated }) => (elevated ? 8 : 0)};
 `;
 
 const Label = styled(Animated.Text)<{ active: boolean }>`

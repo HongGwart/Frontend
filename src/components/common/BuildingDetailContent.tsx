@@ -148,7 +148,8 @@ export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
       </ScrollView>
 
       <CtaBar style={{ paddingBottom: insets.bottom + 8 }}>
-        <Button label="건물 내부 보기" icon={BuildingViewIcon} iconWidth={17} iconHeight={18} onPress={() => {}} />
+        {/* 실내 지도 화면이 아직 없어서, 지금은 눌러도 아무 일도 없는 대신 비활성화해둔다. */}
+        <Button label="건물 내부 보기" icon={BuildingViewIcon} iconWidth={17} iconHeight={18} disabled />
       </CtaBar>
     </Container>
   );

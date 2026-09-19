@@ -62,13 +62,22 @@ export default function MainTabNavigator() {
           ),
         };
       }}
-      tabBar={({ state, navigation }) => (
-        <NavigationBar
-          activeTab={state.routeNames[state.index] as NavigationTab}
-          onTabPress={tab => navigation.navigate(tab)}
-          bottomInset={insets.bottom}
-        />
-      )}
+      tabBar={({ state, navigation, descriptors }) => {
+        // 시설 상세처럼 탭 화면 안에서 전체화면 상태로 전환될 때, 그 화면이
+        // options.tabBarStyle={{ display: 'none' }}을 setOptions로 걸면 탭 바를 감춘다.
+        const currentRoute = state.routes[state.index];
+        const tabBarStyle = descriptors[currentRoute.key].options.tabBarStyle as { display?: string } | undefined;
+        const isTabBarHidden = tabBarStyle?.display === 'none';
+        if (isTabBarHidden) return null;
+
+        return (
+          <NavigationBar
+            activeTab={state.routeNames[state.index] as NavigationTab}
+            onTabPress={tab => navigation.navigate(tab)}
+            bottomInset={insets.bottom}
+          />
+        );
+      }}
     >
       <Tab.Screen name="map" component={MapTabScreen} />
       <Tab.Screen name="navigation" component={NavigationScreen} />

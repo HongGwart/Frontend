@@ -408,7 +408,6 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, focusFa
               facilityCounts={DUMMY_FACILITY_COUNTS}
               mainEntrance={DUMMY_MAIN_ENTRANCE}
               operatingHours={DUMMY_OPERATING_HOURS}
-              onViewInsidePress={() => {}}
             />
           ) : selectedFacility.type === 'category' ? (
             <FacilityInfoCard
@@ -420,7 +419,6 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, focusFa
               onToggleFavorite={() => toggleFavorite(selectedFacility.marker, selectedFacility.marker.room)}
               images={selectedFacility.marker.images}
               operatingHours={DUMMY_OPERATING_HOURS}
-              onViewInsidePress={() => {}}
             />
           ) : selectedFacility.type === 'list' ? (
             <FacilityListSheet
@@ -449,7 +447,6 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, focusFa
               }
               images={DUMMY_FACILITY_IMAGES}
               operatingHours={DUMMY_OPERATING_HOURS}
-              onViewInsidePress={() => {}}
             />
           ) : (
             <FacilityInfoCard
@@ -466,7 +463,6 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, focusFa
               }
               images={selectedFacility.item.images}
               operatingHours={DUMMY_OPERATING_HOURS}
-              onViewInsidePress={() => {}}
             />
           )}
               </View>

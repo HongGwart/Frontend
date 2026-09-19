@@ -223,7 +223,6 @@ export default function SearchScreen() {
                 facilityCounts={DUMMY_FACILITY_COUNTS}
                 mainEntrance={DUMMY_MAIN_ENTRANCE}
                 operatingHours={DUMMY_OPERATING_HOURS}
-                onViewInsidePress={() => {}}
               />
             ) : (
               <FacilityInfoCard
@@ -234,7 +233,6 @@ export default function SearchScreen() {
                 isFavorite={selectedFacility.marker.favorite}
                 images={selectedFacility.marker.images}
                 operatingHours={DUMMY_OPERATING_HOURS}
-                onViewInsidePress={() => {}}
               />
             )}
           </View>
