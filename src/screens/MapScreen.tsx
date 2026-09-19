@@ -1,19 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { NaverMapView } from '@mj-studio/react-native-naver-map';
+import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
+import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
+import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
+import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { FacilityListSheet, FacilityListSheetItem } from '@components/common/FacilityListSheet';
 import { Toast } from '@components/common/Toast';
-import {
-  DismissibleBottomSheet,
-  DismissibleBottomSheetRef,
-} from '@components/common/DismissibleBottomSheet';
+import { DismissibleBottomSheet, DismissibleBottomSheetRef } from '@components/common/DismissibleBottomSheet';
+import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { CategoryKey } from '@constant/categoryChips';
@@ -35,6 +37,8 @@ import { FocusFacilityParam, MainTabParamList } from '@navigation/types';
 
 interface Props {
   onSearchPress?: () => void;
+  /** 시설 정보 카드를 위로 슬라이드했을 때 열어줄 건물 상세보기(BuildingDetailScreen). */
+  onOpenBuildingDetail?: (buildingCode: string) => void;
   /** 마이페이지/즐겨찾기 목록에서 시설을 탭하고 넘어왔을 때, 열어줄 시설 정보 */
   focusFacility?: FocusFacilityParam;
 }
@@ -63,22 +67,34 @@ const TOAST_DURATION_MS = 2000;
 // 화면 끝까지를 항상 채운다(항목이 적어도 빈 공간으로 남지 않고 시트 자체가 그 높이를 가짐).
 const LIST_SHEET_GAP_FROM_CHIPS = 235;
 
-export default function MapScreen({ onSearchPress, focusFacility }: Props) {
+export default function MapScreen({ onSearchPress, onOpenBuildingDetail, focusFacility }: Props) {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList, 'map'>>();
   // 메인홈 카테고리 칩은 한 번에 하나만 선택된다. 실제 지도 필터링과의 연결은
   // 추후 지도 데이터가 준비되면 여기 selectedKey를 그대로 넘기면 된다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
+  const mapViewRef = useRef<NaverMapViewRef>(null);
 
-  // 검색창+카테고리 칩 영역의 화면상 y 좌표(하단)를 재서, 리스트 시트를 그 지점 + 235px
-  // 아래에서부터 시작하도록 top으로 직접 고정한다(window 높이로 역산하는 방식은 여러
-  // 화면 크기/세이프에어리어에서 오차가 생기기 쉬워서, top을 직접 고정하는 쪽이 정확하다).
-  const [chipsBottomY, setChipsBottomY] = useState(0);
-  const handleChipsAreaLayout = useCallback((event: LayoutChangeEvent) => {
-    const { y, height } = event.nativeEvent.layout;
-    setChipsBottomY(y + height);
-  }, []);
+  // 마커(동/카테고리)를 탭했을 때만 좌표가 있어서 카메라를 옮길 수 있다. 리스트/외부에서
+  // 넘어온 시설은 지금은 카메라를 건드리지 않는다(검색 화면도 동일한 범위로만 지원).
+  const cameraFocusTarget = useMemo(() => {
+    if (!selectedFacility) return null;
+    if (selectedFacility.type === 'dong' || selectedFacility.type === 'category') {
+      return { latitude: selectedFacility.marker.latitude, longitude: selectedFacility.marker.longitude };
+    }
+    return null;
+  }, [selectedFacility]);
+
+  // 마커가 시설 카드에 가리지 않도록, 검색창+카테고리 칩 아래쪽 끝과 시설 카드 위쪽 끝
+  // 사이의 세로 중앙에 마커가 오도록 카메라를 옮긴다(SearchScreen과 공유하는 훅).
+  const { chipsBottomY, handleChipsAreaLayout, handleFacilityCardLayout } = useFacilityCardCameraFocus(
+    mapViewRef,
+    cameraFocusTarget,
+  );
+  // 리스트 시트는 그 지점 + 235px 아래에서부터 시작하도록 top으로 직접 고정한다(window
+  // 높이로 역산하는 방식은 여러 화면 크기/세이프에어리어에서 오차가 생기기 쉬워서, top을
+  // 직접 고정하는 쪽이 정확하다).
   const listSheetTop = chipsBottomY + LIST_SHEET_GAP_FROM_CHIPS;
 
   // 더미 데이터의 favorite 값을 그대로 두고, 토글한 것만 id 기준으로 덮어써서 들고 있는다.
@@ -158,6 +174,44 @@ export default function MapScreen({ onSearchPress, focusFacility }: Props) {
     if (selectedFacility) bottomSheetRef.current?.close();
   }, [selectedFacility]);
 
+  // 시설 카드를 위로 슬라이드하면 그 건물의 상세보기(BuildingDetailScreen)로 넘어간다.
+  // 'list'(겹친 마커 묶음)는 특정 건물 하나를 가리키지 않아서 지원하지 않는다.
+  const swipeUpBuildingCode = useMemo(() => {
+    if (!selectedFacility) return null;
+    switch (selectedFacility.type) {
+      case 'dong':
+        return selectedFacility.marker.label ?? null;
+      case 'category':
+        return selectedFacility.marker.buildingCode;
+      case 'item':
+        return selectedFacility.item.building;
+      case 'external':
+        return selectedFacility.facility.buildingCode;
+      default:
+        return null;
+    }
+  }, [selectedFacility]);
+
+  const handleSwipeUp = useCallback(() => {
+    if (!swipeUpBuildingCode) return;
+    onOpenBuildingDetail?.(swipeUpBuildingCode);
+    // animateClose와 마찬가지로, 슬라이드업 애니메이션이 끝난 뒤 호출되므로 여기서
+    // 바로 언마운트시켜도 끊겨 보이지 않는다 — 돌아왔을 때 카드가 화면 밖에 걸친
+    // 채로 남아있지 않도록 정리한다.
+    setSelectedFacility(null);
+  }, [swipeUpBuildingCode, onOpenBuildingDetail]);
+
+  // 카드를 드래그하는 동안(그리고 그 뒤 슬라이드업 애니메이션이 끝날 때까지) 실제 화면
+  // 전환을 기다리지 않고, 카드 바로 뒤/위에 다음(BuildingDetailScreen) 헤더·본문을
+  // 실시간 미리보기로 겹쳐 그려서 같이 딸려 올라오게 한다. SearchScreen과 공유하는 훅.
+  const {
+    swipeCardTranslateY,
+    detailHeaderStyle,
+    detailBodyStyle,
+    cardFadeStyle,
+    minSwipeUpDistance,
+  } = useBuildingDetailSwipeUp(swipeUpBuildingCode, selectedFacility);
+
   // 카테고리 칩을 누르면(활성/비활성 어느 방향이든) 지도 위 마커 구성 자체가 바뀌므로,
   // 열려있던 시설 정보 카드는 이전 마커를 가리키는 채로 남지 않게 항상 닫는다.
   const handleSelectCategory = useCallback(
@@ -229,12 +283,15 @@ export default function MapScreen({ onSearchPress, focusFacility }: Props) {
   return (
     <View style={styles.container}>
       <NaverMapView
+        ref={mapViewRef}
         style={StyleSheet.absoluteFill}
         initialCamera={{
           latitude: 37.5504,
           longitude: 126.9251,
           zoom: 16,
         }}
+        minZoom={MAP_MIN_ZOOM}
+        maxZoom={MAP_MAX_ZOOM}
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
         onTapMap={closeFacilitySheet}
       >
@@ -292,15 +349,52 @@ export default function MapScreen({ onSearchPress, focusFacility }: Props) {
         )}
       </SafeAreaView>
       {selectedFacility && (
-        <DismissibleBottomSheet
-          ref={bottomSheetRef}
-          onClose={() => setSelectedFacility(null)}
-          style={[
-            styles.facilityCardWrapper,
-            selectedFacility.type === 'list' ? { top: listSheetTop } : null,
-          ]}
-        >
-          {selectedFacility.type === 'dong' ? (
+        // 탭 내비게이터의 화면 컨테이너(react-native-screens)는 탭 바를 실제로 숨겨도
+        // 처음 잡은 크기를 그대로 들고 있어서, 카드를 그 안에 두면 탭 바가 차지하던
+        // 만큼 화면 바닥에 못 붙고 그 위에 지도가 살짝 보이는 문제가 있었다. Modal로
+        // 감싸면 탭 화면 크기와 완전히 무관하게 항상 진짜 디바이스 화면 전체를 기준으로
+        // 그려져서 이 문제가 아예 생기지 않는다.
+        <Modal transparent animationType="none" statusBarTranslucent onRequestClose={closeFacilitySheet}>
+          {/* Modal은 iOS에서 별도의 네이티브 윈도우라, 안에서 스와이프로 닫는 제스처가
+              동작하려면 gesture-handler 루트를 여기 한 번 더 둬야 한다. */}
+          <GestureHandlerRootView style={styles.modalRoot}>
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={closeFacilitySheet}
+              accessibilityLabel="시설 정보 닫기"
+            />
+            {/* 본문은 카드보다 먼저(=아래에) 그려서, 카드 밑단이 밀려 올라간 만큼만
+                뒤에서 드러나는 것처럼 보이게 한다. 아직 실제 화면 전환 전이라 조작은
+                막아둔다. */}
+            {swipeUpBuildingCode && (
+              <Animated.View
+                style={[StyleSheet.absoluteFill, detailBodyStyle]}
+                pointerEvents="none"
+                // 안에 무거운(용량 큰) 더미 사진 SVG가 여러 장 있어서, 매 프레임 벡터를
+                // 다시 그리는 대신 한 번 래스터화한 텍스처를 그대로 이동만 시킨다.
+                renderToHardwareTextureAndroid
+                shouldRasterizeIOS
+              >
+                <BuildingDetailBody buildingCode={swipeUpBuildingCode} />
+              </Animated.View>
+            )}
+            <DismissibleBottomSheet
+              ref={bottomSheetRef}
+              onClose={() => setSelectedFacility(null)}
+              onSwipeUp={swipeUpBuildingCode ? handleSwipeUp : undefined}
+              translateY={swipeUpBuildingCode ? swipeCardTranslateY : undefined}
+              rasterize={Boolean(swipeUpBuildingCode)}
+              // 상세 본문 미리보기가 완전히 자리잡기 전에 카드가 먼저 사라져서 화면
+              // 전환이 일어나면(중간에 툭 끊겨 보임) 안 되니, 그만큼은 밀어올리게 한다.
+              minSwipeUpDistance={swipeUpBuildingCode ? minSwipeUpDistance : undefined}
+              style={[
+                styles.facilityCardWrapper,
+                selectedFacility.type === 'list' ? { top: listSheetTop } : null,
+                cardFadeStyle,
+              ]}
+            >
+              <View onLayout={handleFacilityCardLayout}>
+              {selectedFacility.type === 'dong' ? (
             <FacilityInfoCard
               variant="outside"
               buildingCode={selectedFacility.marker.label ?? ''}
@@ -375,7 +469,20 @@ export default function MapScreen({ onSearchPress, focusFacility }: Props) {
               onViewInsidePress={() => {}}
             />
           )}
-        </DismissibleBottomSheet>
+              </View>
+            </DismissibleBottomSheet>
+            {/* 헤더는 카드보다 나중에(=위에) 그려서, 카드가 위로 슬라이드하다 헤더 자리에
+                닿으면 그 속으로 사라지는 것처럼(헤더가 카드를 덮으며) 보이게 한다. */}
+            {swipeUpBuildingCode && (
+              <Animated.View
+                style={[{ position: 'absolute', top: 0, left: 0, right: 0 }, detailHeaderStyle]}
+                pointerEvents="none"
+              >
+                <BuildingDetailHeader buildingCode={swipeUpBuildingCode} />
+              </Animated.View>
+            )}
+          </GestureHandlerRootView>
+        </Modal>
       )}
     </View>
   );
@@ -402,5 +509,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  modalRoot: {
+    flex: 1,
   },
 });

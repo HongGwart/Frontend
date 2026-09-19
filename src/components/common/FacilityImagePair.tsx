@@ -4,15 +4,17 @@ import { SvgProps } from 'react-native-svg';
 
 interface Props {
   images: [React.FC<SvgProps>, React.FC<SvgProps>];
+  /** 기본 100px(FacilityInfoCard 등). 건물 상세보기(BuildingDetailScreen)는 160px을 쓴다. */
+  height?: number;
 }
 
 /**
- * 시설 카드류(FacilityInfoCard, FacilityListItem)에서 공통으로 쓰는 이미지 2장 나열 블록.
- * 높이 100px, 사이 4px 간격, 바깥쪽 모서리만 4px 둥글게.
+ * 시설 카드류(FacilityInfoCard, FacilityListItem, BuildingDetailScreen)에서 공통으로 쓰는
+ * 이미지 2장 나열 블록. 사이 4px 간격, 바깥쪽 모서리만 4px 둥글게.
  */
-export function FacilityImagePair({ images }: Props) {
+export function FacilityImagePair({ images, height = 100 }: Props) {
   return (
-    <ImageRow>
+    <ImageRow height={height}>
       {images.map((ImageIcon, index) => (
         <ImageSlot key={index} first={index === 0}>
           <ImageIcon width="100%" height="100%" />
@@ -22,10 +24,10 @@ export function FacilityImagePair({ images }: Props) {
   );
 }
 
-const ImageRow = styled.View`
+const ImageRow = styled.View<{ height: number }>`
   flex-direction: row;
   gap: 4px;
-  height: 100px;
+  height: ${({ height }) => height}px;
   width: 100%;
 `;
 
