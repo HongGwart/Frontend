@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle } from 'react';
+import React, { forwardRef, useCallback, useImperativeHandle, useMemo } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -80,47 +80,56 @@ export const DismissibleBottomSheet = forwardRef<DismissibleBottomSheetRef, Prop
     const translateY = externalTranslateY ?? internalTranslateY;
     const sheetHeight = useSharedValue(0);
 
-    const animateClose = () => {
+    const animateClose = useCallback(() => {
       // 화면 밖으로 완전히 나갈 때까지는 최소한 sheetHeight만큼(모르면 넉넉히 1000) 더 내려가야 한다.
       const target = Math.max(sheetHeight.value || 1000, translateY.value + 400);
       translateY.value = withTiming(target, { duration: 220, easing: Easing.in(Easing.cubic) }, finished => {
         if (finished) runOnJS(onClose)();
       });
-    };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [onClose, sheetHeight, translateY]);
 
     // animateClose와 대칭 — 화면 위로 완전히 나갈 때까지 밀어올린 뒤 onSwipeUp을 호출한다.
     // onClose처럼 이 시점에 언마운트시키는 건 호출하는 쪽(onSwipeUp) 책임이다.
-    const animateSwipeUp = () => {
+    const animateSwipeUp = useCallback(() => {
       const requiredMagnitude = minSwipeUpDistance ?? (sheetHeight.value || 1000);
       const target = Math.min(-requiredMagnitude, translateY.value - 400);
       translateY.value = withTiming(target, { duration: 220, easing: Easing.in(Easing.cubic) }, finished => {
         if (finished && onSwipeUp) runOnJS(onSwipeUp)();
       });
-    };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [onSwipeUp, minSwipeUpDistance, sheetHeight, translateY]);
 
-    useImperativeHandle(ref, () => ({ close: animateClose }));
+    useImperativeHandle(ref, () => ({ close: animateClose }), [animateClose]);
 
-    const pan = Gesture.Pan()
-      // 단일 양수(10)를 주면 아래쪽으로만 10px 이상 움직여야 활성화된다 — onSwipeUp을
-      // 지원하는 카드는 위로도 끌 수 있어야 하니 양방향([-10, 10])으로 열어준다.
-      .activeOffsetY(onSwipeUp ? [-10, 10] : 10)
-      .failOffsetX([-15, 15])
-      .onUpdate(event => {
-        // onSwipeUp이 있을 때만 위로 끌어올리는 걸 허용한다 — 없으면 기존처럼 0에서 막는다.
-        translateY.value = onSwipeUp ? event.translationY : Math.max(0, event.translationY);
-      })
-      .onEnd(event => {
-        const shouldDismiss = event.translationY > DISMISS_DISTANCE || event.velocityY > DISMISS_VELOCITY;
-        const shouldSwipeUp =
-          onSwipeUp && (event.translationY < -SWIPE_UP_DISTANCE || event.velocityY < SWIPE_UP_VELOCITY);
-        if (shouldDismiss) {
-          runOnJS(animateClose)();
-        } else if (shouldSwipeUp) {
-          runOnJS(animateSwipeUp)();
-        } else {
-          translateY.value = withSpring(0, { damping: 22, stiffness: 320 });
-        }
-      });
+    // Gesture.Pan()을 매 렌더마다 새로 만들면, 드래그 중(손가락이 아직 화면에 붙어있는
+    // 동안) 부모가 리렌더될 때 GestureDetector가 핸들러를 뗐다 다시 붙이면서 진행 중인
+    // 제스처가 끊길 수 있다 — 의존값이 실제로 바뀔 때만 다시 만들도록 메모이즈한다.
+    const pan = useMemo(
+      () =>
+        Gesture.Pan()
+          // 단일 양수(10)를 주면 아래쪽으로만 10px 이상 움직여야 활성화된다 — onSwipeUp을
+          // 지원하는 카드는 위로도 끌 수 있어야 하니 양방향([-10, 10])으로 열어준다.
+          .activeOffsetY(onSwipeUp ? [-10, 10] : 10)
+          .failOffsetX([-15, 15])
+          .onUpdate(event => {
+            // onSwipeUp이 있을 때만 위로 끌어올리는 걸 허용한다 — 없으면 기존처럼 0에서 막는다.
+            translateY.value = onSwipeUp ? event.translationY : Math.max(0, event.translationY);
+          })
+          .onEnd(event => {
+            const shouldDismiss = event.translationY > DISMISS_DISTANCE || event.velocityY > DISMISS_VELOCITY;
+            const shouldSwipeUp =
+              onSwipeUp && (event.translationY < -SWIPE_UP_DISTANCE || event.velocityY < SWIPE_UP_VELOCITY);
+            if (shouldDismiss) {
+              runOnJS(animateClose)();
+            } else if (shouldSwipeUp) {
+              runOnJS(animateSwipeUp)();
+            } else {
+              translateY.value = withSpring(0, { damping: 22, stiffness: 320 });
+            }
+          }),
+      [onSwipeUp, translateY, animateClose, animateSwipeUp],
+    );
 
     const animatedStyle = useAnimatedStyle(() => ({
       transform: [{ translateY: translateY.value }],

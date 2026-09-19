@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Pressable } from 'react-native';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
-import { LinearGradient } from 'expo-linear-gradient';
 import BuildingViewIcon from '@assets/svgs/icons/buildingView.svg';
 import { Button } from './Button';
 import { FavoriteToggle } from './FavoriteToggle';
 import { FacilityImagePair } from './FacilityImagePair';
+import { BottomFade, ShadowBottomClip } from './ShadowBottomClip';
 
 export interface FacilityCountItem {
   icon: React.FC<SvgProps>;
@@ -212,24 +212,12 @@ export function FacilityInfoCard({
         </CtaWrapper>
       )}
 
-      {compact && (
-        <BottomFade
-          colors={['rgba(255, 255, 255, 0)', '#FFFFFF']}
-          locations={[0, 1]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          pointerEvents="none"
-        />
-      )}
+      {compact && <BottomFade pointerEvents="none" />}
     </Container>
   );
 
-  // compact(온보딩 편의시설 목업)는 아래쪽엔 그림자가 없어야 해서(왼쪽/오른쪽/위만), Container의
-  // 그림자가 아래로 번지는 부분만 이 래퍼로 잘라낸다. FacilityListSheet의 ShadowBottomClip과
-  // 동일한 트릭: 위/좌/우로만 그림자 반경(10px)만큼 더 키우고(마이너스 마진으로 레이아웃
-  // 자리는 그대로 유지) overflow: hidden을 주면 아래쪽만 Container 바닥에서 바로 잘린다.
   if (!compact) return card;
-  return <ShadowBottomClip>{card}</ShadowBottomClip>;
+  return <ShadowBottomClip spread={SHADOW_CLIP_SPREAD_PX}>{card}</ShadowBottomClip>;
 }
 
 // 건물 상세보기 화면(BuildingDetailScreen)의 "운영 시간" 행도 이 카드와 똑같은 모양을
@@ -533,22 +521,3 @@ const CtaWrapper = styled.View`
 `;
 
 const SHADOW_CLIP_SPREAD_PX = 48;
-
-const ShadowBottomClip = styled.View`
-  overflow: hidden;
-  padding-top: ${SHADOW_CLIP_SPREAD_PX}px;
-  padding-left: ${SHADOW_CLIP_SPREAD_PX}px;
-  padding-right: ${SHADOW_CLIP_SPREAD_PX}px;
-  margin-top: -${SHADOW_CLIP_SPREAD_PX}px;
-  margin-left: -${SHADOW_CLIP_SPREAD_PX}px;
-  margin-right: -${SHADOW_CLIP_SPREAD_PX}px;
-`;
-
-// FacilityListSheet의 compact 페이드와 동일한 흰색 하단 페이드(온보딩 편의시설 목업 전용).
-const BottomFade = styled(LinearGradient)`
-  position: absolute;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
-  height: 100px;
-`;

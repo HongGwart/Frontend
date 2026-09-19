@@ -91,7 +91,7 @@ export function FacilityListItem({
                 {room}
               </RoomText>
             )}
-            <FavoriteToggle isFavorite={isFavorite} onPress={onToggleFavorite} />
+            <FavoriteToggle isFavorite={isFavorite} onPress={onToggleFavorite} size={compact ? 16 : undefined} />
           </TitleRow>
           <DescriptionText compact={compact} numberOfLines={1}>
             {description}

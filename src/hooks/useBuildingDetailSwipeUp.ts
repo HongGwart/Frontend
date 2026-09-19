@@ -1,11 +1,9 @@
 import { useEffect } from 'react';
-import { Dimensions } from 'react-native';
+import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Extrapolation, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { SWIPE_UP_DISTANCE } from '@components/common/DismissibleBottomSheet';
 import { BUILDING_DETAIL_HEADER_HEIGHT } from '@components/common/BuildingDetailContent';
-
-const WINDOW_HEIGHT = Dimensions.get('window').height;
 
 /**
  * 시설 카드를 위로 슬라이드하면 건물 상세보기(BuildingDetailHeader/Body)가 실시간으로
@@ -21,6 +19,7 @@ const WINDOW_HEIGHT = Dimensions.get('window').height;
  */
 export function useBuildingDetailSwipeUp(buildingCode: string | null, resetKey: unknown) {
   const insets = useSafeAreaInsets();
+  const { height: WINDOW_HEIGHT } = useWindowDimensions();
   const detailHeaderHeight = BUILDING_DETAIL_HEADER_HEIGHT + insets.top;
 
   const swipeCardTranslateY = useSharedValue(0);

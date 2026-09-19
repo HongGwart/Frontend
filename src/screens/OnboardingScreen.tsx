@@ -444,6 +444,8 @@ export default function OnboardingScreen() {
   // 지금 보고 있는 온보딩 페이지(스와이프로 이동). 점 인디케이터 표시에만 쓰여서
   // reanimated 없이 일반 state로 충분하다.
   const [pageIndex, setPageIndex] = useState(0);
+  // "입학하기"는 마지막 페이지에서만 바로 눌리게 열린다(트랜지션 없이 즉시 반영).
+  const ctaEnabled = pageIndex === TOTAL_PAGES - 1;
   // 길찾기 목업의 "최단 경로"/"비 회피"/"계단 회피" 칩 중 지금 활성화된 것. 사용자가
   // 누르는 게 아니라 아래 인터벌로 왼쪽부터 순서대로 자동 순환된다.
   const [selectedRouteOptionIndex, setSelectedRouteOptionIndex] = useState(0);
@@ -463,6 +465,9 @@ export default function OnboardingScreen() {
   // 사라진 시점)에만 바뀌어서, 카드 텍스트가 안 보일 때 바뀌고 다시 나타난다.
   const [activeFacilityIndex, setActiveFacilityIndex] = useState(0);
   const facilityCardFade = useSharedValue(1);
+  // 편의시설 링 회전 인터벌의 애니메이션 완료 콜백이 unmount 뒤에도 늦게 실행돼 setState를
+  // 부르지 않도록 마운트 여부를 들고 있는다(worklet에서 읽어야 해서 SharedValue로 둔다).
+  const isMounted = useSharedValue(true);
 
   useEffect(() => {
     colorProgress.value = withDelay(BRAND_HOLD_MS, withTiming(1, { duration: COLOR_TRANSITION_MS }));
@@ -475,6 +480,7 @@ export default function OnboardingScreen() {
     }, ROUTE_OPTION_CYCLE_MS);
     return () => clearInterval(intervalId);
   }, []);
+
 
   useEffect(() => {
     const intervalId = setInterval(() => setCaretOn((prev) => !prev), 480);
@@ -496,16 +502,17 @@ export default function OnboardingScreen() {
         setSearchDemoQuery('');
         facilityCardProgress.value = withTiming(0, { duration: 200 });
         await wait(SEARCH_DEMO_TYPING_START_DELAY_MS);
-
-        for (let charCount = 1; charCount <= SEARCH_DEMO_QUERY.length; charCount += 1) {
-          if (cancelled) return;
-          // 사람이 실제로 치는 것처럼 글자마다 간격을 살짝 흔들어준다(고정 간격이면 기계적으로 보임).
-          await wait(SEARCH_DEMO_CHAR_INTERVAL_MS + Math.random() * 120 - 40);
-          setSearchDemoQuery(SEARCH_DEMO_QUERY.slice(0, charCount));
-        }
         if (cancelled) return;
 
+        for (let charCount = 1; charCount <= SEARCH_DEMO_QUERY.length; charCount += 1) {
+          // 사람이 실제로 치는 것처럼 글자마다 간격을 살짝 흔들어준다(고정 간격이면 기계적으로 보임).
+          await wait(SEARCH_DEMO_CHAR_INTERVAL_MS + Math.random() * 120 - 40);
+          if (cancelled) return;
+          setSearchDemoQuery(SEARCH_DEMO_QUERY.slice(0, charCount));
+        }
+
         await wait(SEARCH_DEMO_CARD_APPEAR_DELAY_MS);
+        if (cancelled) return;
         facilityCardProgress.value = withSpring(1, { damping: 15, stiffness: 160 });
 
         await wait(SEARCH_DEMO_HOLD_MS);
@@ -527,6 +534,11 @@ export default function OnboardingScreen() {
   // 시점(페이드아웃 완료)에 다음 편의시설로 바꿔치기한 뒤 다시 페이드인시킨다.
   useEffect(() => {
     let tick = 0;
+    // withTiming의 완료 콜백은 UI 스레드(worklet)에서 실행되기 때문에, 인터벌이 정리된
+    // 뒤(화면이 unmount된 뒤)에도 이미 예약된 애니메이션이 끝나면서 콜백이 늦게 한 번
+    // 더 실행될 수 있다 — 그때 runOnJS(setActiveFacilityIndex)가 unmount된 컴포넌트의
+    // setState를 부르지 않도록, SharedValue로 마운트 여부를 들고 있다가 확인한다.
+    isMounted.value = true;
     const intervalId = setInterval(() => {
       tick += 1;
       facilityRingRotation.value = withTiming(-tick * FACILITY_RING_ANGLE_STEP, {
@@ -538,14 +550,17 @@ export default function OnboardingScreen() {
         easing: Easing.out(Easing.cubic),
       });
       facilityCardFade.value = withTiming(0, { duration: FACILITY_CARD_FADE_MS }, (finished) => {
-        if (finished) {
+        if (finished && isMounted.value) {
           runOnJS(setActiveFacilityIndex)(tick % FACILITY_RING_ICON_COUNT);
           facilityCardFade.value = withTiming(1, { duration: FACILITY_CARD_FADE_MS });
         }
       });
     }, FACILITY_RING_TICK_MS);
-    return () => clearInterval(intervalId);
-  }, [facilityCardFade, facilityRingRotation]);
+    return () => {
+      isMounted.value = false;
+      clearInterval(intervalId);
+    };
+  }, [facilityCardFade, facilityRingRotation, isMounted]);
 
   const containerStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
@@ -793,7 +808,11 @@ export default function OnboardingScreen() {
         </PageDots>
 
         <CtaBar style={{ paddingBottom: insets.bottom + 8 }}>
-          <Button label="입학하기" disabled onPress={() => navigation.replace('MainTabs', { screen: 'map' })} />
+          <Button
+            label="입학하기"
+            disabled={!ctaEnabled}
+            onPress={() => navigation.replace('MainTabs', { screen: 'map' })}
+          />
         </CtaBar>
       </FadeInContent>
     </Container>

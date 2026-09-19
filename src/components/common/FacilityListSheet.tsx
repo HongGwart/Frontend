@@ -2,9 +2,9 @@ import React from 'react';
 import { Dimensions, StyleSheet } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import styled from 'styled-components/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SvgProps } from 'react-native-svg';
 import { FacilityListItem } from './FacilityListItem';
+import { BottomFade, ShadowBottomClip } from './ShadowBottomClip';
 
 // fillHeight가 아닐 때(부모가 높이를 고정해주지 않을 때)를 위한 fallback 상한선.
 // 화면 높이의 70%를 넘어가면 스크롤되게 한다. DismissibleBottomSheet가 이 시트를 스와이프로
@@ -84,24 +84,12 @@ export function FacilityListSheet({
           ),
         )}
       </ScrollView>
-      {compact && (
-        <BottomFade
-          colors={['rgba(255, 255, 255, 0)', '#FFFFFF']}
-          locations={[0, 1]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          pointerEvents="none"
-        />
-      )}
+      {compact && <BottomFade pointerEvents="none" />}
     </Container>
   );
 
-  // compact(온보딩 검색 목업)는 아래쪽엔 그림자가 없어야 해서(왼쪽/오른쪽/위만), Container의
-  // 그림자가 아래로 번지는 부분만 이 래퍼로 잘라낸다. 래퍼를 위/좌/우로만 그림자 반경(40px)만큼
-  // 더 키우고(마이너스 마진으로 레이아웃 자리는 그대로 유지) overflow: hidden을 주면, 아래쪽은
-  // Container 바닥에서 바로 잘리고 나머지 3면은 40px 여유가 있어 안 잘린다.
   if (!compact) return content;
-  return <ShadowBottomClip>{content}</ShadowBottomClip>;
+  return <ShadowBottomClip spread={SHADOW_CLIP_SPREAD_PX}>{content}</ShadowBottomClip>;
 }
 
 // 기본 렌더러를 분리해두면 renderItem prop으로 다른 카드 컴포넌트로도 쉽게 바꿔 쓸 수 있다.
@@ -158,31 +146,11 @@ const Container = styled.View<{ compact: boolean }>`
 
 const SHADOW_CLIP_SPREAD_PX = 40;
 
-const ShadowBottomClip = styled.View`
-  overflow: hidden;
-  padding-top: ${SHADOW_CLIP_SPREAD_PX}px;
-  padding-left: ${SHADOW_CLIP_SPREAD_PX}px;
-  padding-right: ${SHADOW_CLIP_SPREAD_PX}px;
-  margin-top: -${SHADOW_CLIP_SPREAD_PX}px;
-  margin-left: -${SHADOW_CLIP_SPREAD_PX}px;
-  margin-right: -${SHADOW_CLIP_SPREAD_PX}px;
-`;
-
 const Grabber = styled.View<{ compact: boolean }>`
   width: ${({ compact }) => (compact ? '24.652px' : '36px')};
   height: ${({ compact }) => (compact ? '2.739px' : '4px')};
   border-radius: 100px;
   background-color: ${({ theme }) => theme.semantic.line.primary};
-`;
-
-// Figma: background: linear-gradient(180deg, #FFF 0%, rgba(255,255,255,0) 100%) —
-// 시설 카드 맨 아래 항목이 잘려 보이지 않게, 카드 바닥에 흰색→투명 페이드를 얹는다.
-const BottomFade = styled(LinearGradient)`
-  position: absolute;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
-  height: 100px;
 `;
 
 const styles = StyleSheet.create({
