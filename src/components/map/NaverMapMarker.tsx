@@ -13,6 +13,10 @@ interface Props {
   /** 마커에 표시할 숫자 배지 (군집된 개수 등) */
   count?: number;
   onPress?: () => void;
+  /** 경로선 같은 다른 오버레이보다 위에 그려지게 하고 싶을 때 (기본 0) */
+  zIndex?: number;
+  /** Marker의 scale과 동일 — 커진 만큼 래스터화 박스(width/height)도 같이 키워줘야 안 잘린다. */
+  scale?: number;
 }
 
 // NaverMapMarkerOverlay는 커스텀 뷰를 이 크기 그대로의 "고정 크기 이미지"로 래스터화해서
@@ -40,16 +44,22 @@ function getOverlaySize(hasLabel: boolean, label?: string) {
  * 우리 디자인의 <Marker />를 네이버 지도 위 커스텀 마커로 올려주는 어댑터.
  * NaverMapMarkerOverlay의 "Custom React View" 이미지 타입을 사용한다.
  */
-export function NaverMapMarker({ latitude, longitude, label, favorite, count, onPress }: Props) {
+export function NaverMapMarker({ latitude, longitude, label, favorite, count, onPress, zIndex, scale = 1 }: Props) {
   const hasLabel = count === undefined && Boolean(label);
   const { width, height } = getOverlaySize(hasLabel, label);
+  // scale만큼 시각적으로 커지는 만큼, 래스터화 박스도 같이 키워야 위쪽이 안 잘린다. 핀 끝은
+  // Marker.tsx가 transform-origin: bottom으로 고정해서 커져도 이 박스의 바닥(=anchor y:1,
+  // 즉 실제 좌표)에 그대로 붙어있으니 가로/세로 모두 단순히 scale배만큼 키우면 된다.
+  const scaledWidth = width * scale;
+  const scaledHeight = height * scale;
 
   return (
     <NaverMapMarkerOverlay
       latitude={latitude}
       longitude={longitude}
-      width={width}
-      height={height}
+      width={scaledWidth}
+      height={scaledHeight}
+      zIndex={zIndex}
       // 마커의 좌표 기준점은 핀 끝(뾰족한 부분)이어야 하므로, 오버레이 전체 높이가 아니라
       // 항상 하단 정렬 + 가로 중앙 정렬로 앵커를 맞춘다.
       anchor={{ x: 0.5, y: 1 }}
@@ -57,11 +67,11 @@ export function NaverMapMarker({ latitude, longitude, label, favorite, count, on
     >
       {/* 마커 생김새를 바꾸는 값(label/favorite/count)은 key로도 전달해야 리렌더 시 캐시가 꼬이지 않는다. */}
       <View
-        key={`${label}/${favorite}/${count}`}
+        key={`${label}/${favorite}/${count}/${scale}`}
         collapsable={false}
-        style={{ width, height, alignItems: 'center', justifyContent: 'flex-end' }}
+        style={{ width: scaledWidth, height: scaledHeight, alignItems: 'center', justifyContent: 'flex-end' }}
       >
-        <Marker label={label} favorite={favorite} count={count} />
+        <Marker label={label} favorite={favorite} count={count} scale={scale} />
       </View>
     </NaverMapMarkerOverlay>
   );

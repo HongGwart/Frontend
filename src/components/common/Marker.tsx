@@ -20,18 +20,24 @@ interface Props {
   favorite?: boolean;
   /** 마커에 표시할 숫자 배지 (군집된 개수 등). 생략하면 배지가 없다. */
   count?: number;
+  /**
+   * 마커 전체를 이 배율로 키운다(기본 1). 핀 끝(좌표 지점) 기준으로 위로만 커지게
+   * transform-origin을 bottom으로 고정해서, 커져도 실제 좌표를 가리키는 지점은 그대로다.
+   * 경로 도착 마커처럼 밑에 깔린 경로선 끝을 더 가리고 싶을 때 키운다.
+   */
+  scale?: number;
 }
 
 /**
  * 지도 위에 찍는 위치 마커. favorite 여부로 모양(핀/별)이, count 유무로 우측 상단
  * 숫자 배지가 갈린다. count가 있을 땐 상단 라벨이 생략된다(Figma 원본과 동일).
  */
-export function Marker({ label, favorite = false, count }: Props) {
+export function Marker({ label, favorite = false, count, scale = 1 }: Props) {
   const theme = useTheme();
   const hasCount = count !== undefined;
 
   return (
-    <Container>
+    <Container style={scale !== 1 ? { transform: [{ scale }], transformOrigin: 'center bottom' } : undefined}>
       {!hasCount && label && (
         <LabelPill>
           <LabelText numberOfLines={1}>{label}</LabelText>
@@ -86,26 +92,35 @@ const LabelText = styled.Text`
   color: ${({ theme }) => theme.semantic.text.white};
 `;
 
+// 이 박스의 "바닥"이 곧 실제 좌표(anchor)가 찍히는 지점이다(NaverMapMarker.tsx가
+// anchor: {x:0.5, y:1}로 이 컴포넌트를 통째로 바닥 정렬해서 지도에 올린다). 예전엔
+// justify-content: center였는데, 그러면 핀 아이콘(30px)이 이 36px 박스 안에서 위아래로
+// 3px씩 여백을 두고 "가운데" 놓여서 — 핀의 실제 뾰족한 끝이 박스 바닥보다 3px 위에 있게
+// 되고, 결국 그 3px만큼 "진짜 좌표 지점"과 "핀이 시각적으로 가리키는 지점"이 어긋난다.
+// (경로선처럼 같은 좌표에 다른 오버레이를 겹쳐 그릴 때 이 3px 틈이 그대로 드러난다.)
+// flex-end로 바닥 정렬하면 핀 끝이 박스 바닥에 딱 붙어서 이 어긋남이 없어진다.
 const PinWrapper = styled.View`
   width: ${MARKER_PIN_BOX_SIZE}px;
   height: ${MARKER_PIN_BOX_SIZE}px;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
 `;
 
 /* markerPin.svg는 원 모양 구멍이 "Subtract"로 뚫려있어서 뒤가 비쳐 보인다. 그 구멍의 실제
-   중심은 핀이 36x36 박스에 가운데 정렬됐을 때 (18px, 15.75px)이고, 앞에 덮는 흰 점을 그
-   중심에 맞춰서 뒤쪽 구멍이 삐져나오지 않게 한다. */
+   중심은 핀이 36x36 박스 안에서 바닥 정렬됐을 때 (18px, 18.75px)이고, 앞에 덮는 흰 점을 그
+   중심에 맞춰서 뒤쪽 구멍이 삐져나오지 않게 한다. (PinWrapper가 center 정렬이던 시절 값
+   10px에서, 바닥 정렬로 바뀌며 핀이 3px 내려간 만큼 그대로 +3px 했다.) */
 const PinDotBadge = styled.View`
   position: absolute;
-  top: 10px;
+  top: 13px;
   left: 12px;
 `;
 
-/* 위 PinDotBadge와 같은 방식으로 36x36 기준 중심에 맞춘 값 */
+/* 위 PinDotBadge와 같은 방식으로 36x36 바닥 정렬 기준에 맞춘 값(별 아이콘은 29px 높이라
+   center 정렬 시절 위아래 여백이 3.5px였던 만큼 +3.5px). */
 const FavoriteStarBadge = styled.View`
   position: absolute;
-  top: 9px;
+  top: 12.5px;
   left: 11px;
 `;
 

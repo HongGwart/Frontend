@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { NaverMapView, NaverMapPathOverlay } from '@mj-studio/react-native-naver-map';
+import { NaverMapView, NaverMapPolylineOverlay } from '@mj-studio/react-native-naver-map';
 import styled, { useTheme } from 'styled-components/native';
 import NavigationArrowIcon from '@assets/svgs/icons/navigationArrow.svg';
 import DestinationMarkerIcon from '@assets/svgs/icons/destinationMarker.svg';
@@ -17,6 +17,7 @@ import { RouteResultCard } from '@components/navigation/RouteResultCard';
 import { RouteStepRow } from '@components/navigation/RouteStepRow';
 import { Toast } from '@components/common/Toast';
 import { Button } from '@components/common/Button';
+import Header from '@components/layout/Header';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapStartPointMarker } from '@components/map/NaverMapStartPointMarker';
 import { ROUTE_OPTIONS, RouteOptionKey } from '@constant/routeOptions';
@@ -76,10 +77,34 @@ export default function NavigationScreen() {
     [selectedRouteId],
   );
 
+  // @mj-studio/react-native-naver-map의 NaverMapPolylineOverlay 버그 우회: capType/joinType의
+  // "선언된 기본값"이 둘 다 Round라서, 처음부터 "Round"를 넘기면 네이티브가 "이전 값과
+  // 같다"고 보고 실제로 반영을 안 한다(outlineWidth=0이 안 먹히던 것과 같은 버그). 그래서
+  // 기본값과 다른 값(Butt/Miter)으로 먼저 그렸다가, 마운트 직후 진짜로 Round로 "바꿔서"
+  // 네이티브가 변경을 감지하게 만든다.
+  const [routeLineCapReady, setRouteLineCapReady] = useState(false);
+  useEffect(() => {
+    if (!selectedRoute) {
+      setRouteLineCapReady(false);
+      return;
+    }
+    const id = requestAnimationFrame(() => setRouteLineCapReady(true));
+    return () => cancelAnimationFrame(id);
+  }, [selectedRoute]);
+
+  // "경로 보기" 상태로 바뀌면 MainTabNavigator에게 알려서, 이 탭의 (불투명) 헤더를 끄게 한다
+  // — 아래에서 이 화면이 직접 지도 위에 투명 헤더를 얹으므로 둘이 겹치면 안 된다.
+  useEffect(() => {
+    tabNavigation.setParams({ isViewingRoute: Boolean(selectedRoute) });
+  }, [selectedRoute, tabNavigation]);
+
   if (selectedRoute) {
     return (
       <DetailContainer>
         <MapArea>
+          <RouteViewHeaderWrapper style={{ paddingTop: insets.top }}>
+            <Header title="길찾기" transparent onBackPress={() => setSelectedRouteId(null)} />
+          </RouteViewHeaderWrapper>
           <NaverMapView
             style={StyleSheet.absoluteFill}
             initialCamera={{
@@ -90,13 +115,25 @@ export default function NavigationScreen() {
             minZoom={MAP_MIN_ZOOM}
             maxZoom={MAP_MAX_ZOOM}
           >
-            <NaverMapPathOverlay
+            <NaverMapPolylineOverlay
+              // Figma(733:2584)의 경로선은 출발-도착을 직선으로 잇지 않고, 세로로 올라가다
+              // 꺾여서 가로로 이어지는 L자 형태다 — 실제 캠퍼스 통로를 따라가는 모양을
+              // 흉내 내기 위해 중간에 꺾이는 지점(도착지의 위도 + 출발지의 경도) 좌표를
+              // 하나 끼워 넣는다.
               coords={[
                 { latitude: DUMMY_ROUTE_MAP.startLatitude, longitude: DUMMY_ROUTE_MAP.startLongitude },
+                { latitude: DUMMY_ROUTE_MAP.endLatitude, longitude: DUMMY_ROUTE_MAP.startLongitude },
                 { latitude: DUMMY_ROUTE_MAP.endLatitude, longitude: DUMMY_ROUTE_MAP.endLongitude },
               ]}
-              width={4}
+              width={6}
               color={theme.blue[500]}
+              // capType/joinType 둘 다 "Round"가 목표값인데, 선언된 기본값도 Round라
+              // 바로 넘기면 네이티브 diff가 "변경 없음"으로 보고 무시한다(위 routeLineCapReady
+              // 참고). 그래서 처음엔 기본값과 다른 값(Butt/Miter)으로 그렸다가, 다음 틱에
+              // 진짜 Round로 바꿔서 강제로 반영시킨다.
+              capType={routeLineCapReady ? 'Round' : 'Butt'}
+              joinType={routeLineCapReady ? 'Round' : 'Miter'}
+              zIndex={0}
             />
             <NaverMapStartPointMarker
               latitude={DUMMY_ROUTE_MAP.startLatitude}
@@ -107,6 +144,8 @@ export default function NavigationScreen() {
               latitude={DUMMY_ROUTE_MAP.endLatitude}
               longitude={DUMMY_ROUTE_MAP.endLongitude}
               label={DUMMY_ROUTE_MAP.endLabel}
+              zIndex={1}
+              scale={1}
             />
           </NaverMapView>
         </MapArea>
@@ -259,6 +298,18 @@ const DetailContainer = styled.View`
 
 const MapArea = styled.View`
   flex: 1;
+`;
+
+// bottom-tabs 내비게이터의 header는 항상 레이아웃 공간을 차지해서, 배경만 투명하게 해선
+// 지도가 비치지 않는다(그래서 그 헤더는 이 상태일 땐 아예 끈다 — MainTabNavigator 참고).
+// 대신 여기서 지도 위에 절대위치로 직접 얹어서, 공통 Header 컴포넌트를 투명 배경으로
+// 띄운다(Figma "길 찾기_경로 보기" 733:2584/733:3264).
+const RouteViewHeaderWrapper = styled.View`
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  z-index: 1;
 `;
 
 // Figma "path info"(762:5945). 그래버 + (요약/구간 목록 스크롤 영역) + CTA로 구성된 바텀시트.

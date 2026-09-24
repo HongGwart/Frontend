@@ -11,11 +11,16 @@ interface HeaderProps {
    */
   subtitle?: string;
   onBackPress?: () => void;
+  /**
+   * true면 배경을 투명하게 그린다(예: 길찾기 "경로 보기"처럼 지도가 헤더 뒤로 그대로
+   * 비쳐야 하는 화면). 기본값 false는 기존처럼 불투명한 배경 그대로.
+   */
+  transparent?: boolean;
 }
 
-export default function Header({ title, subtitle, onBackPress }: HeaderProps) {
+export default function Header({ title, subtitle, onBackPress, transparent = false }: HeaderProps) {
   return (
-    <Container>
+    <Container transparent={transparent}>
       <BackButton onPress={onBackPress} hitSlop={8}>
         <ChevronLeftIcon width={24} height={24} />
       </BackButton>
@@ -33,13 +38,13 @@ export default function Header({ title, subtitle, onBackPress }: HeaderProps) {
   );
 }
 
-const Container = styled.View`
+const Container = styled.View<{ transparent: boolean }>`
   flex-direction: row;
   align-items: center;
   gap: 12px;
   height: 56px;
   padding-horizontal: 20px;
-  background-color: ${({ theme }) => theme.semantic.background.primary};
+  background-color: ${({ theme, transparent }) => (transparent ? 'transparent' : theme.semantic.background.primary)};
 `;
 
 const BackButton = styled(Pressable)`

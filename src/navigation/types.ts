@@ -26,7 +26,15 @@ export interface RouteLocationSelection {
 // 하단 탭 5개. 기존 NavigationBar.tsx의 NavigationTab과 이름을 맞춰서 헷갈리지 않게 한다.
 export type MainTabParamList = {
   map: { focusFacility?: FocusFacilityParam } | undefined;
-  navigation: { routeSelection?: RouteLocationSelection } | undefined;
+  navigation: {
+    routeSelection?: RouteLocationSelection;
+    /**
+     * 경로 카드를 눌러 지도+구간 안내(전체화면 지도) 상태로 바뀌었는지. true면
+     * MainTabNavigator가 이 탭의 헤더 배경을 투명하게 그려서 지도가 그대로 비치게 한다
+     * (Figma "길 찾기_경로 보기" 733:2584/733:3264).
+     */
+    isViewingRoute?: boolean;
+  } | undefined;
   facility: undefined;
   hongdae: undefined;
   mypage: undefined;

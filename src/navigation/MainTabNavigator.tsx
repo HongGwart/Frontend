@@ -50,8 +50,14 @@ export default function MainTabNavigator() {
     <Tab.Navigator
       screenOptions={({ route, navigation }) => {
         const headerTitle = HEADER_TITLE_BY_TAB[route.name];
+        // 길찾기 탭이 "경로 보기"(지도+구간 안내) 상태로 바뀌면 NavigationScreen이
+        // setParams로 이 값을 켜는데, 그때는 이 탭 내비게이터의 헤더를 아예 끄고
+        // NavigationScreen이 지도 위에 직접 투명 헤더를 얹는다(Figma 733:2584) — bottom-tabs의
+        // header는 항상 레이아웃 공간을 차지해서 배경만 투명하게 해선 지도가 안 비친다.
+        const isViewingRoute =
+          route.name === 'navigation' && Boolean((route.params as MainTabParamList['navigation'])?.isViewingRoute);
         return {
-          headerShown: Boolean(headerTitle),
+          headerShown: Boolean(headerTitle) && !isViewingRoute,
           // Figma "길 찾기_출발지/도착지 입력"(720:4897)엔 하단 탭 바가 없어서, 이 탭만 고정으로 감춘다.
           tabBarStyle: route.name === 'navigation' ? { display: 'none' } : undefined,
           // 헤더의 뒤로가기는 기본적으로 기존 AppLayout과 동일하게 실제 스택 pop이 아니라
