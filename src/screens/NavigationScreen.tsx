@@ -6,6 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NaverMapView, NaverMapPolylineOverlay } from '@mj-studio/react-native-naver-map';
 import styled, { useTheme } from 'styled-components/native';
 import NavigationArrowIcon from '@assets/svgs/icons/navigationArrow.svg';
+import NavigationStartIcon from '@assets/svgs/icons/navigationStart.svg';
 import DestinationMarkerIcon from '@assets/svgs/icons/destinationMarker.svg';
 import GpsIcon from '@assets/svgs/icons/gps.svg';
 import ExchangeIcon from '@assets/svgs/icons/exchange.svg';
@@ -29,6 +30,10 @@ import {
 } from '@constant/dummyRouteResults';
 import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { MainTabParamList, RootStackParamList } from '@navigation/types';
+
+// Header.tsx의 Container height와 동일한 값 — 경로 보기 화면에서 지도 위에 얹는
+// 투명 헤더의 실제 높이(세이프에어리어 제외)를 지도 카메라 패딩 계산에 재사용한다.
+const ROUTE_VIEW_HEADER_HEIGHT = 56;
 
 // Figma "길 찾기_출발지/도착지 입력"(720:4897) + 출발/도착지를 모두 설정하면 뜨는
 // "길 찾기_경로 선택"(720:10860). 상단 헤더는 이미 MainTabNavigator가 타이틀("길찾기")을
@@ -112,6 +117,13 @@ export default function NavigationScreen() {
               longitude: (DUMMY_ROUTE_MAP.startLongitude + DUMMY_ROUTE_MAP.endLongitude) / 2,
               zoom: 17,
             }}
+            // 헤더가 지도 위에 투명하게 절대위치로 얹혀서 지도의 위쪽 일부를 가리는데,
+            // 카메라 중심은 지도 뷰 "전체" 기준으로 잡히다 보니 출발/도착 지점이 헤더
+            // 밑으로 치우쳐 보인다. mapPadding.top을 헤더 높이(세이프에어리어+56px)만큼
+            // 줘서, 카메라가 "헤더 밑~카드 위" 사이의 실제 보이는 영역을 기준으로
+            // 중앙 정렬되게 한다. 카드(DetailSheet)는 지도와 겹치지 않는 별도 영역이라
+            // 아래쪽은 보정할 필요가 없다.
+            mapPadding={{ top: insets.top + ROUTE_VIEW_HEADER_HEIGHT, left: 0, right: 0, bottom: 0 }}
             minZoom={MAP_MIN_ZOOM}
             maxZoom={MAP_MAX_ZOOM}
           >
@@ -182,7 +194,7 @@ export default function NavigationScreen() {
             </DetailScrollWrapper>
 
             <CtaWrapper bottomInset={insets.bottom}>
-              <Button label="경로 안내 시작" onPress={() => setSelectedRouteId(null)} />
+              <Button label="경로 안내 시작" icon={NavigationStartIcon} onPress={() => setSelectedRouteId(null)} />
             </CtaWrapper>
           </DetailSheetBody>
         </DetailSheet>
