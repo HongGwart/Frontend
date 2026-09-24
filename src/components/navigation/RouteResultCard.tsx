@@ -1,4 +1,5 @@
 import React from 'react';
+import { Pressable } from 'react-native';
 import styled, { useTheme } from 'styled-components/native';
 import IndoorIcon from '@assets/svgs/icons/indoor.svg';
 import StairsIcon from '@assets/svgs/icons/stairs.svg';
@@ -12,17 +13,19 @@ interface Props {
   optionLabel: string;
   /** 카드 사이 4px 두께 구분선 (마지막 카드는 보통 false) */
   showDivider?: boolean;
+  /** 누르면 이 경로의 상세(지도 + 구간 안내)를 연다 */
+  onPress?: () => void;
 }
 
 /**
  * 길찾기 출발/도착지를 모두 설정하면 뜨는 경로 카드 한 줄. Figma "path"(720:11405 등).
  * 소요시간/거리 + 옵션 라벨, 그 아래 실내 비율과 계단/엘리베이터 정보 pill로 구성된다.
  */
-export function RouteResultCard({ result, optionLabel, showDivider = true }: Props) {
+export function RouteResultCard({ result, optionLabel, showDivider = true, onPress }: Props) {
   const theme = useTheme();
 
   return (
-    <Container showDivider={showDivider}>
+    <Container showDivider={showDivider} onPress={onPress}>
       <TopRow>
         <DurationBlock>
           <DurationRow>
@@ -73,7 +76,7 @@ export function RouteResultCard({ result, optionLabel, showDivider = true }: Pro
   );
 }
 
-const Container = styled.View<{ showDivider: boolean }>`
+const Container = styled(Pressable)<{ showDivider: boolean }>`
   width: 100%;
   gap: 8px;
   padding: 16px 20px;

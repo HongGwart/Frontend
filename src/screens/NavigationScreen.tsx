@@ -1,21 +1,32 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView } from 'react-native';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { NaverMapView, NaverMapPathOverlay } from '@mj-studio/react-native-naver-map';
 import styled, { useTheme } from 'styled-components/native';
 import NavigationArrowIcon from '@assets/svgs/icons/navigationArrow.svg';
 import DestinationMarkerIcon from '@assets/svgs/icons/destinationMarker.svg';
 import GpsIcon from '@assets/svgs/icons/gps.svg';
 import ExchangeIcon from '@assets/svgs/icons/exchange.svg';
+import IndoorIcon from '@assets/svgs/icons/indoor.svg';
 import BlueLogoSymbol from '@assets/svgs/blueLogoSymbol.svg';
 import { RouteInputField } from '@components/navigation/RouteInputField';
 import { RouteOptionChip } from '@components/navigation/RouteOptionChip';
 import { RouteResultCard } from '@components/navigation/RouteResultCard';
+import { RouteStepRow } from '@components/navigation/RouteStepRow';
 import { Toast } from '@components/common/Toast';
+import { Button } from '@components/common/Button';
+import { NaverMapMarker } from '@components/map/NaverMapMarker';
+import { NaverMapStartPointMarker } from '@components/map/NaverMapStartPointMarker';
 import { ROUTE_OPTIONS, RouteOptionKey } from '@constant/routeOptions';
 import { DUMMY_DEFAULT_DEPARTURE } from '@constant/dummyMypage';
-import { DUMMY_ROUTE_RESULTS, DUMMY_ELEVATOR_WARNING_MESSAGE } from '@constant/dummyRouteResults';
+import {
+  DUMMY_ROUTE_RESULTS,
+  DUMMY_ELEVATOR_WARNING_MESSAGE,
+  DUMMY_ROUTE_MAP,
+} from '@constant/dummyRouteResults';
+import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { MainTabParamList, RootStackParamList } from '@navigation/types';
 
 // Figma "길 찾기_출발지/도착지 입력"(720:4897) + 출발/도착지를 모두 설정하면 뜨는
@@ -57,6 +68,88 @@ export default function NavigationScreen() {
   // 출발/도착지가 둘 다 채워지면 빈 상태 대신 경로 목록을 보여준다.
   const hasRoute = departure.length > 0 && destination.length > 0;
   const hasElevatorWarning = useMemo(() => DUMMY_ROUTE_RESULTS.some(route => route.elevatorWarning), []);
+
+  // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
+  const selectedRoute = useMemo(
+    () => DUMMY_ROUTE_RESULTS.find(route => route.id === selectedRouteId) ?? null,
+    [selectedRouteId],
+  );
+
+  if (selectedRoute) {
+    return (
+      <DetailContainer>
+        <MapArea>
+          <NaverMapView
+            style={StyleSheet.absoluteFill}
+            initialCamera={{
+              latitude: (DUMMY_ROUTE_MAP.startLatitude + DUMMY_ROUTE_MAP.endLatitude) / 2,
+              longitude: (DUMMY_ROUTE_MAP.startLongitude + DUMMY_ROUTE_MAP.endLongitude) / 2,
+              zoom: 17,
+            }}
+            minZoom={MAP_MIN_ZOOM}
+            maxZoom={MAP_MAX_ZOOM}
+          >
+            <NaverMapPathOverlay
+              coords={[
+                { latitude: DUMMY_ROUTE_MAP.startLatitude, longitude: DUMMY_ROUTE_MAP.startLongitude },
+                { latitude: DUMMY_ROUTE_MAP.endLatitude, longitude: DUMMY_ROUTE_MAP.endLongitude },
+              ]}
+              width={4}
+              color={theme.blue[500]}
+            />
+            <NaverMapStartPointMarker
+              latitude={DUMMY_ROUTE_MAP.startLatitude}
+              longitude={DUMMY_ROUTE_MAP.startLongitude}
+              label={DUMMY_ROUTE_MAP.startLabel}
+            />
+            <NaverMapMarker
+              latitude={DUMMY_ROUTE_MAP.endLatitude}
+              longitude={DUMMY_ROUTE_MAP.endLongitude}
+              label={DUMMY_ROUTE_MAP.endLabel}
+            />
+          </NaverMapView>
+        </MapArea>
+
+        <DetailSheet>
+          <Grabber />
+          <DetailSheetBody>
+            <DetailScrollWrapper>
+              <DetailScroll showsVerticalScrollIndicator={false}>
+                <DetailTopRow>
+                  <DurationBlock>
+                    <DurationRow>
+                      <DurationText>{selectedRoute.durationMinutes}</DurationText>
+                      <DurationUnitText>분</DurationUnitText>
+                    </DurationRow>
+                    <SummaryText>{selectedRoute.distanceMeters}m · 걷기</SummaryText>
+                  </DurationBlock>
+                  <IndoorRow>
+                    <IndoorIcon width={20} height={20} color={theme.semantic.icon.secondary} />
+                    <IndoorText>
+                      실내 <IndoorValueText>{selectedRoute.indoorPercent}%</IndoorValueText>
+                    </IndoorText>
+                  </IndoorRow>
+                </DetailTopRow>
+
+                {selectedRoute.steps.map((step, index) => (
+                  <RouteStepRow
+                    key={step.id}
+                    step={step}
+                    showDivider={index !== selectedRoute.steps.length - 1}
+                  />
+                ))}
+              </DetailScroll>
+            </DetailScrollWrapper>
+
+            <CtaWrapper bottomInset={insets.bottom}>
+              <Button label="경로 안내 시작" onPress={() => setSelectedRouteId(null)} />
+            </CtaWrapper>
+          </DetailSheetBody>
+        </DetailSheet>
+      </DetailContainer>
+    );
+  }
 
   return (
     <Container>
@@ -130,6 +223,7 @@ export default function NavigationScreen() {
                 result={result}
                 optionLabel={ROUTE_OPTIONS.find(option => option.key === result.option)?.label ?? ''}
                 showDivider={index !== DUMMY_ROUTE_RESULTS.length - 1}
+                onPress={() => setSelectedRouteId(result.id)}
               />
             ))}
           </ScrollView>
@@ -156,6 +250,116 @@ export default function NavigationScreen() {
 const Container = styled.View`
   flex: 1;
   background-color: ${({ theme }) => theme.semantic.background.primary};
+`;
+
+const DetailContainer = styled.View`
+  flex: 1;
+  background-color: ${({ theme }) => theme.semantic.background.fill};
+`;
+
+const MapArea = styled.View`
+  flex: 1;
+`;
+
+// Figma "path info"(762:5945). 그래버 + (요약/구간 목록 스크롤 영역) + CTA로 구성된 바텀시트.
+const DetailSheet = styled.View`
+  width: 100%;
+  max-height: 60%;
+  align-items: center;
+  gap: 16px;
+  padding-top: 8px;
+  background-color: ${({ theme }) => theme.semantic.background.primary};
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  /* Figma box-shadow: 0px -4px 10px 0px rgba(0,0,0,0.05) */
+  shadow-color: #000;
+  shadow-offset: 0px -4px;
+  shadow-opacity: 0.05;
+  shadow-radius: 10px;
+  elevation: 8;
+`;
+
+const Grabber = styled.View`
+  width: 36px;
+  height: 4px;
+  border-radius: 100px;
+  background-color: ${({ theme }) => theme.semantic.line.primary};
+`;
+
+const DetailSheetBody = styled.View`
+  width: 100%;
+  gap: 16px;
+`;
+
+const DetailScrollWrapper = styled.View`
+  width: 100%;
+  max-height: 268px;
+`;
+
+const DetailScroll = styled.ScrollView.attrs({ contentContainerStyle: { paddingHorizontal: 20, gap: 16 } })`
+  width: 100%;
+`;
+
+const DetailTopRow = styled.View`
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const DurationBlock = styled.View`
+  align-items: flex-start;
+`;
+
+const DurationRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+`;
+
+const DurationText = styled.Text`
+  font-family: ${({ theme }) => theme.typography.title.bold.fontFamily};
+  font-size: ${({ theme }) => theme.typography.title.bold.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.title.bold.lineHeight}px;
+  letter-spacing: ${({ theme }) => theme.typography.title.bold.letterSpacing}px;
+  color: ${({ theme }) => theme.semantic.text.primary};
+`;
+
+const DurationUnitText = styled.Text`
+  font-family: ${({ theme }) => theme.typography.bodyNormal.medium.fontFamily};
+  font-size: ${({ theme }) => theme.typography.bodyNormal.medium.fontSize}px;
+  color: ${({ theme }) => theme.semantic.text.secondary};
+`;
+
+const SummaryText = styled.Text`
+  font-family: ${({ theme }) => theme.typography.caption.medium.fontFamily};
+  font-size: ${({ theme }) => theme.typography.caption.medium.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.caption.medium.lineHeight}px;
+  letter-spacing: ${({ theme }) => theme.typography.caption.medium.letterSpacing}px;
+  color: ${({ theme }) => theme.semantic.text.tertiary};
+`;
+
+const IndoorRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+`;
+
+const IndoorText = styled.Text`
+  font-family: ${({ theme }) => theme.typography.labelNormal.medium.fontFamily};
+  font-size: ${({ theme }) => theme.typography.labelNormal.medium.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.labelNormal.medium.lineHeight}px;
+  letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
+  color: ${({ theme }) => theme.semantic.text.secondary};
+`;
+
+const IndoorValueText = styled.Text`
+  color: ${({ theme }) => theme.blue[700]};
+`;
+
+const CtaWrapper = styled.View<{ bottomInset: number }>`
+  width: 100%;
+  padding-horizontal: 20px;
+  padding-bottom: ${({ bottomInset }) => bottomInset + 8}px;
 `;
 
 const InputSection = styled.View`
