@@ -16,11 +16,11 @@ interface Props {
  */
 export function RouteOptionChip({ label, icon: Icon, active = false, onPress }: Props) {
   const theme = useTheme();
-  const contentColor = active ? theme.semantic.text.white : theme.semantic.text.secondary;
+  const iconColor = active ? theme.semantic.text.white : theme.semantic.icon.secondary;
 
   return (
     <Container active={active} onPress={onPress}>
-      <Icon width={20} height={20} color={contentColor} />
+      <Icon width={20} height={20} color={iconColor} />
       <Label active={active}>{label}</Label>
     </Container>
   );

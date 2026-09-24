@@ -14,12 +14,13 @@ export interface FocusFacilityParam {
 
 /**
  * 길찾기 화면(NavigationScreen)에서 출발지/도착지 입력창을 누르면 RouteLocationSearchScreen으로
- * 이동하고, 거기서 검색 결과를 고르면 이 값이 실려서 길찾기 탭으로 돌아온다.
+ * 이동하고, 거기서 검색 결과를 고르면 이 값이 실려서 길찾기 탭으로 돌아온다. 방금 고른 쪽만
+ * 담는 게 아니라 항상 출발/도착 두 값을 다 담아서, 한쪽만 값이 오갈 때 다른 쪽이 유실되지
+ * 않게(둘 다 독립적으로 유지되게) 한다.
  */
 export interface RouteLocationSelection {
-  target: 'departure' | 'destination';
-  /** 입력창에 그대로 표시할 텍스트 (예: "H동 중앙도서관 314호") */
-  label: string;
+  departureLabel?: string;
+  destinationLabel?: string;
 }
 
 // 하단 탭 5개. 기존 NavigationBar.tsx의 NavigationTab과 이름을 맞춰서 헷갈리지 않게 한다.
@@ -45,9 +46,10 @@ export type RootStackParamList = {
   // 지도 위 시설 정보 카드를 위로 슬라이드하면 뜨는 건물 상세보기. buildingCode는
   // DummyMapMarker.label(예: "H동")과 매칭된다.
   BuildingDetail: { buildingCode: string };
-  // 길찾기 화면의 출발지/도착지 입력창을 누르면 뜨는 검색 화면. target으로 어느 입력창을
-  // 채워야 하는지 구분한다.
-  RouteLocationSearch: { target: 'departure' | 'destination' };
+  // 길찾기 화면의 출발지/도착지 입력창을 누르면 뜨는 검색 화면. target으로 지금 고르는 중인
+  // 입력창을 구분하고, 나머지 한쪽 값(departureLabel/destinationLabel)은 이미 골라둔 값을
+  // 그대로 들고 있다가 결과와 함께 돌려보내기 위해 같이 받아온다.
+  RouteLocationSearch: { target: 'departure' | 'destination' } & RouteLocationSelection;
 };
 
 // 편의시설 카테고리 그리드(FacilityScreen)의 카테고리 id. 여기서 export해서

@@ -34,9 +34,17 @@ export default function RouteLocationSearchScreen() {
 
   const handleSelect = (item: SearchResultItem) => {
     Keyboard.dismiss();
+    const label = formatLocationLabel(item);
+    // 방금 고른 쪽만 새 값으로 바꾸고, 나머지 한쪽은 넘어올 때 받아온 값(이미 골라둔 값)을
+    // 그대로 들고 돌아가서 길찾기 화면에서 두 값이 서로 덮어쓰지 않게 한다.
     navigation.navigate('MainTabs', {
       screen: 'navigation',
-      params: { routeSelection: { target: params.target, label: formatLocationLabel(item) } },
+      params: {
+        routeSelection: {
+          departureLabel: params.target === 'departure' ? label : params.departureLabel,
+          destinationLabel: params.target === 'destination' ? label : params.destinationLabel,
+        },
+      },
     });
   };
 
