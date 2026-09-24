@@ -52,12 +52,26 @@ export default function MainTabNavigator() {
         const headerTitle = HEADER_TITLE_BY_TAB[route.name];
         return {
           headerShown: Boolean(headerTitle),
-          // 헤더의 뒤로가기는 기존 AppLayout과 동일하게 실제 스택 pop이 아니라
-          // "map 탭으로 돌아가기"로 동작한다. Header 자체는 상단 세이프에어리어를
-          // 신경 쓰지 않는 컴포넌트라, 기존 AppLayout처럼 paddingTop으로 감싸준다.
+          // Figma "길 찾기_출발지/도착지 입력"(720:4897)엔 하단 탭 바가 없어서, 이 탭만 고정으로 감춘다.
+          tabBarStyle: route.name === 'navigation' ? { display: 'none' } : undefined,
+          // 헤더의 뒤로가기는 기본적으로 기존 AppLayout과 동일하게 실제 스택 pop이 아니라
+          // "map 탭으로 돌아가기"로 동작한다. 다만 길찾기는 다른 화면(시설카드 출발/도착 등)에서
+          // 넘어올 수 있어서, 그때는 map으로 고정하지 않고 진짜 이전 화면으로 돌아간다.
+          // Header 자체는 상단 세이프에어리어를 신경 쓰지 않는 컴포넌트라, 기존 AppLayout처럼
+          // paddingTop으로 감싸준다.
           header: () => (
             <View style={{ paddingTop: insets.top, backgroundColor: theme.semantic.background.primary }}>
-              <Header title={headerTitle ?? ''} onBackPress={() => navigation.navigate('map')} />
+              <Header
+                title={headerTitle ?? ''}
+                onBackPress={() => {
+                  const parent = navigation.getParent();
+                  if (route.name === 'navigation' && parent?.canGoBack()) {
+                    parent.goBack();
+                    return;
+                  }
+                  navigation.navigate('map');
+                }}
+              />
             </View>
           ),
         };

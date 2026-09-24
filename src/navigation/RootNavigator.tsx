@@ -8,6 +8,7 @@ import FavoriteListScreen from '@screens/FavoriteListScreen';
 import DepartureSettingScreen from '@screens/DepartureSettingScreen';
 import FacilityCategoryListScreen from '@screens/FacilityCategoryListScreen';
 import BuildingDetailScreen from '@screens/BuildingDetailScreen';
+import RouteLocationSearchScreen from '@screens/RouteLocationSearchScreen';
 import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -37,6 +38,7 @@ export default function RootNavigator() {
       />
       <Stack.Screen name="FavoriteList" component={FavoriteListScreen} />
       <Stack.Screen name="DepartureSetting" component={DepartureSettingScreen} />
+      <Stack.Screen name="RouteLocationSearch" component={RouteLocationSearchScreen} />
       <Stack.Screen name="FacilityCategoryList" component={FacilityCategoryListScreen} />
       {/*
         시설 정보 카드를 위로 슬라이드하면 뜨는 화면이라, 화면 전체가 밑에서 올라오는
