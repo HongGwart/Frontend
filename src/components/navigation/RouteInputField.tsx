@@ -14,6 +14,8 @@ interface Props {
   onClear?: () => void;
   /** 값이 비어 있을 때만 보이는 부가 버튼 (출발지 입력창의 GPS 버튼) */
   rightSlot?: React.ReactNode;
+  /** true면 모양은 그대로 두고 필드/지우기 버튼 터치만 막는다 (경로 보기 카드를 접었을 때). */
+  disabled?: boolean;
 }
 
 /**
@@ -23,19 +25,19 @@ interface Props {
  * 여기서 직접 타이핑하지 않고, 누르면 검색 화면(RouteLocationSearchScreen)으로 이동해 거기서
  * 고른 결과가 이 필드의 값으로 돌아온다.
  */
-export function RouteInputField({ icon: Icon, value, placeholder, onPress, onClear, rightSlot }: Props) {
+export function RouteInputField({ icon: Icon, value, placeholder, onPress, onClear, rightSlot, disabled = false }: Props) {
   const theme = useTheme();
   const hasValue = value.length > 0;
 
   return (
-    <Container onPress={onPress}>
+    <Container onPress={onPress} disabled={disabled}>
       <Icon width={20} height={20} color={hasValue ? theme.blue[700] : theme.semantic.line.primary} />
       <Label hasValue={hasValue} numberOfLines={1}>
         {hasValue ? value : placeholder}
       </Label>
       {hasValue ? (
         onClear && (
-          <ClearButton onPress={onClear} hitSlop={8}>
+          <ClearButton onPress={onClear} disabled={disabled} hitSlop={8}>
             <XCircleIcon width={18} height={18} color={theme.semantic.text.tertiary} />
           </ClearButton>
         )
