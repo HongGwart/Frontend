@@ -57,17 +57,12 @@ const LabelText = styled.Text`
   color: ${({ theme }) => theme.semantic.text.white};
 `;
 
-// SVG 안에 이미 Figma와 같은 drop shadow(x0 y0 blur10 spread0 #343B9D 20%)가 필터로
-// 박혀 있지만, 이 마커는 NaverMapMarkerOverlay가 스냅샷(래스터화)해서 지도 위에 얹기 때문에
-// SVG filter가 그 과정에서 씹히는 경우가 있다. RN View 그림자로 한 번 더 걸어서 보장한다.
+// Figma drop shadow(x0 y0 blur10 spread0 #343B9D 20%)는 SVG 안에 radialGradient로 직접 그려 넣었다.
+// 이 마커는 NaverMapMarkerOverlay가 layer renderInContext로 스냅샷해서 지도에 얹는데,
+// 그 과정에서 SVG <filter>와 RN View shadow가 모두 빠지기 때문이다.
 const DotBox = styled.View`
   width: ${DOT_BOX_SIZE}px;
   height: ${DOT_BOX_SIZE}px;
   align-items: center;
   justify-content: center;
-  shadow-color: #343b9d;
-  shadow-offset: 0px 0px;
-  shadow-opacity: 0.2;
-  shadow-radius: 10px;
-  elevation: 8;
 `;
