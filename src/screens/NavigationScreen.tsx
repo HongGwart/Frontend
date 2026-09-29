@@ -312,7 +312,7 @@ export default function NavigationScreen() {
               <Button
                 label="경로 안내 시작"
                 icon={NavigationStartIcon}
-                onPress={() => rootNavigation.navigate('RouteGuidance', { routeId: selectedRoute.id })}
+                onPress={() => rootNavigation.navigate('RouteGuidance', { routeId: selectedRoute.id, destinationLabel: destination })}
               />
             </CtaWrapper>
           </DetailSheetBody>

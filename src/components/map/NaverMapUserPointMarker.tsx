@@ -6,6 +6,8 @@ import UserPointMarkerIcon from '@assets/svgs/icons/userPointMarker.svg';
 interface Props {
   latitude: number;
   longitude: number;
+  /** 0~1 불투명도. 도착 시 서서히 사라지게 할 때 쓴다(0이면 숨김). */
+  alpha?: number;
 }
 
 // Figma "marker_user point"(784:4023) — 옅은 원(반경 28) 안에 흰 테두리 파란 점.
@@ -15,7 +17,7 @@ const SIZE = 56;
  * 길 안내 중 현재 위치 마커. NaverMapStartPointMarker와 같은 방식(Custom React View)으로
  * 지도에 올리고, 점의 중심이 좌표에 오도록 앵커를 가운데로 둔다.
  */
-export function NaverMapUserPointMarker({ latitude, longitude }: Props) {
+export function NaverMapUserPointMarker({ latitude, longitude, alpha = 1 }: Props) {
   return (
     <NaverMapMarkerOverlay
       latitude={latitude}
@@ -23,6 +25,8 @@ export function NaverMapUserPointMarker({ latitude, longitude }: Props) {
       width={SIZE}
       height={SIZE}
       anchor={{ x: 0.5, y: 0.5 }}
+      alpha={alpha}
+      isHidden={alpha <= 0}
       // 경로선·출발/도착 마커보다 위에 그려서 현재 위치가 가려지지 않게 한다.
       zIndex={2}
     >
