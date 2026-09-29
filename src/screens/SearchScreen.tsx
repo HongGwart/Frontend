@@ -9,6 +9,7 @@ import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map
 import SearchIcon from '@assets/svgs/icons/search.svg';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
+import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
 import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
@@ -99,10 +100,13 @@ export default function SearchScreen() {
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
   const mapViewRef = useRef<NaverMapViewRef>(null);
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
+  // "건물 내부 보기"로 넘어가면 내부 지도 화면이 이 화면을 완전히 덮은 뒤 카드를 조용히 닫는다(MapScreen과 같음).
+  const closeFacilityCard = useCallback(() => setSelectedFacility(null), []);
+  const closeCardWhenCovered = useCloseWhenCovered(navigation, closeFacilityCard);
 
   // 마커가 시설 카드에 가리지 않도록, 검색창+카테고리 칩 아래쪽 끝과 시설 카드 위쪽 끝
   // 사이의 세로 중앙에 마커가 오도록 카메라를 옮긴다(MapScreen과 공유하는 훅).
-  const { handleChipsAreaLayout: handleTopOverlayLayout, handleFacilityCardLayout } =
+  const { cardHeight, handleChipsAreaLayout: handleTopOverlayLayout, handleFacilityCardLayout } =
     useFacilityCardCameraFocus(mapViewRef, selectedFacility?.marker ?? null);
   // 지도 모드 상단 카테고리 칩. 실제 마커 필터링과의 연결 없이 Figma와 동일한 UI만 우선 갖춘다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
@@ -223,14 +227,16 @@ export default function SearchScreen() {
                 facilityCounts={DUMMY_FACILITY_COUNTS}
                 mainEntrance={DUMMY_MAIN_ENTRANCE}
                 operatingHours={DUMMY_OPERATING_HOURS}
-                onViewInsidePress={() =>
+                onViewInsidePress={() => {
+                  closeCardWhenCovered();
                   navigation.navigate('BuildingIndoor', {
                     buildingCode: selectedFacility.marker.label ?? '',
                     buildingName: selectedFacility.marker.buildingName,
                     description: selectedFacility.marker.description,
                     isFavorite: selectedFacility.marker.favorite,
-                  })
-                }
+                    fromCardHeight: cardHeight,
+                  });
+                }}
               />
             ) : (
               <FacilityInfoCard

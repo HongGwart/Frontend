@@ -63,5 +63,5 @@ export function useFacilityCardCameraFocus(
     return () => clearTimeout(settleTimerRef.current);
   }, [target, chipsBottomY, cardHeight, mapViewRef]);
 
-  return { chipsBottomY, handleChipsAreaLayout, handleFacilityCardLayout };
+  return { chipsBottomY, cardHeight, handleChipsAreaLayout, handleFacilityCardLayout };
 }

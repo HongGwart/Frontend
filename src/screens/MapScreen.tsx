@@ -8,6 +8,8 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
+import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
@@ -102,7 +104,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
 
   // 마커가 시설 카드에 가리지 않도록, 검색창+카테고리 칩 아래쪽 끝과 시설 카드 위쪽 끝
   // 사이의 세로 중앙에 마커가 오도록 카메라를 옮긴다(SearchScreen과 공유하는 훅).
-  const { chipsBottomY, handleChipsAreaLayout, handleFacilityCardLayout } = useFacilityCardCameraFocus(
+  const { chipsBottomY, cardHeight, handleChipsAreaLayout, handleFacilityCardLayout } = useFacilityCardCameraFocus(
     mapViewRef,
     cameraFocusTarget,
   );
@@ -205,6 +207,14 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         return null;
     }
   }, [selectedFacility]);
+
+  // "건물 내부 보기"로 넘어가면 이 카드는 역할을 다했으니(내부 지도 화면 하단에 같은 건물 카드가
+  // 이어서 뜬다), 내부 지도 화면이 지도를 완전히 덮은 뒤 조용히 닫아서 돌아왔을 때 남아있지 않게 한다.
+  const closeFacilityCard = useCallback(() => setSelectedFacility(null), []);
+  const closeCardWhenCovered = useCloseWhenCovered(
+    navigation.getParent<NativeStackNavigationProp<RootStackParamList>>(),
+    closeFacilityCard,
+  );
 
   const handleSwipeUp = useCallback(() => {
     if (!swipeUpBuildingCode) return;
@@ -437,14 +447,16 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               facilityCounts={DUMMY_FACILITY_COUNTS}
               mainEntrance={DUMMY_MAIN_ENTRANCE}
               operatingHours={DUMMY_OPERATING_HOURS}
-              onViewInsidePress={() =>
+              onViewInsidePress={() => {
+                closeCardWhenCovered();
                 onOpenBuildingIndoor?.({
                   buildingCode: selectedFacility.marker.label ?? '',
                   buildingName: selectedFacility.marker.buildingName,
                   description: selectedFacility.marker.description,
                   isFavorite: isFavorite(selectedFacility.marker),
-                })
-              }
+                  fromCardHeight: cardHeight,
+                });
+              }}
             />
           ) : selectedFacility.type === 'category' ? (
             <FacilityInfoCard

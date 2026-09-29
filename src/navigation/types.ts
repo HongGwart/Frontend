@@ -56,7 +56,15 @@ export type RootStackParamList = {
   BuildingDetail: { buildingCode: string };
   // 건물 카드의 "건물 내부 보기"를 누르면 뜨는 건물 내부 지도(층별 평면도). buildingCode("T동")로
   // floorMaps.ts의 층 목록을 찾고, 나머지는 하단 건물 정보 카드에 그대로 쓴다.
-  BuildingIndoor: { buildingCode: string; buildingName: string; description: string; isFavorite?: boolean };
+  // fromCardHeight는 넘어오기 직전 지도 위 건물 카드(outside)의 높이 — 내부 지도 카드가 그 자리에서
+  // 시작해 제자리로 내려앉는 전환 애니메이션에 쓴다.
+  BuildingIndoor: {
+    buildingCode: string;
+    buildingName: string;
+    description: string;
+    isFavorite?: boolean;
+    fromCardHeight?: number;
+  };
   // 길찾기 화면의 출발지/도착지 입력창을 누르면 뜨는 검색 화면. target으로 지금 고르는 중인
   // 입력창을 구분하고, 나머지 한쪽 값(departureLabel/destinationLabel)은 이미 골라둔 값을
   // 그대로 들고 있다가 결과와 함께 돌려보내기 위해 같이 받아온다.

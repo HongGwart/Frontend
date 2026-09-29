@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import styled, { useTheme } from 'styled-components/native';
 import Header from '@components/layout/Header';
 import { IndoorMapView } from '@components/map/IndoorMapView';
@@ -23,6 +23,8 @@ const SLIDE_DISTANCE = 64;
 const SLIDE_DURATION = 260;
 // Figma: 헤더 아래 24px, 왼쪽 20px에 층 선택기.
 const FLOOR_SELECTOR_TOP = 24;
+// FacilityInfoCard inside variant의 고정 높이.
+const INSIDE_CARD_HEIGHT = 400;
 
 /**
  * 지도 위 건물 카드에서 "건물 내부 보기"를 누르면 뜨는 건물 내부 지도. Figma "건물 내부 지도"(762:4924).
@@ -62,6 +64,30 @@ export default function BuildingIndoorScreen() {
     prevFloorNumRef.current = floorNum;
   }, [floorNum, slideY]);
   const slideStyle = useAnimatedStyle(() => ({ transform: [{ translateY: slideY.value }] }));
+
+  // 지도 위 건물 카드(outside, "건물 내부 보기" 버튼 때문에 더 높다)에서 넘어오면, 이 카드가 처음엔
+  // 그 카드의 윗부분 위치에서 시작해 제자리로 내려앉는다. 화면이 크로스페이드되는 동안엔 지도 쪽 카드가
+  // 위에 그대로 떠 있고(MapScreen은 Modal), 전환이 끝나 그 카드가 닫히는 순간 같은 모양의 이 카드가
+  // 같은 자리에 있어서 이어진 것처럼 보인다 — 그 뒤 버튼 높이만큼 부드럽게 내려간다.
+  const cardLift = useSharedValue(Math.max(0, (params.fromCardHeight ?? 0) - INSIDE_CARD_HEIGHT));
+  useEffect(() => {
+    if (cardLift.value === 0) return;
+    const settle = () => {
+      clearTimeout(fallbackId);
+      cardLift.value = withDelay(60, withTiming(0, { duration: 320, easing: Easing.out(Easing.cubic) }));
+    };
+    // 전환 애니메이션이 없는 경우(안드로이드 animation: 'none') transitionEnd가 안 올 수 있어서,
+    // 전환 시간(200ms)보다 넉넉한 뒤에는 이벤트가 없어도 내려앉힌다.
+    const fallbackId = setTimeout(settle, 400);
+    const unsubscribe = navigation.addListener('transitionEnd', event => {
+      if (!event.data.closing) settle();
+    });
+    return () => {
+      clearTimeout(fallbackId);
+      unsubscribe();
+    };
+  }, [navigation, cardLift]);
+  const cardStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -cardLift.value }] }));
 
   // 층이 많으면 층 선택기가 지도 영역 밖(카드 뒤)까지 내려가지 않게 지도 영역 높이에 맞춰 자른다.
   const [mapAreaHeight, setMapAreaHeight] = useState(0);
@@ -114,35 +140,39 @@ export default function BuildingIndoorScreen() {
         )}
       </MapArea>
 
-      {selectedRoomLabel ? (
-        <FacilityInfoCard
-          variant="room"
-          buildingCode={params.buildingCode}
-          buildingName={params.buildingName}
-          roomNumber={`${selectedRoomLabel}호`}
-          description={params.description}
-          isFavorite={isFavorite}
-          onToggleFavorite={() => setIsFavorite(prev => !prev)}
-          onDeparturePress={() => goToRoute('departure')}
-          onArrivalPress={() => goToRoute('destination')}
-          operatingHours={DUMMY_OPERATING_HOURS}
-        />
-      ) : (
-        <FacilityInfoCard
-          variant="inside"
-          buildingCode={params.buildingCode}
-          buildingName={params.buildingName}
-          description={params.description}
-          isFavorite={isFavorite}
-          onToggleFavorite={() => setIsFavorite(prev => !prev)}
-          onDeparturePress={() => goToRoute('departure')}
-          onArrivalPress={() => goToRoute('destination')}
-          images={marker?.images ?? DUMMY_FACILITY_IMAGES}
-          facilityCounts={DUMMY_FACILITY_COUNTS}
-          mainEntrance={DUMMY_MAIN_ENTRANCE}
-          operatingHours={DUMMY_OPERATING_HOURS}
-        />
-      )}
+      <CardWrapper style={cardStyle}>
+        {selectedRoomLabel ? (
+          <FacilityInfoCard
+            variant="room"
+            buildingCode={params.buildingCode}
+            buildingName={params.buildingName}
+            roomNumber={`${selectedRoomLabel}호`}
+            description={params.description}
+            isFavorite={isFavorite}
+            onToggleFavorite={() => setIsFavorite(prev => !prev)}
+            onDeparturePress={() => goToRoute('departure')}
+            onArrivalPress={() => goToRoute('destination')}
+            operatingHours={DUMMY_OPERATING_HOURS}
+          />
+        ) : (
+          <FacilityInfoCard
+            variant="inside"
+            buildingCode={params.buildingCode}
+            buildingName={params.buildingName}
+            description={params.description}
+            isFavorite={isFavorite}
+            onToggleFavorite={() => setIsFavorite(prev => !prev)}
+            onDeparturePress={() => goToRoute('departure')}
+            onArrivalPress={() => goToRoute('destination')}
+            images={marker?.images ?? DUMMY_FACILITY_IMAGES}
+            facilityCounts={DUMMY_FACILITY_COUNTS}
+            mainEntrance={DUMMY_MAIN_ENTRANCE}
+            operatingHours={DUMMY_OPERATING_HOURS}
+          />
+        )}
+        {/* 카드가 위로 올라가 있는 동안 그 아래로 지도가 비치지 않게 흰 바닥을 이어 붙인다. */}
+        <CardBottomFill />
+      </CardWrapper>
     </Container>
   );
 }
@@ -177,4 +207,17 @@ const EmptyText = styled.Text`
   letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
   color: ${({ theme }) => theme.semantic.text.tertiary};
   text-align: center;
+`;
+
+const CardWrapper = styled(Animated.View)`
+  width: 100%;
+`;
+
+const CardBottomFill = styled.View`
+  position: absolute;
+  top: 100%;
+  left: 0px;
+  right: 0px;
+  height: 400px;
+  background-color: ${({ theme }) => theme.semantic.background.primary};
 `;

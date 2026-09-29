@@ -50,7 +50,16 @@ export default function RootNavigator() {
         여기서는 스택 자체의 전환 애니메이션을 끈다.
       */}
       <Stack.Screen name="BuildingDetail" component={BuildingDetailScreen} options={{ animation: 'none' }} />
-      <Stack.Screen name="BuildingIndoor" component={BuildingIndoorScreen} />
+      {/*
+        건물 카드의 "건물 내부 보기"에서 넘어오는 화면이라, 옆에서 통째로 밀려 들어오면 카드가 옆으로
+        같이 움직여 끊겨 보인다. 대신 제자리에서 크로스페이드하고, 카드는 BuildingIndoorScreen 안에서
+        바깥 카드 자리부터 이어서 내려앉게 한다. (Search와 같은 이유로 안드로이드는 애니메이션을 끈다.)
+      */}
+      <Stack.Screen
+        name="BuildingIndoor"
+        component={BuildingIndoorScreen}
+        options={Platform.OS === 'ios' ? { animation: 'fade', animationDuration: 200 } : { animation: 'none' }}
+      />
     </Stack.Navigator>
   );
 }
