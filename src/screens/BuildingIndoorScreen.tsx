@@ -17,6 +17,7 @@ import {
   DUMMY_OPERATING_HOURS,
 } from '@constant/dummyFacilityInfo';
 import { RootStackParamList } from '@navigation/types';
+import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 
 // 층 전환 시 슬라이드 이동 거리(px). 위층으로 가면 아래에서, 아래층으로 가면 위에서 들어온다.
 const SLIDE_DISTANCE = 64;
@@ -93,16 +94,12 @@ export default function BuildingIndoorScreen() {
   const [mapAreaHeight, setMapAreaHeight] = useState(0);
 
   // 출발/도착을 누르면 길찾기 탭으로 가서 해당 입력창을 채운다(강의실을 골랐으면 호수까지).
-  const placeLabel = [params.buildingCode, params.buildingName, selectedRoomLabel && `${selectedRoomLabel}호`]
-    .filter(Boolean)
-    .join(' ');
-  const goToRoute = (target: 'departure' | 'destination') =>
-    navigation.popTo('MainTabs', {
-      screen: 'navigation',
-      params: {
-        routeSelection: target === 'departure' ? { departureLabel: placeLabel } : { destinationLabel: placeLabel },
-      },
-    });
+  const routeButtonProps = useRouteButtonProps();
+  const placeLabel = toRoutePlaceLabel(
+    params.buildingCode,
+    params.buildingName,
+    selectedRoomLabel && `${selectedRoomLabel}호`,
+  );
 
   return (
     <Container>
@@ -150,8 +147,7 @@ export default function BuildingIndoorScreen() {
             description={params.description}
             isFavorite={isFavorite}
             onToggleFavorite={() => setIsFavorite(prev => !prev)}
-            onDeparturePress={() => goToRoute('departure')}
-            onArrivalPress={() => goToRoute('destination')}
+            {...routeButtonProps(placeLabel)}
             operatingHours={DUMMY_OPERATING_HOURS}
           />
         ) : (
@@ -162,8 +158,7 @@ export default function BuildingIndoorScreen() {
             description={params.description}
             isFavorite={isFavorite}
             onToggleFavorite={() => setIsFavorite(prev => !prev)}
-            onDeparturePress={() => goToRoute('departure')}
-            onArrivalPress={() => goToRoute('destination')}
+            {...routeButtonProps(placeLabel)}
             images={marker?.images ?? DUMMY_FACILITY_IMAGES}
             facilityCounts={DUMMY_FACILITY_COUNTS}
             mainEntrance={DUMMY_MAIN_ENTRANCE}

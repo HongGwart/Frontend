@@ -10,6 +10,7 @@ import SearchIcon from '@assets/svgs/icons/search.svg';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
+import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
@@ -103,6 +104,8 @@ export default function SearchScreen() {
   // "건물 내부 보기"로 넘어가면 내부 지도 화면이 이 화면을 완전히 덮은 뒤 카드를 조용히 닫는다(MapScreen과 같음).
   const closeFacilityCard = useCallback(() => setSelectedFacility(null), []);
   const closeCardWhenCovered = useCloseWhenCovered(navigation, closeFacilityCard);
+  // 카드의 출발/도착 → 길찾기 탭으로 가서 입력창을 채운다(검색 화면은 스택에서 빠지며 같이 닫힌다).
+  const routeButtonProps = useRouteButtonProps();
 
   // 마커가 시설 카드에 가리지 않도록, 검색창+카테고리 칩 아래쪽 끝과 시설 카드 위쪽 끝
   // 사이의 세로 중앙에 마커가 오도록 카메라를 옮긴다(MapScreen과 공유하는 훅).
@@ -224,6 +227,9 @@ export default function SearchScreen() {
                 description={selectedFacility.marker.description}
                 isFavorite={selectedFacility.marker.favorite}
                 images={selectedFacility.marker.images}
+                {...routeButtonProps(
+                  toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
+                )}
                 facilityCounts={DUMMY_FACILITY_COUNTS}
                 mainEntrance={DUMMY_MAIN_ENTRANCE}
                 operatingHours={DUMMY_OPERATING_HOURS}
@@ -246,6 +252,13 @@ export default function SearchScreen() {
                 facilityName={selectedFacility.marker.room}
                 isFavorite={selectedFacility.marker.favorite}
                 images={selectedFacility.marker.images}
+                {...routeButtonProps(
+                  toRoutePlaceLabel(
+                    selectedFacility.marker.buildingCode,
+                    selectedFacility.marker.buildingName,
+                    selectedFacility.marker.room,
+                  ),
+                )}
                 operatingHours={DUMMY_OPERATING_HOURS}
               />
             )}

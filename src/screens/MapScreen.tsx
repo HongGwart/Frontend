@@ -9,6 +9,7 @@ import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
+import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
@@ -211,6 +212,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   // "건물 내부 보기"로 넘어가면 이 카드는 역할을 다했으니(내부 지도 화면 하단에 같은 건물 카드가
   // 이어서 뜬다), 내부 지도 화면이 지도를 완전히 덮은 뒤 조용히 닫아서 돌아왔을 때 남아있지 않게 한다.
   const closeFacilityCard = useCallback(() => setSelectedFacility(null), []);
+  // 카드의 출발/도착 → 길찾기 탭으로 가서 입력창을 채운다. 카드가 Modal이라 다른 탭 위에도
+  // 그대로 떠 있으니 이동 전에 먼저 닫는다.
+  const routeButtonProps = useRouteButtonProps(closeFacilityCard);
   const closeCardWhenCovered = useCloseWhenCovered(
     navigation.getParent<NativeStackNavigationProp<RootStackParamList>>(),
     closeFacilityCard,
@@ -444,6 +448,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 toggleFavorite(selectedFacility.marker, selectedFacility.marker.buildingName)
               }
               images={selectedFacility.marker.images}
+              {...routeButtonProps(
+                toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
+              )}
               facilityCounts={DUMMY_FACILITY_COUNTS}
               mainEntrance={DUMMY_MAIN_ENTRANCE}
               operatingHours={DUMMY_OPERATING_HOURS}
@@ -467,6 +474,13 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               isFavorite={isFavorite(selectedFacility.marker)}
               onToggleFavorite={() => toggleFavorite(selectedFacility.marker, selectedFacility.marker.room)}
               images={selectedFacility.marker.images}
+              {...routeButtonProps(
+                toRoutePlaceLabel(
+                  selectedFacility.marker.buildingCode,
+                  selectedFacility.marker.buildingName,
+                  selectedFacility.marker.room,
+                ),
+              )}
               operatingHours={DUMMY_OPERATING_HOURS}
             />
           ) : selectedFacility.type === 'list' ? (
@@ -495,6 +509,13 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 )
               }
               images={DUMMY_FACILITY_IMAGES}
+              {...routeButtonProps(
+                toRoutePlaceLabel(
+                  selectedFacility.facility.buildingCode,
+                  selectedFacility.facility.buildingName,
+                  selectedFacility.facility.facilityName,
+                ),
+              )}
               operatingHours={DUMMY_OPERATING_HOURS}
             />
           ) : (
@@ -511,6 +532,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 )
               }
               images={selectedFacility.item.images}
+              {...routeButtonProps(
+                toRoutePlaceLabel(selectedFacility.item.building, selectedFacility.item.place, selectedFacility.item.room),
+              )}
               operatingHours={DUMMY_OPERATING_HOURS}
             />
           )}
