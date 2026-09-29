@@ -6,6 +6,7 @@ import {
   useSharedValue,
   useAnimatedStyle,
   useAnimatedReaction,
+  cancelAnimation,
   withTiming,
   withSpring,
   withDecay,
@@ -184,7 +185,7 @@ export function useMapGestures({
       .onStart(() => {
         // 직전 확대 관성/바운스 애니메이션이 아직 진행 중일 수 있으니, 지금 값에서 멈추고
         // saved를 현재 위치로 맞춘 다음 새 pivot을 잡는다.
-        scale.value = scale.value;
+        cancelAnimation(scale);
         savedScale.value = scale.value;
         capturePivot();
         pivotActive.value = true;
@@ -230,10 +231,10 @@ export function useMapGestures({
       // 손가락이 이 정도 움직여야 팬으로 인정 -> 그 전까지는 탭 제스처에 기회를 준다
       .minDistance(6)
       .onStart(() => {
-        // 직전 관성 스크롤(withDecay)이 아직 굴러가는 중일 수 있으므로, 지금 값 그대로
-        // 자기 자신에 대입해서 진행 중이던 애니메이션을 멈추고 saved를 현재 위치로 맞춘다.
-        translateX.value = translateX.value;
-        translateY.value = translateY.value;
+        // 직전 관성 스크롤(withDecay)이 아직 굴러가는 중일 수 있으므로, 진행 중이던
+        // 애니메이션을 지금 위치에서 멈추고 saved를 현재 위치로 맞춘다.
+        cancelAnimation(translateX);
+        cancelAnimation(translateY);
         savedTranslateX.value = translateX.value;
         savedTranslateY.value = translateY.value;
         // 확대 관성/바운스가 아직 안 끝났는데 사용자가 직접 팬을 시작하면, 그쪽이 계속
@@ -248,8 +249,6 @@ export function useMapGestures({
         // 손을 뗄 때 속도가 남아있으면 그 방향으로 서서히 미끄러지다 멈춘다 (관성 스크롤)
         translateX.value = withDecay({ velocity: e.velocityX, deceleration: PAN_DECELERATION });
         translateY.value = withDecay({ velocity: e.velocityY, deceleration: PAN_DECELERATION });
-        savedTranslateX.value = translateX.value;
-        savedTranslateY.value = translateY.value;
       });
 
     const rotationGesture = Gesture.Rotation()
