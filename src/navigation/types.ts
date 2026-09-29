@@ -23,23 +23,11 @@ export interface RouteLocationSelection {
   destinationLabel?: string;
 }
 
-// 하단 탭 5개. 기존 NavigationBar.tsx의 NavigationTab과 이름을 맞춰서 헷갈리지 않게 한다.
+// 하단 탭 4개. 길찾기는 탭이 아니라 루트 스택에 푸시되는 화면이다(RootStackParamList.Navigation) —
+// 탭이면 화면이 계속 마운트된 채로 남아서, 나가고 들어올 때 진짜 이전 화면이 실시간으로 비치는
+// 네이티브 스와이프 백(애플뮤직 같은) 제스처를 쓸 수 없기 때문이다.
 export type MainTabParamList = {
   map: { focusFacility?: FocusFacilityParam } | undefined;
-  navigation: {
-    routeSelection?: RouteLocationSelection;
-    /**
-     * 경로 카드를 눌러 지도+구간 안내(전체화면 지도) 상태로 바뀌었는지. true면
-     * MainTabNavigator가 이 탭의 헤더 배경을 투명하게 그려서 지도가 그대로 비치게 한다
-     * (Figma "길 찾기_경로 보기" 733:2584/733:3264).
-     */
-    isViewingRoute?: boolean;
-    /**
-     * 다른 탭/카드에서 길찾기 탭으로 "새로 들어올 때" 넘기는 값(Date.now()). 값이 바뀌면 NavigationScreen이
-     * 입력값/경로를 전부 비우고 처음부터 시작한다. 출발/도착 검색이나 길 안내에서 돌아올 때는 넘기지 않는다.
-     */
-    resetKey?: number;
-  } | undefined;
   facility: undefined;
   hongdae: undefined;
   mypage: undefined;
@@ -70,6 +58,9 @@ export type RootStackParamList = {
     isFavorite?: boolean;
     fromCardHeight?: number;
   };
+  // 길찾기 화면. 탭이 아니라 루트 스택에 푸시되는 화면이라, 네이티브 스와이프 백 제스처로
+  // 뒤로 밀면 진짜로 살아있는 이전 화면(map 탭 등)이 실시간으로 비친다.
+  Navigation: { routeSelection?: RouteLocationSelection } | undefined;
   // 길찾기 화면의 출발지/도착지 입력창을 누르면 뜨는 검색 화면. target으로 지금 고르는 중인
   // 입력창을 구분하고, 나머지 한쪽 값(departureLabel/destinationLabel)은 이미 골라둔 값을
   // 그대로 들고 있다가 결과와 함께 돌려보내기 위해 같이 받아온다.

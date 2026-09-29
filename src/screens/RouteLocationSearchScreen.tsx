@@ -36,16 +36,12 @@ export default function RouteLocationSearchScreen() {
     Keyboard.dismiss();
     const label = formatLocationLabel(item);
     // 방금 고른 쪽만 새 값으로 바꾸고, 나머지 한쪽은 넘어올 때 받아온 값(이미 골라둔 값)을
-    // 그대로 들고 돌아가서 길찾기 화면에서 두 값이 서로 덮어쓰지 않게 한다.
-    // navigate('MainTabs')는 (React Navigation 7에선) 기존 탭 화면으로 돌아가지 않고 새 MainTabs를 위에
-    // 쌓는다 — 검색할 때마다 탭 화면이 겹겹이 쌓이지 않게, 이미 있는 MainTabs로 되돌아간다.
-    navigation.popTo('MainTabs', {
-      screen: 'navigation',
-      params: {
-        routeSelection: {
-          departureLabel: params.target === 'departure' ? label : params.departureLabel,
-          destinationLabel: params.target === 'destination' ? label : params.destinationLabel,
-        },
+    // 그대로 들고 돌아가서 길찾기 화면에서 두 값이 서로 덮어쓰지 않게 한다. popTo는 스택에
+    // 이미 있는 Navigation 화면 인스턴스로 되돌아가면서 이 params를 merge한다(새로 안 만듦).
+    navigation.popTo('Navigation', {
+      routeSelection: {
+        departureLabel: params.target === 'departure' ? label : params.departureLabel,
+        destinationLabel: params.target === 'destination' ? label : params.destinationLabel,
       },
     });
   };

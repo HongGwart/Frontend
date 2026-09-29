@@ -8,6 +8,7 @@ import FavoriteListScreen from '@screens/FavoriteListScreen';
 import DepartureSettingScreen from '@screens/DepartureSettingScreen';
 import FacilityCategoryListScreen from '@screens/FacilityCategoryListScreen';
 import BuildingDetailScreen from '@screens/BuildingDetailScreen';
+import NavigationScreen from '@screens/NavigationScreen';
 import RouteLocationSearchScreen from '@screens/RouteLocationSearchScreen';
 import RouteGuidanceScreen from '@screens/RouteGuidanceScreen';
 import BuildingIndoorScreen from '@screens/BuildingIndoorScreen';
@@ -40,6 +41,12 @@ export default function RootNavigator() {
       />
       <Stack.Screen name="FavoriteList" component={FavoriteListScreen} />
       <Stack.Screen name="DepartureSetting" component={DepartureSettingScreen} />
+      {/*
+        길찾기는 탭이 아니라 여기 루트 스택에 푸시되는 화면이다 — native-stack의 기본
+        gestureEnabled(iOS 스와이프 백)를 그대로 쓰면, 밀 때 실제로 살아있는 이전 화면(map 탭 등)이
+        애플뮤직처럼 실시간으로 비친다. 탭으로 두면 화면이 늘 마운트돼 있어서 이 효과를 낼 수 없었다.
+      */}
+      <Stack.Screen name="Navigation" component={NavigationScreen} />
       <Stack.Screen name="RouteLocationSearch" component={RouteLocationSearchScreen} />
       <Stack.Screen name="RouteGuidance" component={RouteGuidanceScreen} />
       <Stack.Screen name="FacilityCategoryList" component={FacilityCategoryListScreen} />

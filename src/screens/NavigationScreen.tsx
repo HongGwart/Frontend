@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -32,7 +32,7 @@ import {
   DUMMY_ROUTE_PATH,
 } from '@constant/dummyRouteResults';
 import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
-import { MainTabParamList, RootStackParamList } from '@navigation/types';
+import { RootStackParamList } from '@navigation/types';
 
 // Header.tsx의 Container height와 동일한 값 — 경로 보기 화면에서 지도 위에 얹는
 // 투명 헤더의 실제 높이(세이프에어리어 제외)를 지도 카메라 패딩 계산에 재사용한다.
@@ -47,13 +47,13 @@ const ROUTE_VIEW_CAMERA = {
   zoom: 17,
 };
 
-// Figma "길 찾기_출발지/도착지 입력"(720:4897) + 출발/도착지를 모두 설정하면 뜨는
-// "길 찾기_경로 선택"(720:10860). 상단 헤더는 이미 MainTabNavigator가 타이틀("길찾기")을
-// 보여주고 있어서, 여기서는 출발/도착 입력 + 경로 옵션 + 빈 상태/경로 목록 본문만 그린다.
+// "길 찾기_경로 선택"(720:10860). 탭이 아니라 루트 스택(RootNavigator)에 push되는 화면이라 —
+// native-stack의 기본 스와이프 백 제스처(gestureEnabled)가 그대로 적용돼서, 오른쪽으로 밀면
+// 진짜로 살아있는 이전 화면(map 탭 등)이 애플뮤직처럼 실시간으로 비친다. 탭이던 시절엔 화면이
+// 늘 마운트돼 있어서 이 효과를 직접(제스처+가짜 미리보기로) 흉내내야 했는데, 이제는 필요 없다.
 export default function NavigationScreen() {
-  const rootNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const tabNavigation = useNavigation<NativeStackNavigationProp<MainTabParamList, 'navigation'>>();
-  const { params } = useRoute<RouteProp<MainTabParamList, 'navigation'>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { params } = useRoute<RouteProp<RootStackParamList, 'Navigation'>>();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
 
@@ -71,8 +71,8 @@ export default function NavigationScreen() {
     if (!selection) return;
     if (selection.departureLabel !== undefined) setDeparture(selection.departureLabel);
     if (selection.destinationLabel !== undefined) setDestination(selection.destinationLabel);
-    tabNavigation.setParams({ routeSelection: undefined });
-  }, [params?.routeSelection, tabNavigation]);
+    navigation.setParams({ routeSelection: undefined });
+  }, [params?.routeSelection, navigation]);
 
   const swapValues = () => {
     setDeparture(destination);
@@ -89,22 +89,6 @@ export default function NavigationScreen() {
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
-
-  // 탭 화면은 다른 탭으로 가도 언마운트되지 않아서 입력값이 그대로 남는다. 그래서 다른 탭/카드에서 이 탭으로
-  // "새로 들어올 때"(하단 탭 버튼, 카드의 출발/도착 — resetKey 파라미터) 전부 비우고 빈 입력부터 시작한다.
-  // 떠날 때가 아니라 들어올 때 비우는 건, "안내 종료"처럼 탭 위 스택 화면에서 한 번에 다른 탭으로 나가는
-  // 경우엔 이 화면이 떠났다는 신호를 못 받기 때문이다. 화면이 그려지기 전(layout effect)에 비워서 이전
-  // 경로가 잠깐도 보이지 않고, routeSelection(카드의 값)을 반영하는 일반 effect보다 먼저 돌아 새 값은 살아남는다.
-  // 출발/도착 검색이나 길 안내에서 돌아올 때는 resetKey가 없어서 값이 유지된다.
-  const resetInputs = useCallback(() => {
-    setDeparture('');
-    setDestination('');
-    setSelectedOption(null);
-    setSelectedRouteId(null);
-  }, []);
-  useLayoutEffect(() => {
-    if (params?.resetKey !== undefined) resetInputs();
-  }, [params?.resetKey, resetInputs]);
   const selectedRoute = useMemo(
     () => DUMMY_ROUTE_RESULTS.find(route => route.id === selectedRouteId) ?? null,
     [selectedRouteId],
@@ -129,7 +113,6 @@ export default function NavigationScreen() {
     mapRef.current?.animateCameraTo({ ...ROUTE_VIEW_CAMERA, duration: 300 });
   }, [isSheetCollapsed]);
 
-
   // @mj-studio/react-native-naver-map의 NaverMapPolylineOverlay 버그 우회: capType/joinType의
   // "선언된 기본값"이 둘 다 Round라서, 처음부터 "Round"를 넘기면 네이티브가 "이전 값과
   // 같다"고 보고 실제로 반영을 안 한다(outlineWidth=0이 안 먹히던 것과 같은 버그). 그래서
@@ -145,17 +128,6 @@ export default function NavigationScreen() {
     return () => cancelAnimationFrame(id);
   }, [selectedRoute]);
 
-  // "경로 보기" 상태로 바뀌면 MainTabNavigator에게 알려서, 이 탭의 (불투명) 헤더를 끄게 한다
-  // — 아래에서 이 화면이 직접 지도 위에 투명 헤더를 얹으므로 둘이 겹치면 안 된다.
-  // 파라미터가 이동 중에 날아가거나 어긋나면(그러면 이 화면은 경로 보기인데 탭 헤더가 다시 떠 헤더가 두 개가
-  // 된다) 실제 화면 상태와 다를 때마다 다시 맞춰 준다.
-  const isViewingRouteParam = Boolean(params?.isViewingRoute);
-  useEffect(() => {
-    if (isViewingRouteParam !== Boolean(selectedRoute)) {
-      tabNavigation.setParams({ isViewingRoute: Boolean(selectedRoute) });
-    }
-  }, [selectedRoute, isViewingRouteParam, tabNavigation]);
-
   // 기본 화면 상단과, 경로 보기 카드를 끌어내렸을 때의 상단 패널이 같은 입력 영역을 쓴다.
   // 카드를 접었을 때는 보여주기만 하고 검색 이동/지우기/출발·도착 바꾸기를 모두 막는다.
   const renderRouteInputSection = (disabled: boolean) => (
@@ -169,7 +141,7 @@ export default function NavigationScreen() {
           value={departure}
           placeholder="출발지를 입력하세요"
           onPress={() =>
-            rootNavigation.navigate('RouteLocationSearch', {
+            navigation.navigate('RouteLocationSearch', {
               target: 'departure',
               departureLabel: departure,
               destinationLabel: destination,
@@ -195,7 +167,7 @@ export default function NavigationScreen() {
           value={destination}
           placeholder="도착지를 입력하세요"
           onPress={() =>
-            rootNavigation.navigate('RouteLocationSearch', {
+            navigation.navigate('RouteLocationSearch', {
               target: 'destination',
               departureLabel: departure,
               destinationLabel: destination,
@@ -333,7 +305,7 @@ export default function NavigationScreen() {
               <Button
                 label="경로 안내 시작"
                 icon={NavigationStartIcon}
-                onPress={() => rootNavigation.navigate('RouteGuidance', { routeId: selectedRoute.id, destinationLabel: destination })}
+                onPress={() => navigation.navigate('RouteGuidance', { routeId: selectedRoute.id, destinationLabel: destination })}
               />
             </CtaWrapper>
           </DetailSheetBody>
@@ -344,6 +316,10 @@ export default function NavigationScreen() {
 
   return (
     <Container>
+      <HeaderWrapper style={{ paddingTop: insets.top }}>
+        <Header title="길찾기" onBackPress={() => navigation.goBack()} />
+      </HeaderWrapper>
+
       {renderRouteInputSection(false)}
 
       <OptionRow showDivider={hasRoute}>
@@ -393,6 +369,10 @@ export default function NavigationScreen() {
     </Container>
   );
 }
+
+const HeaderWrapper = styled.View`
+  background-color: ${({ theme }) => theme.semantic.background.primary};
+`;
 
 const Container = styled.View`
   flex: 1;
