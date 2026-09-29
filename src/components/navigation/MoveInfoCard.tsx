@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable } from 'react-native';
+import { Pressable, StyleProp, ViewStyle } from 'react-native';
+import Animated, { AnimatedStyle } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
@@ -20,6 +21,11 @@ interface Props {
   stepCount: number;
   /** 지금 보여주는 구간의 인덱스(0부터 시작). 이 점만 강조색으로 그려진다. */
   activeStepIndex: number;
+  /**
+   * 카드 틀은 그대로 두고 안쪽 내용(아이콘/문구/소요 시간)에만 걸 스타일. 구간을 좌우로 넘길 때
+   * 내용만 밀려 나가고 들어오게 하는 데 쓴다(카드가 overflow: hidden이라 틀 밖은 잘린다).
+   */
+  contentStyle?: StyleProp<ViewStyle> | AnimatedStyle<ViewStyle>;
 }
 
 /**
@@ -29,7 +35,15 @@ interface Props {
  * 지금이 몇 번째 구간인지 보여준다. 반투명 흰 배경 + 블러(backdrop-blur)로 지도가 은은하게
  * 비쳐서, 어떤 배경 위에 얹어도(지도든 사진이든) 잘 어울린다.
  */
-export function MoveInfoCard({ icon: Icon, title, durationText, onClose, stepCount, activeStepIndex }: Props) {
+export function MoveInfoCard({
+  icon: Icon,
+  title,
+  durationText,
+  onClose,
+  stepCount,
+  activeStepIndex,
+  contentStyle,
+}: Props) {
   const theme = useTheme();
 
   return (
@@ -37,11 +51,13 @@ export function MoveInfoCard({ icon: Icon, title, durationText, onClose, stepCou
       <Blur intensity={40} tint="light" />
       <Content>
         <TopRow>
-          <Icon width={64} height={64} color={theme.blue[500]} />
-          <TextBlock>
-            <Title>{title}</Title>
-            <Duration>{durationText}</Duration>
-          </TextBlock>
+          <SlidingContent style={contentStyle}>
+            <Icon width={64} height={64} color={theme.blue[500]} />
+            <TextBlock>
+              <Title>{title}</Title>
+              <Duration>{durationText}</Duration>
+            </TextBlock>
+          </SlidingContent>
           <CloseButton onPress={onClose} hitSlop={8}>
             {/* closeThin.svg는 여백 없이 X만 꽉 찬 아이콘이라, Figma "x"(24 박스 안 18px 글리프)에
                 맞추려면 24 버튼 안에 18로 그린다. */}
@@ -92,6 +108,14 @@ const TopRow = styled.View`
   align-items: flex-start;
   gap: 12px;
   width: 100%;
+`;
+
+// X 버튼은 제자리에 두고 아이콘+문구만 좌우로 움직일 수 있게 따로 묶는다.
+const SlidingContent = styled(Animated.View)`
+  flex: 1;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
 `;
 
 const TextBlock = styled.View`

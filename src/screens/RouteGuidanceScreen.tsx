@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StyleSheet, useWindowDimensions } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -9,7 +10,16 @@ import {
   NaverMapPolylineOverlay,
   NaverMapViewRef,
 } from '@mj-studio/react-native-naver-map';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeInDown,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
@@ -48,6 +58,16 @@ const GUIDANCE_ZOOM = 17;
 // 구간을 넘길 때 경로선/현재 위치가 옮겨가는 시간. 카메라 이동(animateCameraTo)과 같게 맞춘다.
 const STEP_TRANSITION_MS = 300;
 
+// 안내 카드 스와이프: 이 거리(px)나 속도(px/s)를 넘기면 구간을 넘긴다.
+const SWIPE_DISTANCE = 72;
+const SWIPE_VELOCITY = 600;
+// 더 갈 곳이 없는 방향(첫 구간에서 오른쪽)으로 밀면 손가락 이동의 이 비율만큼만 따라온다.
+const RUBBER_BAND = 0.25;
+// 카드가 빠져나가고/들어오는 거리(화면 폭 대비)와 시간.
+const CARD_SLIDE_RATIO = 0.35;
+const CARD_OUT_MS = 160;
+const CARD_IN_MS = 240;
+
 // 도착 파동: 도착 핀 좌표에서 반지름 0 → RIPPLE_MAX_RADIUS_M 으로 퍼지면서 옅어지는 원 두 개.
 const RIPPLE_MAX_RADIUS_M = 22;
 const RIPPLE_MAX_ALPHA = 0.28;
@@ -84,6 +104,83 @@ export default function RouteGuidanceScreen() {
   // 마지막 구간에서 "다음"을 누르면 도착한 것으로 본다. 별도 화면을 띄우지 않고 지도 위에서
   // 남은 경로를 끝까지 줄이고, 상단 카드를 도착 안내로 바꾸고, 하단에 "안내 종료" 버튼을 띄운다.
   const [hasArrived, setHasArrived] = useState(false);
+
+  // 안내 카드(move info)를 좌우로 밀어 구간을 넘긴다. 카드 틀은 고정이고 안쪽 내용만 손가락을
+  // 따라오다가, 충분히 밀거나 빠르게 튕기면 그 방향으로 빠져나가며 흐려지고, 새 구간 내용이 반대편에서 들어온다. 이전/다음
+  // 버튼도 같은 애니메이션을 탄다. 첫 구간에서 오른쪽으로 밀면 고무줄처럼 버티기만 하고, 마지막
+  // 구간에서 왼쪽으로 밀면 다음 버튼처럼 도착으로 넘어간다.
+  const { width: screenWidth } = useWindowDimensions();
+  const cardX = useSharedValue(0);
+  const cardOpacity = useSharedValue(1);
+  const enterFromRef = useRef<1 | -1 | 0>(0);
+  const slideOffset = screenWidth * CARD_SLIDE_RATIO;
+  const canGoPrev = stepIndex > 0;
+
+  // dir: 1 = 다음 구간, -1 = 이전 구간. 카드가 빠져나간 뒤 JS에서 실제로 구간을 바꾼다.
+  const commitStep = useCallback(
+    (dir: 1 | -1) => {
+      if (dir === 1 && isLastStep) {
+        // 도착 카드는 기존처럼 제자리 페이드로 뜨니 위치/투명도만 원래대로 돌려둔다.
+        cardX.value = 0;
+        cardOpacity.value = 1;
+        setHasArrived(true);
+        return;
+      }
+      enterFromRef.current = dir;
+      setStepIndex(index => index + dir);
+    },
+    [isLastStep, cardX, cardOpacity],
+  );
+
+  const slideOut = useCallback(
+    (dir: 1 | -1) => {
+      'worklet';
+      cardX.value = withTiming(-dir * slideOffset, { duration: CARD_OUT_MS, easing: Easing.in(Easing.quad) });
+      cardOpacity.value = withTiming(0, { duration: CARD_OUT_MS }, finished => {
+        if (finished) runOnJS(commitStep)(dir);
+      });
+    },
+    [cardX, cardOpacity, slideOffset, commitStep],
+  );
+
+  // 구간이 바뀌면 새 카드를 반대편에서 들여보낸다(다음 구간이면 오른쪽에서, 이전이면 왼쪽에서).
+  useEffect(() => {
+    const dir = enterFromRef.current;
+    if (!dir) return;
+    enterFromRef.current = 0;
+    cardX.value = dir * slideOffset;
+    cardX.value = withTiming(0, { duration: CARD_IN_MS, easing: Easing.out(Easing.cubic) });
+    cardOpacity.value = withTiming(1, { duration: CARD_IN_MS });
+  }, [stepIndex, cardX, cardOpacity, slideOffset]);
+
+  const cardSwipe = useMemo(
+    () =>
+      Gesture.Pan()
+        // 가로로 확실히 민 경우만 스와이프로 보고, 세로 움직임이 먼저 크면 포기한다(카드 X 버튼 탭은 그대로).
+        .activeOffsetX([-12, 12])
+        .failOffsetY([-12, 12])
+        .onUpdate(event => {
+          const x = event.translationX;
+          cardX.value = x > 0 && !canGoPrev ? x * RUBBER_BAND : x;
+          cardOpacity.value = 1 - Math.min(Math.abs(cardX.value) / screenWidth, 1) * 0.5;
+        })
+        .onEnd(event => {
+          const x = event.translationX;
+          const wantsNext = x < -SWIPE_DISTANCE || event.velocityX < -SWIPE_VELOCITY;
+          const wantsPrev = canGoPrev && (x > SWIPE_DISTANCE || event.velocityX > SWIPE_VELOCITY);
+          if (wantsNext) slideOut(1);
+          else if (wantsPrev) slideOut(-1);
+          else {
+            cardX.value = withSpring(0, { damping: 20, stiffness: 260 });
+            cardOpacity.value = withTiming(1, { duration: 150 });
+          }
+        }),
+    [canGoPrev, screenWidth, cardX, cardOpacity, slideOut],
+  );
+  const cardSwipeStyle = useAnimatedStyle(() => ({
+    opacity: cardOpacity.value,
+    transform: [{ translateX: cardX.value }],
+  }));
   // 지금 경로선/현재 위치/카메라가 향해야 할 진행 비율 — 도착하면 경로 끝(1).
   const targetProgress = hasArrived ? 1 : step.progress;
   useEffect(() => {
@@ -243,14 +340,20 @@ export default function RouteGuidanceScreen() {
             activeStepIndex={0}
           />
         ) : (
-          <MoveInfoCard
-            icon={MOVE_TYPE_ICONS[step.moveType]}
-            title={step.title}
-            durationText={step.durationText}
-            onClose={() => navigation.goBack()}
-            stepCount={DUMMY_GUIDANCE_STEPS.length}
-            activeStepIndex={stepIndex}
-          />
+          // 카드 어디를 밀어도 인식하되, 움직이는 건 카드 안 내용(contentStyle)뿐이다.
+          <GestureDetector gesture={cardSwipe}>
+            <Animated.View>
+              <MoveInfoCard
+                icon={MOVE_TYPE_ICONS[step.moveType]}
+                title={step.title}
+                durationText={step.durationText}
+                onClose={() => navigation.goBack()}
+                stepCount={DUMMY_GUIDANCE_STEPS.length}
+                activeStepIndex={stepIndex}
+                contentStyle={cardSwipeStyle}
+              />
+            </Animated.View>
+          </GestureDetector>
         )}
       </CardWrapper>
 
@@ -261,8 +364,8 @@ export default function RouteGuidanceScreen() {
       ) : (
         <StepButtonsWrapper>
           <GuidanceStepButtons
-            onPrev={() => setStepIndex(index => Math.max(0, index - 1))}
-            onNext={() => (isLastStep ? setHasArrived(true) : setStepIndex(index => index + 1))}
+            onPrev={() => canGoPrev && slideOut(-1)}
+            onNext={() => slideOut(1)}
             prevDisabled={stepIndex === 0}
           />
         </StepButtonsWrapper>
