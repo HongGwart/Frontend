@@ -21,9 +21,6 @@ interface HeaderProps {
 export default function Header({ title, subtitle, onBackPress, transparent = false }: HeaderProps) {
   return (
     <Container transparent={transparent}>
-      <BackButton onPress={onBackPress} hitSlop={8}>
-        <ChevronLeftIcon width={24} height={24} />
-      </BackButton>
       {subtitle ? (
         <TitleRow>
           <Title numberOfLines={1} style={{ flex: 0 }}>
@@ -34,6 +31,11 @@ export default function Header({ title, subtitle, onBackPress, transparent = fal
       ) : (
         <Title numberOfLines={1}>{title}</Title>
       )}
+      {/* 제목(flex: 1)이 헤더 폭 전체를 덮어서, 버튼을 먼저 그리면 제목이 위에 겹쳐 터치를
+          가로챈다. 버튼을 마지막에 그리고 z-index도 올려 항상 제목 위에서 눌리게 한다. */}
+      <BackButton onPress={onBackPress} hitSlop={8}>
+        <ChevronLeftIcon width={24} height={24} />
+      </BackButton>
     </Container>
   );
 }
@@ -49,6 +51,7 @@ const Container = styled.View<{ transparent: boolean }>`
 
 const BackButton = styled(Pressable)`
   position: absolute;
+  z-index: 1;
   left: 20px;
   width: 24px;
   height: 24px;
