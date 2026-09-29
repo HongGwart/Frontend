@@ -223,6 +223,14 @@ export default function SearchScreen() {
                 facilityCounts={DUMMY_FACILITY_COUNTS}
                 mainEntrance={DUMMY_MAIN_ENTRANCE}
                 operatingHours={DUMMY_OPERATING_HOURS}
+                onViewInsidePress={() =>
+                  navigation.navigate('BuildingIndoor', {
+                    buildingCode: selectedFacility.marker.label ?? '',
+                    buildingName: selectedFacility.marker.buildingName,
+                    description: selectedFacility.marker.description,
+                    isFavorite: selectedFacility.marker.favorite,
+                  })
+                }
               />
             ) : (
               <FacilityInfoCard

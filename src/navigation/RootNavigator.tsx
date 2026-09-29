@@ -10,6 +10,7 @@ import FacilityCategoryListScreen from '@screens/FacilityCategoryListScreen';
 import BuildingDetailScreen from '@screens/BuildingDetailScreen';
 import RouteLocationSearchScreen from '@screens/RouteLocationSearchScreen';
 import RouteGuidanceScreen from '@screens/RouteGuidanceScreen';
+import BuildingIndoorScreen from '@screens/BuildingIndoorScreen';
 import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -49,6 +50,7 @@ export default function RootNavigator() {
         여기서는 스택 자체의 전환 애니메이션을 끈다.
       */}
       <Stack.Screen name="BuildingDetail" component={BuildingDetailScreen} options={{ animation: 'none' }} />
+      <Stack.Screen name="BuildingIndoor" component={BuildingIndoorScreen} />
     </Stack.Navigator>
   );
 }

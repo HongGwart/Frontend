@@ -91,6 +91,8 @@ interface Props {
   iconSize?: number;
   /** 방 번호 라벨의 고정 폰트 크기 (확대/축소해도 안 바뀜). 생략 시 RoomLabelsLayer 기본값 */
   labelFontSize?: number;
+  /** 도면 바깥 배경색. 생략하면 흰색 (건물 내부 지도 화면은 Figma대로 회색). */
+  backgroundColor?: string;
 }
 
 export function IndoorMapView({
@@ -102,6 +104,7 @@ export function IndoorMapView({
   maxScale = 1.5,
   iconSize,
   labelFontSize = 5,
+  backgroundColor,
 }: Props) {
   const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
 
@@ -209,7 +212,7 @@ export function IndoorMapView({
   );
 
   return (
-    <View style={styles.container} onLayout={handleContainerLayout}>
+    <View style={[styles.container, backgroundColor ? { backgroundColor } : null]} onLayout={handleContainerLayout}>
       <GestureDetector gesture={composedGesture}>
         <Animated.View style={[size, styles.mapLayer, animatedStyle]}>
           <AbsoluteLayer>{renderBackground(size)}</AbsoluteLayer>
