@@ -55,6 +55,7 @@ export const semanticColors = {
     primary: commonColors.grayscale.white,
     fill: commonColors.grayscale[100],
     color: commonColors.blue[50],
+    brand: commonColors.blue[800],
   },
   button: {
     fill: commonColors.grayscale[800],

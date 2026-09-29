@@ -11,14 +11,16 @@ interface HeaderProps {
    */
   subtitle?: string;
   onBackPress?: () => void;
+  /**
+   * true면 배경을 투명하게 그린다(예: 길찾기 "경로 보기"처럼 지도가 헤더 뒤로 그대로
+   * 비쳐야 하는 화면). 기본값 false는 기존처럼 불투명한 배경 그대로.
+   */
+  transparent?: boolean;
 }
 
-export default function Header({ title, subtitle, onBackPress }: HeaderProps) {
+export default function Header({ title, subtitle, onBackPress, transparent = false }: HeaderProps) {
   return (
-    <Container>
-      <BackButton onPress={onBackPress} hitSlop={8}>
-        <ChevronLeftIcon width={24} height={24} />
-      </BackButton>
+    <Container transparent={transparent}>
       {subtitle ? (
         <TitleRow>
           <Title numberOfLines={1} style={{ flex: 0 }}>
@@ -29,24 +31,36 @@ export default function Header({ title, subtitle, onBackPress }: HeaderProps) {
       ) : (
         <Title numberOfLines={1}>{title}</Title>
       )}
+      {/* 제목(flex: 1)이 헤더 폭 전체를 덮어서, 버튼을 먼저 그리면 제목이 위에 겹쳐 터치를
+          가로챈다. 버튼을 마지막에 그리고 z-index도 올려 항상 제목 위에서 눌리게 한다. */}
+      <BackButton onPress={onBackPress} hitSlop={8}>
+        <ChevronLeftIcon width={24} height={24} />
+      </BackButton>
     </Container>
   );
 }
 
-const Container = styled.View`
+// 뒤로가기 버튼은 absolute로 항상 왼쪽 끝에서 20px(BACK_BUTTON_LEFT)에 고정되고, 제목은 좌우에
+// 버튼 자리(20 + 24 + 간격 8 = 52px)만큼 여백을 둔 영역 안에서 가운데 정렬된다 — Figma 헤더의 제목
+// 최대 폭 271px(375 − 52×2)과 같고, 제목이 길어도 버튼 밑으로 파고들지 않는다.
+const BACK_BUTTON_LEFT = 20;
+const BACK_BUTTON_SIZE = 24;
+const TITLE_SIDE_INSET = BACK_BUTTON_LEFT + BACK_BUTTON_SIZE + 8;
+
+const Container = styled.View<{ transparent: boolean }>`
   flex-direction: row;
   align-items: center;
-  gap: 12px;
   height: 56px;
-  padding-horizontal: 20px;
-  background-color: ${({ theme }) => theme.semantic.background.primary};
+  padding-horizontal: ${TITLE_SIDE_INSET}px;
+  background-color: ${({ theme, transparent }) => (transparent ? 'transparent' : theme.semantic.background.primary)};
 `;
 
 const BackButton = styled(Pressable)`
   position: absolute;
-  left: 20px;
-  width: 24px;
-  height: 24px;
+  z-index: 1;
+  left: ${BACK_BUTTON_LEFT}px;
+  width: ${BACK_BUTTON_SIZE}px;
+  height: ${BACK_BUTTON_SIZE}px;
   align-items: center;
   justify-content: center;
 `;
@@ -70,7 +84,9 @@ const TitleRow = styled.View`
   justify-content: center;
 `;
 
+// 코드+명칭이 길어 271px를 넘으면 코드(title)는 그대로 두고 명칭(subtitle)만 줄여서 말줄임(…)한다(Figma와 같음).
 const Subtitle = styled(Title)`
   flex: 0;
+  flex-shrink: 1;
   color: ${({ theme }) => theme.semantic.text.tertiary};
 `;

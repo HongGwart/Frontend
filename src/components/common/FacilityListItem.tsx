@@ -27,6 +27,12 @@ interface Props {
   /** 아이템 사이 구분선을 보여줄지 (리스트 마지막 아이템은 보통 false) */
   showDivider?: boolean;
   onPress?: () => void;
+  /**
+   * true면 온보딩 검색 목업(Figma 1252:43042/43043)처럼 ~0.685배 축소 크기로 그린다
+   * (패딩 10.956px/13.695px, 아바타 24.652px, 폰트 10.96px/9.59px 등). 기본값 false는
+   * 앱 전역에서 쓰는 원래 크기 그대로.
+   */
+  compact?: boolean;
 }
 
 /**
@@ -48,11 +54,14 @@ export function FacilityListItem({
   images,
   showDivider = true,
   onPress,
+  compact = false,
 }: Props) {
   const theme = useTheme();
   // Pressable의 style-as-function은 styled-components를 거치면서 못 쓰게 되므로,
   // 누르고 있는 동안의 배경(background_fill) 전환은 직접 상태로 들고 있는다.
   const [isPressed, setIsPressed] = useState(false);
+  const resolvedIconWidth = compact ? 13 : iconWidth;
+  const resolvedIconHeight = compact ? 13 : iconHeight;
 
   return (
     <Container
@@ -61,105 +70,118 @@ export function FacilityListItem({
       onPressOut={() => setIsPressed(false)}
       pressed={isPressed}
       showDivider={showDivider}
+      compact={compact}
     >
-      <TitleSection>
-        <IconAvatar emphasized={emphasized}>
-          <Icon width={iconWidth} height={iconHeight} color={emphasized ? theme.semantic.text.white : theme.blue[500]} />
+      <TitleSection compact={compact}>
+        <IconAvatar emphasized={emphasized} compact={compact}>
+          <Icon
+            width={resolvedIconWidth}
+            height={resolvedIconHeight}
+            color={emphasized ? theme.semantic.text.white : theme.blue[500]}
+          />
         </IconAvatar>
-        <TextBlock>
-          <TitleRow>
-            <NameGroup>
-              <BuildingText>{building}</BuildingText>
-              <PlaceText>{place}</PlaceText>
+        <TextBlock compact={compact}>
+          <TitleRow compact={compact}>
+            <NameGroup compact={compact}>
+              <BuildingText compact={compact}>{building}</BuildingText>
+              <PlaceText compact={compact}>{place}</PlaceText>
             </NameGroup>
-            {room && <RoomText numberOfLines={1}>{room}</RoomText>}
-            <FavoriteToggle isFavorite={isFavorite} onPress={onToggleFavorite} />
+            {room && (
+              <RoomText compact={compact} numberOfLines={1}>
+                {room}
+              </RoomText>
+            )}
+            <FavoriteToggle isFavorite={isFavorite} onPress={onToggleFavorite} size={compact ? 16 : undefined} />
           </TitleRow>
-          <DescriptionText numberOfLines={1}>{description}</DescriptionText>
+          <DescriptionText compact={compact} numberOfLines={1}>
+            {description}
+          </DescriptionText>
         </TextBlock>
       </TitleSection>
 
-      {images && <FacilityImagePair images={images} />}
+      {images && <FacilityImagePair images={images} compact={compact} height={compact ? 68.477 : 100} />}
     </Container>
   );
 }
 
-const Container = styled(Pressable)<{ pressed: boolean; showDivider: boolean }>`
+const Container = styled(Pressable)<{ pressed: boolean; showDivider: boolean; compact: boolean }>`
   width: 100%;
-  padding: 16px 20px 20px;
-  gap: 16px;
+  padding: ${({ compact }) => (compact ? '10.956px 13.695px 13.695px' : '16px 20px 20px')};
+  gap: ${({ compact }) => (compact ? '10.956px' : '16px')};
   background-color: ${({ theme, pressed }) => (pressed ? theme.semantic.background.fill : 'transparent')};
-  border-bottom-width: ${({ showDivider }) => (showDivider ? '1px' : '0px')};
+  border-bottom-width: ${({ showDivider, compact }) => (showDivider ? (compact ? '0.685px' : '1px') : '0px')};
   border-bottom-color: ${({ theme }) => theme.semantic.line.tertiary};
 `;
 
-const TitleSection = styled.View`
+const TitleSection = styled.View<{ compact: boolean }>`
   flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: ${({ compact }) => (compact ? '8.217px' : '12px')};
   width: 100%;
 `;
 
-const IconAvatar = styled.View<{ emphasized: boolean }>`
-  width: 36px;
-  height: 36px;
+const IconAvatar = styled.View<{ emphasized: boolean; compact: boolean }>`
+  width: ${({ compact }) => (compact ? '24.652px' : '36px')};
+  height: ${({ compact }) => (compact ? '24.652px' : '36px')};
   align-items: center;
   justify-content: center;
   border-radius: 100px;
   background-color: ${({ theme, emphasized }) => (emphasized ? theme.blue[500] : theme.semantic.background.color)};
 `;
 
-const TextBlock = styled.View`
+const TextBlock = styled.View<{ compact: boolean }>`
   flex: 1;
-  gap: 2px;
+  gap: ${({ compact }) => (compact ? '1.37px' : '2px')};
 `;
 
-const TitleRow = styled.View`
+const TitleRow = styled.View<{ compact: boolean }>`
   flex-direction: row;
   align-items: center;
   /* NameGroup(S동-학생회관 사이 2px)의 2배: 학생회관-동아리방 사이는 4px */
-  gap: 4px;
+  gap: ${({ compact }) => (compact ? '2.739px' : '4px')};
   width: 100%;
   /* room이 있으면 RoomText(flex:1)가 이미 남는 공간을 채워서 즐겨찾기를 끝으로 밀어내지만,
      room이 없는(emphasized 건물 항목 등) 경우엔 밀어줄 요소가 없어서 이걸로 대신 처리한다. */
   justify-content: space-between;
 `;
 
-const NameGroup = styled.View`
+const NameGroup = styled.View<{ compact: boolean }>`
   flex-direction: row;
   align-items: center;
-  gap: 2px;
+  gap: ${({ compact }) => (compact ? '1.37px' : '2px')};
   flex-shrink: 0;
 `;
 
-const textStyle = css`
+const textStyle = css<{ compact: boolean }>`
   font-family: ${({ theme }) => theme.typography.bodyNormal.medium.fontFamily};
-  font-size: ${({ theme }) => theme.typography.bodyNormal.medium.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.bodyNormal.medium.lineHeight}px;
-  letter-spacing: ${({ theme }) => theme.typography.bodyNormal.medium.letterSpacing}px;
+  font-size: ${({ compact, theme }) => (compact ? '10.96px' : `${theme.typography.bodyNormal.medium.fontSize}px`)};
+  line-height: ${({ compact, theme }) => (compact ? '16.44px' : `${theme.typography.bodyNormal.medium.lineHeight}px`)};
+  letter-spacing: ${({ compact, theme }) =>
+    compact ? '-0.2192px' : `${theme.typography.bodyNormal.medium.letterSpacing}px`};
 `;
 
-const BuildingText = styled.Text`
+const BuildingText = styled.Text<{ compact: boolean }>`
   ${textStyle}
   color: ${({ theme }) => theme.semantic.text.primary};
 `;
 
-const PlaceText = styled.Text`
+const PlaceText = styled.Text<{ compact: boolean }>`
   ${textStyle}
   color: ${({ theme }) => theme.semantic.text.tertiary};
 `;
 
-const RoomText = styled.Text`
+const RoomText = styled.Text<{ compact: boolean }>`
   ${textStyle}
   flex: 1;
   color: ${({ theme }) => theme.semantic.text.primary};
 `;
 
-const DescriptionText = styled.Text`
+const DescriptionText = styled.Text<{ compact: boolean }>`
   font-family: ${({ theme }) => theme.typography.labelNormal.medium.fontFamily};
-  font-size: ${({ theme }) => theme.typography.labelNormal.medium.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.labelNormal.medium.lineHeight}px;
-  letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
+  font-size: ${({ compact, theme }) => (compact ? '9.59px' : `${theme.typography.labelNormal.medium.fontSize}px`)};
+  line-height: ${({ compact, theme }) => (compact ? '14.39px' : `${theme.typography.labelNormal.medium.lineHeight}px`)};
+  letter-spacing: ${({ compact, theme }) =>
+    compact ? '-0.1918px' : `${theme.typography.labelNormal.medium.letterSpacing}px`};
   color: ${({ theme }) => theme.semantic.text.secondary};
 `;
 

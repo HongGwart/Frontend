@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled, { useTheme } from 'styled-components/native';
@@ -49,20 +49,39 @@ export function BuildingDetailHeader({ buildingCode, onBack }: { buildingCode: s
 export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
   const insets = useSafeAreaInsets();
 
-  const dongMarker = DUMMY_MAP_MARKERS.find(marker => marker.label === buildingCode);
-  const facilities = DUMMY_CATEGORY_MARKERS.filter(marker => marker.buildingCode === buildingCode);
+  // buildingCode가 바뀔 때만 다시 계산한다 — 즐겨찾기 토글처럼 buildingCode와
+  // 무관한 상태 변화로 리렌더될 때마다 정적 더미 배열을 다시 find/filter/그룹핑하지
+  // 않도록 memo화했다.
+  const dongMarker = useMemo(
+    () => DUMMY_MAP_MARKERS.find(marker => marker.label === buildingCode),
+    [buildingCode],
+  );
+  const facilities = useMemo(
+    () => DUMMY_CATEGORY_MARKERS.filter(marker => marker.buildingCode === buildingCode),
+    [buildingCode],
+  );
 
   // 마커 즐겨찾기와 마찬가지로, 실제 연동 전까지 이 컴포넌트 로컬에서만 토글 상태를 들고
   // 있는다(MapScreen의 favoriteOverrides와 같은 패턴).
   const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
-  const toggleFavorite = (id: string, current: boolean) => {
-    setFavoriteOverrides(prev => ({ ...prev, [id]: !current }));
-  };
+  // id만 받는 안정적인 참조로 둬서(마커별로 map 콜백 안에서 새 화살표 함수를 만들어
+  // 넘기지 않아도 되게) BuildingFacilityCard의 React.memo가 실제로 효과를 본다. 뒤집을
+  // 기준값은 override가 있으면 그걸, 없으면 원래 마커의 favorite을 그때그때 찾아 쓴다.
+  const toggleFavorite = useCallback(
+    (id: string) => {
+      const marker = DUMMY_CATEGORY_MARKERS.find(item => item.id === id);
+      setFavoriteOverrides(prev => ({ ...prev, [id]: !(prev[id] ?? marker?.favorite ?? false) }));
+    },
+    [],
+  );
 
-  const rows: (typeof facilities)[] = [];
-  for (let i = 0; i < facilities.length; i += GRID_COLUMNS) {
-    rows.push(facilities.slice(i, i + GRID_COLUMNS));
-  }
+  const rows = useMemo(() => {
+    const grouped: (typeof facilities)[] = [];
+    for (let i = 0; i < facilities.length; i += GRID_COLUMNS) {
+      grouped.push(facilities.slice(i, i + GRID_COLUMNS));
+    }
+    return grouped;
+  }, [facilities]);
 
   if (!dongMarker) {
     return (
@@ -108,13 +127,14 @@ export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
                     return (
                       <BuildingFacilityCard
                         key={marker.id}
+                        id={marker.id}
                         photo={marker.images?.[0]}
                         icon={CATEGORY_MARKER_ICONS[marker.category].icon}
                         title={marker.room}
                         isOpen={DUMMY_OPERATING_HOURS.isOpen}
                         statusText={DUMMY_OPERATING_HOURS.statusText}
                         isFavorite={isFavorite}
-                        onToggleFavorite={() => toggleFavorite(marker.id, isFavorite)}
+                        onToggleFavorite={toggleFavorite}
                       />
                     );
                   })}
@@ -128,7 +148,8 @@ export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
       </ScrollView>
 
       <CtaBar style={{ paddingBottom: insets.bottom + 8 }}>
-        <Button label="건물 내부 보기" icon={BuildingViewIcon} iconWidth={17} iconHeight={18} onPress={() => {}} />
+        {/* 실내 지도 화면이 아직 없어서, 지금은 눌러도 아무 일도 없는 대신 비활성화해둔다. */}
+        <Button label="건물 내부 보기" icon={BuildingViewIcon} iconWidth={17} iconHeight={18} disabled />
       </CtaBar>
     </Container>
   );

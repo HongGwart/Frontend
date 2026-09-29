@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle } from 'react';
+import React, { forwardRef, useCallback, useImperativeHandle, useLayoutEffect, useMemo, useRef } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -6,12 +6,12 @@ import Animated, {
   Easing,
   SharedValue,
   SlideInDown,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 export interface DismissibleBottomSheetRef {
   /** 제스처 없이도(예: 배경 탭) 같은 슬라이드다운 애니메이션으로 닫고 싶을 때 호출한다 */
@@ -80,47 +80,72 @@ export const DismissibleBottomSheet = forwardRef<DismissibleBottomSheetRef, Prop
     const translateY = externalTranslateY ?? internalTranslateY;
     const sheetHeight = useSharedValue(0);
 
-    const animateClose = () => {
+    // 부모는 onClose/onSwipeUp을 보통 인라인 화살표로 넘겨서 렌더마다 새 함수가 온다. 그걸 그대로
+    // 의존값에 넣으면 아래 pan이 매 렌더 다시 만들어져 메모이즈가 의미 없어지므로, 최신 콜백은
+    // ref로 들고 있고 워클릿에는 항상 같은 함수(callOnClose/callOnSwipeUp)만 넘긴다.
+    const onCloseRef = useRef(onClose);
+    const onSwipeUpRef = useRef(onSwipeUp);
+    useLayoutEffect(() => {
+      onCloseRef.current = onClose;
+      onSwipeUpRef.current = onSwipeUp;
+    });
+    const callOnClose = useCallback(() => onCloseRef.current(), []);
+    const callOnSwipeUp = useCallback(() => onSwipeUpRef.current?.(), []);
+    // 콜백 자체가 아니라 "있느냐 없느냐"만 제스처 설정(activeOffsetY 등)에 영향을 준다.
+    const canSwipeUp = !!onSwipeUp;
+
+    // 워클릿이라 제스처 onEnd(UI 스레드)에서 JS 스레드를 거치지 않고 바로 호출된다.
+    // ref.close()처럼 JS 스레드에서 불러도 그대로 동작한다.
+    const animateClose = useCallback(() => {
+      'worklet';
       // 화면 밖으로 완전히 나갈 때까지는 최소한 sheetHeight만큼(모르면 넉넉히 1000) 더 내려가야 한다.
       const target = Math.max(sheetHeight.value || 1000, translateY.value + 400);
       translateY.value = withTiming(target, { duration: 220, easing: Easing.in(Easing.cubic) }, finished => {
-        if (finished) runOnJS(onClose)();
+        if (finished) scheduleOnRN(callOnClose);
       });
-    };
+    }, [callOnClose, sheetHeight, translateY]);
 
     // animateClose와 대칭 — 화면 위로 완전히 나갈 때까지 밀어올린 뒤 onSwipeUp을 호출한다.
     // onClose처럼 이 시점에 언마운트시키는 건 호출하는 쪽(onSwipeUp) 책임이다.
-    const animateSwipeUp = () => {
+    const animateSwipeUp = useCallback(() => {
+      'worklet';
       const requiredMagnitude = minSwipeUpDistance ?? (sheetHeight.value || 1000);
       const target = Math.min(-requiredMagnitude, translateY.value - 400);
       translateY.value = withTiming(target, { duration: 220, easing: Easing.in(Easing.cubic) }, finished => {
-        if (finished && onSwipeUp) runOnJS(onSwipeUp)();
+        if (finished) scheduleOnRN(callOnSwipeUp);
       });
-    };
+    }, [callOnSwipeUp, minSwipeUpDistance, sheetHeight, translateY]);
 
-    useImperativeHandle(ref, () => ({ close: animateClose }));
+    useImperativeHandle(ref, () => ({ close: animateClose }), [animateClose]);
 
-    const pan = Gesture.Pan()
-      // 단일 양수(10)를 주면 아래쪽으로만 10px 이상 움직여야 활성화된다 — onSwipeUp을
-      // 지원하는 카드는 위로도 끌 수 있어야 하니 양방향([-10, 10])으로 열어준다.
-      .activeOffsetY(onSwipeUp ? [-10, 10] : 10)
-      .failOffsetX([-15, 15])
-      .onUpdate(event => {
-        // onSwipeUp이 있을 때만 위로 끌어올리는 걸 허용한다 — 없으면 기존처럼 0에서 막는다.
-        translateY.value = onSwipeUp ? event.translationY : Math.max(0, event.translationY);
-      })
-      .onEnd(event => {
-        const shouldDismiss = event.translationY > DISMISS_DISTANCE || event.velocityY > DISMISS_VELOCITY;
-        const shouldSwipeUp =
-          onSwipeUp && (event.translationY < -SWIPE_UP_DISTANCE || event.velocityY < SWIPE_UP_VELOCITY);
-        if (shouldDismiss) {
-          runOnJS(animateClose)();
-        } else if (shouldSwipeUp) {
-          runOnJS(animateSwipeUp)();
-        } else {
-          translateY.value = withSpring(0, { damping: 22, stiffness: 320 });
-        }
-      });
+    // Gesture.Pan()을 매 렌더마다 새로 만들면, 드래그 중(손가락이 아직 화면에 붙어있는
+    // 동안) 부모가 리렌더될 때 GestureDetector가 핸들러를 뗐다 다시 붙이면서 진행 중인
+    // 제스처가 끊길 수 있다 — 의존값이 실제로 바뀔 때만 다시 만들도록 메모이즈한다.
+    const pan = useMemo(
+      () =>
+        Gesture.Pan()
+          // 단일 양수(10)를 주면 아래쪽으로만 10px 이상 움직여야 활성화된다 — onSwipeUp을
+          // 지원하는 카드는 위로도 끌 수 있어야 하니 양방향([-10, 10])으로 열어준다.
+          .activeOffsetY(canSwipeUp ? [-10, 10] : 10)
+          .failOffsetX([-15, 15])
+          .onUpdate(event => {
+            // onSwipeUp이 있을 때만 위로 끌어올리는 걸 허용한다 — 없으면 기존처럼 0에서 막는다.
+            translateY.value = canSwipeUp ? event.translationY : Math.max(0, event.translationY);
+          })
+          .onEnd(event => {
+            const shouldDismiss = event.translationY > DISMISS_DISTANCE || event.velocityY > DISMISS_VELOCITY;
+            const shouldSwipeUp =
+              canSwipeUp && (event.translationY < -SWIPE_UP_DISTANCE || event.velocityY < SWIPE_UP_VELOCITY);
+            if (shouldDismiss) {
+              animateClose();
+            } else if (shouldSwipeUp) {
+              animateSwipeUp();
+            } else {
+              translateY.value = withSpring(0, { damping: 22, stiffness: 320 });
+            }
+          }),
+      [canSwipeUp, translateY, animateClose, animateSwipeUp],
+    );
 
     const animatedStyle = useAnimatedStyle(() => ({
       transform: [{ translateY: translateY.value }],

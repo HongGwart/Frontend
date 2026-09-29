@@ -1,4 +1,4 @@
-import React, { Children, Fragment, cloneElement, isValidElement, useCallback, useMemo, useState } from 'react';
+import React, { Children, Fragment, cloneElement, isValidElement, useCallback, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
@@ -91,6 +91,8 @@ interface Props {
   iconSize?: number;
   /** 방 번호 라벨의 고정 폰트 크기 (확대/축소해도 안 바뀜). 생략 시 RoomLabelsLayer 기본값 */
   labelFontSize?: number;
+  /** 도면 바깥 배경색. 생략하면 흰색 (건물 내부 지도 화면은 Figma대로 회색). */
+  backgroundColor?: string;
 }
 
 export function IndoorMapView({
@@ -102,6 +104,7 @@ export function IndoorMapView({
   maxScale = 1.5,
   iconSize,
   labelFontSize = 5,
+  backgroundColor,
 }: Props) {
   const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
 
@@ -144,27 +147,36 @@ export function IndoorMapView({
     return { minX, minY, width: maxX - minX, height: maxY - minY };
   }, [mapData.rooms, mapData.icons, mapData.width, mapData.height]);
 
+  // onRoomSelect(부모 setState)를 setSelectedRoomIds의 updater 안에서 부르면 "다른 컴포넌트를
+  // 렌더링하는 도중 업데이트" 에러가 난다. 현재 선택은 ref로 읽고, 부모 알림은 updater 밖에서 한다.
+  const selectedRoomIdsRef = useRef(selectedRoomIds);
+  selectedRoomIdsRef.current = selectedRoomIds;
+  // 부모가 onRoomSelect를 인라인 화살표로 넘기면 렌더마다 handleMapTap이 바뀌고, 그러면
+  // useMapGestures의 제스처도 매번 다시 만들어진다. 최신 콜백은 ref로 읽어서 handleMapTap을 고정한다.
+  const onRoomSelectRef = useRef(onRoomSelect);
+  onRoomSelectRef.current = onRoomSelect;
+
   const handleMapTap = useCallback(
     (room: RoomShape | null) => {
-      setSelectedRoomIds((prev) => {
-        // 빈 공간을 탭하면 room이 null로 들어와서 무조건 선택 해제.
-        // 이미 선택된 방을 다시 탭하면 토글 해제, 다른 방을 탭하면 그 방으로 교체.
-        // 같은 라벨(room.label ?? room.id)을 공유하는 방이 여러 개 있으면(하나의 강의실이
-        // 도면상 두 조각으로 나뉜 경우 등) 전부 같이 선택해서 한 번에 하이라이트한다.
-        const wasSelected = room && prev.includes(room.id);
-        if (!room || wasSelected) {
-          if (prev.length > 0) onRoomSelect?.(null);
-          return [];
-        }
-        const targetLabel = room.label ?? room.id;
-        const group = selectableRooms
-          .filter((r) => (r.label ?? r.id) === targetLabel)
-          .map((r) => r.id);
-        onRoomSelect?.(room);
-        return group;
-      });
+      // 빈 공간을 탭하면 room이 null로 들어와서 무조건 선택 해제.
+      // 이미 선택된 방을 다시 탭하면 토글 해제, 다른 방을 탭하면 그 방으로 교체.
+      // 같은 라벨(room.label ?? room.id)을 공유하는 방이 여러 개 있으면(하나의 강의실이
+      // 도면상 두 조각으로 나뉜 경우 등) 전부 같이 선택해서 한 번에 하이라이트한다.
+      const prev = selectedRoomIdsRef.current;
+      const wasSelected = room && prev.includes(room.id);
+      if (!room || wasSelected) {
+        if (prev.length > 0) onRoomSelectRef.current?.(null);
+        setSelectedRoomIds([]);
+        return;
+      }
+      const targetLabel = room.label ?? room.id;
+      const group = selectableRooms
+        .filter((r) => (r.label ?? r.id) === targetLabel)
+        .map((r) => r.id);
+      onRoomSelectRef.current?.(room);
+      setSelectedRoomIds(group);
     },
-    [onRoomSelect, selectableRooms]
+    [selectableRooms]
   );
 
   // 긴 변이 MAX_RENDER_DP를 넘는 층만 축소해서 그린다 (대부분의 층은 1을 넘지 않으므로 그대로).
@@ -209,7 +221,7 @@ export function IndoorMapView({
   );
 
   return (
-    <View style={styles.container} onLayout={handleContainerLayout}>
+    <View style={[styles.container, backgroundColor ? { backgroundColor } : null]} onLayout={handleContainerLayout}>
       <GestureDetector gesture={composedGesture}>
         <Animated.View style={[size, styles.mapLayer, animatedStyle]}>
           <AbsoluteLayer>{renderBackground(size)}</AbsoluteLayer>

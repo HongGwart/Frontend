@@ -2,11 +2,16 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabNavigator from './MainTabNavigator';
+import OnboardingScreen from '@screens/OnboardingScreen';
 import SearchScreen from '@screens/SearchScreen';
 import FavoriteListScreen from '@screens/FavoriteListScreen';
 import DepartureSettingScreen from '@screens/DepartureSettingScreen';
 import FacilityCategoryListScreen from '@screens/FacilityCategoryListScreen';
 import BuildingDetailScreen from '@screens/BuildingDetailScreen';
+import NavigationScreen from '@screens/NavigationScreen';
+import RouteLocationSearchScreen from '@screens/RouteLocationSearchScreen';
+import RouteGuidanceScreen from '@screens/RouteGuidanceScreen';
+import BuildingIndoorScreen from '@screens/BuildingIndoorScreen';
 import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -18,8 +23,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  */
 export default function RootNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+    <Stack.Navigator initialRouteName="Onboarding" screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ animation: 'none' }} />
+      {/* 온보딩에서 넘어올 때 옆에서 슬라이드해 들어오는 기본 애니메이션을 잠시 끔. */}
+      <Stack.Screen name="MainTabs" component={MainTabNavigator} options={{ animation: 'none' }} />
       <Stack.Screen
         name="Search"
         component={SearchScreen}
@@ -34,6 +41,14 @@ export default function RootNavigator() {
       />
       <Stack.Screen name="FavoriteList" component={FavoriteListScreen} />
       <Stack.Screen name="DepartureSetting" component={DepartureSettingScreen} />
+      {/*
+        길찾기는 탭이 아니라 여기 루트 스택에 푸시되는 화면이다 — native-stack의 기본
+        gestureEnabled(iOS 스와이프 백)를 그대로 쓰면, 밀 때 실제로 살아있는 이전 화면(map 탭 등)이
+        애플뮤직처럼 실시간으로 비친다. 탭으로 두면 화면이 늘 마운트돼 있어서 이 효과를 낼 수 없었다.
+      */}
+      <Stack.Screen name="Navigation" component={NavigationScreen} />
+      <Stack.Screen name="RouteLocationSearch" component={RouteLocationSearchScreen} />
+      <Stack.Screen name="RouteGuidance" component={RouteGuidanceScreen} />
       <Stack.Screen name="FacilityCategoryList" component={FacilityCategoryListScreen} />
       {/*
         시설 정보 카드를 위로 슬라이드하면 뜨는 화면이라, 화면 전체가 밑에서 올라오는
@@ -42,6 +57,16 @@ export default function RootNavigator() {
         여기서는 스택 자체의 전환 애니메이션을 끈다.
       */}
       <Stack.Screen name="BuildingDetail" component={BuildingDetailScreen} options={{ animation: 'none' }} />
+      {/*
+        건물 카드의 "건물 내부 보기"에서 넘어오는 화면이라, 옆에서 통째로 밀려 들어오면 카드가 옆으로
+        같이 움직여 끊겨 보인다. 대신 제자리에서 크로스페이드하고, 카드는 BuildingIndoorScreen 안에서
+        바깥 카드 자리부터 이어서 내려앉게 한다. (Search와 같은 이유로 안드로이드는 애니메이션을 끈다.)
+      */}
+      <Stack.Screen
+        name="BuildingIndoor"
+        component={BuildingIndoorScreen}
+        options={Platform.OS === 'ios' ? { animation: 'fade', animationDuration: 200 } : { animation: 'none' }}
+      />
     </Stack.Navigator>
   );
 }

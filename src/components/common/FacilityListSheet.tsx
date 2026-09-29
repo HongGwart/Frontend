@@ -4,6 +4,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import styled from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
 import { FacilityListItem } from './FacilityListItem';
+import { BottomFade, ShadowBottomClip } from './ShadowBottomClip';
 
 // fillHeight가 아닐 때(부모가 높이를 고정해주지 않을 때)를 위한 fallback 상한선.
 // 화면 높이의 70%를 넘어가면 스크롤되게 한다. DismissibleBottomSheet가 이 시트를 스와이프로
@@ -38,16 +39,28 @@ interface Props {
    * 기본값(false)은 기존처럼 내용물 크기대로 커지다가 화면 70% 지점부터 스크롤된다.
    */
   fillHeight?: boolean;
+  /**
+   * true면 온보딩 검색 목업(Figma 1252:43041)처럼 ~0.685배 축소 크기로 그린다. items의
+   * 각 FacilityListItem과 그라버에도 그대로 전달된다.
+   */
+  compact?: boolean;
 }
 
 /**
  * 숫자 배지가 붙은(군집된) 마커를 탭했을 때 뜨는, 건물/시설 여러 개를 나열하는 바텀시트.
  * Figma "facility list"(716:2935, 811:6250). 그래버 + FacilityListItem 목록으로만 구성된다.
  */
-export function FacilityListSheet({ items, onSelectItem, onToggleFavorite, renderItem, fillHeight }: Props) {
-  return (
-    <Container style={fillHeight ? styles.fillContainer : undefined}>
-      <Grabber />
+export function FacilityListSheet({
+  items,
+  onSelectItem,
+  onToggleFavorite,
+  renderItem,
+  fillHeight,
+  compact = false,
+}: Props) {
+  const content = (
+    <Container style={fillHeight ? styles.fillContainer : undefined} compact={compact}>
+      <Grabber compact={compact} />
       <ScrollView
         style={fillHeight ? styles.scrollViewFill : styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -66,12 +79,17 @@ export function FacilityListSheet({ items, onSelectItem, onToggleFavorite, rende
               showDivider={index !== items.length - 1}
               onPress={() => onSelectItem?.(item)}
               onToggleFavorite={() => onToggleFavorite?.(item)}
+              compact={compact}
             />
           ),
         )}
       </ScrollView>
+      {compact && <BottomFade pointerEvents="none" />}
     </Container>
   );
+
+  if (!compact) return content;
+  return <ShadowBottomClip spread={SHADOW_CLIP_SPREAD_PX}>{content}</ShadowBottomClip>;
 }
 
 // 기본 렌더러를 분리해두면 renderItem prop으로 다른 카드 컴포넌트로도 쉽게 바꿔 쓸 수 있다.
@@ -80,11 +98,13 @@ function DefaultFacilityListItem({
   showDivider,
   onPress,
   onToggleFavorite,
+  compact,
 }: {
   item: FacilityListSheetItem;
   showDivider: boolean;
   onPress: () => void;
   onToggleFavorite: () => void;
+  compact: boolean;
 }) {
   return (
     <FacilityListItem
@@ -101,29 +121,34 @@ function DefaultFacilityListItem({
       showDivider={showDivider}
       onPress={onPress}
       onToggleFavorite={onToggleFavorite}
+      compact={compact}
     />
   );
 }
 
-const Container = styled.View`
+const Container = styled.View<{ compact: boolean }>`
   width: 100%;
   background-color: ${({ theme }) => theme.semantic.background.primary};
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
+  border-top-left-radius: ${({ compact }) => (compact ? '10.956px' : '16px')};
+  border-top-right-radius: ${({ compact }) => (compact ? '10.956px' : '16px')};
   align-items: center;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  gap: 16px;
+  padding-top: ${({ compact }) => (compact ? '5.478px' : '8px')};
+  padding-bottom: ${({ compact }) => (compact ? '5.478px' : '8px')};
+  gap: ${({ compact }) => (compact ? '10.956px' : '16px')};
+  /* compact(온보딩 검색 목업)만 Figma box-shadow 적용: 0 -2.739px 20px 0 rgba(0,0,0,0.10) —
+     FacilityInfoCard와 같은 이유로 radius가 40px로 과하게 커져 있던 걸 20px로 맞춘다. */
   shadow-color: #000;
-  shadow-offset: 0px -4px;
-  shadow-opacity: 0.05;
+  shadow-offset: 0px ${({ compact }) => (compact ? '-2.739px' : '-4px')};
+  shadow-opacity: ${({ compact }) => (compact ? 0.1 : 0.05)};
   shadow-radius: 20px;
   elevation: 8;
 `;
 
-const Grabber = styled.View`
-  width: 36px;
-  height: 4px;
+const SHADOW_CLIP_SPREAD_PX = 40;
+
+const Grabber = styled.View<{ compact: boolean }>`
+  width: ${({ compact }) => (compact ? '24.652px' : '36px')};
+  height: ${({ compact }) => (compact ? '2.739px' : '4px')};
   border-radius: 100px;
   background-color: ${({ theme }) => theme.semantic.line.primary};
 `;

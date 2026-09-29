@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -9,6 +9,8 @@ import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map
 import SearchIcon from '@assets/svgs/icons/search.svg';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
+import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
+import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
@@ -99,10 +101,15 @@ export default function SearchScreen() {
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
   const mapViewRef = useRef<NaverMapViewRef>(null);
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
+  // "건물 내부 보기"로 넘어가면 내부 지도 화면이 이 화면을 완전히 덮은 뒤 카드를 조용히 닫는다(MapScreen과 같음).
+  const closeFacilityCard = useCallback(() => setSelectedFacility(null), []);
+  const closeCardWhenCovered = useCloseWhenCovered(navigation, closeFacilityCard);
+  // 카드의 출발/도착 → 길찾기 탭으로 가서 입력창을 채운다(검색 화면은 스택에서 빠지며 같이 닫힌다).
+  const routeButtonProps = useRouteButtonProps();
 
   // 마커가 시설 카드에 가리지 않도록, 검색창+카테고리 칩 아래쪽 끝과 시설 카드 위쪽 끝
   // 사이의 세로 중앙에 마커가 오도록 카메라를 옮긴다(MapScreen과 공유하는 훅).
-  const { handleChipsAreaLayout: handleTopOverlayLayout, handleFacilityCardLayout } =
+  const { cardHeight, handleChipsAreaLayout: handleTopOverlayLayout, handleFacilityCardLayout } =
     useFacilityCardCameraFocus(mapViewRef, selectedFacility?.marker ?? null);
   // 지도 모드 상단 카테고리 칩. 실제 마커 필터링과의 연결 없이 Figma와 동일한 UI만 우선 갖춘다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
@@ -111,19 +118,23 @@ export default function SearchScreen() {
   // 시설 카드를 위로 슬라이드하면 그 건물의 상세보기로 넘어간다. MapScreen과 동일한
   // 인터랙션 — 애니메이션 묶음은 훅으로 공유하고, buildingCode를 뽑아내는 부분만 이
   // 화면의 SelectedFacility 모양(dong/category 둘뿐)에 맞춰 여기 남겨둔다.
-  const swipeUpBuildingCode = selectedFacility
-    ? selectedFacility.type === 'dong'
-      ? (selectedFacility.marker.label ?? null)
-      : selectedFacility.marker.buildingCode
-    : null;
+  const swipeUpBuildingCode = useMemo(
+    () =>
+      selectedFacility
+        ? selectedFacility.type === 'dong'
+          ? (selectedFacility.marker.label ?? null)
+          : selectedFacility.marker.buildingCode
+        : null,
+    [selectedFacility],
+  );
 
-  const handleSwipeUp = () => {
+  const handleSwipeUp = useCallback(() => {
     if (!swipeUpBuildingCode) return;
     navigation.navigate('BuildingDetail', { buildingCode: swipeUpBuildingCode });
     // animateClose와 마찬가지로 슬라이드업 애니메이션이 끝난 뒤 호출되므로 여기서 바로
     // 닫아도 끊겨 보이지 않는다.
     setSelectedFacility(null);
-  };
+  }, [swipeUpBuildingCode, navigation]);
 
   const {
     swipeCardTranslateY,
@@ -216,10 +227,22 @@ export default function SearchScreen() {
                 description={selectedFacility.marker.description}
                 isFavorite={selectedFacility.marker.favorite}
                 images={selectedFacility.marker.images}
+                {...routeButtonProps(
+                  toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
+                )}
                 facilityCounts={DUMMY_FACILITY_COUNTS}
                 mainEntrance={DUMMY_MAIN_ENTRANCE}
                 operatingHours={DUMMY_OPERATING_HOURS}
-                onViewInsidePress={() => {}}
+                onViewInsidePress={() => {
+                  closeCardWhenCovered();
+                  navigation.navigate('BuildingIndoor', {
+                    buildingCode: selectedFacility.marker.label ?? '',
+                    buildingName: selectedFacility.marker.buildingName,
+                    description: selectedFacility.marker.description,
+                    isFavorite: selectedFacility.marker.favorite,
+                    fromCardHeight: cardHeight,
+                  });
+                }}
               />
             ) : (
               <FacilityInfoCard
@@ -229,8 +252,14 @@ export default function SearchScreen() {
                 facilityName={selectedFacility.marker.room}
                 isFavorite={selectedFacility.marker.favorite}
                 images={selectedFacility.marker.images}
+                {...routeButtonProps(
+                  toRoutePlaceLabel(
+                    selectedFacility.marker.buildingCode,
+                    selectedFacility.marker.buildingName,
+                    selectedFacility.marker.room,
+                  ),
+                )}
                 operatingHours={DUMMY_OPERATING_HOURS}
-                onViewInsidePress={() => {}}
               />
             )}
           </View>

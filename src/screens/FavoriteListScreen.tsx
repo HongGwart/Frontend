@@ -20,7 +20,8 @@ export default function FavoriteListScreen() {
   const { favorites, removeFavorite } = useFavorites();
 
   const openFacilityOnMap = (place: FavoritePlace) => {
-    navigation.navigate('MainTabs', {
+    // navigate는 새 MainTabs를 위에 쌓으므로(React Navigation 7), 이미 있는 MainTabs로 되돌아간다.
+    navigation.popTo('MainTabs', {
       screen: 'map',
       params: { focusFacility: favoritePlaceToFocusParam(place) },
     });

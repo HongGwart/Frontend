@@ -6,6 +6,7 @@ import BuildingViewIcon from '@assets/svgs/icons/buildingView.svg';
 import { Button } from './Button';
 import { FavoriteToggle } from './FavoriteToggle';
 import { FacilityImagePair } from './FacilityImagePair';
+import { BottomFade, ShadowBottomClip } from './ShadowBottomClip';
 
 export interface FacilityCountItem {
   icon: React.FC<SvgProps>;
@@ -56,6 +57,25 @@ interface Props {
   operatingHours: OperatingHoursInfo;
   /** outside/facility에서만 쓰인다 */
   onViewInsidePress?: () => void;
+  /**
+   * CTA 버튼 라벨. 기본값은 "건물 내부 보기"지만, 캠퍼스 밖 상권(주변상권)처럼 건물 내부가
+   * 없는 시설은 "네이버 지도에서 열기"처럼 다른 문구로 바꿔서 쓴다.
+   */
+  ctaLabel?: string;
+  /** CTA 아이콘. 생략하면 건물 아이콘이 기본값이고, 아이콘 없이 텍스트만 보이려면 null을 넘긴다. */
+  ctaIcon?: React.FC<SvgProps> | null;
+  ctaIconWidth?: number;
+  ctaIconHeight?: number;
+  /** CTA 버튼 색상. 기본값 'primary'(남색). 주변상권처럼 톤 다운된 버튼이 필요하면 'secondary'. */
+  ctaVariant?: 'primary' | 'secondary';
+  /** true면 "건물 내부 보기" CTA 버튼을 안 그린다(예: 온보딩처럼 CTA가 필요 없는 데모용). */
+  hideCta?: boolean;
+  /**
+   * true면 온보딩 편의시설 목업(Figma 1252:43655)처럼 ~0.6613배 축소 크기로 그린다.
+   * facility variant 전용으로 실측한 값이라 facility가 아닌 variant에도 적용은 되지만
+   * 검증된 건 facility뿐이다.
+   */
+  compact?: boolean;
 }
 
 /**
@@ -80,45 +100,57 @@ export function FacilityInfoCard({
   mainEntrance,
   operatingHours,
   onViewInsidePress,
+  ctaLabel = '건물 내부 보기',
+  ctaIcon,
+  ctaIconWidth = 17,
+  ctaIconHeight = 18,
+  ctaVariant = 'primary',
+  hideCta = false,
+  compact = false,
 }: Props) {
   const theme = useTheme();
   const isRoom = variant === 'room';
   const isFacility = variant === 'facility';
   const hasBuildingDetails = variant === 'outside' || variant === 'inside';
-  const showCta = variant === 'outside' || variant === 'facility';
+  const showCta = !hideCta && (variant === 'outside' || variant === 'facility');
+  const resolvedCtaIcon = ctaIcon === undefined ? BuildingViewIcon : ctaIcon ?? undefined;
 
   const actionButtons = (
-    <ActionButtonRow>
-      <SubButton variant="secondary" onPress={onDeparturePress}>
+    <ActionButtonRow compact={compact}>
+      <SubButton variant="secondary" onPress={onDeparturePress} compact={compact}>
         출발
       </SubButton>
-      <SubButton variant="primary" onPress={onArrivalPress}>
+      <SubButton variant="primary" onPress={onArrivalPress} compact={compact}>
         도착
       </SubButton>
     </ActionButtonRow>
   );
 
-  return (
-    <Container variant={variant}>
-      <Grabber />
-      <Content>
+  const card = (
+    <Container variant={variant} compact={compact}>
+      <Grabber compact={compact} />
+      <Content compact={compact}>
         {isFacility ? (
-          <FacilitySection>
-            <FacilityHeaderGroup>
-              <FacilityTitleBlock>
+          <FacilitySection compact={compact}>
+            <FacilityHeaderGroup compact={compact}>
+              <FacilityTitleBlock compact={compact}>
                 <TitleRow>
-                  <BuildingCodeText numberOfLines={1} style={{ flex: 1 }}>
+                  <BuildingCodeText numberOfLines={1} style={{ flex: 1 }} compact={compact}>
                     {facilityName}
                   </BuildingCodeText>
-                  <FavoriteToggle isFavorite={isFavorite} onPress={onToggleFavorite} />
+                  <FavoriteToggle
+                    isFavorite={isFavorite}
+                    onPress={onToggleFavorite}
+                    size={compact ? 15 : undefined}
+                  />
                 </TitleRow>
-                <FacilityLocationRow>
-                  <LocationCodeText>{buildingCode}</LocationCodeText>
-                  <LocationNameText>{buildingName}</LocationNameText>
-                  {locationDetail && <LocationCodeText>{locationDetail}</LocationCodeText>}
+                <FacilityLocationRow compact={compact}>
+                  <LocationCodeText compact={compact}>{buildingCode}</LocationCodeText>
+                  <LocationNameText compact={compact}>{buildingName}</LocationNameText>
+                  {locationDetail && <LocationCodeText compact={compact}>{locationDetail}</LocationCodeText>}
                 </FacilityLocationRow>
               </FacilityTitleBlock>
-              <OperatingHoursRow operatingHours={operatingHours} />
+              <OperatingHoursRow operatingHours={operatingHours} compact={compact} />
             </FacilityHeaderGroup>
             {actionButtons}
           </FacilitySection>
@@ -146,7 +178,9 @@ export function FacilityInfoCard({
           </Body>
         )}
 
-        {isFacility && images && <FacilityImagePair images={images} />}
+        {isFacility && images && (
+          <FacilityImagePair images={images} compact={compact} height={compact ? 66.133 : 100} />
+        )}
 
         {hasBuildingDetails && (
           <DetailSection>
@@ -191,22 +225,41 @@ export function FacilityInfoCard({
 
       {showCta && (
         <CtaWrapper>
-          <Button label="건물 내부 보기" icon={BuildingViewIcon} iconWidth={17} iconHeight={18} onPress={onViewInsidePress} />
+          <Button
+            label={ctaLabel}
+            variant={ctaVariant}
+            icon={resolvedCtaIcon}
+            iconWidth={ctaIconWidth}
+            iconHeight={ctaIconHeight}
+            disabled={!onViewInsidePress}
+            onPress={onViewInsidePress}
+          />
         </CtaWrapper>
       )}
+
+      {compact && <BottomFade pointerEvents="none" />}
     </Container>
   );
+
+  if (!compact) return card;
+  return <ShadowBottomClip spread={SHADOW_CLIP_SPREAD_PX}>{card}</ShadowBottomClip>;
 }
 
 // 건물 상세보기 화면(BuildingDetailScreen)의 "운영 시간" 행도 이 카드와 똑같은 모양을
 // 써서 export한다.
-export function OperatingHoursRow({ operatingHours }: { operatingHours: OperatingHoursInfo }) {
+export function OperatingHoursRow({
+  operatingHours,
+  compact = false,
+}: {
+  operatingHours: OperatingHoursInfo;
+  compact?: boolean;
+}) {
   return (
-    <HoursGroup>
-      <StatusDot isOpen={operatingHours.isOpen} />
-      <HoursStatusText>{operatingHours.statusText}</HoursStatusText>
-      <HoursDotSeparator>·</HoursDotSeparator>
-      <HoursDetailText>{operatingHours.detailText}</HoursDetailText>
+    <HoursGroup compact={compact}>
+      <StatusDot isOpen={operatingHours.isOpen} compact={compact} />
+      <HoursStatusText compact={compact}>{operatingHours.statusText}</HoursStatusText>
+      <HoursDotSeparator compact={compact}>·</HoursDotSeparator>
+      <HoursDetailText compact={compact}>{operatingHours.detailText}</HoursDetailText>
     </HoursGroup>
   );
 }
@@ -215,47 +268,52 @@ function SubButton({
   variant,
   onPress,
   children,
+  compact,
 }: {
   variant: 'primary' | 'secondary';
   onPress?: () => void;
   children: string;
+  compact: boolean;
 }) {
   return (
-    <SubButtonContainer variant={variant} onPress={onPress}>
-      <SubButtonText variant={variant}>{children}</SubButtonText>
+    <SubButtonContainer variant={variant} onPress={onPress} compact={compact}>
+      <SubButtonText variant={variant} compact={compact}>
+        {children}
+      </SubButtonText>
     </SubButtonContainer>
   );
 }
 
-const Container = styled.View<{ variant: Props['variant'] }>`
+const Container = styled.View<{ variant: Props['variant']; compact: boolean }>`
   width: 100%;
   background-color: ${({ theme }) => theme.semantic.background.primary};
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
+  border-top-left-radius: ${({ compact }) => (compact ? '10.581px' : '16px')};
+  border-top-right-radius: ${({ compact }) => (compact ? '10.581px' : '16px')};
   align-items: center;
-  padding-top: 8px;
-  padding-bottom: 32px;
+  padding-top: ${({ compact }) => (compact ? '5.291px' : '8px')};
+  padding-bottom: ${({ compact }) => (compact ? '21.163px' : '32px')};
   /* outside/inside/room은 그래버-본문-CTA 사이가 24px, facility만 16px로 Figma 스펙이 다르다. */
-  gap: ${({ variant }) => (variant === 'facility' ? '16px' : '24px')};
+  gap: ${({ variant, compact }) => (compact ? '10.581px' : variant === 'facility' ? '16px' : '24px')};
+  /* compact(온보딩 편의시설 목업)만 Figma box-shadow 적용: 0 -2.645px 20px 0 rgba(0,0,0,0.10) */
   shadow-color: #000;
-  shadow-offset: 0px -4px;
-  shadow-opacity: 0.05;
+  shadow-offset: 0px ${({ compact }) => (compact ? '-2.645px' : '-4px')};
+  shadow-opacity: ${({ compact }) => (compact ? 0.1 : 0.05)};
   shadow-radius: 20px;
   elevation: 8;
   ${({ variant }) => (variant === 'inside' ? 'height: 400px;' : '')}
 `;
 
-const Grabber = styled.View`
-  width: 36px;
-  height: 4px;
+const Grabber = styled.View<{ compact: boolean }>`
+  width: ${({ compact }) => (compact ? '23.808px' : '36px')};
+  height: ${({ compact }) => (compact ? '2.645px' : '4px')};
   border-radius: 100px;
   background-color: ${({ theme }) => theme.semantic.line.primary};
 `;
 
-const Content = styled.View`
+const Content = styled.View<{ compact: boolean }>`
   width: 100%;
-  padding-horizontal: 20px;
-  gap: 12px;
+  padding-horizontal: ${({ compact }) => (compact ? '13.227px' : '20px')};
+  gap: ${({ compact }) => (compact ? '7.936px' : '12px')};
 `;
 
 // outside/inside는 제목/설명 블록과 출발·도착 버튼 사이 gap이 4px, room은 16px로 Figma 스펙이 다르다.
@@ -269,35 +327,37 @@ const RoomOperatingHoursSpacer = styled.View`
 `;
 
 // facility 전용: (제목+위치 블록 + 운영시간) + 출발·도착 버튼 사이 gap 4px
-const FacilitySection = styled.View`
+const FacilitySection = styled.View<{ compact: boolean }>`
   width: 100%;
-  gap: 4px;
+  gap: ${({ compact }) => (compact ? '2.645px' : '4px')};
 `;
 
 // facility 전용: (제목+위치 블록) + 운영시간 사이 gap 8px
-const FacilityHeaderGroup = styled.View`
+const FacilityHeaderGroup = styled.View<{ compact: boolean }>`
   width: 100%;
-  gap: 8px;
+  gap: ${({ compact }) => (compact ? '5.291px' : '8px')};
 `;
 
 // facility 전용: 제목 행 + 위치 행 사이 gap 4px
-const FacilityTitleBlock = styled.View`
+const FacilityTitleBlock = styled.View<{ compact: boolean }>`
   width: 100%;
-  gap: 4px;
+  gap: ${({ compact }) => (compact ? '2.645px' : '4px')};
 `;
 
-const FacilityLocationRow = styled.View`
+const FacilityLocationRow = styled.View<{ compact: boolean }>`
   flex-direction: row;
   align-items: center;
-  gap: 4px;
+  gap: ${({ compact }) => (compact ? '2.645px' : '4px')};
   width: 100%;
 `;
 
-const LocationCodeText = styled.Text`
+const LocationCodeText = styled.Text<{ compact: boolean }>`
   font-family: ${({ theme }) => theme.typography.labelNormal.medium.fontFamily};
-  font-size: ${({ theme }) => theme.typography.labelNormal.medium.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.labelNormal.medium.lineHeight}px;
-  letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
+  font-size: ${({ compact, theme }) => (compact ? '9.26px' : `${theme.typography.labelNormal.medium.fontSize}px`)};
+  line-height: ${({ compact, theme }) =>
+    compact ? '13.89px' : `${theme.typography.labelNormal.medium.lineHeight}px`};
+  letter-spacing: ${({ compact, theme }) =>
+    compact ? '-0.1852px' : `${theme.typography.labelNormal.medium.letterSpacing}px`};
   color: ${({ theme }) => theme.semantic.text.primary};
 `;
 
@@ -323,11 +383,13 @@ const TitleGroup = styled.View`
   gap: 4px;
 `;
 
-const BuildingCodeText = styled.Text`
+const BuildingCodeText = styled.Text<{ compact?: boolean }>`
   font-family: ${({ theme }) => theme.typography.heading.semiBold.fontFamily};
-  font-size: ${({ theme }) => theme.typography.heading.semiBold.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.heading.semiBold.lineHeight}px;
-  letter-spacing: ${({ theme }) => theme.typography.heading.semiBold.letterSpacing}px;
+  font-size: ${({ compact, theme }) => (compact ? '13.23px' : `${theme.typography.heading.semiBold.fontSize}px`)};
+  line-height: ${({ compact, theme }) =>
+    compact ? '18.52px' : `${theme.typography.heading.semiBold.lineHeight}px`};
+  letter-spacing: ${({ compact, theme }) =>
+    compact ? '-0.3969px' : `${theme.typography.heading.semiBold.letterSpacing}px`};
   color: ${({ theme }) => theme.semantic.text.primary};
 `;
 
@@ -344,29 +406,31 @@ const DescriptionText = styled.Text`
 `;
 
 
-const ActionButtonRow = styled.View`
+const ActionButtonRow = styled.View<{ compact: boolean }>`
   flex-direction: row;
   justify-content: flex-end;
   align-items: center;
-  gap: 6px;
+  gap: ${({ compact }) => (compact ? '3.968px' : '6px')};
   width: 100%;
 `;
 
-const SubButtonContainer = styled(Pressable)<{ variant: 'primary' | 'secondary' }>`
-  padding: 6px 14px;
+const SubButtonContainer = styled(Pressable)<{ variant: 'primary' | 'secondary'; compact: boolean }>`
+  padding: ${({ compact }) => (compact ? '3.968px 9.259px' : '6px 14px')};
   border-radius: 100px;
   align-items: center;
   justify-content: center;
   background-color: ${({ theme, variant }) => (variant === 'primary' ? theme.blue[800] : theme.semantic.background.primary)};
-  border-width: ${({ variant }) => (variant === 'secondary' ? '1px' : '0px')};
+  border-width: ${({ variant, compact }) => (variant === 'secondary' ? (compact ? '0.661px' : '1px') : '0px')};
   border-color: ${({ theme }) => theme.blue[300]};
 `;
 
-const SubButtonText = styled.Text<{ variant: 'primary' | 'secondary' }>`
+const SubButtonText = styled.Text<{ variant: 'primary' | 'secondary'; compact: boolean }>`
   font-family: ${({ theme }) => theme.typography.labelNormal.semiBold.fontFamily};
-  font-size: ${({ theme }) => theme.typography.labelNormal.semiBold.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.labelNormal.semiBold.lineHeight}px;
-  letter-spacing: ${({ theme }) => theme.typography.labelNormal.semiBold.letterSpacing}px;
+  font-size: ${({ compact, theme }) => (compact ? '9.26px' : `${theme.typography.labelNormal.semiBold.fontSize}px`)};
+  line-height: ${({ compact, theme }) =>
+    compact ? '13.89px' : `${theme.typography.labelNormal.semiBold.lineHeight}px`};
+  letter-spacing: ${({ compact, theme }) =>
+    compact ? '-0.1852px' : `${theme.typography.labelNormal.semiBold.letterSpacing}px`};
   color: ${({ theme, variant }) => (variant === 'primary' ? theme.semantic.text.white : theme.blue[700])};
 `;
 
@@ -447,24 +511,26 @@ const InfoValueText = styled.Text`
   color: ${({ theme }) => theme.semantic.text.secondary};
 `;
 
-const HoursGroup = styled.View`
+const HoursGroup = styled.View<{ compact?: boolean }>`
   flex-direction: row;
   align-items: center;
-  gap: 6px;
+  gap: ${({ compact }) => (compact ? '3.968px' : '6px')};
 `;
 
-const StatusDot = styled.View<{ isOpen: boolean }>`
-  width: 6px;
-  height: 6px;
+const StatusDot = styled.View<{ isOpen: boolean; compact?: boolean }>`
+  width: ${({ compact }) => (compact ? '3.968px' : '6px')};
+  height: ${({ compact }) => (compact ? '3.968px' : '6px')};
   border-radius: 100px;
   background-color: ${({ theme, isOpen }) => (isOpen ? theme.semantic.success : theme.semantic.text.tertiary)};
 `;
 
-const HoursStatusText = styled.Text`
+const HoursStatusText = styled.Text<{ compact?: boolean }>`
   font-family: ${({ theme }) => theme.typography.labelNormal.medium.fontFamily};
-  font-size: ${({ theme }) => theme.typography.labelNormal.medium.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.labelNormal.medium.lineHeight}px;
-  letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
+  font-size: ${({ compact, theme }) => (compact ? '9.26px' : `${theme.typography.labelNormal.medium.fontSize}px`)};
+  line-height: ${({ compact, theme }) =>
+    compact ? '13.89px' : `${theme.typography.labelNormal.medium.lineHeight}px`};
+  letter-spacing: ${({ compact, theme }) =>
+    compact ? '-0.1852px' : `${theme.typography.labelNormal.medium.letterSpacing}px`};
   color: ${({ theme }) => theme.semantic.text.secondary};
 `;
 
@@ -478,3 +544,5 @@ const CtaWrapper = styled.View`
   width: 100%;
   padding-horizontal: 20px;
 `;
+
+const SHADOW_CLIP_SPREAD_PX = 48;
