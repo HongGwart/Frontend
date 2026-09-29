@@ -40,21 +40,27 @@ export default function Header({ title, subtitle, onBackPress, transparent = fal
   );
 }
 
+// 뒤로가기 버튼은 absolute로 항상 왼쪽 끝에서 20px(BACK_BUTTON_LEFT)에 고정되고, 제목은 좌우에
+// 버튼 자리(20 + 24 + 간격 8 = 52px)만큼 여백을 둔 영역 안에서 가운데 정렬된다 — Figma 헤더의 제목
+// 최대 폭 271px(375 − 52×2)과 같고, 제목이 길어도 버튼 밑으로 파고들지 않는다.
+const BACK_BUTTON_LEFT = 20;
+const BACK_BUTTON_SIZE = 24;
+const TITLE_SIDE_INSET = BACK_BUTTON_LEFT + BACK_BUTTON_SIZE + 8;
+
 const Container = styled.View<{ transparent: boolean }>`
   flex-direction: row;
   align-items: center;
-  gap: 12px;
   height: 56px;
-  padding-horizontal: 20px;
+  padding-horizontal: ${TITLE_SIDE_INSET}px;
   background-color: ${({ theme, transparent }) => (transparent ? 'transparent' : theme.semantic.background.primary)};
 `;
 
 const BackButton = styled(Pressable)`
   position: absolute;
   z-index: 1;
-  left: 20px;
-  width: 24px;
-  height: 24px;
+  left: ${BACK_BUTTON_LEFT}px;
+  width: ${BACK_BUTTON_SIZE}px;
+  height: ${BACK_BUTTON_SIZE}px;
   align-items: center;
   justify-content: center;
 `;
@@ -78,7 +84,9 @@ const TitleRow = styled.View`
   justify-content: center;
 `;
 
+// 코드+명칭이 길어 271px를 넘으면 코드(title)는 그대로 두고 명칭(subtitle)만 줄여서 말줄임(…)한다(Figma와 같음).
 const Subtitle = styled(Title)`
   flex: 0;
+  flex-shrink: 1;
   color: ${({ theme }) => theme.semantic.text.tertiary};
 `;
