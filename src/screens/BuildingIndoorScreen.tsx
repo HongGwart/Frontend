@@ -115,8 +115,10 @@ export default function BuildingIndoorScreen() {
                 key={floorId}
                 mapData={floorAssets.data}
                 backgroundColor={theme.semantic.line.tertiary}
-                renderBackground={({ width, height }) => <floorAssets.Background width={width} height={height} />}
-                renderForeground={({ width, height }) => <floorAssets.Doors width={width} height={height} />}
+                // LayerSize를 그대로 펼친다. viewBox가 없을 때 viewBox={undefined}로 넘기면 SVG 컴포넌트의
+                // 원래 viewBox를 덮어써서 도면 스케일이 깨진다.
+                renderBackground={layerSize => <floorAssets.Background {...layerSize} />}
+                renderForeground={layerSize => <floorAssets.Doors {...layerSize} />}
                 onRoomSelect={room => setSelectedRoomLabel(room ? room.label ?? room.id : null)}
               />
             </Animated.View>

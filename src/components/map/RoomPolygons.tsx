@@ -24,6 +24,9 @@ interface Props {
    */
   viewBoxWidth?: number;
   viewBoxHeight?: number;
+  /** viewBox 시작점. 확대 후 보이는 영역만 선명하게 다시 그리는 덮개 레이어(useSharpViewport)가 쓴다. 기본 0 */
+  viewBoxX?: number;
+  viewBoxY?: number;
   rooms: RoomShape[];
   /**
    * 하이라이트할 방 id들. 같은 라벨(예: "407")을 공유하는 방이 여러 개 있으면(하나의
@@ -45,6 +48,8 @@ export function RoomPolygons({
   height,
   viewBoxWidth = width,
   viewBoxHeight = height,
+  viewBoxX = 0,
+  viewBoxY = 0,
   rooms,
   selectedRoomIds,
   highlightFill = DEFAULT_HIGHLIGHT_FILL,
@@ -74,7 +79,7 @@ export function RoomPolygons({
     <Svg
       width={width}
       height={height}
-      viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+      viewBox={`${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`}
       style={{ position: 'absolute', top: 0, left: 0 }}
       pointerEvents="none"
     >
