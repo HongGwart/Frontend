@@ -25,8 +25,20 @@ interface LabelProps {
  * 라벨 하나. IconMarkersLayer와 동일한 공식(screen = translate + Rotate(rotation) *
  * (mapCoord * scale))으로 위치만 지도를 따라가게 하고, 텍스트 자체에는 rotate를 걸지 않아서
  * 지도가 회전해도 글자는 항상 똑바로 보인다.
+ *
+ * 방을 탭하면 selectedRoomIds가 바뀌어 레이어 전체가 다시 렌더되는데, 한 층에 라벨이 70개
+ * 넘게 있을 수 있어서 memo로 감싸 isSelected가 실제로 바뀐 라벨만 다시 그린다.
  */
-function RoomLabel({ room, fontSize, boxWidth, isSelected, scale, translateX, translateY, rotation }: LabelProps) {
+const RoomLabel = React.memo(function RoomLabel({
+  room,
+  fontSize,
+  boxWidth,
+  isSelected,
+  scale,
+  translateX,
+  translateY,
+  rotation,
+}: LabelProps) {
   const [cx, cy] = room.labelAnchor ?? centroid(room.points);
   const text = room.label ?? room.id;
 
@@ -55,7 +67,7 @@ function RoomLabel({ room, fontSize, boxWidth, isSelected, scale, translateX, tr
       </Text>
     </Animated.View>
   );
-}
+});
 
 interface Props {
   rooms: RoomShape[];

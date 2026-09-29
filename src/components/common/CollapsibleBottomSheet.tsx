@@ -4,11 +4,11 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   SharedValue,
   interpolate,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 interface Props {
   /** 접혔을 때 화면 아래에 남겨둘 시트 윗부분 높이(px). 그래버 + 하단 세이프에어리어 정도. */
@@ -68,7 +68,7 @@ export function CollapsibleBottomSheet({
       translateY.value = withSpring(target, SPRING);
       if (collapsed.value !== toCollapsed) {
         collapsed.value = toCollapsed;
-        if (onCollapsedChange) runOnJS(onCollapsedChange)(toCollapsed);
+        if (onCollapsedChange) scheduleOnRN(onCollapsedChange, toCollapsed);
       }
     };
 

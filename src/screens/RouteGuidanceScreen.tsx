@@ -14,12 +14,12 @@ import Animated, {
   Easing,
   FadeIn,
   FadeInDown,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import * as Haptics from 'expo-haptics';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
@@ -86,112 +86,19 @@ const toRippleFrame = (t: number): RippleFrame => ({
 });
 
 /**
- * 길찾기 "경로 안내 시작"을 누르면 뜨는 길 안내 화면. Figma "길 안내_걷기"(784:4466).
- * 지도 전체 위에 상단 "move info" 카드(지금 구간 안내)와 우하단 이전/다음 버튼을 얹는다.
- * 지나온 구간은 회색, 남은 구간은 파란색 경로선으로 나누고, 그 경계에 현재 위치 마커를
- * 찍은 뒤 카메라를 현재 위치에 맞춘다. 아직 실제 위치 추적이 없어서 구간은 버튼으로 넘긴다.
+ * 길 안내 지도 위 오버레이(경로선, 출발/도착 핀, 도착 파동, 현재 위치 마커). 경로선·파동·마커
+ * alpha는 네이버 지도 네이티브 prop이라 Reanimated로 못 움직이고 JS state로 매 프레임 바꿔야
+ * 하는데, 그 state를 화면에 두면 카드·버튼까지 초당 60번 다시 렌더된다 — 그래서 여기로 떼어낸다.
+ * 오버레이 순서(같은 zIndex끼리는 나중 것이 위)는 원래 화면에 있던 그대로다.
  */
-export default function RouteGuidanceScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { params } = useRoute<RouteProp<RootStackParamList, 'RouteGuidance'>>();
-  const route = DUMMY_ROUTE_RESULTS.find(result => result.id === params.routeId) ?? DUMMY_ROUTE_RESULTS[0];
-  const insets = useSafeAreaInsets();
+function GuidanceMapOverlays({ targetProgress, hasArrived }: { targetProgress: number; hasArrived: boolean }) {
   const theme = useTheme();
-
-  const [stepIndex, setStepIndex] = useState(0);
-  const step = DUMMY_GUIDANCE_STEPS[stepIndex];
-  const isLastStep = stepIndex === DUMMY_GUIDANCE_STEPS.length - 1;
-  // 마지막 구간에서 "다음"을 누르면 도착한 것으로 본다. 별도 화면을 띄우지 않고 지도 위에서
-  // 남은 경로를 끝까지 줄이고, 상단 카드를 도착 안내로 바꾸고, 하단에 "안내 종료" 버튼을 띄운다.
-  const [hasArrived, setHasArrived] = useState(false);
-
-  // 안내 카드(move info)를 좌우로 밀어 구간을 넘긴다. 카드 틀은 고정이고 안쪽 내용만 손가락을
-  // 따라오다가, 충분히 밀거나 빠르게 튕기면 그 방향으로 빠져나가며 흐려지고, 새 구간 내용이 반대편에서 들어온다. 이전/다음
-  // 버튼도 같은 애니메이션을 탄다. 첫 구간에서 오른쪽으로 밀면 고무줄처럼 버티기만 하고, 마지막
-  // 구간에서 왼쪽으로 밀면 다음 버튼처럼 도착으로 넘어간다.
-  const { width: screenWidth } = useWindowDimensions();
-  const cardX = useSharedValue(0);
-  const cardOpacity = useSharedValue(1);
-  const enterFromRef = useRef<1 | -1 | 0>(0);
-  const slideOffset = screenWidth * CARD_SLIDE_RATIO;
-  const canGoPrev = stepIndex > 0;
-
-  // dir: 1 = 다음 구간, -1 = 이전 구간. 카드가 빠져나간 뒤 JS에서 실제로 구간을 바꾼다.
-  const commitStep = useCallback(
-    (dir: 1 | -1) => {
-      if (dir === 1 && isLastStep) {
-        // 도착 카드는 기존처럼 제자리 페이드로 뜨니 위치/투명도만 원래대로 돌려둔다.
-        cardX.value = 0;
-        cardOpacity.value = 1;
-        setHasArrived(true);
-        return;
-      }
-      enterFromRef.current = dir;
-      setStepIndex(index => index + dir);
-    },
-    [isLastStep, cardX, cardOpacity],
-  );
-
-  const slideOut = useCallback(
-    (dir: 1 | -1) => {
-      'worklet';
-      cardX.value = withTiming(-dir * slideOffset, { duration: CARD_OUT_MS, easing: Easing.in(Easing.quad) });
-      cardOpacity.value = withTiming(0, { duration: CARD_OUT_MS }, finished => {
-        if (finished) runOnJS(commitStep)(dir);
-      });
-    },
-    [cardX, cardOpacity, slideOffset, commitStep],
-  );
-
-  // 구간이 바뀌면 새 카드를 반대편에서 들여보낸다(다음 구간이면 오른쪽에서, 이전이면 왼쪽에서).
-  useEffect(() => {
-    const dir = enterFromRef.current;
-    if (!dir) return;
-    enterFromRef.current = 0;
-    cardX.value = dir * slideOffset;
-    cardX.value = withTiming(0, { duration: CARD_IN_MS, easing: Easing.out(Easing.cubic) });
-    cardOpacity.value = withTiming(1, { duration: CARD_IN_MS });
-  }, [stepIndex, cardX, cardOpacity, slideOffset]);
-
-  const cardSwipe = useMemo(
-    () =>
-      Gesture.Pan()
-        // 가로로 확실히 민 경우만 스와이프로 보고, 세로 움직임이 먼저 크면 포기한다(카드 X 버튼 탭은 그대로).
-        .activeOffsetX([-12, 12])
-        .failOffsetY([-12, 12])
-        .onUpdate(event => {
-          const x = event.translationX;
-          cardX.value = x > 0 && !canGoPrev ? x * RUBBER_BAND : x;
-          cardOpacity.value = 1 - Math.min(Math.abs(cardX.value) / screenWidth, 1) * 0.5;
-        })
-        .onEnd(event => {
-          const x = event.translationX;
-          const wantsNext = x < -SWIPE_DISTANCE || event.velocityX < -SWIPE_VELOCITY;
-          const wantsPrev = canGoPrev && (x > SWIPE_DISTANCE || event.velocityX > SWIPE_VELOCITY);
-          if (wantsNext) slideOut(1);
-          else if (wantsPrev) slideOut(-1);
-          else {
-            cardX.value = withSpring(0, { damping: 20, stiffness: 260 });
-            cardOpacity.value = withTiming(1, { duration: 150 });
-          }
-        }),
-    [canGoPrev, screenWidth, cardX, cardOpacity, slideOut],
-  );
-  const cardSwipeStyle = useAnimatedStyle(() => ({
-    opacity: cardOpacity.value,
-    transform: [{ translateX: cardX.value }],
-  }));
-  // 지금 경로선/현재 위치/카메라가 향해야 할 진행 비율 — 도착하면 경로 끝(1).
-  const targetProgress = hasArrived ? 1 : step.progress;
-  useEffect(() => {
-    if (hasArrived) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  }, [hasArrived]);
 
   // 구간을 넘기면 경로선을 한 번에 바꾸지 않고, 화면에 그리는 진행 비율(displayProgress)을
   // 새 구간 값까지 매 프레임 조금씩 옮겨서 파란 남은 경로가 줄어드는(이전으로 가면 늘어나는)
   // 애니메이션을 만든다. 카메라 기본 easing(EaseOut)과 맞춰 ease-out cubic으로 움직인다.
-  const [displayProgress, setDisplayProgress] = useState(step.progress);
-  const displayProgressRef = useRef(step.progress);
+  const [displayProgress, setDisplayProgress] = useState(targetProgress);
+  const displayProgressRef = useRef(targetProgress);
   useEffect(() => {
     if (displayProgressRef.current === targetProgress) return;
     // 애니메이션 도중 또 넘기면(cleanup으로 이전 것이 멈추고), 지금 그려진 위치에서 새 목표로 이어서 움직인다.
@@ -248,9 +155,168 @@ export default function RouteGuidanceScreen() {
     return () => cancelAnimationFrame(id);
   }, []);
 
+  return (
+    <>
+      <NaverMapPolylineOverlay
+        coords={traveled}
+        width={6}
+        color={theme.semantic.line.primary}
+        capType={lineCapReady ? 'Round' : 'Butt'}
+        joinType={lineCapReady ? 'Round' : 'Miter'}
+        zIndex={0}
+      />
+      <NaverMapPolylineOverlay
+        coords={remaining}
+        width={6}
+        color={theme.blue[500]}
+        // 끝까지 가면 남은 구간이 길이 0(같은 점 두 개)이 되니 숨긴다.
+        isHidden={displayProgress >= 1}
+        capType={lineCapReady ? 'Round' : 'Butt'}
+        joinType={lineCapReady ? 'Round' : 'Miter'}
+        zIndex={0}
+      />
+      <NaverMapStartPointMarker
+        latitude={DUMMY_ROUTE_MAP.startLatitude}
+        longitude={DUMMY_ROUTE_MAP.startLongitude}
+        label={DUMMY_ROUTE_MAP.startLabel}
+        // 이미 떠난 출발지라 Figma처럼 회색 비활성 톤으로 그린다.
+        active={false}
+      />
+      <NaverMapMarker
+        latitude={DUMMY_ROUTE_MAP.endLatitude}
+        longitude={DUMMY_ROUTE_MAP.endLongitude}
+        label={DUMMY_ROUTE_MAP.endLabel}
+        zIndex={1}
+        scale={1}
+      />
+      {ripples.map((ripple, index) => (
+        <NaverMapCircleOverlay
+          key={index}
+          latitude={DUMMY_ROUTE_MAP.endLatitude}
+          longitude={DUMMY_ROUTE_MAP.endLongitude}
+          radius={ripple.radius}
+          // theme.blue[500](#343B9D)에 파동 진행에 따른 투명도만 입힌다.
+          color={`rgba(52, 59, 157, ${ripple.alpha})`}
+          isHidden={ripple.alpha <= 0}
+          // 경로선 위, 도착 핀(zIndex 1) 아래에 깔린다.
+          zIndex={0}
+        />
+      ))}
+      <NaverMapUserPointMarker latitude={position.latitude} longitude={position.longitude} alpha={userMarkerAlpha} />
+    </>
+  );
+}
+
+/**
+ * 길찾기 "경로 안내 시작"을 누르면 뜨는 길 안내 화면. Figma "길 안내_걷기"(784:4466).
+ * 지도 전체 위에 상단 "move info" 카드(지금 구간 안내)와 우하단 이전/다음 버튼을 얹는다.
+ * 지나온 구간은 회색, 남은 구간은 파란색 경로선으로 나누고, 그 경계에 현재 위치 마커를
+ * 찍은 뒤 카메라를 현재 위치에 맞춘다. 아직 실제 위치 추적이 없어서 구간은 버튼으로 넘긴다.
+ */
+export default function RouteGuidanceScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { params } = useRoute<RouteProp<RootStackParamList, 'RouteGuidance'>>();
+  const route = DUMMY_ROUTE_RESULTS.find(result => result.id === params.routeId) ?? DUMMY_ROUTE_RESULTS[0];
+  const insets = useSafeAreaInsets();
+  const theme = useTheme();
+
+  const [stepIndex, setStepIndex] = useState(0);
+  const step = DUMMY_GUIDANCE_STEPS[stepIndex];
+  const isLastStep = stepIndex === DUMMY_GUIDANCE_STEPS.length - 1;
+  // 마지막 구간에서 "다음"을 누르면 도착한 것으로 본다. 별도 화면을 띄우지 않고 지도 위에서
+  // 남은 경로를 끝까지 줄이고, 상단 카드를 도착 안내로 바꾸고, 하단에 "안내 종료" 버튼을 띄운다.
+  const [hasArrived, setHasArrived] = useState(false);
+
+  // 안내 카드(move info)를 좌우로 밀어 구간을 넘긴다. 카드 틀은 고정이고 안쪽 내용만 손가락을
+  // 따라오다가, 충분히 밀거나 빠르게 튕기면 그 방향으로 빠져나가며 흐려지고, 새 구간 내용이 반대편에서 들어온다. 이전/다음
+  // 버튼도 같은 애니메이션을 탄다. 첫 구간에서 오른쪽으로 밀면 고무줄처럼 버티기만 하고, 마지막
+  // 구간에서 왼쪽으로 밀면 다음 버튼처럼 도착으로 넘어간다.
+  const { width: screenWidth } = useWindowDimensions();
+  const cardX = useSharedValue(0);
+  const cardOpacity = useSharedValue(1);
+  const enterFromRef = useRef<1 | -1 | 0>(0);
+  const slideOffset = screenWidth * CARD_SLIDE_RATIO;
+  const canGoPrev = stepIndex > 0;
+
+  // dir: 1 = 다음 구간, -1 = 이전 구간. 카드가 빠져나간 뒤 JS에서 실제로 구간을 바꾼다.
+  const commitStep = useCallback(
+    (dir: 1 | -1) => {
+      if (dir === 1 && isLastStep) {
+        // 도착 카드는 기존처럼 제자리 페이드로 뜨니 위치/투명도만 원래대로 돌려둔다.
+        cardX.value = 0;
+        cardOpacity.value = 1;
+        setHasArrived(true);
+        return;
+      }
+      enterFromRef.current = dir;
+      setStepIndex(index => index + dir);
+    },
+    [isLastStep, cardX, cardOpacity],
+  );
+
+  const slideOut = useCallback(
+    (dir: 1 | -1) => {
+      'worklet';
+      cardX.value = withTiming(-dir * slideOffset, { duration: CARD_OUT_MS, easing: Easing.in(Easing.quad) });
+      cardOpacity.value = withTiming(0, { duration: CARD_OUT_MS }, finished => {
+        if (finished) scheduleOnRN(commitStep, dir);
+      });
+    },
+    [cardX, cardOpacity, slideOffset, commitStep],
+  );
+
+  // 구간이 바뀌면 새 카드를 반대편에서 들여보낸다(다음 구간이면 오른쪽에서, 이전이면 왼쪽에서).
+  useEffect(() => {
+    const dir = enterFromRef.current;
+    if (!dir) return;
+    enterFromRef.current = 0;
+    cardX.value = dir * slideOffset;
+    cardX.value = withTiming(0, { duration: CARD_IN_MS, easing: Easing.out(Easing.cubic) });
+    cardOpacity.value = withTiming(1, { duration: CARD_IN_MS });
+  }, [stepIndex, cardX, cardOpacity, slideOffset]);
+
+  const cardSwipe = useMemo(
+    () =>
+      Gesture.Pan()
+        // 가로로 확실히 민 경우만 스와이프로 보고, 세로 움직임이 먼저 크면 포기한다(카드 X 버튼 탭은 그대로).
+        .activeOffsetX([-12, 12])
+        .failOffsetY([-12, 12])
+        .onUpdate(event => {
+          const x = event.translationX;
+          cardX.value = x > 0 && !canGoPrev ? x * RUBBER_BAND : x;
+          cardOpacity.value = 1 - Math.min(Math.abs(cardX.value) / screenWidth, 1) * 0.5;
+        })
+        .onEnd(event => {
+          const x = event.translationX;
+          const wantsNext = x < -SWIPE_DISTANCE || event.velocityX < -SWIPE_VELOCITY;
+          const wantsPrev = canGoPrev && (x > SWIPE_DISTANCE || event.velocityX > SWIPE_VELOCITY);
+          if (wantsNext) slideOut(1);
+          else if (wantsPrev) slideOut(-1);
+          else {
+            cardX.value = withSpring(0, { damping: 20, stiffness: 260 });
+            cardOpacity.value = withTiming(1, { duration: 150 });
+          }
+        }),
+    [canGoPrev, screenWidth, cardX, cardOpacity, slideOut],
+  );
+  const cardSwipeStyle = useAnimatedStyle(() => ({
+    opacity: cardOpacity.value,
+    transform: [{ translateX: cardX.value }],
+  }));
+  // 지금 경로선/현재 위치/카메라가 향해야 할 진행 비율 — 도착하면 경로 끝(1).
+  const targetProgress = hasArrived ? 1 : step.progress;
+  useEffect(() => {
+    if (hasArrived) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [hasArrived]);
+
   // 구간을 넘기면 현재 위치가 옮겨가니 카메라도 새 위치로 한 번에 애니메이션한다(선 애니메이션과
   // 같은 시간). 매 프레임 바뀌는 position이 아니라 목표 구간 기준이다. 첫 위치는 initialCamera로 잡는다.
   const mapRef = useRef<NaverMapViewRef>(null);
+  // initialCamera는 처음 한 번만 쓰이니 첫 구간 위치로 고정해 둔다.
+  const [initialCamera] = useState(() => ({
+    ...splitPathAt(DUMMY_ROUTE_PATH, DUMMY_GUIDANCE_STEPS[0].progress).position,
+    zoom: GUIDANCE_ZOOM,
+  }));
   const isFirstStep = useRef(true);
   useEffect(() => {
     if (isFirstStep.current) {
@@ -269,62 +335,13 @@ export default function RouteGuidanceScreen() {
       <NaverMapView
         ref={mapRef}
         style={StyleSheet.absoluteFill}
-        initialCamera={{ ...position, zoom: GUIDANCE_ZOOM }}
+        initialCamera={initialCamera}
         minZoom={MAP_MIN_ZOOM}
         maxZoom={MAP_MAX_ZOOM}
         isRotateGesturesEnabled={false}
         isTiltGesturesEnabled={false}
       >
-        <NaverMapPolylineOverlay
-          coords={traveled}
-          width={6}
-          color={theme.semantic.line.primary}
-          capType={lineCapReady ? 'Round' : 'Butt'}
-          joinType={lineCapReady ? 'Round' : 'Miter'}
-          zIndex={0}
-        />
-        <NaverMapPolylineOverlay
-          coords={remaining}
-          width={6}
-          color={theme.blue[500]}
-          // 끝까지 가면 남은 구간이 길이 0(같은 점 두 개)이 되니 숨긴다.
-          isHidden={displayProgress >= 1}
-          capType={lineCapReady ? 'Round' : 'Butt'}
-          joinType={lineCapReady ? 'Round' : 'Miter'}
-          zIndex={0}
-        />
-        <NaverMapStartPointMarker
-          latitude={DUMMY_ROUTE_MAP.startLatitude}
-          longitude={DUMMY_ROUTE_MAP.startLongitude}
-          label={DUMMY_ROUTE_MAP.startLabel}
-          // 이미 떠난 출발지라 Figma처럼 회색 비활성 톤으로 그린다.
-          active={false}
-        />
-        <NaverMapMarker
-          latitude={DUMMY_ROUTE_MAP.endLatitude}
-          longitude={DUMMY_ROUTE_MAP.endLongitude}
-          label={DUMMY_ROUTE_MAP.endLabel}
-          zIndex={1}
-          scale={1}
-        />
-        {ripples.map((ripple, index) => (
-          <NaverMapCircleOverlay
-            key={index}
-            latitude={DUMMY_ROUTE_MAP.endLatitude}
-            longitude={DUMMY_ROUTE_MAP.endLongitude}
-            radius={ripple.radius}
-            // theme.blue[500](#343B9D)에 파동 진행에 따른 투명도만 입힌다.
-            color={`rgba(52, 59, 157, ${ripple.alpha})`}
-            isHidden={ripple.alpha <= 0}
-            // 경로선 위, 도착 핀(zIndex 1) 아래에 깔린다.
-            zIndex={0}
-          />
-        ))}
-        <NaverMapUserPointMarker
-          latitude={position.latitude}
-          longitude={position.longitude}
-          alpha={userMarkerAlpha}
-        />
+        <GuidanceMapOverlays targetProgress={targetProgress} hasArrived={hasArrived} />
       </NaverMapView>
 
       {/* 도착하면 key가 바뀌면서 카드가 도착 안내로 페이드 전환된다. */}

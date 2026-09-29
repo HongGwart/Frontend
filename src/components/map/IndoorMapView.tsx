@@ -151,6 +151,10 @@ export function IndoorMapView({
   // 렌더링하는 도중 업데이트" 에러가 난다. 현재 선택은 ref로 읽고, 부모 알림은 updater 밖에서 한다.
   const selectedRoomIdsRef = useRef(selectedRoomIds);
   selectedRoomIdsRef.current = selectedRoomIds;
+  // 부모가 onRoomSelect를 인라인 화살표로 넘기면 렌더마다 handleMapTap이 바뀌고, 그러면
+  // useMapGestures의 제스처도 매번 다시 만들어진다. 최신 콜백은 ref로 읽어서 handleMapTap을 고정한다.
+  const onRoomSelectRef = useRef(onRoomSelect);
+  onRoomSelectRef.current = onRoomSelect;
 
   const handleMapTap = useCallback(
     (room: RoomShape | null) => {
@@ -161,7 +165,7 @@ export function IndoorMapView({
       const prev = selectedRoomIdsRef.current;
       const wasSelected = room && prev.includes(room.id);
       if (!room || wasSelected) {
-        if (prev.length > 0) onRoomSelect?.(null);
+        if (prev.length > 0) onRoomSelectRef.current?.(null);
         setSelectedRoomIds([]);
         return;
       }
@@ -169,10 +173,10 @@ export function IndoorMapView({
       const group = selectableRooms
         .filter((r) => (r.label ?? r.id) === targetLabel)
         .map((r) => r.id);
-      onRoomSelect?.(room);
+      onRoomSelectRef.current?.(room);
       setSelectedRoomIds(group);
     },
-    [onRoomSelect, selectableRooms]
+    [selectableRooms]
   );
 
   // 긴 변이 MAX_RENDER_DP를 넘는 층만 축소해서 그린다 (대부분의 층은 1을 넘지 않으므로 그대로).

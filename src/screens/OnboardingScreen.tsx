@@ -10,7 +10,6 @@ import Animated, {
   Extrapolation,
   interpolate,
   interpolateColor,
-  runOnJS,
   SharedValue,
   useAnimatedStyle,
   useSharedValue,
@@ -20,6 +19,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import GoldLogoSymbol from '@assets/svgs/goldLogoSymbol.svg';
 import GoldLogoType from '@assets/svgs/goldLogoType.svg';
 import BlueLogoSymbol from '@assets/svgs/blueLogoSymbol.svg';
@@ -536,7 +536,7 @@ export default function OnboardingScreen() {
     let tick = 0;
     // withTiming의 완료 콜백은 UI 스레드(worklet)에서 실행되기 때문에, 인터벌이 정리된
     // 뒤(화면이 unmount된 뒤)에도 이미 예약된 애니메이션이 끝나면서 콜백이 늦게 한 번
-    // 더 실행될 수 있다 — 그때 runOnJS(setActiveFacilityIndex)가 unmount된 컴포넌트의
+    // 더 실행될 수 있다 — 그때 scheduleOnRN(setActiveFacilityIndex)가 unmount된 컴포넌트의
     // setState를 부르지 않도록, SharedValue로 마운트 여부를 들고 있다가 확인한다.
     isMounted.value = true;
     const intervalId = setInterval(() => {
@@ -551,7 +551,7 @@ export default function OnboardingScreen() {
       });
       facilityCardFade.value = withTiming(0, { duration: FACILITY_CARD_FADE_MS }, (finished) => {
         if (finished && isMounted.value) {
-          runOnJS(setActiveFacilityIndex)(tick % FACILITY_RING_ICON_COUNT);
+          scheduleOnRN(setActiveFacilityIndex, tick % FACILITY_RING_ICON_COUNT);
           facilityCardFade.value = withTiming(1, { duration: FACILITY_CARD_FADE_MS });
         }
       });
