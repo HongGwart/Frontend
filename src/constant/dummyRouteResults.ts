@@ -91,3 +91,51 @@ export const DUMMY_ROUTE_MAP = {
   endLatitude: 37.5512,
   endLongitude: 126.9243,
 };
+
+// 경로선 좌표. Figma(733:2584)의 경로선은 출발-도착을 직선으로 잇지 않고, 세로로 올라가다
+// 꺾여서 가로로 이어지는 L자 형태다 — 실제 캠퍼스 통로를 따라가는 모양을 흉내 내기 위해
+// 중간에 꺾이는 지점(도착지의 위도 + 출발지의 경도) 좌표를 하나 끼워 넣는다.
+export const DUMMY_ROUTE_PATH = [
+  { latitude: DUMMY_ROUTE_MAP.startLatitude, longitude: DUMMY_ROUTE_MAP.startLongitude },
+  { latitude: DUMMY_ROUTE_MAP.endLatitude, longitude: DUMMY_ROUTE_MAP.startLongitude },
+  { latitude: DUMMY_ROUTE_MAP.endLatitude, longitude: DUMMY_ROUTE_MAP.endLongitude },
+];
+
+export type GuidanceMoveType = 'walk' | 'elevator' | 'stairs' | 'entrance';
+
+// 경로 안내 중 상단 "move info" 카드에 한 장씩 보여줄 구간 안내.
+export interface GuidanceStep {
+  id: string;
+  moveType: GuidanceMoveType;
+  /** 카드 문구. Figma처럼 끊고 싶은 지점에 "\n"을 넣는다. */
+  title: string;
+  durationText: string;
+  /** 이 안내를 보여줄 때의 현재 위치 — DUMMY_ROUTE_PATH 전체 길이 중 진행 비율(0~1). */
+  progress: number;
+}
+
+// Figma "길 안내_걷기"(784:4466)의 카드(점 3개 = 구간 3개) 예시를 바탕으로 한 더미 안내.
+// 실제로는 선택한 경로의 구간 정보와 현재 위치로 만들어야 한다.
+export const DUMMY_GUIDANCE_STEPS: GuidanceStep[] = [
+  {
+    id: 'g1',
+    moveType: 'walk',
+    title: '엘리베이터에서 내려\n왼쪽 복도로 30m 이동',
+    durationText: '약 1분 소요',
+    progress: 0.3,
+  },
+  {
+    id: 'g2',
+    moveType: 'walk',
+    title: '복도 끝에서\n오른쪽으로 20m 이동',
+    durationText: '약 1분 소요',
+    progress: 0.7,
+  },
+  {
+    id: 'g3',
+    moveType: 'entrance',
+    title: 'R동 출입구로\n들어가세요',
+    durationText: '약 1분 소요',
+    progress: 0.95,
+  },
+];

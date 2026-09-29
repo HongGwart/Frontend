@@ -58,6 +58,9 @@ export type RootStackParamList = {
   // 입력창을 구분하고, 나머지 한쪽 값(departureLabel/destinationLabel)은 이미 골라둔 값을
   // 그대로 들고 있다가 결과와 함께 돌려보내기 위해 같이 받아온다.
   RouteLocationSearch: { target: 'departure' | 'destination' } & RouteLocationSelection;
+  // 길찾기 경로 보기의 "경로 안내 시작"을 누르면 뜨는 길 안내 화면. 아직 경로별 안내 데이터가
+  // 없어서 routeId는 받아만 두고, 화면은 더미 안내(DUMMY_GUIDANCE_STEPS)를 그린다.
+  RouteGuidance: { routeId: string };
 };
 
 // 편의시설 카테고리 그리드(FacilityScreen)의 카테고리 id. 여기서 export해서

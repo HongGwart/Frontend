@@ -29,6 +29,7 @@ import {
   DUMMY_ROUTE_RESULTS,
   DUMMY_ELEVATOR_WARNING_MESSAGE,
   DUMMY_ROUTE_MAP,
+  DUMMY_ROUTE_PATH,
 } from '@constant/dummyRouteResults';
 import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { MainTabParamList, RootStackParamList } from '@navigation/types';
@@ -236,15 +237,8 @@ export default function NavigationScreen() {
             isTiltGesturesEnabled={false}
           >
             <NaverMapPolylineOverlay
-              // Figma(733:2584)의 경로선은 출발-도착을 직선으로 잇지 않고, 세로로 올라가다
-              // 꺾여서 가로로 이어지는 L자 형태다 — 실제 캠퍼스 통로를 따라가는 모양을
-              // 흉내 내기 위해 중간에 꺾이는 지점(도착지의 위도 + 출발지의 경도) 좌표를
-              // 하나 끼워 넣는다.
-              coords={[
-                { latitude: DUMMY_ROUTE_MAP.startLatitude, longitude: DUMMY_ROUTE_MAP.startLongitude },
-                { latitude: DUMMY_ROUTE_MAP.endLatitude, longitude: DUMMY_ROUTE_MAP.startLongitude },
-                { latitude: DUMMY_ROUTE_MAP.endLatitude, longitude: DUMMY_ROUTE_MAP.endLongitude },
-              ]}
+              // L자 경로선 좌표(꺾이는 지점 포함) — 길 안내 화면과 같이 쓴다.
+              coords={DUMMY_ROUTE_PATH}
               width={6}
               color={theme.blue[500]}
               // capType/joinType 둘 다 "Round"가 목표값인데, 선언된 기본값도 Round라
@@ -315,7 +309,11 @@ export default function NavigationScreen() {
             </DetailScrollWrapper>
 
             <CtaWrapper bottomInset={insets.bottom}>
-              <Button label="경로 안내 시작" icon={NavigationStartIcon} onPress={() => setSelectedRouteId(null)} />
+              <Button
+                label="경로 안내 시작"
+                icon={NavigationStartIcon}
+                onPress={() => rootNavigation.navigate('RouteGuidance', { routeId: selectedRoute.id })}
+              />
             </CtaWrapper>
           </DetailSheetBody>
         </DetailSheet>

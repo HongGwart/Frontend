@@ -1,0 +1,17 @@
+<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="28" cy="28" r="28" fill="#343B9D" fill-opacity="0.1"/>
+<circle cx="28" cy="28" r="22" fill="url(#userPointShadow)"/>
+<circle cx="28" cy="28" r="12" fill="white"/>
+<circle cx="28" cy="28" r="8" fill="#343B9D"/>
+<defs>
+<radialGradient id="userPointShadow" cx="28" cy="28" r="22" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#343B9D" stop-opacity="0.2"/>
+<stop offset="0.318" stop-color="#343B9D" stop-opacity="0.168"/>
+<stop offset="0.545" stop-color="#343B9D" stop-opacity="0.1"/>
+<stop offset="0.659" stop-color="#343B9D" stop-opacity="0.062"/>
+<stop offset="0.773" stop-color="#343B9D" stop-opacity="0.032"/>
+<stop offset="0.886" stop-color="#343B9D" stop-opacity="0.013"/>
+<stop offset="1" stop-color="#343B9D" stop-opacity="0"/>
+</radialGradient>
+</defs>
+</svg>
