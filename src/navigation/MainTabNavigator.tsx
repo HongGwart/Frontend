@@ -50,7 +50,7 @@ const forNavigationPush: SceneStyleInterpolator = ({ current }) => {
 };
 
 // 지도는 길찾기가 덮는 동안 왼쪽으로 조금만 밀려나는 패럴랙스(iOS push의 뒤 화면처럼).
-// 지도는 첫 탭이라 progress가 0 또는 -1만 오간다. 길찾기와 오갈 때만 쓰고, 다른 탭과는 애니메이션 없이 바로 바뀐다.
+// 지도는 첫 탭이라 progress가 0 또는 -1만 오간다. 길찾기와 오갈 때만 쓰고, 다른 탭과는 forSubtleShift.
 const forMapUnderPush: SceneStyleInterpolator = ({ current }) => {
   const width = Dimensions.get('window').width;
   return {
@@ -61,6 +61,28 @@ const forMapUnderPush: SceneStyleInterpolator = ({ current }) => {
     },
   };
 };
+
+// 편의시설/주변상권/마이페이지(와 그 탭들을 오가는 지도)는 길찾기만큼 크게 움직이지 않고, 제자리에서
+// 살짝 옆으로 밀리며 페이드되는 미세한 전환만 준다. 오는 방향(progress ±1)에 따라 좌우가 정해진다.
+const TAB_SUBTLE_SPEC: BottomTabNavigationOptions['transitionSpec'] = {
+  animation: 'timing',
+  config: { duration: 180, easing: Easing.out(Easing.cubic) },
+};
+const SUBTLE_SHIFT = 10;
+
+const forSubtleShift: SceneStyleInterpolator = ({ current }) => ({
+  sceneStyle: {
+    opacity: current.progress.interpolate({ inputRange: [-1, 0, 1], outputRange: [0, 1, 0] }),
+    transform: [
+      {
+        translateX: current.progress.interpolate({
+          inputRange: [-1, 0, 1],
+          outputRange: [-SUBTLE_SHIFT, 0, SUBTLE_SHIFT],
+        }),
+      },
+    ],
+  },
+});
 
 // map 탭에서 검색창을 누르면 탭 바 없이 전체화면으로 뜨는 Search 스택 화면으로 이동한다.
 // Search는 이 탭 내비게이터의 형제(RootNavigator)에 있어서 부모 스택 쪽 navigation이 필요하다.
@@ -81,7 +103,7 @@ function MapTabScreen() {
 export default function MainTabNavigator() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  // 지도 탭의 전환은 상대가 길찾기일 때만 패럴랙스로 움직이고 다른 탭과는 애니메이션이 없어야 해서 직전/현재
+  // 지도 탭의 전환은 상대가 길찾기일 때만 크게(패럴랙스), 다른 탭이면 미세하게 움직여야 해서 직전/현재
   // 활성 탭을 기억한다. screenOptions는 탭 상태가 바뀔 때 전환 애니메이션보다 먼저 다시 계산되므로,
   // 여기서 갱신하면 그 전환에 맞는 옵션이 잡힌다. 탭이 실제로 바뀔 때만 갱신해서, 전환 도중 다른 이유로
   // 옵션이 다시 계산돼도 값이 흔들리지 않는다.
@@ -114,7 +136,7 @@ export default function MainTabNavigator() {
             ? { transitionSpec: TAB_PUSH_SPEC, sceneStyleInterpolator: forNavigationPush }
             : route.name === 'map' && isNavigationTransition
               ? { transitionSpec: TAB_PUSH_SPEC, sceneStyleInterpolator: forMapUnderPush }
-              : null),
+              : { transitionSpec: TAB_SUBTLE_SPEC, sceneStyleInterpolator: forSubtleShift }),
           headerShown: Boolean(headerTitle) && !isViewingRoute,
           // Figma "길 찾기_출발지/도착지 입력"(720:4897)엔 하단 탭 바가 없어서, 이 탭만 고정으로 감춘다.
           tabBarStyle: route.name === 'navigation' ? { display: 'none' } : undefined,
