@@ -169,6 +169,10 @@ export function useMapGestures({
     // 시작될 때(두 손가락이 처음 닿는 순간) 한 번만 호출해서 회전축을 고정한다.
     const capturePivot = () => {
       'worklet';
+      // 팬 관성(withDecay)이 아직 굴러가는 중이면 멈춘 위치로 pivot을 잡는다. 안 멈추면 첫 onUpdate
+      // 전까지 decay가 지도를 더 밀었다가, 옛 pivot 기준으로 다시 계산되며 살짝 튕겨 돌아간다.
+      cancelAnimation(translateX);
+      cancelAnimation(translateY);
       if (!containerWidthShared.value || !containerHeightShared.value) return;
       const cx = containerWidthShared.value / 2;
       const cy = containerHeightShared.value / 2;
