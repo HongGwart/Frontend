@@ -69,6 +69,18 @@ export function Marker({ label, favorite = false, count, scale = 1 }: Props) {
   );
 }
 
+/**
+ * 마커 위 라벨 필만 따로 그린다. NaverMapMarker가 라벨을 핀과 다른 오버레이로 분리해서
+ * 투명도(alpha)로 서서히 숨기거나 보일 때 쓴다 — 모양은 <Marker label>의 라벨과 같다.
+ */
+export function MarkerLabel({ label }: { label: string }) {
+  return (
+    <LabelPill>
+      <LabelText numberOfLines={1}>{label}</LabelText>
+    </LabelPill>
+  );
+}
+
 const Container = styled.View`
   align-items: center;
   align-self: center;

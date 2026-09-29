@@ -16,9 +16,13 @@ import { FacilityListSheet, FacilityListSheetItem } from '@components/common/Fac
 import { Toast } from '@components/common/Toast';
 import { DismissibleBottomSheet, DismissibleBottomSheetRef } from '@components/common/DismissibleBottomSheet';
 import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
-import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { DevBuildingPinMarkers, DevBuildingPinPanel, useDevBuildingPins } from '@components/map/DevBuildingPinPicker';
+import {
+  FadingLabelMarkerItem,
+  FadingLabelMarkers,
+  FadingLabelMarkersRef,
+} from '@components/map/FadingLabelMarkers';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import {
@@ -65,6 +69,9 @@ interface FavoriteMapEntry {
 }
 
 const TOAST_DURATION_MS = 2000;
+const INITIAL_ZOOM = 16;
+// 이 줌보다 더 축소하면 동 마커 네임택(R동, T동 …)을 전부 숨기고 핀만 남긴다.
+const HIDE_MARKER_LABELS_BELOW_ZOOM = 15.5;
 
 // 겹쳐진 마커 리스트 시트는 카테고리 칩 아래로 이 간격(피그마 기준)만큼 띄우고, 그 지점부터
 // 화면 끝까지를 항상 채운다(항목이 적어도 빈 공간으로 남지 않고 시트 자체가 그 높이를 가짐).
@@ -270,6 +277,32 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     return Array.from(entryByLabel.values());
   }, [selectedKey, isFavorite]);
 
+  // 일정 줌 이하로 축소하면 동 마커 네임택끼리 겹쳐 보이니 전부 페이드로 숨긴다. 페이드 상태는
+  // FadingLabelMarkers 안에 있고 줌도 ref로 넘겨서, 카메라가 움직이는 동안 이 화면은 다시 그려지지 않는다.
+  const labelMarkersRef = useRef<FadingLabelMarkersRef>(null);
+  const labelMarkerItems = useMemo<FadingLabelMarkerItem[]>(
+    () => [
+      ...dongMarkers.map(marker => ({
+        key: marker.id,
+        latitude: marker.latitude,
+        longitude: marker.longitude,
+        label: marker.label,
+        favorite: isFavorite(marker),
+        onPress: () => openDongMarkerSheet(marker),
+      })),
+      ...favoriteEntries.map(entry => ({
+        key: entry.dongMarker.id,
+        latitude: entry.dongMarker.latitude,
+        longitude: entry.dongMarker.longitude,
+        label: entry.dongMarker.label,
+        favorite: isFavorite(entry.dongMarker),
+        count: entry.facilityItems.length || undefined,
+        onPress: () => openFavoriteDongSheet(entry),
+      })),
+    ],
+    [dongMarkers, favoriteEntries, isFavorite, openDongMarkerSheet, openFavoriteDongSheet],
+  );
+
   // 마이페이지/즐겨찾기 목록에서 시설을 탭하고 넘어오면, 그 시설 정보 바텀시트를 연다.
   // 한 번 소비한 뒤에는 파라미터를 비워서(같은 시설을 다시 눌러도 id가 바뀌면 다시 열리도록)
   // 탭을 평범하게 다시 방문했을 때 카드가 되살아나지 않게 한다.
@@ -295,35 +328,23 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         initialCamera={{
           latitude: 37.5504,
           longitude: 126.9251,
-          zoom: 16,
+          zoom: INITIAL_ZOOM,
         }}
+        onCameraChanged={({ zoom }) => zoom !== undefined && labelMarkersRef.current?.onZoomChange(zoom)}
         minZoom={MAP_MIN_ZOOM}
         maxZoom={MAP_MAX_ZOOM}
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
         onTapMap={pinPicker.active ? pinPicker.handleTap : closeFacilitySheet}
       >
         <DevBuildingPinMarkers picker={pinPicker} />
-        {!pinPicker.active && dongMarkers.map(marker => (
-          <NaverMapMarker
-            key={marker.id}
-            latitude={marker.latitude}
-            longitude={marker.longitude}
-            label={marker.label}
-            favorite={isFavorite(marker)}
-            onPress={() => openDongMarkerSheet(marker)}
+        {!pinPicker.active && (
+          <FadingLabelMarkers
+            ref={labelMarkersRef}
+            items={labelMarkerItems}
+            hideBelowZoom={HIDE_MARKER_LABELS_BELOW_ZOOM}
+            initialZoom={INITIAL_ZOOM}
           />
-        ))}
-        {!pinPicker.active && favoriteEntries.map(entry => (
-          <NaverMapMarker
-            key={entry.dongMarker.id}
-            latitude={entry.dongMarker.latitude}
-            longitude={entry.dongMarker.longitude}
-            label={entry.dongMarker.label}
-            favorite={isFavorite(entry.dongMarker)}
-            count={entry.facilityItems.length || undefined}
-            onPress={() => openFavoriteDongSheet(entry)}
-          />
-        ))}
+        )}
         {!pinPicker.active && categoryMarkers.map(marker => (
           <NaverMapCategoryMarker
             key={marker.id}

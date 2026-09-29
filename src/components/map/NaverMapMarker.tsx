@@ -1,7 +1,13 @@
 import React from 'react';
 import { View } from 'react-native';
 import { NaverMapMarkerOverlay } from '@mj-studio/react-native-naver-map';
-import { Marker, MARKER_PIN_BOX_SIZE, MARKER_LABEL_GAP, MARKER_LABEL_PILL_HEIGHT } from '@components/common/Marker';
+import {
+  Marker,
+  MarkerLabel,
+  MARKER_PIN_BOX_SIZE,
+  MARKER_LABEL_GAP,
+  MARKER_LABEL_PILL_HEIGHT,
+} from '@components/common/Marker';
 
 interface Props {
   latitude: number;
@@ -17,6 +23,12 @@ interface Props {
   zIndex?: number;
   /** Marker의 scale과 동일 — 커진 만큼 래스터화 박스(width/height)도 같이 키워줘야 안 잘린다. */
   scale?: number;
+  /**
+   * 넘기면 라벨을 핀과 별도의 오버레이로 분리하고 이 값(0~1)을 라벨의 투명도로 쓴다. 핀+라벨이
+   * 한 장의 이미지로 래스터화되는 기본 방식에선 라벨만 흐리게 할 수 없어서, 줌에 따라 라벨을
+   * 페이드로 숨기는 지도(MapScreen)에서만 쓴다. 0이면 라벨 오버레이를 아예 숨긴다.
+   */
+  labelOpacity?: number;
 }
 
 // NaverMapMarkerOverlay는 커스텀 뷰를 이 크기 그대로의 "고정 크기 이미지"로 래스터화해서
@@ -44,8 +56,39 @@ function getOverlaySize(hasLabel: boolean, label?: string) {
  * 우리 디자인의 <Marker />를 네이버 지도 위 커스텀 마커로 올려주는 어댑터.
  * NaverMapMarkerOverlay의 "Custom React View" 이미지 타입을 사용한다.
  */
-export function NaverMapMarker({ latitude, longitude, label, favorite, count, onPress, zIndex, scale = 1 }: Props) {
+export function NaverMapMarker({
+  latitude,
+  longitude,
+  label,
+  favorite,
+  count,
+  onPress,
+  zIndex,
+  scale = 1,
+  labelOpacity,
+}: Props) {
   const hasLabel = count === undefined && Boolean(label);
+  if (labelOpacity !== undefined && hasLabel && label && scale === 1) {
+    return (
+      <>
+        <NaverMapMarker
+          latitude={latitude}
+          longitude={longitude}
+          favorite={favorite}
+          onPress={onPress}
+          zIndex={zIndex}
+        />
+        <SeparateLabelOverlay
+          latitude={latitude}
+          longitude={longitude}
+          label={label}
+          opacity={labelOpacity}
+          onPress={onPress}
+          zIndex={zIndex}
+        />
+      </>
+    );
+  }
   const { width, height } = getOverlaySize(hasLabel, label);
   // scale만큼 시각적으로 커지는 만큼, 래스터화 박스도 같이 키워야 위쪽이 안 잘린다. 핀 끝은
   // Marker.tsx가 transform-origin: bottom으로 고정해서 커져도 이 박스의 바닥(=anchor y:1,
@@ -72,6 +115,49 @@ export function NaverMapMarker({ latitude, longitude, label, favorite, count, on
         style={{ width: scaledWidth, height: scaledHeight, alignItems: 'center', justifyContent: 'flex-end' }}
       >
         <Marker label={label} favorite={favorite} count={count} scale={scale} />
+      </View>
+    </NaverMapMarkerOverlay>
+  );
+}
+
+/**
+ * 라벨 필만 담은 오버레이. 핀+라벨을 한 장으로 그리는 기본 오버레이와 같은 박스 크기/앵커를 쓰고
+ * 라벨을 같은 위치(박스 위쪽, 핀 박스 여유분만큼 아래)에 둬서, 따로 그려도 핀과 딱 맞게 겹친다.
+ * 라벨을 눌러도 마커를 누른 것과 같게 onPress를 그대로 건다.
+ */
+function SeparateLabelOverlay({
+  latitude,
+  longitude,
+  label,
+  opacity,
+  onPress,
+  zIndex,
+}: {
+  latitude: number;
+  longitude: number;
+  label: string;
+  opacity: number;
+  onPress?: () => void;
+  zIndex?: number;
+}) {
+  const { width, height } = getOverlaySize(true, label);
+  return (
+    <NaverMapMarkerOverlay
+      latitude={latitude}
+      longitude={longitude}
+      width={width}
+      height={height}
+      zIndex={zIndex}
+      anchor={{ x: 0.5, y: 1 }}
+      alpha={opacity}
+      isHidden={opacity <= 0}
+      onTap={onPress}
+    >
+      <View key={label} collapsable={false} style={{ width, height, alignItems: 'center' }}>
+        {/* 기본 오버레이에선 36px 핀 박스가 40px 오버레이 바닥에 붙어서 라벨 위에 4px 여백이 생긴다. */}
+        <View style={{ marginTop: PIN_BOX_BUFFER }}>
+          <MarkerLabel label={label} />
+        </View>
       </View>
     </NaverMapMarkerOverlay>
   );
