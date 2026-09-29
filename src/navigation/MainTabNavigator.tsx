@@ -151,7 +151,10 @@ export default function MainTabNavigator() {
         return (
           <NavigationBar
             activeTab={state.routeNames[state.index] as NavigationTab}
-            onTabPress={tab => navigation.navigate(tab)}
+            // 길찾기 탭은 들어올 때마다 빈 입력부터 시작해야 해서 resetKey를 같이 넘긴다.
+            onTabPress={tab =>
+              tab === 'navigation' ? navigation.navigate('navigation', { resetKey: Date.now() }) : navigation.navigate(tab)
+            }
             bottomInset={insets.bottom}
           />
         );

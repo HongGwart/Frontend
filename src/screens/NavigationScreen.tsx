@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { RouteProp, useNavigation, useNavigationState, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NaverMapView, NaverMapPolylineOverlay, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
@@ -37,8 +37,6 @@ import { MainTabParamList, RootStackParamList } from '@navigation/types';
 // Header.tsx의 Container height와 동일한 값 — 경로 보기 화면에서 지도 위에 얹는
 // 투명 헤더의 실제 높이(세이프에어리어 제외)를 지도 카메라 패딩 계산에 재사용한다.
 const ROUTE_VIEW_HEADER_HEIGHT = 56;
-// 탭을 떠난 뒤 입력값을 비우기까지 기다리는 시간 — 탭 전환 애니메이션(300ms)보다 조금 길게.
-const RESET_AFTER_LEAVE_MS = 350;
 // 경로 보기 카드를 끌어내렸을 때 하단 세이프에어리어 위로 남겨둘 높이 —
 // 시트 padding-top(8) + 그래버(4) + 아래 여백 12px.
 const DETAIL_SHEET_PEEK_HEIGHT = 24;
@@ -92,23 +90,21 @@ export default function NavigationScreen() {
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 
-  // 탭 화면은 다른 탭으로 가도 언마운트되지 않아서 입력값이 그대로 남는다. 길찾기 탭에서 다른
-  // 탭으로 바뀌는 순간(뒤로가기로 지도에 가거나, 길 안내를 마치고 지도로 나가는 경우 포함) 전부
-  // 비운다. 출발/도착 검색이나 길 안내처럼 탭 위에 스택 화면이 뜨는 동안엔 탭 자체는 그대로라
-  // 유지된다 — 그래야 검색에서 고른 값, 돌아올 경로 보기가 살아 있다.
-  const isActiveTab = useNavigationState(state => state.routes[state.index]?.name === 'navigation');
-  useEffect(() => {
-    if (isActiveTab) return;
-    // 지도 탭으로 나갈 때 이 화면이 오른쪽으로 밀려 나가는 전환(MainTabNavigator, 300ms)이 있어서,
-    // 바로 비우면 나가는 도중 입력값이 사라지는 게 보인다. 전환이 끝난 뒤에 비운다.
-    const timeoutId = setTimeout(() => {
-      setDeparture('');
-      setDestination('');
-      setSelectedOption(null);
-      setSelectedRouteId(null);
-    }, RESET_AFTER_LEAVE_MS);
-    return () => clearTimeout(timeoutId);
-  }, [isActiveTab]);
+  // 탭 화면은 다른 탭으로 가도 언마운트되지 않아서 입력값이 그대로 남는다. 그래서 다른 탭/카드에서 이 탭으로
+  // "새로 들어올 때"(하단 탭 버튼, 카드의 출발/도착 — resetKey 파라미터) 전부 비우고 빈 입력부터 시작한다.
+  // 떠날 때가 아니라 들어올 때 비우는 건, "안내 종료"처럼 탭 위 스택 화면에서 한 번에 다른 탭으로 나가는
+  // 경우엔 이 화면이 떠났다는 신호를 못 받기 때문이다. 화면이 그려지기 전(layout effect)에 비워서 이전
+  // 경로가 잠깐도 보이지 않고, routeSelection(카드의 값)을 반영하는 일반 effect보다 먼저 돌아 새 값은 살아남는다.
+  // 출발/도착 검색이나 길 안내에서 돌아올 때는 resetKey가 없어서 값이 유지된다.
+  const resetInputs = useCallback(() => {
+    setDeparture('');
+    setDestination('');
+    setSelectedOption(null);
+    setSelectedRouteId(null);
+  }, []);
+  useLayoutEffect(() => {
+    if (params?.resetKey !== undefined) resetInputs();
+  }, [params?.resetKey, resetInputs]);
   const selectedRoute = useMemo(
     () => DUMMY_ROUTE_RESULTS.find(route => route.id === selectedRouteId) ?? null,
     [selectedRouteId],
@@ -151,9 +147,14 @@ export default function NavigationScreen() {
 
   // "경로 보기" 상태로 바뀌면 MainTabNavigator에게 알려서, 이 탭의 (불투명) 헤더를 끄게 한다
   // — 아래에서 이 화면이 직접 지도 위에 투명 헤더를 얹으므로 둘이 겹치면 안 된다.
+  // 파라미터가 이동 중에 날아가거나 어긋나면(그러면 이 화면은 경로 보기인데 탭 헤더가 다시 떠 헤더가 두 개가
+  // 된다) 실제 화면 상태와 다를 때마다 다시 맞춰 준다.
+  const isViewingRouteParam = Boolean(params?.isViewingRoute);
   useEffect(() => {
-    tabNavigation.setParams({ isViewingRoute: Boolean(selectedRoute) });
-  }, [selectedRoute, tabNavigation]);
+    if (isViewingRouteParam !== Boolean(selectedRoute)) {
+      tabNavigation.setParams({ isViewingRoute: Boolean(selectedRoute) });
+    }
+  }, [selectedRoute, isViewingRouteParam, tabNavigation]);
 
   // 기본 화면 상단과, 경로 보기 카드를 끌어내렸을 때의 상단 패널이 같은 입력 영역을 쓴다.
   // 카드를 접었을 때는 보여주기만 하고 검색 이동/지우기/출발·도착 바꾸기를 모두 막는다.

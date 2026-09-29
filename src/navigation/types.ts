@@ -34,6 +34,11 @@ export type MainTabParamList = {
      * (Figma "길 찾기_경로 보기" 733:2584/733:3264).
      */
     isViewingRoute?: boolean;
+    /**
+     * 다른 탭/카드에서 길찾기 탭으로 "새로 들어올 때" 넘기는 값(Date.now()). 값이 바뀌면 NavigationScreen이
+     * 입력값/경로를 전부 비우고 처음부터 시작한다. 출발/도착 검색이나 길 안내에서 돌아올 때는 넘기지 않는다.
+     */
+    resetKey?: number;
   } | undefined;
   facility: undefined;
   hongdae: undefined;

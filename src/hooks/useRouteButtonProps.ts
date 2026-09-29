@@ -23,12 +23,14 @@ export function useRouteButtonProps(onBeforeNavigate?: () => void) {
       const goToRoute = (target: 'departure' | 'destination') => {
         onBeforeNavigate?.();
         const routeSelection = target === 'departure' ? { departureLabel: label } : { destinationLabel: label };
+        // 새로 들어가는 것이니 이전 입력은 비우고(resetKey) 이 값 하나만 채운다.
+        const tabParams = { routeSelection, resetKey: Date.now() };
         // 이미 탭 안(지도 탭 등)이면 탭만 바꾸면 되고, 스택 위 화면이면 MainTabs까지 되돌아간다.
         if (navigation.getState()?.routeNames.includes('navigation')) {
-          navigation.navigate('MainTabs', { screen: 'navigation', params: { routeSelection } });
+          navigation.navigate('MainTabs', { screen: 'navigation', params: tabParams });
           return;
         }
-        navigation.dispatch(StackActions.popTo('MainTabs', { screen: 'navigation', params: { routeSelection } }));
+        navigation.dispatch(StackActions.popTo('MainTabs', { screen: 'navigation', params: tabParams }));
       };
       return {
         onDeparturePress: () => goToRoute('departure'),
