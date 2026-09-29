@@ -222,7 +222,6 @@ export default function RouteGuidanceScreen() {
 
   const [stepIndex, setStepIndex] = useState(0);
   const step = DUMMY_GUIDANCE_STEPS[stepIndex];
-  const isLastStep = stepIndex === DUMMY_GUIDANCE_STEPS.length - 1;
   // 마지막 구간에서 "다음"을 누르면 도착한 것으로 본다. 별도 화면을 띄우지 않고 지도 위에서
   // 남은 경로를 끝까지 줄이고, 상단 카드를 도착 안내로 바꾸고, 하단에 "안내 종료" 버튼을 띄운다.
   const [hasArrived, setHasArrived] = useState(false);
@@ -238,20 +237,34 @@ export default function RouteGuidanceScreen() {
   const slideOffset = screenWidth * CARD_SLIDE_RATIO;
   const canGoPrev = stepIndex > 0;
 
+  // 지금 구간을 렌더 결과(stepIndex)가 아니라 여기서 바로 읽는다. 커밋 직후 리렌더 전에 버튼/스와이프가
+  // 또 들어오면 옛 클로저의 isLastStep(false)으로 한 칸 더 넘겨 범위를 벗어나(step이 undefined) 크래시가
+  // 났다. stepIndex는 commitStep에서만 바뀌므로 이 ref가 항상 최신이다.
+  const stepIndexRef = useRef(0);
+
   // dir: 1 = 다음 구간, -1 = 이전 구간. 카드가 빠져나간 뒤 JS에서 실제로 구간을 바꾼다.
   const commitStep = useCallback(
     (dir: 1 | -1) => {
-      if (dir === 1 && isLastStep) {
+      const lastIndex = DUMMY_GUIDANCE_STEPS.length - 1;
+      if (dir === 1 && stepIndexRef.current === lastIndex) {
         // 도착 카드는 기존처럼 제자리 페이드로 뜨니 위치/투명도만 원래대로 돌려둔다.
         cardX.value = 0;
         cardOpacity.value = 1;
         setHasArrived(true);
         return;
       }
+      const nextIndex = Math.min(lastIndex, Math.max(0, stepIndexRef.current + dir));
+      if (nextIndex === stepIndexRef.current) {
+        // 첫 구간에서 이전으로 가려던 경우 — 빠져나간 카드만 제자리로 되돌린다.
+        cardX.value = withTiming(0, { duration: CARD_IN_MS, easing: Easing.out(Easing.cubic) });
+        cardOpacity.value = withTiming(1, { duration: CARD_IN_MS });
+        return;
+      }
+      stepIndexRef.current = nextIndex;
       enterFromRef.current = dir;
-      setStepIndex(index => index + dir);
+      setStepIndex(nextIndex);
     },
-    [isLastStep, cardX, cardOpacity],
+    [cardX, cardOpacity],
   );
 
   const slideOut = useCallback(

@@ -20,7 +20,8 @@ export function animateValue({ from, to, durationMs, delayMs = 0, easing = easeO
   let frameId = 0;
   let startedAt = 0;
   const tick = () => {
-    const t = Math.min(1, (Date.now() - startedAt) / durationMs);
+    // durationMs가 0 이하면 0/0 = NaN이 네이티브 지도 prop으로 흘러가지 않게 바로 끝값으로 간다.
+    const t = durationMs > 0 ? Math.min(1, (Date.now() - startedAt) / durationMs) : 1;
     onUpdate(from + (to - from) * easing(t));
     if (t < 1) frameId = requestAnimationFrame(tick);
     else onEnd?.();

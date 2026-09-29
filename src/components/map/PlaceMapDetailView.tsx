@@ -14,6 +14,8 @@ interface Props {
   latitude: number;
   longitude: number;
   onBack: () => void;
+  /** 상단 검색창을 눌렀을 때. map 탭 검색창처럼 검색 화면(Search)으로 보낸다. */
+  onSearchPress: () => void;
   /** 장소 좌표에 찍을 마커(NaverMapView의 children으로 들어간다). */
   marker: React.ReactNode;
   /** 화면 하단에 붙는 시설 정보 카드(FacilityInfoCard). */
@@ -26,7 +28,7 @@ interface Props {
  * 지도와 같은 UI), 가운데엔 장소 좌표에 마커를 찍은 네이버 지도, 하단엔 시설 카드가 붙는다.
  * 주변상권(HongdaeScreen)과 편의시설 목록(FacilityCategoryListScreen)이 같이 쓴다.
  */
-export function PlaceMapDetailView({ latitude, longitude, onBack, marker, card }: Props) {
+export function PlaceMapDetailView({ latitude, longitude, onBack, onSearchPress, marker, card }: Props) {
   const insets = useSafeAreaInsets();
   // 상단 카테고리 칩. 메인 지도 화면(MapScreen)과 동일한 칩 UI만 우선 갖춘다(마커 필터링 연결 없음).
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
@@ -38,9 +40,9 @@ export function PlaceMapDetailView({ latitude, longitude, onBack, marker, card }
           <BackButton onPress={onBack} hitSlop={8}>
             <ChevronLeftIcon width={24} height={24} />
           </BackButton>
-          {/* map 탭 상단 검색창과 동일하게, 여기서는 입력 불가(onPress만 있는) 장식용 검색창이다. */}
+          {/* map 탭 상단 검색창과 동일하게, 여기서는 입력 불가이고 누르면 검색 화면으로 넘어간다. */}
           <SearchBarWrap>
-            <SearchBar value="" onChangeText={() => {}} onPress={() => {}} />
+            <SearchBar value="" onChangeText={() => {}} onPress={onSearchPress} />
           </SearchBarWrap>
         </SearchRow>
         <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} />

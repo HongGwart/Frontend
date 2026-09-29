@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -14,6 +14,7 @@ import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
 import { DUMMY_FACILITY_IMAGES } from '@constant/dummyFacilityInfo';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
+import { useCloseOnHardwareBack } from '@hooks/useCloseOnHardwareBack';
 import { FACILITY_CATEGORIES } from '@constant/facilityCategories';
 import { DUMMY_FACILITY_CATEGORY_PLACES } from '@constant/dummyFacilityCategoryPlaces';
 import { FacilityCategoryId, RootStackParamList } from '@navigation/types';
@@ -57,6 +58,8 @@ export default function FacilityCategoryListScreen() {
     () => places.find(place => place.id === selectedPlaceId) ?? null,
     [places, selectedPlaceId],
   );
+  const closeDetail = useCallback(() => setSelectedPlaceId(null), []);
+  useCloseOnHardwareBack(!!selectedPlace, closeDetail);
   const toggleFavorite = (id: string) => {
     setFavoriteIds(prev => {
       const next = new Set(prev);
@@ -80,7 +83,8 @@ export default function FacilityCategoryListScreen() {
       <PlaceMapDetailView
         latitude={latitude}
         longitude={longitude}
-        onBack={() => setSelectedPlaceId(null)}
+        onBack={closeDetail}
+        onSearchPress={() => navigation.navigate('Search')}
         marker={
           markerIconKey ? (
             <NaverMapCategoryMarker
