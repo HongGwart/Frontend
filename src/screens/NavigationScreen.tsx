@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useNavigationState, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NaverMapView, NaverMapPolylineOverlay, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
@@ -89,6 +89,19 @@ export default function NavigationScreen() {
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
+
+  // 탭 화면은 다른 탭으로 가도 언마운트되지 않아서 입력값이 그대로 남는다. 길찾기 탭에서 다른
+  // 탭으로 바뀌는 순간(뒤로가기로 지도에 가거나, 길 안내를 마치고 지도로 나가는 경우 포함) 전부
+  // 비운다. 출발/도착 검색이나 길 안내처럼 탭 위에 스택 화면이 뜨는 동안엔 탭 자체는 그대로라
+  // 유지된다 — 그래야 검색에서 고른 값, 돌아올 경로 보기가 살아 있다.
+  const isActiveTab = useNavigationState(state => state.routes[state.index]?.name === 'navigation');
+  useEffect(() => {
+    if (isActiveTab) return;
+    setDeparture('');
+    setDestination('');
+    setSelectedOption(null);
+    setSelectedRouteId(null);
+  }, [isActiveTab]);
   const selectedRoute = useMemo(
     () => DUMMY_ROUTE_RESULTS.find(route => route.id === selectedRouteId) ?? null,
     [selectedRouteId],
