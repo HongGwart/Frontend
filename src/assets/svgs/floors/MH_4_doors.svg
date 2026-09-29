@@ -59,15 +59,18 @@
 </g>
 <defs>
 <clipPath id="clip0_1105_35484">
-<rect width="32" height="32" fill="white" transform="translate(676 1192)"/>
+<rect width="1920" height="1961" fill="white"/>
 </clipPath>
 <clipPath id="clip1_1105_35484">
-<rect width="32" height="32" fill="white" transform="translate(722 1192)"/>
+<rect width="32" height="32" fill="white" transform="translate(676 1192)"/>
 </clipPath>
 <clipPath id="clip2_1105_35484">
-<rect width="32" height="32" fill="white" transform="translate(697 979)"/>
+<rect width="32" height="32" fill="white" transform="translate(722 1192)"/>
 </clipPath>
 <clipPath id="clip3_1105_35484">
+<rect width="32" height="32" fill="white" transform="translate(697 979)"/>
+</clipPath>
+<clipPath id="clip4_1105_35484">
 <rect width="32" height="32" fill="white" transform="translate(1048 1128)"/>
 </clipPath>
 </defs>

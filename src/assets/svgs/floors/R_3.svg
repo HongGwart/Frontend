@@ -635,27 +635,27 @@
 </g>
 </g>
 <g id="Hitbox">
-<path id="room_320" d="M905.786 255.109L864.999 489L641.258 449.982V274.53L652.352 210.915L905.786 255.109Z" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_319" x="905.787" y="255" width="249.856" height="237.42" transform="rotate(9.89199 905.787 255)" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_318" x="1149.79" y="298" width="327.017" height="237.42" transform="rotate(9.89199 1149.79 298)" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_315" x="1473.79" y="353" width="309.03" height="513.546" transform="rotate(9.89199 1473.79 353)" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_316" x="1281.16" y="626.104" width="142.904" height="212.507" transform="rotate(9.89199 1281.16 626.104)" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_317" x="1019.5" y="581.072" width="264.727" height="212.507" transform="rotate(9.89199 1019.5 581.072)" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_314-1" x="770" y="973" width="269" height="88" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_313" x="511" y="896" width="197" height="184" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_312" x="511" y="1079" width="197" height="184" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_311" x="511" y="1261" width="197" height="180" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_304" x="601" y="1496" width="90" height="160" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_303" x="691" y="1496" width="77" height="160" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_302" x="768" y="1496" width="69" height="160" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_301" d="M838 1442H912.5V1491.5H1001.5V1442H1042V1656H838V1442Z" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_310" x="1041" y="1064" width="168" height="205" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_307" x="1041" y="1312" width="167" height="131" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_306" x="1208" y="1312" width="203" height="131" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_309" x="1209" y="1064" width="202" height="205" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_308" d="M1411 1064H1661L1627 1269H1411V1064Z" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_305" d="M1507 1269H1627L1595 1442H1507V1269Z" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_314-2" d="M773 754.5L1040 800V972H769V800L773 754.5Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_320" d="M905.786 255.195L864.999 489.086L641.258 450.068V274.616L652.352 211.001L905.786 255.195Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_319" x="905.787" y="255.086" width="249.856" height="237.42" transform="rotate(9.89199 905.787 255.086)" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_318" x="1149.79" y="298.086" width="327.017" height="237.42" transform="rotate(9.89199 1149.79 298.086)" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_315" x="1473.79" y="353.086" width="309.03" height="513.546" transform="rotate(9.89199 1473.79 353.086)" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_316" x="1281.16" y="626.188" width="142.904" height="212.507" transform="rotate(9.89199 1281.16 626.188)" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_317" x="1019.5" y="581.156" width="264.727" height="212.507" transform="rotate(9.89199 1019.5 581.156)" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_314-1" x="770" y="973.086" width="269" height="88" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_313" x="511" y="896.086" width="197" height="184" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_312" x="511" y="1079.09" width="197" height="184" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_311" x="511" y="1261.09" width="197" height="180" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_304" x="601" y="1496.09" width="90" height="160" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_303" x="691" y="1496.09" width="77" height="160" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_302" x="768" y="1496.09" width="69" height="160" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_301" d="M838 1442.09H912.5V1491.59H1001.5V1442.09H1042V1656.09H838V1442.09Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_310" x="1041" y="1064.09" width="168" height="205" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_307" x="1041" y="1312.09" width="167" height="131" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_306" x="1208" y="1312.09" width="203" height="131" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_309" x="1209" y="1064.09" width="202" height="205" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_308" d="M1411 1064.09H1661L1627 1269.09H1411V1064.09Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_305" d="M1507 1269.09H1627L1595 1442.09H1507V1269.09Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_314-2" d="M773 754.586L1040 800.086V972.086H769V800.086L773 754.586Z" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>

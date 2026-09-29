@@ -641,7 +641,7 @@
 <path id="Vector 29318" d="M421.179 244.883L464.11 370.329" stroke="#1D2056"/>
 </g>
 <g id="Hitbox">
-<rect id="room_B202" x="777" y="211.797" width="154" height="209" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_B212" x="777" y="211.797" width="154" height="209" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_B213" x="246" y="302.229" width="104.364" height="130.716" transform="rotate(-18.3518 246 302.229)" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_B209" x="931" y="211.797" width="328" height="209" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_B208" x="1260" y="211.797" width="479" height="209" fill="#D9D9D9" fill-opacity="0.01"/>
@@ -651,10 +651,10 @@
 <rect id="room_B205_2" x="1467" y="467.797" width="272" height="209" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_B207" x="1123" y="467.797" width="344" height="209" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_B210" x="931" y="467.797" width="192" height="512" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_B203" x="939" y="1188.8" width="184" height="120" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_B202" x="939" y="1188.8" width="184" height="120" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_B201" x="1786" y="1756.8" width="120" height="137" fill="#D9D9D9" fill-opacity="0.01"/>
 <path id="room_B211" d="M931 979.797H468L365 664.797H580V467.797H931V979.797Z" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_B203_2" x="1123" y="676.797" width="344" height="161" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_B203" x="1123" y="676.797" width="344" height="161" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>

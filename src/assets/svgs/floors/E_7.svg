@@ -408,6 +408,15 @@
 <path id="Subtract_4" d="M768.333 541.67C769.806 541.67 771 542.863 771 544.336V565.67C771 567.143 769.806 568.336 768.333 568.336H749.667C748.194 568.336 747 567.143 747 565.67L747 544.336C747 542.863 748.194 541.67 749.667 541.67H768.333ZM751 561.67C750.264 561.67 749.667 562.267 749.667 563.003V565.67H768.333V561.67H751ZM756.333 555.67C755.597 555.67 755 556.267 755 557.003V559.67H768.333V555.67H756.333ZM761.667 549.67C760.931 549.67 760.333 550.267 760.333 551.003V553.67H768.333V549.67H761.667Z" fill="white"/>
 </g>
 </g>
+<g id="Hitbox">
+<rect id="room_704" x="886" y="415" width="176" height="172" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_702" x="886" y="741" width="177" height="171" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_703" x="886" y="588" width="177" height="153" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_701" x="664" y="671" width="171" height="241" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_705" x="885" y="180" width="178" height="235" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_706-2" x="665" y="180" width="171" height="235" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_706-1" x="836" y="180" width="49" height="162" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1072_52681">

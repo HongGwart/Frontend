@@ -119,8 +119,10 @@ export function IndoorMapView({
 
   // SVG 캔버스(mapData.width/height)는 도면 크기와 무관하게 항상 같은 크기라, 그대로
   // fitToContainer 기준으로 쓰면 도면이 캔버스보다 훨씬 작은 층은 여백이 크게 남는다.
-  // 실제로 그려진 방/아이콘들의 바운딩 박스(=네이비 테두리 도면 영역)를 직접 구해서 넘긴다.
+  // 스크립트가 도면 외곽선으로 계산해 둔 영역이 있으면 그걸 쓰고, 없으면 방/아이콘들의
+  // 바운딩 박스(=네이비 테두리 도면 영역)를 직접 구해서 넘긴다.
   const contentBounds = useMemo(() => {
+    if (mapData.contentBounds) return mapData.contentBounds;
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
@@ -145,7 +147,7 @@ export function IndoorMapView({
       return { minX: 0, minY: 0, width: mapData.width, height: mapData.height };
     }
     return { minX, minY, width: maxX - minX, height: maxY - minY };
-  }, [mapData.rooms, mapData.icons, mapData.width, mapData.height]);
+  }, [mapData.contentBounds, mapData.rooms, mapData.icons, mapData.width, mapData.height]);
 
   // onRoomSelect(부모 setState)를 setSelectedRoomIds의 updater 안에서 부르면 "다른 컴포넌트를
   // 렌더링하는 도중 업데이트" 에러가 난다. 현재 선택은 ref로 읽고, 부모 알림은 updater 밖에서 한다.

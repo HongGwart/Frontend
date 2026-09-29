@@ -164,22 +164,18 @@
 <rect x="729" y="904" width="79" height="167" stroke="#1D2056"/>
 </g>
 <g id="room_13">
-<rect x="729" y="1218" width="79" height="167" fill="#EBEBF5"/>
-<rect x="729" y="1218" width="79" height="167" stroke="#1D2056"/>
-</g>
-<g id="room_14">
 <rect x="808" y="904" width="81" height="167" fill="#EBEBF5"/>
 <rect x="808" y="904" width="81" height="167" stroke="#1D2056"/>
 </g>
-<g id="room_15">
+<g id="room_14">
 <rect x="808" y="1218" width="81" height="167" fill="#EBEBF5"/>
 <rect x="808" y="1218" width="81" height="167" stroke="#1D2056"/>
 </g>
-<g id="room_16">
+<g id="room_15">
 <rect x="729" y="1110" width="160" height="70" fill="#EBEBF5"/>
 <rect x="729" y="1110" width="160" height="70" stroke="#1D2056"/>
 </g>
-<g id="room_17">
+<g id="room_16">
 <rect x="520" y="1110" width="209" height="70" fill="#EBEBF5"/>
 <rect x="520" y="1110" width="209" height="70" stroke="#1D2056"/>
 </g>

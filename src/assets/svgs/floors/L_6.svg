@@ -483,6 +483,12 @@
 <path id="Vector 29336" d="M1164 739V798" stroke="#1D2056"/>
 <rect id="Rectangle 240653325" x="1165" y="784" width="2" height="32" transform="rotate(-180 1165 784)" fill="white"/>
 </g>
+<g id="Hitbox">
+<rect id="room_601" x="471" y="283" width="801" height="283" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_603" x="1274" y="565" width="77" height="116" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_602" x="1274" y="680" width="131" height="120" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_J101" x="512" y="798" width="654" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1098_31453">

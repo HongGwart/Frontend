@@ -378,6 +378,19 @@
 </g>
 <path id="Vector 29283" d="M1048 576.5H1176" stroke="#1D2056"/>
 </g>
+<g id="Hitbox">
+<rect id="room_209" x="296" y="512" width="160" height="152" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_210" x="472" y="368" width="136" height="143" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_208" x="616" y="544" width="80" height="120" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_207" x="696" y="544" width="80" height="120" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_206" x="776" y="544" width="112" height="120" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_205" x="888" y="544" width="64" height="120" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_204" x="952" y="544" width="64" height="120" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_203" x="1176" y="544" width="168" height="120" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_202-1" x="1344" y="544" width="80" height="64" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_202-2" x="1344" y="608" width="80" height="56" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_201" x="1424" y="512" width="248" height="152" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_901_8774">

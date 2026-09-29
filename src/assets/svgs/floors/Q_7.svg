@@ -305,6 +305,9 @@
 <rect id="Rectangle 240653106_9" x="1214" y="313.5" width="1" height="0.5" transform="rotate(90 1214 313.5)" fill="#1D2056"/>
 </g>
 </g>
+<g id="Hitbox">
+<path id="room_701" d="M1140 564H1352V612H1296V722H1352V904H976V721H897V563H664V362H633V232H824V200H1140V564Z" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1145_30469">

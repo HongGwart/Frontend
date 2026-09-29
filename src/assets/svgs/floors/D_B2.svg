@@ -441,6 +441,18 @@
 <rect id="Rectangle 240653106_25" width="1" height="0.5" transform="matrix(4.37114e-08 -1 -1 -4.37114e-08 1173 564.5)" fill="#1D2056"/>
 </g>
 </g>
+<g id="Hitbox">
+<rect id="room_0205" x="504" y="277" width="299" height="139" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_0204-2" x="803" y="277" width="154" height="139" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_0204-1" x="957" y="277" width="75" height="139" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_0203-4" x="1032" y="277" width="80" height="139" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_0203-3" x="1112" y="277" width="71" height="139" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_0203-2" x="1183" y="277" width="71" height="139" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_0203-1" x="1254" y="277" width="161" height="139" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_0201" x="1265" y="453" width="150" height="204" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_0206-2" x="600" y="454" width="61" height="138" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_0206-1" x="661" y="454" width="61" height="138" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1072_49270">

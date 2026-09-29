@@ -1,5 +1,5 @@
 <svg width="1920" height="1235" viewBox="0 0 1920 1235" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="P_B1">
+<g id="P_B2">
 <rect width="1920" height="1235" fill="#E8EDF3"/>
 <g id="Visual">
 <g id="Union">
@@ -340,6 +340,15 @@
 <rect id="Rectangle 240653084_4" x="429" y="581" width="32" height="32" rx="4" fill="#474F5A"/>
 <path id="Subtract_4" d="M455.667 583.668C457.139 583.668 458.333 584.861 458.333 586.334V607.668C458.333 609.14 457.139 610.334 455.667 610.334H434.333C432.861 610.334 431.667 609.14 431.667 607.668V586.334C431.667 584.861 432.861 583.668 434.333 583.668H455.667ZM435.667 591.668V607.668H443.667V591.668H435.667ZM446.333 591.668V607.668H454.333V591.668H446.333ZM442.333 586.334C441.597 586.334 441 586.932 441 587.668C441 588.404 441.597 589.001 442.333 589.001H447.667C448.403 589.001 449 588.404 449 587.668C449 586.932 448.403 586.334 447.667 586.334H442.333Z" fill="white"/>
 </g>
+</g>
+<g id="Hitbox">
+<rect id="room_B204" x="799" y="361" width="162" height="265" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_B203" x="687" y="361" width="111" height="265" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_B201" x="633" y="526" width="55" height="100" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_B202" x="633" y="360" width="55" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_B205" x="960" y="361" width="163" height="265" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_B206" x="1123" y="361" width="152" height="265" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_B209" x="416" y="439" width="57" height="47" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>

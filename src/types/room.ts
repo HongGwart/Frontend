@@ -38,6 +38,12 @@ export interface FloorMapData {
   /** 원본 SVG viewBox 기준 너비/높이 (배경 SVG와 반드시 같은 좌표계여야 함) */
   width: number;
   height: number;
+  /**
+   * 실제로 그려진 건물 도면(외곽선)의 바운딩 박스. svgToRoomShapes.js가 Visual 레이어 외곽선으로
+   * 계산해 넣는다 — 방 도형(Hitbox)에는 강의실만 있어서 방 좌표만으로는 가장자리가 잘리기 때문.
+   * 없으면 IndoorMapView가 방/아이콘 좌표로 계산한다.
+   */
+  contentBounds?: { minX: number; minY: number; width: number; height: number };
   rooms: RoomShape[];
   /** 계단/엘리베이터 등 확대해도 크기가 고정되어야 하는 마커. 없는 층은 생략 가능 */
   icons?: IconMarker[];
