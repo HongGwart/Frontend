@@ -7,16 +7,18 @@
  *
  *   1. splitVisualLayers.js  - 배경/문/아이콘 SVG 3개로 분리
  *   2. stripLabelPaths.js    - 배경 SVG에서 박혀있는 방 번호 라벨 제거 (RoomLabelsLayer가 대신 그림)
- *   3. svgToRoomShapes.js    - 방 좌표 JSON 생성
+ *   3. svgToRoomShapes.js    - Hitbox 레이어로 방 좌표 JSON 생성
  *   4. svgToIcons.js         - 같은 JSON에 아이콘 좌표 병합
  *
  * 사용법:
- *   node scripts/processFloor.js <입력.svg> [출력 디렉토리]
+ *   node scripts/processFloor.js <입력.svg> [출력 디렉토리] [--allow-empty]
  * 출력 디렉토리를 생략하면 입력 파일과 같은 폴더에 만든다.
+ * --allow-empty: 강의실이 없어 Hitbox 레이어가 없는 층(예: R_16)에만 붙인다 (svgToRoomShapes.js 참고).
  *
  * 원본 SVG가 지켜야 하는 네이밍 규칙 (각 스크립트 상단 주석에 더 자세히):
  *   - 배경/방/문/아이콘을 전부 담는 최상위 그룹: id="Visual"
- *   - 방 hitbox: id="room_방이름" (또는 room, room_2... 자동 넘버링 + 안에 숫자 라벨)
+ *   - 방 탭/하이라이트 영역: Visual과 나란한 최상위 그룹 id="Hitbox" 안에 방마다 id="room_방이름" 도형
+ *     (이 레이어가 없으면 아무 파일도 건드리지 않고 멈춘다)
  *   - 방 번호 라벨: id="103", id="102-1" 같은 숫자(-숫자) <path>
  *   - 문: id="door", "door_2", "door_3"...
  *   - 계단/엘리베이터: id="map_elevator", "map_stairs", "map_stairs_2"...
@@ -37,13 +39,22 @@ function run(scriptName, args) {
 }
 
 function main() {
-  const [, , inputPath, outDirArg] = process.argv;
+  const args = process.argv.slice(2);
+  const allowEmpty = args.includes('--allow-empty');
+  const [inputPath, outDirArg] = args.filter((arg) => !arg.startsWith('--'));
   if (!inputPath) {
-    console.error('사용법: node scripts/processFloor.js <입력.svg> [출력 디렉토리]');
+    console.error('사용법: node scripts/processFloor.js <입력.svg> [출력 디렉토리] [--allow-empty]');
     process.exit(1);
   }
   if (!fs.existsSync(inputPath)) {
     console.error(`[에러] 입력 파일을 찾을 수 없습니다: ${inputPath}`);
+    process.exit(1);
+  }
+
+  // 방 도형은 Hitbox 레이어로만 만든다. 없는 파일로 돌리면 배경/문 SVG만 새로 쓰고 JSON 단계에서
+  // 실패해 층이 반쯤 바뀐 채로 남으니, 아무것도 건드리기 전에 먼저 막는다.
+  if (!allowEmpty && !/<g id="Hitbox"[\s>]/.test(fs.readFileSync(inputPath, 'utf8'))) {
+    console.error(`[에러] ${inputPath}에 Hitbox 레이어가 없어 처리하지 않습니다. Figma에서 Hitbox를 추가해 다시 export하세요.`);
     process.exit(1);
   }
 
@@ -70,7 +81,7 @@ function main() {
 
   run('stripLabelPaths.js', [moved.bg]);
   // 방 좌표는 원본(문/아이콘까지 다 있는) SVG에서 뽑아야 방 순서·이름 인식이 안정적이다.
-  run('svgToRoomShapes.js', [inputPath, jsonPath]);
+  run('svgToRoomShapes.js', [inputPath, jsonPath, ...(allowEmpty ? ['--allow-empty'] : [])]);
   run('svgToIcons.js', [moved.icons, jsonPath]);
 
   const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
