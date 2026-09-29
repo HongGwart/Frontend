@@ -37,6 +37,8 @@ import { MainTabParamList, RootStackParamList } from '@navigation/types';
 // Header.tsx의 Container height와 동일한 값 — 경로 보기 화면에서 지도 위에 얹는
 // 투명 헤더의 실제 높이(세이프에어리어 제외)를 지도 카메라 패딩 계산에 재사용한다.
 const ROUTE_VIEW_HEADER_HEIGHT = 56;
+// 탭을 떠난 뒤 입력값을 비우기까지 기다리는 시간 — 탭 전환 애니메이션(300ms)보다 조금 길게.
+const RESET_AFTER_LEAVE_MS = 350;
 // 경로 보기 카드를 끌어내렸을 때 하단 세이프에어리어 위로 남겨둘 높이 —
 // 시트 padding-top(8) + 그래버(4) + 아래 여백 12px.
 const DETAIL_SHEET_PEEK_HEIGHT = 24;
@@ -97,10 +99,15 @@ export default function NavigationScreen() {
   const isActiveTab = useNavigationState(state => state.routes[state.index]?.name === 'navigation');
   useEffect(() => {
     if (isActiveTab) return;
-    setDeparture('');
-    setDestination('');
-    setSelectedOption(null);
-    setSelectedRouteId(null);
+    // 지도 탭으로 나갈 때 이 화면이 오른쪽으로 밀려 나가는 전환(MainTabNavigator, 300ms)이 있어서,
+    // 바로 비우면 나가는 도중 입력값이 사라지는 게 보인다. 전환이 끝난 뒤에 비운다.
+    const timeoutId = setTimeout(() => {
+      setDeparture('');
+      setDestination('');
+      setSelectedOption(null);
+      setSelectedRouteId(null);
+    }, RESET_AFTER_LEAVE_MS);
+    return () => clearTimeout(timeoutId);
   }, [isActiveTab]);
   const selectedRoute = useMemo(
     () => DUMMY_ROUTE_RESULTS.find(route => route.id === selectedRouteId) ?? null,
