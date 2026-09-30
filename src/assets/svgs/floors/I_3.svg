@@ -463,19 +463,19 @@
 </g>
 </g>
 <g id="Hitbox">
-<rect id="room_303" x="349" y="480" width="277" height="171" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_302" x="626" y="480" width="106" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_301" x="732" y="480" width="106" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_303" x="349" y="480" width="278" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_302" x="627" y="480" width="104" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_301" x="731" y="480" width="108" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_312" x="1086" y="480" width="98" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_313" x="997" y="480" width="88" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_314" x="914" y="480" width="83" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_313" x="998" y="480" width="88" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_314" x="914" y="480" width="84" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_311" x="1184" y="536" width="145" height="113" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_309" x="1222" y="288" width="107" height="127" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_310" x="1222" y="415" width="107" height="121" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_308" x="1184" y="159" width="145" height="129" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_306" x="700" y="159" width="345" height="248" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_305" x="351" y="159" width="349" height="248" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_307" d="M1221 369H1184V408H1044V288H1221V369Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_306" x="700" y="159" width="344" height="249" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_305" x="350" y="159" width="350" height="249" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_307" d="M1222 369H1184.79V408H1044V288H1222V369Z" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>

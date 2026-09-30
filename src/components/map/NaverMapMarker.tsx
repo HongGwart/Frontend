@@ -23,6 +23,8 @@ interface Props {
   zIndex?: number;
   /** Marker의 scale과 동일 — 커진 만큼 래스터화 박스(width/height)도 같이 키워줘야 안 잘린다. */
   scale?: number;
+  /** true면 지금 탭해서 시설 카드가 열려있는 마커 — Marker.tsx가 색을 진하게+살짝 키워서 강조한다. */
+  active?: boolean;
   /**
    * 넘기면 라벨을 핀과 별도의 오버레이로 분리하고 이 값(0~1)을 라벨의 투명도로 쓴다. 핀+라벨이
    * 한 장의 이미지로 래스터화되는 기본 방식에선 라벨만 흐리게 할 수 없어서, 줌에 따라 라벨을
@@ -65,6 +67,7 @@ export function NaverMapMarker({
   onPress,
   zIndex,
   scale = 1,
+  active = false,
   labelOpacity,
 }: Props) {
   const hasLabel = count === undefined && Boolean(label);
@@ -77,6 +80,7 @@ export function NaverMapMarker({
           favorite={favorite}
           onPress={onPress}
           zIndex={zIndex}
+          active={active}
         />
         <SeparateLabelOverlay
           latitude={latitude}
@@ -85,16 +89,22 @@ export function NaverMapMarker({
           opacity={labelOpacity}
           onPress={onPress}
           zIndex={zIndex}
+          active={active}
         />
       </>
     );
   }
   const { width, height } = getOverlaySize(hasLabel, label);
-  // scale만큼 시각적으로 커지는 만큼, 래스터화 박스도 같이 키워야 위쪽이 안 잘린다. 핀 끝은
-  // Marker.tsx가 transform-origin: bottom으로 고정해서 커져도 이 박스의 바닥(=anchor y:1,
-  // 즉 실제 좌표)에 그대로 붙어있으니 가로/세로 모두 단순히 scale배만큼 키우면 된다.
-  const scaledWidth = width * scale;
-  const scaledHeight = height * scale;
+  // 래스터화 박스는 "원래 크기(1배)보다 작아지면 절대 안 된다" — NaverMapMarkerOverlay는 이
+  // 박스를 정확히 그 크기로 스냅샷 떠서 박기 때문에, 박스를 content보다 작게 줄이면 <Marker />
+  // 안의 CSS transform(scale)은 그대로 적용되지만 레이아웃 높이(transform 적용 전 크기)는 안
+  // 줄어들어서 박스 위로 삐져나온 부분이 그대로 잘린다(예: 라벨 필 윗부분). 반대로 키우는
+  // 쪽(active 강조 등)은 여유 공간만 늘어날 뿐이라 안전하다. 그래서 1배 밑으로는 절대
+  // 줄이지 않고, 실제 축소는 <Marker />에 넘기는 scale(시각적 transform)만으로 처리한다.
+  const contentScale = active ? scale * 1.12 : scale;
+  const overlayScale = Math.max(contentScale, 1);
+  const scaledWidth = width * overlayScale;
+  const scaledHeight = height * overlayScale;
 
   return (
     <NaverMapMarkerOverlay
@@ -110,11 +120,11 @@ export function NaverMapMarker({
     >
       {/* 마커 생김새를 바꾸는 값(label/favorite/count)은 key로도 전달해야 리렌더 시 캐시가 꼬이지 않는다. */}
       <View
-        key={`${label}/${favorite}/${count}/${scale}`}
+        key={`${label}/${favorite}/${count}/${scale}/${active}`}
         collapsable={false}
         style={{ width: scaledWidth, height: scaledHeight, alignItems: 'center', justifyContent: 'flex-end' }}
       >
-        <Marker label={label} favorite={favorite} count={count} scale={scale} />
+        <Marker label={label} favorite={favorite} count={count} scale={scale} active={active} />
       </View>
     </NaverMapMarkerOverlay>
   );
@@ -132,6 +142,7 @@ function SeparateLabelOverlay({
   opacity,
   onPress,
   zIndex,
+  active = false,
 }: {
   latitude: number;
   longitude: number;
@@ -139,6 +150,7 @@ function SeparateLabelOverlay({
   opacity: number;
   onPress?: () => void;
   zIndex?: number;
+  active?: boolean;
 }) {
   const { width, height } = getOverlaySize(true, label);
   return (
@@ -153,10 +165,10 @@ function SeparateLabelOverlay({
       isHidden={opacity <= 0}
       onTap={onPress}
     >
-      <View key={label} collapsable={false} style={{ width, height, alignItems: 'center' }}>
+      <View key={`${label}/${active}`} collapsable={false} style={{ width, height, alignItems: 'center' }}>
         {/* 기본 오버레이에선 36px 핀 박스가 40px 오버레이 바닥에 붙어서 라벨 위에 4px 여백이 생긴다. */}
         <View style={{ marginTop: PIN_BOX_BUFFER }}>
-          <MarkerLabel label={label} />
+          <MarkerLabel label={label} active={active} />
         </View>
       </View>
     </NaverMapMarkerOverlay>

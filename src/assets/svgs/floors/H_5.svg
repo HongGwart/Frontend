@@ -254,7 +254,7 @@
 <rect id="Rectangle 240653369" x="469" y="436.5" width="2" height="1" fill="#EBEBF5"/>
 </g>
 <g id="Hitbox">
-<path id="room_H501" d="M1340 528H968V438H630V151H1340V528Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_H501" d="M1340 528H968V438H629V151H1340V528Z" fill="#D9D9D9" fill-opacity="0.01"/>
 <path id="room_H504" d="M629 438H471V528H301V151H629V438Z" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>

@@ -13,6 +13,10 @@ interface Props {
   iconOffsetY?: number;
   favorite?: boolean;
   count?: number;
+  /** true면 지금 탭해서 시설 카드가 열려있는 마커 — 원을 채운 진한 파란색으로 강조한다. */
+  active?: boolean;
+  /** CategoryMarker의 scale과 동일 — 커지거나 작아진 만큼 래스터화 박스도 같이 맞춰준다. */
+  scale?: number;
   onPress?: () => void;
 }
 
@@ -33,22 +37,27 @@ export function NaverMapCategoryMarker({
   iconOffsetY,
   favorite,
   count,
+  active,
+  scale = 1,
   onPress,
 }: Props) {
+  // NaverMapMarker.tsx와 같은 이유로, 박스는 1배보다 작게 줄이지 않는다(축소는 CategoryMarker의
+  // CSS transform으로만 처리) — 그래야 박스가 실제 내용보다 작아져서 위쪽이 잘리는 일이 없다.
+  const scaledSize = SIZE * Math.max(scale, 1);
   return (
     <NaverMapMarkerOverlay
       latitude={latitude}
       longitude={longitude}
-      width={SIZE}
-      height={SIZE}
+      width={scaledSize}
+      height={scaledSize}
       anchor={{ x: 0.5, y: 1 }}
       onTap={onPress}
     >
       {/* 마커 생김새를 바꾸는 값은 key로도 전달해야 리렌더 시 캐시가 꼬이지 않는다. */}
       <View
-        key={`${icon.displayName ?? icon.name}/${favorite}/${count}`}
+        key={`${icon.displayName ?? icon.name}/${favorite}/${count}/${active}/${scale}`}
         collapsable={false}
-        style={{ width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'flex-end' }}
+        style={{ width: scaledSize, height: scaledSize, alignItems: 'center', justifyContent: 'flex-end' }}
       >
         <CategoryMarker
           icon={icon}
@@ -57,6 +66,8 @@ export function NaverMapCategoryMarker({
           iconOffsetY={iconOffsetY}
           favorite={favorite}
           count={count}
+          active={active}
+          scale={scale}
         />
       </View>
     </NaverMapMarkerOverlay>

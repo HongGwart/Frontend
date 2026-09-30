@@ -142,7 +142,10 @@ export default function BuildingIndoorScreen() {
         )}
       </MapArea>
 
-      <CardWrapper style={cardStyle}>
+      {/* CollapsibleBottomSheet는 접힐 때 실제 레이아웃 크기가 아니라 transform으로만 밀려나서,
+          이 래퍼 자체는 항상 펼쳐진 카드 높이만큼 자리를 차지한다. box-none이 없으면 카드가
+          접혀 지도가 드러난 부분에서도 이 빈 영역이 지도 팬/줌 제스처를 가로채 버린다. */}
+      <CardWrapper style={cardStyle} pointerEvents="box-none">
         <CollapsibleBottomSheet
           peekHeight={CARD_PEEK_HEIGHT + insets.bottom}
           header={<Grabber />}

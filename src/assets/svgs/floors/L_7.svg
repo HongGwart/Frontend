@@ -484,7 +484,7 @@
 <g id="Hitbox">
 <rect id="room_701" x="472" y="283" width="803" height="227" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_703" x="1274" y="565" width="77" height="116" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_702" x="1274" y="680" width="131" height="119" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_702" x="1274" y="681" width="131" height="118" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_J201" x="395" y="798" width="770" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>

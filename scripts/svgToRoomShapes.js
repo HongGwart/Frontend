@@ -226,6 +226,27 @@ function circleElementToPoints(attrs) {
   return points;
 }
 
+/** circleElementToPoints와 같지만 rx/ry가 다를 수 있는 <ellipse>용. */
+function ellipseElementToPoints(attrs) {
+  const cx = parseFloat(attrs.cx || 0);
+  const cy = parseFloat(attrs.cy || 0);
+  const rx = parseFloat(attrs.rx);
+  const ry = parseFloat(attrs.ry);
+  if (Number.isNaN(rx) || Number.isNaN(ry)) return null;
+  const tf = makeTransformFn(attrs.transform);
+  const points = [];
+  for (let i = 0; i < CIRCLE_SEGMENTS; i += 1) {
+    const angle = (i / CIRCLE_SEGMENTS) * Math.PI * 2;
+    points.push(
+      tf([
+        Math.round((cx + rx * Math.cos(angle)) * 1000) / 1000,
+        Math.round((cy + ry * Math.sin(angle)) * 1000) / 1000,
+      ])
+    );
+  }
+  return points;
+}
+
 /** `<g id="{groupId}">`의 안쪽 문자열. 중첩 <g>가 있어도 짝이 맞는 </g>까지 잘라낸다. 그룹이 없으면 null. */
 function extractGroupInner(svgText, groupId) {
   const openMatch = svgText.match(new RegExp(`<g id="${groupId}"[^>]*>`));
@@ -264,6 +285,7 @@ function extractHitboxRooms(hitboxInner) {
     if (tag === 'rect') points = rectElementToPoints(attrs);
     else if (tag === 'path') points = parsePathToPoints(attrs.d || '');
     else if (tag === 'circle') points = circleElementToPoints(attrs);
+    else if (tag === 'ellipse') points = ellipseElementToPoints(attrs);
     if (!points) {
       console.warn(`[경고] Hitbox "room_${roomId}" (<${tag}>)를 도형으로 바꾸지 못해 건너뜀`);
       continue;

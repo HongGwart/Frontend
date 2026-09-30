@@ -437,7 +437,7 @@
 <rect id="room_H401" x="619" y="549" width="163" height="499" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_H408" x="532" y="984" width="86" height="64" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_H407" x="532" y="852" width="86" height="132" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_H406" d="M1340 528H968V438H720V151H1340V528Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_H406" d="M1340 528H968V438H719V151H1340V528Z" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="Rectangle 240653369" x="967" y="436.5" width="2" height="1" fill="#EBEBF5"/>
 <path id="room_H403" d="M629 438H471V528H301V151H629V438Z" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>

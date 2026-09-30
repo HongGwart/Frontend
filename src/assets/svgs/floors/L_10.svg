@@ -477,18 +477,18 @@
 </g>
 <g id="Hitbox">
 <rect id="room_1007" x="472" y="283" width="114" height="133" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1014" x="510" y="462" width="108" height="101" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1013" x="617" y="462" width="108" height="101" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1008" x="726" y="462" width="108" height="101" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1009" x="834" y="462" width="108" height="101" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1010" x="942" y="462" width="108" height="101" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1011" x="1050" y="462" width="108" height="101" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1014" x="510" y="462" width="108" height="102" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1013" x="618" y="462" width="108" height="102" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1008" x="726" y="462" width="108" height="103" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_1009" d="M834 462H942V564H834V462Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1010" x="942" y="462" width="108" height="103" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_1011" d="M1050 462H1158V564H1050V462Z" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_1006" x="586" y="283" width="114" height="133" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_1005" x="700" y="283" width="114" height="133" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_1004" x="814" y="283" width="114" height="133" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_1003" x="928" y="283" width="114" height="133" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_1002" x="1042" y="283" width="114" height="133" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1012" x="1156" y="283" width="117" height="133" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_1012" d="M1156 283H1274V416H1156V283Z" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_1016" x="1274" y="565" width="77" height="116" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>

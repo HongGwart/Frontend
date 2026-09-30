@@ -302,13 +302,13 @@
 </g>
 <g id="Hitbox">
 <rect id="room_601" x="415" y="904" width="80" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_602" x="495" y="904" width="156" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_603" x="651" y="904" width="114" height="131" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_604" x="764" y="904" width="126" height="163" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_605" x="764" y="1066" width="126" height="80" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_606" x="764" y="1145" width="126" height="80" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_607" x="764" y="1224" width="126" height="80" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_608" x="764" y="1304" width="126" height="82" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_602" x="495" y="904" width="156" height="167" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_603" x="651" y="904" width="113" height="130" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_604" d="M763.5 904H889.5V1067H763.5V904Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_605" d="M764 1067L890 1066V1146H764V1067Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_606" x="764" y="1146" width="126" height="79" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_607" x="764" y="1225" width="125" height="79" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_608" x="764" y="1304" width="125" height="81" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_610" x="414" y="1304" width="81" height="82" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_611" x="414" y="1219" width="81" height="85" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_609" x="495" y="1071" width="269" height="315" fill="#D9D9D9" fill-opacity="0.01"/>

@@ -460,7 +460,7 @@
 <rect id="room_204" x="897" y="757" width="109" height="196" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_203" x="1006" y="757" width="281" height="196" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_210" x="750" y="456" width="79" height="133" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_212" x="750" y="286" width="153" height="129" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_212" x="750" y="286" width="152" height="129" fill="#D9D9D9" fill-opacity="0.01"/>
 <path id="room_213" d="M1069 371H1097V415H902V286H1069V371Z" fill="#D9D9D9" fill-opacity="0.01"/>
 <path id="room_211" d="M750 415H829V456H750V531H601V286H750V415Z" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>

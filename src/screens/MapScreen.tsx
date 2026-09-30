@@ -6,6 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
+import * as Haptics from 'expo-haptics';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
@@ -21,6 +22,7 @@ import { DismissibleBottomSheet, DismissibleBottomSheetRef } from '@components/c
 import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
 import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { DevBuildingPinMarkers, DevBuildingPinPanel, useDevBuildingPins } from '@components/map/DevBuildingPinPicker';
+import { DevFloorOverlayLayer, DevFloorOverlayPanel, useDevFloorOverlay } from '@components/map/DevFloorOverlayPicker';
 import {
   FadingLabelMarkerItem,
   FadingLabelMarkers,
@@ -59,7 +61,8 @@ interface Props {
 type SelectedFacility =
   | { type: 'dong'; marker: DummyMapMarker }
   | { type: 'category'; marker: DummyCategoryMarker }
-  | { type: 'list'; items: FacilityListSheetItem[] }
+  // markerId는 이 리스트를 열게 한 지도 위 군집 마커의 id — 강조 표시(active)에만 쓴다.
+  | { type: 'list'; items: FacilityListSheetItem[]; markerId?: string }
   | { type: 'item'; item: FacilityListSheetItem }
   // 마이페이지/즐겨찾기 목록에서 넘어온 시설(지도 마커가 아니라 라우트 파라미터로 들어옴)
   | { type: 'external'; facility: FocusFacilityParam };
@@ -72,6 +75,8 @@ interface FavoriteMapEntry {
 }
 
 const TOAST_DURATION_MS = 2000;
+// 지도 위에서 봤을 때 마커가 다른 요소에 비해 좀 커 보여서, 기본 크기보다 살짝 줄인다.
+const MAP_MARKER_SCALE = 0.85;
 const INITIAL_ZOOM = 16;
 // 이 줌보다 더 축소하면 동 마커 네임택(R동, T동 …)을 전부 숨기고 핀만 남긴다.
 const HIDE_MARKER_LABELS_BELOW_ZOOM = 15.5;
@@ -92,6 +97,19 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   // [개발용] 각 동 위치를 탭해서 좌표를 모으는 모드. 켜져 있는 동안엔 더미 마커를 숨기고
   // 지도 탭을 좌표 기록으로 쓴다.
   const pinPicker = useDevBuildingPins();
+  const floorOverlay = useDevFloorOverlay();
+  const devModeActive = pinPicker.active || floorOverlay.active;
+
+  // 지금 카드가 열려있는 마커의 id. dong/category는 marker.id를 그대로 쓰고, list는 그 리스트를
+  // 열게 한 군집 마커의 id(markerId)를 쓴다 — 지도 위 마커에 강조(active) 표시를 하는 데만 쓴다.
+  const selectedMarkerId = useMemo(() => {
+    if (!selectedFacility) return null;
+    if (selectedFacility.type === 'dong' || selectedFacility.type === 'category') {
+      return selectedFacility.marker.id;
+    }
+    if (selectedFacility.type === 'list') return selectedFacility.markerId ?? null;
+    return null;
+  }, [selectedFacility]);
 
   // 마커(동/카테고리)를 탭했을 때만 좌표가 있어서 카메라를 옮길 수 있다. 리스트/외부에서
   // 넘어온 시설은 지금은 카메라를 건드리지 않는다(검색 화면도 동일한 범위로만 지원).
@@ -142,13 +160,15 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   // 겹칠 일이 없어서 평소엔 항상 단일 카드로 연다("즐겨찾기" 칩에서 동 안 시설이 여러 개
   // 즐겨찾기된 경우는 openFavoriteDongSheet가 별도로 처리한다).
   const openDongMarkerSheet = useCallback((marker: DummyMapMarker) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedFacility({ type: 'dong', marker });
   }, []);
 
   const openCategoryMarkerSheet = useCallback((marker: DummyCategoryMarker) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const listItems = marker.count !== undefined ? DUMMY_FACILITY_LIST_ITEMS[marker.id] : undefined;
     if (listItems) {
-      setSelectedFacility({ type: 'list', items: listItems });
+      setSelectedFacility({ type: 'list', items: listItems, markerId: marker.id });
     } else {
       setSelectedFacility({ type: 'category', marker });
     }
@@ -171,15 +191,16 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   );
 
   const openFavoriteClusterSheet = useCallback(
-    (group: DummyCategoryMarker[]) => {
-      setSelectedFacility({ type: 'list', items: group.map(toFacilityListItem) });
+    (group: DummyCategoryMarker[], markerId: string) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setSelectedFacility({ type: 'list', items: group.map(toFacilityListItem), markerId });
     },
     [toFacilityListItem],
   );
 
   const openFavoriteDongSheet = useCallback((entry: FavoriteMapEntry) => {
     if (entry.facilityItems.length > 0) {
-      openFavoriteClusterSheet(entry.facilityItems);
+      openFavoriteClusterSheet(entry.facilityItems, entry.dongMarker.id);
     } else {
       openDongMarkerSheet(entry.dongMarker);
     }
@@ -302,6 +323,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         longitude: marker.longitude,
         label: marker.label,
         favorite: isFavorite(marker),
+        active: selectedMarkerId === marker.id,
+        scale: MAP_MARKER_SCALE,
         onPress: () => openDongMarkerSheet(marker),
       })),
       ...favoriteEntries.map(entry => ({
@@ -311,10 +334,12 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         label: entry.dongMarker.label,
         favorite: isFavorite(entry.dongMarker),
         count: entry.facilityItems.length || undefined,
+        active: selectedMarkerId === entry.dongMarker.id,
+        scale: MAP_MARKER_SCALE,
         onPress: () => openFavoriteDongSheet(entry),
       })),
     ],
-    [dongMarkers, favoriteEntries, isFavorite, openDongMarkerSheet, openFavoriteDongSheet],
+    [dongMarkers, favoriteEntries, isFavorite, selectedMarkerId, openDongMarkerSheet, openFavoriteDongSheet],
   );
 
   // 마이페이지/즐겨찾기 목록에서 시설을 탭하고 넘어오면, 그 시설 정보 바텀시트를 연다.
@@ -348,10 +373,13 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         minZoom={MAP_MIN_ZOOM}
         maxZoom={MAP_MAX_ZOOM}
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
-        onTapMap={pinPicker.active ? pinPicker.handleTap : closeFacilitySheet}
+        onTapMap={
+          pinPicker.active ? pinPicker.handleTap : floorOverlay.active ? floorOverlay.handleTap : closeFacilitySheet
+        }
       >
         <DevBuildingPinMarkers picker={pinPicker} />
-        {!pinPicker.active && (
+        <DevFloorOverlayLayer picker={floorOverlay} />
+        {!devModeActive && (
           <FadingLabelMarkers
             ref={labelMarkersRef}
             items={labelMarkerItems}
@@ -359,13 +387,15 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
             initialZoom={INITIAL_ZOOM}
           />
         )}
-        {!pinPicker.active && categoryMarkers.map(marker => (
+        {!devModeActive && categoryMarkers.map(marker => (
           <NaverMapCategoryMarker
             key={marker.id}
             latitude={marker.latitude}
             longitude={marker.longitude}
             favorite={isFavorite(marker)}
             count={marker.count}
+            active={selectedMarkerId === marker.id}
+            scale={MAP_MARKER_SCALE}
             onPress={() => openCategoryMarkerSheet(marker)}
             {...CATEGORY_MARKER_ICONS[marker.category]}
           />
@@ -554,6 +584,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         </Modal>
       )}
       <DevBuildingPinPanel picker={pinPicker} topInset={insets.top} />
+      <DevFloorOverlayPanel picker={floorOverlay} topInset={insets.top} />
     </View>
   );
 }

@@ -369,10 +369,10 @@
 </g>
 </g>
 <g id="Hitbox">
-<rect id="room_804" x="634" y="424" width="115" height="243" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_803" x="749" y="424" width="308" height="209" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_802" x="1057" y="424" width="215" height="209" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_801" x="1271" y="424" width="316" height="264" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_804" x="634" y="424" width="115" height="244" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_803" x="749" y="424" width="309" height="208" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_802" x="1058" y="424" width="214" height="208" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_801" x="1272" y="424" width="315" height="264" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>

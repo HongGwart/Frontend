@@ -523,15 +523,15 @@
 </g>
 </g>
 <g id="Hitbox">
-<circle id="room_507" cx="465.5" cy="427.5" r="168.5" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_504-1" x="531" y="778" width="218" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_503" x="531" y="992" width="218" height="83" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_504-2" x="847" y="778" width="210" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_507-1" x="632" y="551" width="117" height="82" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_506" x="848" y="424" width="319" height="209" fill="#D9D9D9" fill-opacity="0.01"/>
+<circle id="room_507" cx="466.5" cy="428.5" r="169.5" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_504-1" x="531" y="778" width="218" height="215" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_503" x="531" y="993" width="218" height="82" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_504-2" x="848" y="778" width="211" height="215" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_507-1" x="632" y="552" width="117" height="80" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_506" x="848" y="424" width="320" height="208" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_505" x="1168" y="424" width="419" height="264" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_502-2" x="852" y="1075" width="207" height="221" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_502-1" x="475" y="1076" width="273" height="303" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_502-2" x="852" y="1075" width="207" height="222" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_502-1" x="475" y="1075" width="274" height="304" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_501-1" x="435" y="1379" width="365" height="230" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_501-2" x="800" y="1379" width="259" height="230" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>

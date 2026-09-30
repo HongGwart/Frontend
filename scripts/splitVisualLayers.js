@@ -130,4 +130,6 @@ function main() {
   console.log(`\n총 top-level 자식 ${children.length}개 분류 완료 (bg ${buckets.bg.length} / doors ${buckets.doors.length} / icons ${buckets.icons.length})`);
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = { extractTopLevelChildren };

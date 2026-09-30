@@ -353,20 +353,20 @@
 </g>
 </g>
 <g id="Hitbox">
-<rect id="room_1201" x="415" y="904" width="80" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1213" x="415" y="1219" width="80" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1202" x="494" y="904" width="80" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1212" x="494" y="1219" width="80" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1203" x="574" y="904" width="76" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1211" x="574" y="1219" width="76" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1204" x="650" y="904" width="79" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1210" x="650" y="1219" width="79" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1205" x="729" y="904" width="79" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1209" x="729" y="1219" width="79" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1206" x="809" y="904" width="81" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1208" x="809" y="1219" width="81" height="166" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1201" x="415" y="903" width="80" height="168" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1213" x="415" y="1218" width="80" height="167" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1202" x="495" y="903" width="78" height="168" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1212" x="495" y="1218" width="78" height="167" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1203" x="573" y="903" width="77" height="168" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1211" x="573" y="1218" width="77" height="167" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1204" x="650" y="903" width="79" height="168" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1210" x="650" y="1218" width="79" height="167" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1205" x="729" y="903" width="79" height="168" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1209" x="729" y="1218" width="79" height="167" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1206" x="808" y="903" width="82" height="168" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1208" x="808" y="1218" width="82" height="167" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_1207" x="729" y="1110" width="161" height="70" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_1214" x="521" y="1110" width="207" height="70" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_1214" x="520" y="1110" width="209" height="70" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>

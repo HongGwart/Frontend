@@ -18,6 +18,13 @@ interface Props {
   favorite?: boolean;
   /** 마커에 표시할 숫자 배지 (군집된 개수 등). favorite와 동시에 켜지면 배지가 우선한다. */
   count?: number;
+  /** true면 지금 탭해서 시설 카드가 열려있는 마커 — 원을 채운 진한 파란색으로 뒤집어서 강조한다. */
+  active?: boolean;
+  /**
+   * 마커 전체를 이 배율로 키운다(기본 1). Marker.tsx의 scale과 같은 이유로 바닥(좌표 지점)
+   * 기준으로만 커지게 transform-origin을 bottom으로 고정한다.
+   */
+  scale?: number;
 }
 
 /**
@@ -31,14 +38,19 @@ export function CategoryMarker({
   iconOffsetY = 0,
   favorite = false,
   count,
+  active = false,
+  scale = 1,
 }: Props) {
   const theme = useTheme();
   const hasCount = count !== undefined;
 
   return (
-    <Circle>
+    <Circle
+      active={active}
+      style={scale !== 1 ? { transform: [{ scale }], transformOrigin: 'center bottom' } : undefined}
+    >
       <IconSlot offsetY={iconOffsetY}>
-        <Icon width={iconWidth} height={iconHeight} color={theme.blue[500]} />
+        <Icon width={iconWidth} height={iconHeight} color={active ? theme.semantic.text.white : theme.blue[500]} />
       </IconSlot>
       {hasCount ? (
         <CountBadge>
@@ -55,13 +67,13 @@ export function CategoryMarker({
   );
 }
 
-const Circle = styled.View`
+const Circle = styled.View<{ active: boolean }>`
   width: ${CATEGORY_MARKER_BOX_SIZE}px;
   height: ${CATEGORY_MARKER_BOX_SIZE}px;
   border-radius: 100px;
   border-width: 1.5px;
-  border-color: ${({ theme }) => theme.blue[500]};
-  background-color: ${({ theme }) => theme.semantic.background.primary};
+  border-color: ${({ theme, active }) => (active ? theme.blue[700] : theme.blue[500])};
+  background-color: ${({ theme, active }) => (active ? theme.blue[500] : theme.semantic.background.primary)};
   align-items: center;
   justify-content: center;
 `;

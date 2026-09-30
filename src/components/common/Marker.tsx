@@ -26,36 +26,44 @@ interface Props {
    * 경로 도착 마커처럼 밑에 깔린 경로선 끝을 더 가리고 싶을 때 키운다.
    */
   scale?: number;
+  /** true면 지금 탭해서 시설 카드가 열려있는 마커라는 뜻 — 핀 색을 진하게 강조한다. */
+  active?: boolean;
 }
 
 /**
  * 지도 위에 찍는 위치 마커. favorite 여부로 모양(핀/별)이, count 유무로 우측 상단
  * 숫자 배지가 갈린다. count가 있을 땐 상단 라벨이 생략된다(Figma 원본과 동일).
  */
-export function Marker({ label, favorite = false, count, scale = 1 }: Props) {
+export function Marker({ label, favorite = false, count, scale = 1, active = false }: Props) {
   const theme = useTheme();
   const hasCount = count !== undefined;
+  // 강조 상태는 색을 한 단계 진하게 + 살짝 더 키워서(핀 끝은 고정) 지금 열려있는
+  // 카드가 어느 마커 것인지 한눈에 알아보게 한다.
+  const pinColor = active ? theme.blue[700] : theme.blue[500];
+  const effectiveScale = active ? scale * 1.12 : scale;
 
   return (
-    <Container style={scale !== 1 ? { transform: [{ scale }], transformOrigin: 'center bottom' } : undefined}>
+    <Container
+      style={effectiveScale !== 1 ? { transform: [{ scale: effectiveScale }], transformOrigin: 'center bottom' } : undefined}
+    >
       {!hasCount && label && (
-        <LabelPill>
+        <LabelPill active={active}>
           <LabelText numberOfLines={1}>{label}</LabelText>
         </LabelPill>
       )}
       <PinWrapper>
         {favorite ? (
           <>
-            <MarkerFavoriteShapeIcon width={25} height={29} color={theme.blue[500]} />
+            <MarkerFavoriteShapeIcon width={25} height={29} color={pinColor} />
             <FavoriteStarBadge>
               <StarIcon width={14} height={14} />
             </FavoriteStarBadge>
           </>
         ) : (
           <>
-            <MarkerPinIcon width={26} height={30} color={theme.blue[500]} />
+            <MarkerPinIcon width={26} height={30} color={pinColor} />
             <PinDotBadge>
-              <MarkerDotIcon width={12} height={12} color={theme.blue[500]} />
+              <MarkerDotIcon width={12} height={12} color={pinColor} />
             </PinDotBadge>
           </>
         )}
@@ -73,9 +81,9 @@ export function Marker({ label, favorite = false, count, scale = 1 }: Props) {
  * 마커 위 라벨 필만 따로 그린다. NaverMapMarker가 라벨을 핀과 다른 오버레이로 분리해서
  * 투명도(alpha)로 서서히 숨기거나 보일 때 쓴다 — 모양은 <Marker label>의 라벨과 같다.
  */
-export function MarkerLabel({ label }: { label: string }) {
+export function MarkerLabel({ label, active = false }: { label: string; active?: boolean }) {
   return (
-    <LabelPill>
+    <LabelPill active={active}>
       <LabelText numberOfLines={1}>{label}</LabelText>
     </LabelPill>
   );
@@ -87,8 +95,8 @@ const Container = styled.View`
   gap: ${MARKER_LABEL_GAP}px;
 `;
 
-const LabelPill = styled.View`
-  background-color: rgba(52, 59, 157, 0.66);
+const LabelPill = styled.View<{ active: boolean }>`
+  background-color: ${({ active }) => (active ? 'rgba(52, 59, 157, 0.9)' : 'rgba(52, 59, 157, 0.66)')};
   padding: 4px 10px;
   border-radius: 17px;
   align-items: center;

@@ -290,11 +290,11 @@
 </g>
 <g id="Hitbox">
 <circle id="room_304" cx="668.5" cy="427.5" r="168.5" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_303" x="734" y="778" width="527" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_303-1" x="944" y="632" width="317" height="147" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_303" x="734" y="778" width="527" height="215" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_303-1" x="944" y="632" width="317" height="146" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_302-2" x="1055" y="1075" width="207" height="221" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_302-1" x="678" y="1076" width="273" height="220" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_301" d="M1262 1608H637V1380H680V1379H678V1296H951V1379H1262V1608Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_302-1" x="678" y="1075" width="274" height="222" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_301" d="M951 1379.26H1262V1609H637V1379.26H678V1297H951V1379.26Z" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>

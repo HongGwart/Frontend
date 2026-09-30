@@ -469,18 +469,18 @@
 </g>
 </g>
 <g id="Hitbox">
-<rect id="room_204" x="349" y="480" width="172" height="171" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_203" x="521" y="480" width="106" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_202" x="626" y="480" width="106" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_201" x="732" y="480" width="106" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_204" x="349" y="480" width="171" height="168" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_203" x="520" y="480" width="107" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_202" x="627" y="480" width="104" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_201" x="731" y="480" width="108" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_213" x="914" y="480" width="102" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_212" x="1015" y="480" width="102" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_211" x="1117" y="480" width="105" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_212" d="M1015 480H1116V649H1015V480Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_211" x="1116" y="480" width="106" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_210" x="1222" y="480" width="107" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_209" x="1222" y="351" width="107" height="127" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_208" x="1117" y="159" width="212" height="129" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_207" x="772" y="159" width="345" height="248" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_206" x="427" y="159" width="345" height="248" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_209" x="1222" y="351" width="107" height="129" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_208" x="1116" y="159" width="213" height="129" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_207" x="772" y="159" width="344" height="249" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_206" x="428" y="159" width="344" height="249" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>

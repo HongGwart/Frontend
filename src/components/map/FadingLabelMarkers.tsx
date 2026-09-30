@@ -9,6 +9,8 @@ export interface FadingLabelMarkerItem {
   label?: string;
   favorite?: boolean;
   count?: number;
+  active?: boolean;
+  scale?: number;
   onPress?: () => void;
 }
 

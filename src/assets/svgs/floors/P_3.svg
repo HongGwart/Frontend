@@ -474,15 +474,15 @@
 <rect id="room_314" x="464" y="681" width="241" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_313" x="705" y="681" width="235" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_312" x="940" y="681" width="250" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_311" x="1189" y="681" width="77" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_310" x="1266" y="681" width="77" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_311" x="1190" y="681" width="76" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_310" x="1266" y="681" width="76" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_309" x="1342" y="681" width="83" height="55" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_301" x="624" y="491" width="81" height="141" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_302" x="705" y="491" width="81" height="141" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_303" x="785" y="491" width="81" height="141" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_304" x="866" y="491" width="86" height="141" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_305" x="952" y="493" width="162" height="139" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_306-1" x="1203" y="553" width="63" height="79" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_301" x="624" y="492" width="81" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_302" x="705" y="492" width="81" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_303" x="786" y="492" width="81" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_304" x="867" y="492" width="85" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_305" x="952" y="492" width="162" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_306-1" x="1203" y="552" width="63" height="80" fill="#D9D9D9" fill-opacity="0.01"/>
 <path id="room_306" d="M1266 551H1203V632H1114V368H1266V551Z" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>

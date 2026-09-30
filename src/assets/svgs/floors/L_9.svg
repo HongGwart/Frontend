@@ -315,9 +315,9 @@
 </g>
 </g>
 <g id="Hitbox">
-<rect id="room_801" x="472" y="283" width="803" height="281" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_801" x="470" y="283" width="804" height="282" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_803" x="1274" y="565" width="77" height="116" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_802" x="1274" y="680" width="131" height="119" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_802" x="1274" y="681" width="131" height="118" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>

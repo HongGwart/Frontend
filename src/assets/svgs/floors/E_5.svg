@@ -348,11 +348,11 @@
 </g>
 </g>
 <g id="Hitbox">
-<rect id="room_504" x="886" y="415" width="176" height="89" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_503" d="M887 504H1062V586H887V504Z" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_502" x="886" y="588" width="177" height="324" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_501" x="664" y="671" width="171" height="241" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_505" x="666" y="180" width="397" height="235" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_504" x="886" y="416" width="180" height="88" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_503" d="M886 504H1066V587H886V504Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_502" x="886" y="587" width="180" height="327" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_501" x="664" y="670" width="171" height="244" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_505" x="666" y="180" width="400" height="236" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>
