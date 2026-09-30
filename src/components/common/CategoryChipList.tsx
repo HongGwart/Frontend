@@ -27,6 +27,8 @@ export function CategoryChipList({ selectedKey, onSelect }: Props) {
             iconWidth={iconWidth}
             iconHeight={iconHeight}
             active={selectedKey === key}
+            // 칩 그림자가 칩 사이/주변에 회색으로 번져 보여서 끈다(테두리만으로 구분).
+            elevated={false}
             onPress={() => onSelect(selectedKey === key ? null : key)}
           />
         ))}
