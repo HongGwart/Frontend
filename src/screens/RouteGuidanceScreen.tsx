@@ -35,15 +35,15 @@ import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapStartPointMarker } from '@components/map/NaverMapStartPointMarker';
 import { NaverMapUserPointMarker } from '@components/map/NaverMapUserPointMarker';
 import {
-  DUMMY_GUIDANCE_STEPS,
-  DUMMY_ROUTE_MAP,
   DUMMY_ROUTE_RESULTS,
-  DUMMY_ROUTE_PATH,
   GuidanceMoveType,
 } from '@constant/dummyRouteResults';
 import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
-import { splitPathAt } from '@utils/routePath';
+import { slicePath, splitPathAt } from '@utils/routePath';
+import { buildTestRoute, getRouteMapData, RouteMapData } from '@constant/testIndoorRoute';
+import { FLOOR_GEO_ANCHORS } from '@constant/floorGeoAnchors';
+import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
 import { animateValue } from '@utils/animateValue';
 
 const MOVE_TYPE_ICONS: Record<GuidanceMoveType, React.FC<SvgProps>> = {
@@ -55,6 +55,8 @@ const MOVE_TYPE_ICONS: Record<GuidanceMoveType, React.FC<SvgProps>> = {
 
 // 길찾기 경로 보기 화면과 같은 줌으로 시작한다.
 const GUIDANCE_ZOOM = 17;
+// 건물 안 구간은 평면도가 보이도록 더 당겨서 보여준다.
+const INDOOR_GUIDANCE_ZOOM = 18.5;
 // 구간을 넘길 때 경로선/현재 위치가 옮겨가는 시간. 카메라 이동(animateCameraTo)과 같게 맞춘다.
 const STEP_TRANSITION_MS = 300;
 
@@ -91,7 +93,18 @@ const toRippleFrame = (t: number): RippleFrame => ({
  * 하는데, 그 state를 화면에 두면 카드·버튼까지 초당 60번 다시 렌더된다 — 그래서 여기로 떼어낸다.
  * 오버레이 순서(같은 zIndex끼리는 나중 것이 위)는 원래 화면에 있던 그대로다.
  */
-function GuidanceMapOverlays({ targetProgress, hasArrived }: { targetProgress: number; hasArrived: boolean }) {
+function GuidanceMapOverlays({
+  routeMap,
+  targetProgress,
+  hasArrived,
+  currentFloorId,
+}: {
+  routeMap: RouteMapData;
+  targetProgress: number;
+  hasArrived: boolean;
+  /** 지금 있는 층. 있으면 경로선/출발·도착 핀을 그 층 구간 것만 그린다 */
+  currentFloorId?: string;
+}) {
   const theme = useTheme();
 
   // 구간을 넘기면 경로선을 한 번에 바꾸지 않고, 화면에 그리는 진행 비율(displayProgress)을
@@ -142,10 +155,31 @@ function GuidanceMapOverlays({ targetProgress, hasArrived }: { targetProgress: n
     return () => stops.forEach(stop => stop());
   }, [hasArrived]);
 
-  const { position, traveled, remaining } = useMemo(
-    () => splitPathAt(DUMMY_ROUTE_PATH, displayProgress),
-    [displayProgress],
-  );
+  // 건물 안에 있으면 그 층 구간(from~to)만 그린다 — C동 1층에서 8층 경로가 겹쳐 보이지 않게. 바깥이면 전체.
+  const visibleRange = useMemo(() => {
+    if (!currentFloorId) return { from: 0, to: 1 };
+    const segments = routeMap.floorSegments.filter(segment => segment.floorId === currentFloorId);
+    const segment =
+      segments.find(({ from, to }) => targetProgress >= from && targetProgress <= to) ?? segments[0];
+    return segment ?? { from: 0, to: 1 };
+  }, [currentFloorId, routeMap.floorSegments, targetProgress]);
+
+  const { position, traveled, remaining } = useMemo(() => {
+    const split = splitPathAt(routeMap.path, displayProgress);
+    if (visibleRange.from === 0 && visibleRange.to === 1) return split;
+    const clamped = Math.min(visibleRange.to, Math.max(visibleRange.from, displayProgress));
+    return {
+      position: split.position,
+      traveled: slicePath(routeMap.path, visibleRange.from, clamped),
+      remaining: slicePath(routeMap.path, clamped, visibleRange.to),
+    };
+  }, [routeMap.path, displayProgress, visibleRange]);
+  // 출발지/도착지 핀도 그 지점이 지금 보이는 구간에 있을 때만 (출발 = 경로 맨 앞, 도착 = 맨 끝)
+  const showStart = visibleRange.from === 0;
+  const showEnd = visibleRange.to === 1;
+  // 폴리라인은 점 2개 미만이면 못 그려서, 비었을 땐 현재 위치 두 점으로 채우고 숨긴다(오버레이는 계속 마운트 —
+  // 아래 lineCapReady 우회가 마운트 직후 한 번만 먹기 때문).
+  const lineCoords = (coords: typeof traveled) => (coords.length >= 2 ? coords : [position, position]);
 
   // NavigationScreen의 routeLineCapReady와 같은 우회: 선언된 기본값(Round)을 처음부터 넘기면
   // 네이티브가 변경으로 보지 않아 반영이 안 되니, Butt/Miter로 그렸다가 다음 틱에 Round로 바꾼다.
@@ -158,7 +192,8 @@ function GuidanceMapOverlays({ targetProgress, hasArrived }: { targetProgress: n
   return (
     <>
       <NaverMapPolylineOverlay
-        coords={traveled}
+        coords={lineCoords(traveled)}
+        isHidden={traveled.length < 2}
         width={6}
         color={theme.semantic.line.primary}
         capType={lineCapReady ? 'Round' : 'Butt'}
@@ -166,34 +201,38 @@ function GuidanceMapOverlays({ targetProgress, hasArrived }: { targetProgress: n
         zIndex={0}
       />
       <NaverMapPolylineOverlay
-        coords={remaining}
+        coords={lineCoords(remaining)}
         width={6}
         color={theme.blue[500]}
         // 끝까지 가면 남은 구간이 길이 0(같은 점 두 개)이 되니 숨긴다.
-        isHidden={displayProgress >= 1}
+        isHidden={displayProgress >= visibleRange.to || remaining.length < 2}
         capType={lineCapReady ? 'Round' : 'Butt'}
         joinType={lineCapReady ? 'Round' : 'Miter'}
         zIndex={0}
       />
-      <NaverMapStartPointMarker
-        latitude={DUMMY_ROUTE_MAP.startLatitude}
-        longitude={DUMMY_ROUTE_MAP.startLongitude}
-        label={DUMMY_ROUTE_MAP.startLabel}
-        // 이미 떠난 출발지라 Figma처럼 회색 비활성 톤으로 그린다.
-        active={false}
-      />
-      <NaverMapMarker
-        latitude={DUMMY_ROUTE_MAP.endLatitude}
-        longitude={DUMMY_ROUTE_MAP.endLongitude}
-        label={DUMMY_ROUTE_MAP.endLabel}
-        zIndex={1}
-        scale={1}
-      />
+      {showStart && (
+        <NaverMapStartPointMarker
+          latitude={routeMap.start.latitude}
+          longitude={routeMap.start.longitude}
+          label={routeMap.start.label}
+          // 이미 떠난 출발지라 Figma처럼 회색 비활성 톤으로 그린다.
+          active={false}
+        />
+      )}
+      {showEnd && (
+        <NaverMapMarker
+          latitude={routeMap.end.latitude}
+          longitude={routeMap.end.longitude}
+          label={routeMap.end.label}
+          zIndex={1}
+          scale={1}
+        />
+      )}
       {ripples.map((ripple, index) => (
         <NaverMapCircleOverlay
           key={index}
-          latitude={DUMMY_ROUTE_MAP.endLatitude}
-          longitude={DUMMY_ROUTE_MAP.endLongitude}
+          latitude={routeMap.end.latitude}
+          longitude={routeMap.end.longitude}
           radius={ripple.radius}
           // theme.blue[500](#343B9D)에 파동 진행에 따른 투명도만 입힌다.
           color={`rgba(52, 59, 157, ${ripple.alpha})`}
@@ -216,12 +255,21 @@ function GuidanceMapOverlays({ targetProgress, hasArrived }: { targetProgress: n
 export default function RouteGuidanceScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'RouteGuidance'>>();
-  const route = DUMMY_ROUTE_RESULTS.find(result => result.id === params.routeId) ?? DUMMY_ROUTE_RESULTS[0];
+  // 실내 길찾기 테스트 경로면 찍어둔 노드로 만든 경로/구간 안내를, 아니면 기존 더미를 쓴다.
+  const [{ route, routeMap }] = useState(() => {
+    const testRoute = buildTestRoute();
+    const routes = testRoute ? [testRoute.result, ...DUMMY_ROUTE_RESULTS] : DUMMY_ROUTE_RESULTS;
+    return {
+      route: routes.find(result => result.id === params.routeId) ?? DUMMY_ROUTE_RESULTS[0],
+      routeMap: getRouteMapData(params.routeId),
+    };
+  });
+  const guidanceSteps = routeMap.guidance;
   const insets = useSafeAreaInsets();
   const theme = useTheme();
 
   const [stepIndex, setStepIndex] = useState(0);
-  const step = DUMMY_GUIDANCE_STEPS[stepIndex];
+  const step = guidanceSteps[stepIndex];
   // 마지막 구간에서 "다음"을 누르면 도착한 것으로 본다. 별도 화면을 띄우지 않고 지도 위에서
   // 남은 경로를 끝까지 줄이고, 상단 카드를 도착 안내로 바꾸고, 하단에 "안내 종료" 버튼을 띄운다.
   const [hasArrived, setHasArrived] = useState(false);
@@ -245,7 +293,7 @@ export default function RouteGuidanceScreen() {
   // dir: 1 = 다음 구간, -1 = 이전 구간. 카드가 빠져나간 뒤 JS에서 실제로 구간을 바꾼다.
   const commitStep = useCallback(
     (dir: 1 | -1) => {
-      const lastIndex = DUMMY_GUIDANCE_STEPS.length - 1;
+      const lastIndex = guidanceSteps.length - 1;
       if (dir === 1 && stepIndexRef.current === lastIndex) {
         // 도착 카드는 기존처럼 제자리 페이드로 뜨니 위치/투명도만 원래대로 돌려둔다.
         cardX.value = 0;
@@ -318,6 +366,10 @@ export default function RouteGuidanceScreen() {
   }));
   // 지금 경로선/현재 위치/카메라가 향해야 할 진행 비율 — 도착하면 경로 끝(1).
   const targetProgress = hasArrived ? 1 : step.progress;
+  // 지금 있는 층 — 건물 안 구간이면 그 층 평면도를 지도에 깔고, 바깥 구간이면 아무것도 안 깐다.
+  // 도착하면 마지막 구간의 층(도착지가 있는 층)을 그대로 보여준다.
+  const currentFloorId = hasArrived ? guidanceSteps[guidanceSteps.length - 1].floorId : step.floorId;
+  const guidanceZoom = currentFloorId ? INDOOR_GUIDANCE_ZOOM : GUIDANCE_ZOOM;
   useEffect(() => {
     if (hasArrived) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [hasArrived]);
@@ -327,8 +379,8 @@ export default function RouteGuidanceScreen() {
   const mapRef = useRef<NaverMapViewRef>(null);
   // initialCamera는 처음 한 번만 쓰이니 첫 구간 위치로 고정해 둔다.
   const [initialCamera] = useState(() => ({
-    ...splitPathAt(DUMMY_ROUTE_PATH, DUMMY_GUIDANCE_STEPS[0].progress).position,
-    zoom: GUIDANCE_ZOOM,
+    ...splitPathAt(routeMap.path, guidanceSteps[0].progress).position,
+    zoom: guidanceSteps[0].floorId ? INDOOR_GUIDANCE_ZOOM : GUIDANCE_ZOOM,
   }));
   const isFirstStep = useRef(true);
   useEffect(() => {
@@ -336,9 +388,9 @@ export default function RouteGuidanceScreen() {
       isFirstStep.current = false;
       return;
     }
-    const target = splitPathAt(DUMMY_ROUTE_PATH, targetProgress).position;
-    mapRef.current?.animateCameraTo({ ...target, zoom: GUIDANCE_ZOOM, duration: STEP_TRANSITION_MS });
-  }, [targetProgress]);
+    const target = splitPathAt(routeMap.path, targetProgress).position;
+    mapRef.current?.animateCameraTo({ ...target, zoom: guidanceZoom, duration: STEP_TRANSITION_MS });
+  }, [targetProgress, guidanceZoom]);
 
   // 길찾기를 마쳤으니 경로 보기로 돌아가지 않고 지도 탭으로 나간다.
   const endGuidance = () => navigation.popTo('MainTabs', { screen: 'map' });
@@ -354,7 +406,19 @@ export default function RouteGuidanceScreen() {
         isRotateGesturesEnabled={false}
         isTiltGesturesEnabled={false}
       >
-        <GuidanceMapOverlays targetProgress={targetProgress} hasArrived={hasArrived} />
+        {currentFloorId && (
+          <FloorPlanOverlay
+            key={currentFloorId}
+            floorId={currentFloorId}
+            anchors={FLOOR_GEO_ANCHORS[currentFloorId]}
+          />
+        )}
+        <GuidanceMapOverlays
+          routeMap={routeMap}
+          targetProgress={targetProgress}
+          hasArrived={hasArrived}
+          currentFloorId={currentFloorId}
+        />
       </NaverMapView>
 
       {/* 도착하면 key가 바뀌면서 카드가 도착 안내로 페이드 전환된다. */}
@@ -378,7 +442,7 @@ export default function RouteGuidanceScreen() {
                 title={step.title}
                 durationText={step.durationText}
                 onClose={() => navigation.goBack()}
-                stepCount={DUMMY_GUIDANCE_STEPS.length}
+                stepCount={guidanceSteps.length}
                 activeStepIndex={stepIndex}
                 contentStyle={cardSwipeStyle}
               />

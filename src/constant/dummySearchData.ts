@@ -82,4 +82,7 @@ export const DUMMY_SEARCH_RESULTS: SearchResultItem[] = [
   { id: 's9', building: 'E동', place: '공학관', room: '프린터기', category: 'printer' },
   { id: 's10', building: 'S동', place: '학생회관', room: '편의점', category: 'store' },
   { id: 's11', building: 'S동', place: '학생회관', room: '흡연 구역', category: 'smokingArea' },
+  // 실내 길찾기 테스트 경로(testIndoorRoute.ts)의 출발/도착지. 둘을 골라 길찾기하면 직접 찍은 노드 경로가 나온다.
+  { id: 's12', building: 'R동', place: '홍문관', room: '카페나무', category: 'cafe' },
+  { id: 's13', building: 'C동', place: '인문사회관', room: '816호', category: 'classroom' },
 ];

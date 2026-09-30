@@ -25,11 +25,10 @@ import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapStartPointMarker } from '@components/map/NaverMapStartPointMarker';
 import { ROUTE_OPTIONS, RouteOptionKey } from '@constant/routeOptions';
 import { DUMMY_DEFAULT_DEPARTURE } from '@constant/dummyMypage';
+import { buildTestRoute, getRouteMapData, isTestRoutePair } from '@constant/testIndoorRoute';
 import {
   DUMMY_ROUTE_RESULTS,
   DUMMY_ELEVATOR_WARNING_MESSAGE,
-  DUMMY_ROUTE_MAP,
-  DUMMY_ROUTE_PATH,
 } from '@constant/dummyRouteResults';
 import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
@@ -40,12 +39,6 @@ const ROUTE_VIEW_HEADER_HEIGHT = 56;
 // 경로 보기 카드를 끌어내렸을 때 하단 세이프에어리어 위로 남겨둘 높이 —
 // 시트 padding-top(8) + 그래버(4) + 아래 여백 12px.
 const DETAIL_SHEET_PEEK_HEIGHT = 24;
-// 경로 보기(카드 펼침)의 고정 카메라 — 출발/도착 중간 지점, 줌 17.
-const ROUTE_VIEW_CAMERA = {
-  latitude: (DUMMY_ROUTE_MAP.startLatitude + DUMMY_ROUTE_MAP.endLatitude) / 2,
-  longitude: (DUMMY_ROUTE_MAP.startLongitude + DUMMY_ROUTE_MAP.endLongitude) / 2,
-  zoom: 17,
-};
 
 // "길 찾기_경로 선택"(720:10860). 탭이 아니라 루트 스택(RootNavigator)에 push되는 화면이라 —
 // native-stack의 기본 스와이프 백 제스처(gestureEnabled)가 그대로 적용돼서, 오른쪽으로 밀면
@@ -85,14 +78,21 @@ export default function NavigationScreen() {
 
   // 출발/도착지가 둘 다 채워지면 빈 상태 대신 경로 목록을 보여준다.
   const hasRoute = departure.length > 0 && destination.length > 0;
-  const hasElevatorWarning = useMemo(() => DUMMY_ROUTE_RESULTS.some(route => route.elevatorWarning), []);
+  // 출발/도착이 실내 길찾기 테스트 쌍(R동 카페나무 → C동 816호)이고 노드를 다 찍어뒀으면 그 경로 하나만 보여준다.
+  const routeResults = useMemo(() => {
+    const testRoute = isTestRoutePair(departure, destination) ? buildTestRoute() : null;
+    return testRoute ? [testRoute.result] : DUMMY_ROUTE_RESULTS;
+  }, [departure, destination]);
+  const hasElevatorWarning = useMemo(() => routeResults.some(route => route.elevatorWarning), [routeResults]);
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const selectedRoute = useMemo(
-    () => DUMMY_ROUTE_RESULTS.find(route => route.id === selectedRouteId) ?? null,
-    [selectedRouteId],
+    () => routeResults.find(route => route.id === selectedRouteId) ?? null,
+    [routeResults, selectedRouteId],
   );
+  // 경로선/출발·도착 핀/경로 보기 카메라 — 선택한 경로 기준.
+  const routeMap = useMemo(() => getRouteMapData(selectedRouteId), [selectedRouteId]);
 
   // 경로 보기 카드를 끌어내리면(Figma "길 찾기_전체 경로" 762:4620) 지도를 전체로 펼치고
   // 상단에 헤더 + 출발/도착 입력을 띄운다. 지도 카메라 패딩을 맞추려고 시트/상단 패널 높이를 잰다.
@@ -110,8 +110,8 @@ export default function NavigationScreen() {
   const mapRef = useRef<NaverMapViewRef>(null);
   useEffect(() => {
     if (isSheetCollapsed) return;
-    mapRef.current?.animateCameraTo({ ...ROUTE_VIEW_CAMERA, duration: 300 });
-  }, [isSheetCollapsed]);
+    mapRef.current?.animateCameraTo({ ...routeMap.camera, duration: 300 });
+  }, [isSheetCollapsed, routeMap]);
 
   // @mj-studio/react-native-naver-map의 NaverMapPolylineOverlay 버그 우회: capType/joinType의
   // "선언된 기본값"이 둘 다 Round라서, 처음부터 "Round"를 넘기면 네이티브가 "이전 값과
@@ -208,7 +208,7 @@ export default function NavigationScreen() {
           <NaverMapView
             ref={mapRef}
             style={StyleSheet.absoluteFill}
-            initialCamera={ROUTE_VIEW_CAMERA}
+            initialCamera={routeMap.camera}
             // 지도는 화면 전체에 깔리고 위(헤더/입력 패널)·아래(카드)가 그 위에 얹혀서 가린다.
             // 카메라 중심이 지도 뷰 "전체" 기준으로 잡히면 출발/도착 지점이 가려진 쪽으로
             // 치우쳐 보이니, 실제로 가린 높이만큼 mapPadding을 줘서 "위 패널 밑~카드 위"
@@ -231,7 +231,7 @@ export default function NavigationScreen() {
           >
             <NaverMapPolylineOverlay
               // L자 경로선 좌표(꺾이는 지점 포함) — 길 안내 화면과 같이 쓴다.
-              coords={DUMMY_ROUTE_PATH}
+              coords={routeMap.path}
               width={6}
               color={theme.blue[500]}
               // capType/joinType 둘 다 "Round"가 목표값인데, 선언된 기본값도 Round라
@@ -243,14 +243,14 @@ export default function NavigationScreen() {
               zIndex={0}
             />
             <NaverMapStartPointMarker
-              latitude={DUMMY_ROUTE_MAP.startLatitude}
-              longitude={DUMMY_ROUTE_MAP.startLongitude}
-              label={DUMMY_ROUTE_MAP.startLabel}
+              latitude={routeMap.start.latitude}
+              longitude={routeMap.start.longitude}
+              label={routeMap.start.label}
             />
             <NaverMapMarker
-              latitude={DUMMY_ROUTE_MAP.endLatitude}
-              longitude={DUMMY_ROUTE_MAP.endLongitude}
-              label={DUMMY_ROUTE_MAP.endLabel}
+              latitude={routeMap.end.latitude}
+              longitude={routeMap.end.longitude}
+              label={routeMap.end.label}
               zIndex={1}
               scale={1}
             />
@@ -340,12 +340,12 @@ export default function NavigationScreen() {
             contentContainerStyle={{ paddingBottom: hasElevatorWarning ? insets.bottom + 76 : insets.bottom + 16 }}
             showsVerticalScrollIndicator={false}
           >
-            {DUMMY_ROUTE_RESULTS.map((result, index) => (
+            {routeResults.map((result, index) => (
               <RouteResultCard
                 key={result.id}
                 result={result}
                 optionLabel={ROUTE_OPTIONS.find(option => option.key === result.option)?.label ?? ''}
-                showDivider={index !== DUMMY_ROUTE_RESULTS.length - 1}
+                showDivider={index !== routeResults.length - 1}
                 onPress={() => setSelectedRouteId(result.id)}
               />
             ))}
