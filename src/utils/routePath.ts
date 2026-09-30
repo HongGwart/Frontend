@@ -5,7 +5,7 @@ export interface LatLng {
 
 // 캠퍼스 안처럼 짧은 거리에선 평면으로 봐도 충분하다 — 경도 1도의 실제 길이가 위도에 따라
 // 줄어드는 것(cos(위도))만 보정해서 두 점 사이 상대 거리를 구한다.
-function segmentLength(a: LatLng, b: LatLng) {
+export function segmentLength(a: LatLng, b: LatLng) {
   const lngScale = Math.cos((((a.latitude + b.latitude) / 2) * Math.PI) / 180);
   return Math.hypot(b.latitude - a.latitude, (b.longitude - a.longitude) * lngScale);
 }
@@ -40,4 +40,14 @@ export function splitPathAt(path: LatLng[], progress: number) {
 
   // 점이 하나뿐인 경로 — 자를 구간이 없다.
   return { position: path[0], traveled: [path[0]], remaining: [path[0]] };
+}
+
+/**
+ * 경로선에서 전체 길이 중 from~to(0~1) 구간만 잘라낸다. 실내 길 안내에서 지금 층에 해당하는 구간만
+ * 그리는 데 쓴다. 구간이 비면 빈 배열.
+ */
+export function slicePath(path: LatLng[], from: number, to: number): LatLng[] {
+  if (to <= from) return [];
+  const head = splitPathAt(path, to).traveled;
+  return splitPathAt(head, from / to).remaining;
 }

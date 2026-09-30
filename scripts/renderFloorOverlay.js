@@ -13,8 +13,8 @@
  *   node scripts/renderFloorOverlay.js            # floorGeoAnchors.json에 있는 층 전부
  *   node scripts/renderFloorOverlay.js R_L C_1    # 지정한 층만 (나머지 기존 PNG는 유지)
  *
- * 네 점을 네 모서리에 억지로 맞추는 앱 쪽 투영 변환(createFloorToGeo)과 달리 여기선 affine이라,
- * 찍은 점이 평행사변형에서 살짝 벗어난 만큼은 오차로 남는다(로그의 "최대 오차"로 확인).
+ * 기준점은 앱에서 도면을 이동·회전·균일 확대로만 맞춘 것이라 직사각형 그대로여서 affine으로 정확히 맞는다
+ * (로그의 "최대 오차"가 0에 가까워야 정상). 모양이 찌그러지지 않는다.
  */
 
 const fs = require('fs');
@@ -90,7 +90,7 @@ function renderFloor(floorId, anchors) {
   const [a, b, c, d, e, f] = fitAffine(corners, anchors.map(toUV));
   const apply = ([x, y]) => [a * x + b * y + c, d * x + e * y + f];
 
-  // 찍은 점과 affine 결과의 차이 (m 단위, 위도 1도 ≈ 111,320m)
+  // 기준점과 affine 결과의 차이 (m 단위, 위도 1도 ≈ 111,320m)
   const maxErr = Math.max(
     ...corners.map((pt, i) => {
       const [u, v] = apply(pt);

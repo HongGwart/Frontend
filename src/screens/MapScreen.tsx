@@ -21,8 +21,9 @@ import { Toast } from '@components/common/Toast';
 import { DismissibleBottomSheet, DismissibleBottomSheetRef } from '@components/common/DismissibleBottomSheet';
 import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
 import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
-import { DevBuildingPinMarkers, DevBuildingPinPanel, useDevBuildingPins } from '@components/map/DevBuildingPinPicker';
 import { DevFloorOverlayLayer, DevFloorOverlayPanel, useDevFloorOverlay } from '@components/map/DevFloorOverlayPicker';
+import { DevRouteNodeLayer, DevRouteNodePanel, useDevRouteNodes } from '@components/map/DevRouteNodePicker';
+import { TEST_ROUTE_DEPARTURE_LABEL, TEST_ROUTE_DESTINATION_LABEL } from '@constant/testIndoorRoute';
 import {
   FadingLabelMarkerItem,
   FadingLabelMarkers,
@@ -94,11 +95,18 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
   const mapViewRef = useRef<NaverMapViewRef>(null);
   const insets = useSafeAreaInsets();
-  // [개발용] 각 동 위치를 탭해서 좌표를 모으는 모드. 켜져 있는 동안엔 더미 마커를 숨기고
-  // 지도 탭을 좌표 기록으로 쓴다.
-  const pinPicker = useDevBuildingPins();
-  const floorOverlay = useDevFloorOverlay();
-  const devModeActive = pinPicker.active || floorOverlay.active;
+  const floorOverlay = useDevFloorOverlay(mapViewRef);
+  // 경로 노드를 다 찍고 완료하면 길찾기로 넘어가서 카페나무 → 816호 경로를 바로 띄운다.
+  const routeNodes = useDevRouteNodes({
+    onComplete: () =>
+      navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Navigation', {
+        routeSelection: {
+          departureLabel: TEST_ROUTE_DEPARTURE_LABEL,
+          destinationLabel: TEST_ROUTE_DESTINATION_LABEL,
+        },
+      }),
+  });
+  const devModeActive = floorOverlay.active || routeNodes.active;
 
   // 지금 카드가 열려있는 마커의 id. dong/category는 marker.id를 그대로 쓰고, list는 그 리스트를
   // 열게 한 군집 마커의 id(markerId)를 쓴다 — 지도 위 마커에 강조(active) 표시를 하는 데만 쓴다.
@@ -374,11 +382,15 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         maxZoom={MAP_MAX_ZOOM}
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
         onTapMap={
-          pinPicker.active ? pinPicker.handleTap : floorOverlay.active ? floorOverlay.handleTap : closeFacilitySheet
+          routeNodes.active ? routeNodes.handleTap : floorOverlay.active ? undefined : closeFacilitySheet
         }
       >
-        <DevBuildingPinMarkers picker={pinPicker} />
         <DevFloorOverlayLayer picker={floorOverlay} />
+        <DevRouteNodeLayer
+          picker={routeNodes}
+          floorAnchors={floorOverlay.anchors}
+          liveFloorImages={floorOverlay.liveImages}
+        />
         {!devModeActive && (
           <FadingLabelMarkers
             ref={labelMarkersRef}
@@ -583,8 +595,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
           </GestureHandlerRootView>
         </Modal>
       )}
-      <DevBuildingPinPanel picker={pinPicker} topInset={insets.top} />
       <DevFloorOverlayPanel picker={floorOverlay} topInset={insets.top} />
+      <DevRouteNodePanel picker={routeNodes} topInset={insets.top} floorAnchors={floorOverlay.anchors} />
     </View>
   );
 }

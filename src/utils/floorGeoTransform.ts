@@ -5,7 +5,7 @@ export interface GeoCoord {
 }
 
 /**
- * 층 평면도를 지도에 앉히는 기준점. 도면 contentBounds의 네 모서리가 실제 지도에서 찍힌 위치로,
+ * 층 평면도를 지도에 앉히는 기준점. 도면 contentBounds의 네 모서리가 실제 지도에 놓인 위치로,
  * 순서는 도면 기준 [좌상단, 우상단, 우하단, 좌하단].
  */
 export type FloorGeoAnchors = [GeoCoord, GeoCoord, GeoCoord, GeoCoord];

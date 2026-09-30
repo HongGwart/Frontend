@@ -112,6 +112,8 @@ export interface GuidanceStep {
   durationText: string;
   /** 이 안내를 보여줄 때의 현재 위치 — DUMMY_ROUTE_PATH 전체 길이 중 진행 비율(0~1). */
   progress: number;
+  /** 이 구간을 지나는 동안 있는 층(floorMaps 키, 예: "R_L"). 실외 구간이면 생략 — 길 안내 지도에 그 층 평면도를 깐다. */
+  floorId?: string;
 }
 
 // Figma "길 안내_걷기"(784:4466)의 카드(점 3개 = 구간 3개) 예시를 바탕으로 한 더미 안내.
