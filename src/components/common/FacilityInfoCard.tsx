@@ -71,6 +71,18 @@ interface Props {
   /** true면 "건물 내부 보기" CTA 버튼을 안 그린다(예: 온보딩처럼 CTA가 필요 없는 데모용). */
   hideCta?: boolean;
   /**
+   * true면 카드 맨 위 그래버를 안 그린다. 이 카드를 CollapsibleBottomSheet처럼 스스로
+   * 그래버를 그리는 컨테이너 안에 넣을 때, 그래버가 두 번 겹쳐 보이지 않게 하는 용도.
+   */
+  hideGrabber?: boolean;
+  /**
+   * true면 카드 위쪽 그림자(shadow-offset 음수)를 안 그린다. 이 그림자는 원래 카드 바로
+   * 위의 지도에 옅게 지는 용도인데, CollapsibleBottomSheet처럼 카드 위에 그래버 영역이
+   * 따로 얹혀 있는 컨테이너 안에서는 그 그래버 영역까지 그림자가 번져 올라가 회색으로
+   * 보인다. 그 컨테이너가 자기 배경을 이미 깔고 있을 때 끈다.
+   */
+  hideShadow?: boolean;
+  /**
    * true면 온보딩 편의시설 목업(Figma 1252:43655)처럼 ~0.6613배 축소 크기로 그린다.
    * facility variant 전용으로 실측한 값이라 facility가 아닌 variant에도 적용은 되지만
    * 검증된 건 facility뿐이다.
@@ -106,6 +118,8 @@ export function FacilityInfoCard({
   ctaIconHeight = 18,
   ctaVariant = 'primary',
   hideCta = false,
+  hideGrabber = false,
+  hideShadow = false,
   compact = false,
 }: Props) {
   const theme = useTheme();
@@ -127,8 +141,8 @@ export function FacilityInfoCard({
   );
 
   const card = (
-    <Container variant={variant} compact={compact}>
-      <Grabber compact={compact} />
+    <Container variant={variant} compact={compact} hideShadow={hideShadow}>
+      {!hideGrabber && <Grabber compact={compact} />}
       <Content compact={compact}>
         {isFacility ? (
           <FacilitySection compact={compact}>
@@ -284,7 +298,7 @@ function SubButton({
   );
 }
 
-const Container = styled.View<{ variant: Props['variant']; compact: boolean }>`
+const Container = styled.View<{ variant: Props['variant']; compact: boolean; hideShadow: boolean }>`
   width: 100%;
   background-color: ${({ theme }) => theme.semantic.background.primary};
   border-top-left-radius: ${({ compact }) => (compact ? '10.581px' : '16px')};
@@ -297,9 +311,9 @@ const Container = styled.View<{ variant: Props['variant']; compact: boolean }>`
   /* compact(온보딩 편의시설 목업)만 Figma box-shadow 적용: 0 -2.645px 20px 0 rgba(0,0,0,0.10) */
   shadow-color: #000;
   shadow-offset: 0px ${({ compact }) => (compact ? '-2.645px' : '-4px')};
-  shadow-opacity: ${({ compact }) => (compact ? 0.1 : 0.05)};
+  shadow-opacity: ${({ hideShadow, compact }) => (hideShadow ? 0 : compact ? 0.1 : 0.05)};
   shadow-radius: 20px;
-  elevation: 8;
+  elevation: ${({ hideShadow }) => (hideShadow ? 0 : 8)};
   ${({ variant }) => (variant === 'inside' ? 'height: 400px;' : '')}
 `;
 

@@ -8,6 +8,7 @@ import Header from '@components/layout/Header';
 import { IndoorMapView } from '@components/map/IndoorMapView';
 import { FloorSelector } from '@components/map/FloorSelector';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
+import { CollapsibleBottomSheet } from '@components/common/CollapsibleBottomSheet';
 import { FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
 import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
 import {
@@ -26,6 +27,8 @@ const SLIDE_DURATION = 260;
 const FLOOR_SELECTOR_TOP = 24;
 // FacilityInfoCard inside variant의 고정 높이.
 const INSIDE_CARD_HEIGHT = 400;
+// 카드를 아래로 끌어내려 접었을 때 남겨둘 그래버 영역 높이(패딩 8 + 그래버 4 + 여백 12).
+const CARD_PEEK_HEIGHT = 24;
 
 /**
  * 지도 위 건물 카드에서 "건물 내부 보기"를 누르면 뜨는 건물 내부 지도. Figma "건물 내부 지도"(762:4924).
@@ -140,33 +143,47 @@ export default function BuildingIndoorScreen() {
       </MapArea>
 
       <CardWrapper style={cardStyle}>
-        {selectedRoomLabel ? (
-          <FacilityInfoCard
-            variant="room"
-            buildingCode={params.buildingCode}
-            buildingName={params.buildingName}
-            roomNumber={`${selectedRoomLabel}호`}
-            description={params.description}
-            isFavorite={isFavorite}
-            onToggleFavorite={() => setIsFavorite(prev => !prev)}
-            {...routeButtonProps(placeLabel)}
-            operatingHours={DUMMY_OPERATING_HOURS}
-          />
-        ) : (
-          <FacilityInfoCard
-            variant="inside"
-            buildingCode={params.buildingCode}
-            buildingName={params.buildingName}
-            description={params.description}
-            isFavorite={isFavorite}
-            onToggleFavorite={() => setIsFavorite(prev => !prev)}
-            {...routeButtonProps(placeLabel)}
-            images={marker?.images ?? DUMMY_FACILITY_IMAGES}
-            facilityCounts={DUMMY_FACILITY_COUNTS}
-            mainEntrance={DUMMY_MAIN_ENTRANCE}
-            operatingHours={DUMMY_OPERATING_HOURS}
-          />
-        )}
+        <CollapsibleBottomSheet
+          peekHeight={CARD_PEEK_HEIGHT + insets.bottom}
+          header={<Grabber />}
+          style={{
+            backgroundColor: theme.semantic.background.primary,
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
+          }}
+        >
+          {selectedRoomLabel ? (
+            <FacilityInfoCard
+              variant="room"
+              hideGrabber
+              hideShadow
+              buildingCode={params.buildingCode}
+              buildingName={params.buildingName}
+              roomNumber={`${selectedRoomLabel}호`}
+              description={params.description}
+              isFavorite={isFavorite}
+              onToggleFavorite={() => setIsFavorite(prev => !prev)}
+              {...routeButtonProps(placeLabel)}
+              operatingHours={DUMMY_OPERATING_HOURS}
+            />
+          ) : (
+            <FacilityInfoCard
+              variant="inside"
+              hideGrabber
+              hideShadow
+              buildingCode={params.buildingCode}
+              buildingName={params.buildingName}
+              description={params.description}
+              isFavorite={isFavorite}
+              onToggleFavorite={() => setIsFavorite(prev => !prev)}
+              {...routeButtonProps(placeLabel)}
+              images={marker?.images ?? DUMMY_FACILITY_IMAGES}
+              facilityCounts={DUMMY_FACILITY_COUNTS}
+              mainEntrance={DUMMY_MAIN_ENTRANCE}
+              operatingHours={DUMMY_OPERATING_HOURS}
+            />
+          )}
+        </CollapsibleBottomSheet>
         {/* 카드가 위로 올라가 있는 동안 그 아래로 지도가 비치지 않게 흰 바닥을 이어 붙인다. */}
         <CardBottomFill />
       </CardWrapper>
@@ -206,8 +223,23 @@ const EmptyText = styled.Text`
   text-align: center;
 `;
 
+// 이제 카드는 흐름 밖에서 지도 위에 절대위치로 떠서(bottom:0), 접으면 그래버만 남기고 뒤의
+// IndoorMapView가 그대로 드러난다 — MapArea가 카드 높이만큼 줄어들지 않고 항상 화면 전체를 채운다.
 const CardWrapper = styled(Animated.View)`
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
   width: 100%;
+`;
+
+const Grabber = styled.View`
+  align-self: center;
+  width: 36px;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 100px;
+  background-color: ${({ theme }) => theme.semantic.line.primary};
 `;
 
 const CardBottomFill = styled.View`
