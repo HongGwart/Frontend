@@ -21,9 +21,14 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  * Search 화면을 형제로 둔다. 두 화면 다 자체 헤더/뒤로가기 UI를 갖고 있어서
  * 스택 기본 헤더는 끈다.
  */
-export default function RootNavigator() {
+export default function RootNavigator({
+  initialRouteName,
+}: {
+  /** 온보딩을 이미 본 사용자면 'MainTabs'로 바로 시작한다(App.tsx가 로컬 저장값으로 정함). */
+  initialRouteName: 'Onboarding' | 'MainTabs';
+}) {
   return (
-    <Stack.Navigator initialRouteName="Onboarding" screenOptions={{ headerShown: false }}>
+    <Stack.Navigator initialRouteName={initialRouteName} screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ animation: 'none' }} />
       {/* 온보딩에서 넘어올 때 옆에서 슬라이드해 들어오는 기본 애니메이션을 잠시 끔. */}
       <Stack.Screen name="MainTabs" component={MainTabNavigator} options={{ animation: 'none' }} />

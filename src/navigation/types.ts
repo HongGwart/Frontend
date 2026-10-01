@@ -9,7 +9,8 @@ export interface FocusFacilityParam {
   buildingCode: string;
   buildingName: string;
   facilityName: string;
-  isFavorite?: boolean;
+  /** 즐겨찾기 장소 키를 만들 시설/호실 이름. 건물 자체면 생략(facilityName엔 "R동 홍문관"처럼 표시용 이름이 들어간다) */
+  placeName?: string;
 }
 
 /**
@@ -55,7 +56,6 @@ export type RootStackParamList = {
     buildingCode: string;
     buildingName: string;
     description: string;
-    isFavorite?: boolean;
     fromCardHeight?: number;
   };
   // 길찾기 화면. 탭이 아니라 루트 스택에 푸시되는 화면이라, 네이티브 스와이프 백 제스처로

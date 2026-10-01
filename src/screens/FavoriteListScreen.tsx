@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import Header from '@components/layout/Header';
 import { FavoritePlaceCard } from '@components/mypage/FavoritePlaceCard';
 import { useFavorites } from '@hooks/useFavorites';
 import { FavoritePlace, favoritePlaceToFocusParam } from '@constant/dummyMypage';
+import { toFavoritePlace } from '@constant/favoriteCards';
 import { RootStackParamList } from '@navigation/types';
 
 // 마이페이지 "즐겨찾기" 섹션의 "더보기"를 누르면 오는 전체 목록 화면(Figma "마이페이지_즐겨찾기 목록").
@@ -16,8 +17,9 @@ import { RootStackParamList } from '@navigation/types';
 export default function FavoriteListScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  // 즐겨찾기 상태는 MypageScreen과 공유(FavoritesProvider).
-  const { favorites, removeFavorite } = useFavorites();
+  // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(FavoritesProvider). 여기서 별을 끄면 목록에서 빠진다.
+  const { favorites: storedFavorites, removeFavorite } = useFavorites();
+  const favorites = useMemo(() => storedFavorites.map(toFavoritePlace), [storedFavorites]);
 
   const openFacilityOnMap = (place: FavoritePlace) => {
     // navigate는 새 MainTabs를 위에 쌓으므로(React Navigation 7), 이미 있는 MainTabs로 되돌아간다.
@@ -34,6 +36,7 @@ export default function FavoriteListScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 8 }}
         showsVerticalScrollIndicator={false}
       >
+        {favorites.length === 0 && <EmptyText>즐겨찾기한 장소가 없어요</EmptyText>}
         {favorites.map((item, index) => (
           <FavoritePlaceCard
             key={item.id}
@@ -62,4 +65,12 @@ export default function FavoriteListScreen() {
 const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${({ theme }) => theme.semantic.background.primary};
+`;
+
+const EmptyText = styled.Text`
+  padding: 48px 20px;
+  text-align: center;
+  font-family: ${({ theme }) => theme.typography.labelNormal.semiBold.fontFamily};
+  font-size: ${({ theme }) => theme.typography.labelNormal.semiBold.fontSize}px;
+  color: ${({ theme }) => theme.semantic.text.tertiary};
 `;

@@ -47,6 +47,7 @@ import { FacilityListSheet, FacilityListSheetItem } from '@components/common/Fac
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { DUMMY_FACILITY_IMAGES } from '@constant/dummyFacilityInfo';
 import { RootStackParamList } from '@navigation/types';
+import { markOnboardingCompleted } from '@storage/onboarding';
 
 // 마커/로고가 같은 자리에 그대로 있고 색만 바뀌는 두 디자인(Figma "스플래시" 669:3768 →
 // "온보딩" 679:1156)이라, 화면을 둘로 나눠 navigation.replace로 뚝 끊어 넘기는 대신
@@ -811,7 +812,11 @@ export default function OnboardingScreen() {
           <Button
             label="입학하기"
             disabled={!ctaEnabled}
-            onPress={() => navigation.replace('MainTabs', { screen: 'map' })}
+            onPress={() => {
+              // 끝까지 보고 입학하기를 눌렀을 때만 완료로 기록한다(중간에 앱을 끄면 다음에 다시 보여준다).
+              markOnboardingCompleted();
+              navigation.replace('MainTabs', { screen: 'map' });
+            }}
           />
         </CtaBar>
       </FadeInContent>

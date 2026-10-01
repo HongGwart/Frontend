@@ -33,6 +33,8 @@ export interface FavoritePlace {
 }
 
 // Figma 마이페이지의 즐겨찾기 4종(건물+아이콘 / 시설+사진 x2 / 시설+아이콘)을 그대로 담았다.
+// 즐겨찾기 목록 자체는 이제 기기 로컬 저장(useFavorites)이라, 이 값은 카드에 그릴 사진/운영시간을
+// 찾아오는 장소 데이터로만 쓴다(favoriteCards.ts).
 export const DUMMY_FAVORITE_PLACES: FavoritePlace[] = [
   {
     id: 'fav-1',
@@ -92,7 +94,7 @@ export function favoritePlaceToFocusParam(place: FavoritePlace): FocusFacilityPa
     buildingCode: place.buildingCode,
     buildingName: place.buildingName,
     facilityName: place.name ?? `${place.buildingCode} ${place.buildingName}`,
-    isFavorite: true,
+    placeName: place.name,
   };
 }
 
@@ -100,7 +102,7 @@ export function favoritePlaceToFocusParam(place: FavoritePlace): FocusFacilityPa
 // SearchResultItem 타입과 SEARCH_ITEM_ICONS(아바타 아이콘 프리셋)을 검색 페이지에서 그대로 가져다 쓴다.
 // 화면에서 keyword로 필터링하므로, "중앙" 등을 입력하면 아래 항목이 뜬다.
 export const DUMMY_DEPARTURE_SEARCH_RESULTS: SearchResultItem[] = [
-  { id: 'dep-1', building: 'H동', place: '중앙도서관', category: 'building', isFavorite: true },
-  { id: 'dep-2', building: 'H동', place: '중앙도서관', room: '403호', category: 'classroom', isFavorite: true },
+  { id: 'dep-1', building: 'H동', place: '중앙도서관', category: 'building' },
+  { id: 'dep-2', building: 'H동', place: '중앙도서관', room: '403호', category: 'classroom' },
   { id: 'dep-3', building: 'H동', place: '중앙도서관', room: '501호', category: 'classroom' },
 ];
