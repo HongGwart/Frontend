@@ -18,6 +18,8 @@ import { useCloseOnHardwareBack } from '@hooks/useCloseOnHardwareBack';
 import { FACILITY_CATEGORIES } from '@constant/facilityCategories';
 import { DUMMY_FACILITY_CATEGORY_PLACES } from '@constant/dummyFacilityCategoryPlaces';
 import { FacilityCategoryId, RootStackParamList } from '@navigation/types';
+import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
+import { FavoritePlace } from '@constant/dummyMypage';
 
 // 편의시설 카테고리 → 지도 위 원형 카테고리 마커 아이콘(메인 지도와 같은 것). "기타"는 전용
 // 아이콘이 없어서 기본 핀 마커로 찍는다.
@@ -47,8 +49,14 @@ export default function FacilityCategoryListScreen() {
   const category = FACILITY_CATEGORIES.find(item => item.id === params.categoryId);
   const places = DUMMY_FACILITY_CATEGORY_PLACES[params.categoryId];
 
-  // 실제 즐겨찾기 연동 전까지, 이 화면 안에서만 유지되는 로컬 토글 상태.
-  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(마이페이지/지도/길찾기와 같은 상태).
+  const { isFavorite, toggleFavorite: togglePlaceFavorite } = useFavorites();
+  const toFavoriteInput = (place: FavoritePlace): FavoriteInput => ({
+    buildingCode: place.buildingCode,
+    buildingName: place.buildingName,
+    name: place.name,
+    category: MARKER_ICON_BY_CATEGORY[params.categoryId],
+  });
   const routeButtonProps = useRouteButtonProps();
 
   // 목록에서 장소를 누르면 주변상권처럼 지도 + 시설 카드 상세로 바뀐다. 편의시설은 아직 자체 좌표가
@@ -60,17 +68,6 @@ export default function FacilityCategoryListScreen() {
   );
   const closeDetail = useCallback(() => setSelectedPlaceId(null), []);
   useCloseOnHardwareBack(!!selectedPlace, closeDetail);
-  const toggleFavorite = (id: string) => {
-    setFavoriteIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
 
   if (selectedPlace) {
     const building = DUMMY_MAP_MARKERS.find(marker => marker.label === selectedPlace.buildingCode);
@@ -90,7 +87,7 @@ export default function FacilityCategoryListScreen() {
             <NaverMapCategoryMarker
               latitude={latitude}
               longitude={longitude}
-              favorite={favoriteIds.has(selectedPlace.id)}
+              favorite={isFavorite(toFavoriteInput(selectedPlace))}
               {...CATEGORY_MARKER_ICONS[markerIconKey]}
             />
           ) : (
@@ -105,8 +102,8 @@ export default function FacilityCategoryListScreen() {
             buildingName={selectedPlace.buildingName}
             facilityName={facilityName}
             locationDetail={selectedPlace.locationDetail}
-            isFavorite={favoriteIds.has(selectedPlace.id)}
-            onToggleFavorite={() => toggleFavorite(selectedPlace.id)}
+            isFavorite={isFavorite(toFavoriteInput(selectedPlace))}
+            onToggleFavorite={() => togglePlaceFavorite(toFavoriteInput(selectedPlace))}
             {...routeButtonProps(
               toRoutePlaceLabel(selectedPlace.buildingCode, selectedPlace.buildingName, selectedPlace.name),
             )}
@@ -121,7 +118,6 @@ export default function FacilityCategoryListScreen() {
                 buildingCode: selectedPlace.buildingCode,
                 buildingName: selectedPlace.buildingName,
                 description: building?.description ?? '',
-                isFavorite: building?.favorite,
               })
             }
           />
@@ -152,8 +148,8 @@ export default function FacilityCategoryListScreen() {
               isOpen={place.isOpen}
               statusText={place.statusText}
               hours={place.hours}
-              isFavorite={favoriteIds.has(place.id)}
-              onToggleFavorite={() => toggleFavorite(place.id)}
+              isFavorite={isFavorite(toFavoriteInput(place))}
+              onToggleFavorite={() => togglePlaceFavorite(toFavoriteInput(place))}
               onPress={() => setSelectedPlaceId(place.id)}
               showDivider={index !== places.length - 1}
             />

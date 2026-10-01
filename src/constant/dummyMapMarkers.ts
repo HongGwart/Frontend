@@ -8,7 +8,6 @@ export interface DummyMapMarker {
   latitude: number;
   longitude: number;
   label?: string;
-  favorite?: boolean;
   /** FacilityInfoCard(outside)에 넘길 건물명/설명. label이 "동" 코드라면 이건 정식 명칭. */
   buildingName: string;
   description: string;
@@ -19,7 +18,7 @@ export interface DummyMapMarker {
 // 캠퍼스 동 마커. 좌표는 개발용 좌표 찍기 모드(DevBuildingPinPicker)로 지도에서 각 동 건물을
 // 직접 탭해 모은 값이다(M동은 아직 위치 미확인이라 빠져 있다). 건물명은 campusBuildings.ts의
 // 네이버 좌표/ Figma 지도 라벨로 확인된 것만 넣었고, 확인 안 된 동은 빈 문자열로 두었다.
-// G/H/I/S/E의 이름·설명·즐겨찾기 값은 기존 더미 그대로다.
+// G/H/I/S/E의 이름·설명은 기존 더미 그대로다. 즐겨찾기 여부는 더미에 두지 않고 기기 로컬 저장(useFavorites)으로 관리한다.
 export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
   {
     id: 'dong-A',
@@ -89,7 +88,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5513065,
     longitude: 126.9267391,
     label: 'H동',
-    favorite: true,
     buildingName: '중앙도서관',
     description: '열람실 및 자료실',
     images: DUMMY_FACILITY_IMAGES,
@@ -171,7 +169,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5503172,
     longitude: 126.9251751,
     label: 'S동',
-    favorite: true,
     buildingName: '강당',
     description: '',
     images: DUMMY_FACILITY_IMAGES,
@@ -228,7 +225,6 @@ export interface DummyCategoryMarker {
   latitude: number;
   longitude: number;
   category: Exclude<CategoryKey, 'favorite'>;
-  favorite?: boolean;
   count?: number;
   /** FacilityInfoCard(facility)에 넘길 정보. room이 카드 제목(facilityName)으로 쓰인다. */
   buildingCode: string;
@@ -257,20 +253,18 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     latitude: 37.5501,
     longitude: 126.9248,
     category: 'readingRoom',
-    favorite: true,
     buildingCode: 'H동',
     buildingName: '중앙도서관',
     room: '열람실 2',
     description: '조용히 공부할 수 있는 개인 열람실',
   },
-  // c3~c5: 전부 G동(학생회관) 소속. 셋 다 즐겨찾기해둬서, "즐겨찾기" 칩을 켰을 때 같은
-  // 동 안에 즐겨찾기가 여러 개 있으면 겹쳐진 마커(카운트 배지)로 묶이는 예시로 쓴다.
+  // c3~c5: 전부 G동(학생회관) 소속. 셋 다 즐겨찾기하면 "즐겨찾기" 칩을 켰을 때 같은 동 안의
+  // 즐겨찾기가 겹쳐진 마커(카운트 배지)로 묶이는 걸 확인할 수 있다.
   {
     id: 'c3',
     latitude: 37.5515,
     longitude: 126.9257,
     category: 'restaurant',
-    favorite: true,
     buildingCode: 'G동',
     buildingName: '학생회관',
     room: '학생 식당',
@@ -282,7 +276,6 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     latitude: 37.5497,
     longitude: 126.9241,
     category: 'cafe',
-    favorite: true,
     buildingCode: 'G동',
     buildingName: '학생회관',
     room: '카페',
@@ -294,7 +287,6 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     latitude: 37.5511,
     longitude: 126.9238,
     category: 'store',
-    favorite: true,
     buildingCode: 'G동',
     buildingName: '학생회관',
     room: '편의점',

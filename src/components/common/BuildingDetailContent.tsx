@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled, { useTheme } from 'styled-components/native';
@@ -11,6 +11,8 @@ import { BuildingFacilityCard } from './BuildingFacilityCard';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import { DUMMY_MAP_MARKERS, DUMMY_CATEGORY_MARKERS } from '@constant/dummyMapMarkers';
 import { DUMMY_MAIN_ENTRANCE, DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
+import { favoriteFromCategoryMarker } from '@constant/favoriteInputs';
+import { useFavorites } from '@hooks/useFavorites';
 
 interface Props {
   buildingCode: string;
@@ -61,19 +63,16 @@ export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
     [buildingCode],
   );
 
-  // 마커 즐겨찾기와 마찬가지로, 실제 연동 전까지 이 컴포넌트 로컬에서만 토글 상태를 들고
-  // 있는다(MapScreen의 favoriteOverrides와 같은 패턴).
-  const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
-  // id만 받는 안정적인 참조로 둬서(마커별로 map 콜백 안에서 새 화살표 함수를 만들어
-  // 넘기지 않아도 되게) BuildingFacilityCard의 React.memo가 실제로 효과를 본다. 뒤집을
-  // 기준값은 override가 있으면 그걸, 없으면 원래 마커의 favorite을 그때그때 찾아 쓴다.
-  const toggleFavorite = useCallback(
-    (id: string) => {
-      const marker = DUMMY_CATEGORY_MARKERS.find(item => item.id === id);
-      setFavoriteOverrides(prev => ({ ...prev, [id]: !(prev[id] ?? marker?.favorite ?? false) }));
-    },
-    [],
-  );
+  // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(지도/마이페이지와 같은 상태).
+  const { isFavorite, toggleFavorite: toggleFavoritePlace } = useFavorites();
+  // id만 받는 안정적인 참조로 둬서(마커별로 map 콜백 안에서 새 화살표 함수를 만들어 넘기지 않아도 되게)
+  // BuildingFacilityCard의 React.memo가 실제로 효과를 본다. 최신 토글 함수는 ref로 읽는다.
+  const toggleRef = useRef(toggleFavoritePlace);
+  toggleRef.current = toggleFavoritePlace;
+  const toggleFavorite = useCallback((id: string) => {
+    const marker = DUMMY_CATEGORY_MARKERS.find(item => item.id === id);
+    if (marker) toggleRef.current(favoriteFromCategoryMarker(marker));
+  }, []);
 
   const rows = useMemo(() => {
     const grouped: (typeof facilities)[] = [];
@@ -123,7 +122,7 @@ export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
               {rows.map((row, rowIndex) => (
                 <FacilityRow key={rowIndex}>
                   {row.map(marker => {
-                    const isFavorite = favoriteOverrides[marker.id] ?? marker.favorite ?? false;
+                    const favorite = isFavorite(favoriteFromCategoryMarker(marker));
                     return (
                       <BuildingFacilityCard
                         key={marker.id}
@@ -133,7 +132,7 @@ export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
                         title={marker.room}
                         isOpen={DUMMY_OPERATING_HOURS.isOpen}
                         statusText={DUMMY_OPERATING_HOURS.statusText}
-                        isFavorite={isFavorite}
+                        isFavorite={favorite}
                         onToggleFavorite={toggleFavorite}
                       />
                     );

@@ -9,6 +9,7 @@ import { IndoorMapView } from '@components/map/IndoorMapView';
 import { FloorSelector } from '@components/map/FloorSelector';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
+import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
 import {
   DUMMY_FACILITY_COUNTS,
@@ -42,7 +43,15 @@ export default function BuildingIndoorScreen() {
     () => DUMMY_MAP_MARKERS.find(item => item.label === params.buildingCode),
     [params.buildingCode],
   );
-  const [isFavorite, setIsFavorite] = useState(params.isFavorite ?? false);
+  // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태. 건물 카드는 건물 자체를, 호실 카드는 그 호실을 즐겨찾기한다.
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const buildingFavorite: FavoriteInput = {
+    buildingCode: params.buildingCode,
+    buildingName: params.buildingName,
+    category: 'building',
+    latitude: marker?.latitude,
+    longitude: marker?.longitude,
+  };
 
   // 기본은 1층(없으면 가장 낮은 층)에서 시작한다.
   const floors = useMemo(() => getBuildingFloors(params.buildingCode), [params.buildingCode]);
@@ -145,8 +154,10 @@ export default function BuildingIndoorScreen() {
             buildingName={params.buildingName}
             roomNumber={`${selectedRoomLabel}호`}
             description={params.description}
-            isFavorite={isFavorite}
-            onToggleFavorite={() => setIsFavorite(prev => !prev)}
+            isFavorite={isFavorite({ buildingCode: params.buildingCode, name: `${selectedRoomLabel}호` })}
+            onToggleFavorite={() =>
+              toggleFavorite({ ...buildingFavorite, name: `${selectedRoomLabel}호`, category: 'classroom' })
+            }
             {...routeButtonProps(placeLabel)}
             operatingHours={DUMMY_OPERATING_HOURS}
           />
@@ -156,8 +167,8 @@ export default function BuildingIndoorScreen() {
             buildingCode={params.buildingCode}
             buildingName={params.buildingName}
             description={params.description}
-            isFavorite={isFavorite}
-            onToggleFavorite={() => setIsFavorite(prev => !prev)}
+            isFavorite={isFavorite(buildingFavorite)}
+            onToggleFavorite={() => toggleFavorite(buildingFavorite)}
             {...routeButtonProps(placeLabel)}
             images={marker?.images ?? DUMMY_FACILITY_IMAGES}
             facilityCounts={DUMMY_FACILITY_COUNTS}

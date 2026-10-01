@@ -36,12 +36,14 @@ import {
 } from '@constant/dummyMapMarkers';
 import { DUMMY_FACILITY_COUNTS, DUMMY_MAIN_ENTRANCE, DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
 import {
-  DUMMY_RECENT_SEARCHES,
   DUMMY_SEARCH_RESULTS,
   SEARCH_ITEM_ICONS,
   SearchResultItem,
 } from '@constant/dummySearchData';
 import { RootStackParamList } from '@navigation/types';
+import { formatSearchedDate, useRecentSearches } from '@hooks/useRecentSearches';
+import { useFavorites } from '@hooks/useFavorites';
+import { favoriteFromCategoryMarker, favoriteFromDongMarker } from '@constant/favoriteInputs';
 
 // 지도 화면(MapScreen)과 동일한 형태. 검색 뷰 안에서 지도를 띄울 때도 마커를 직접
 // 탭한 것과 같은 방식으로 시설 정보 바텀시트를 채운다.
@@ -78,10 +80,14 @@ export default function SearchScreen() {
   // expo-speech-recognition은 네이티브 모듈이라 Expo Go가 아니라 dev-client 빌드에서만 동작한다.
   const { isListening, toggleListening } = useVoiceSearch({ onResult: setValue });
 
-  // 삭제 가능한 "최근 검색어"는 화면 로컬 상태로 들고 있는다. 실제 API 연동 전까지의 더미 데이터.
-  const [recentSearches, setRecentSearches] = useState(DUMMY_RECENT_SEARCHES);
-  const removeRecentSearch = (id: string) => {
-    setRecentSearches(prev => prev.filter(item => item.id !== id));
+  // "최근 검색한 장소"는 기기 로컬(AsyncStorage)에 저장된다. 검색 결과나 최근 검색어를 탭해 찾아간 장소가 맨 위에 쌓인다.
+  const { recentSearches, addRecentSearch, removeRecentSearch } = useRecentSearches();
+  // 즐겨찾기 별은 기기 로컬에 저장된 앱 전역 상태로 표시한다(지도/마이페이지와 같은 상태).
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const openSearchItem = (item: SearchResultItem) => {
+    addRecentSearch(item);
+    const facility = findFacilityForSearchItem(item);
+    if (facility) setSelectedFacility(facility);
   };
 
   const trimmedValue = value.trim();
@@ -167,7 +173,7 @@ export default function SearchScreen() {
               latitude={marker.latitude}
               longitude={marker.longitude}
               label={marker.label}
-              favorite={marker.favorite}
+              favorite={isFavorite(favoriteFromDongMarker(marker))}
               onPress={() => setSelectedFacility({ type: 'dong', marker })}
             />
           ))}
@@ -175,7 +181,7 @@ export default function SearchScreen() {
             <NaverMapCategoryMarker
               latitude={selectedFacility.marker.latitude}
               longitude={selectedFacility.marker.longitude}
-              favorite={selectedFacility.marker.favorite}
+              favorite={isFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
               count={selectedFacility.marker.count}
               {...CATEGORY_MARKER_ICONS[selectedFacility.marker.category]}
             />
@@ -225,7 +231,8 @@ export default function SearchScreen() {
                 buildingCode={selectedFacility.marker.label ?? ''}
                 buildingName={selectedFacility.marker.buildingName}
                 description={selectedFacility.marker.description}
-                isFavorite={selectedFacility.marker.favorite}
+                isFavorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
+                onToggleFavorite={() => toggleFavorite(favoriteFromDongMarker(selectedFacility.marker))}
                 images={selectedFacility.marker.images}
                 {...routeButtonProps(
                   toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
@@ -239,7 +246,6 @@ export default function SearchScreen() {
                     buildingCode: selectedFacility.marker.label ?? '',
                     buildingName: selectedFacility.marker.buildingName,
                     description: selectedFacility.marker.description,
-                    isFavorite: selectedFacility.marker.favorite,
                     fromCardHeight: cardHeight,
                   });
                 }}
@@ -250,7 +256,8 @@ export default function SearchScreen() {
                 buildingCode={selectedFacility.marker.buildingCode}
                 buildingName={selectedFacility.marker.buildingName}
                 facilityName={selectedFacility.marker.room}
-                isFavorite={selectedFacility.marker.favorite}
+                isFavorite={isFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
+                onToggleFavorite={() => toggleFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
                 images={selectedFacility.marker.images}
                 {...routeButtonProps(
                   toRoutePlaceLabel(
@@ -310,11 +317,8 @@ export default function SearchScreen() {
                       building={item.building}
                       place={item.place}
                       room={item.room}
-                      isFavorite={item.isFavorite}
-                      onPress={() => {
-                        const facility = findFacilityForSearchItem(item);
-                        if (facility) setSelectedFacility(facility);
-                      }}
+                      isFavorite={isFavorite({ buildingCode: item.building, name: item.room })}
+                      onPress={() => openSearchItem(item)}
                       showDivider={index !== searchResults.length - 1}
                       {...SEARCH_ITEM_ICONS[item.category]}
                     />
@@ -331,19 +335,16 @@ export default function SearchScreen() {
               ) : (
                 recentSearches.map((item, index) => (
                   <SearchListItem
-                    key={item.id}
+                    key={`${item.id}-${item.searchedAt}`}
                     building={item.building}
                     place={item.place}
                     room={item.room}
-                    isFavorite={item.isFavorite}
+                    isFavorite={isFavorite({ buildingCode: item.building, name: item.room })}
                     history
-                    date={item.date}
+                    date={formatSearchedDate(item.searchedAt)}
                     showDivider={index !== recentSearches.length - 1}
-                    onPress={() => {
-                      const facility = findFacilityForSearchItem(item);
-                      if (facility) setSelectedFacility(facility);
-                    }}
-                    onDeletePress={() => removeRecentSearch(item.id)}
+                    onPress={() => openSearchItem(item)}
+                    onDeletePress={() => removeRecentSearch(item)}
                     {...SEARCH_ITEM_ICONS[item.category]}
                   />
                 ))

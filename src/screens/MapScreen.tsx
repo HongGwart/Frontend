@@ -41,6 +41,13 @@ import {
   DUMMY_OPERATING_HOURS,
 } from '@constant/dummyFacilityInfo';
 import { DUMMY_FACILITY_LIST_ITEMS } from '@constant/dummyFacilityListItems';
+import {
+  favoriteFromCategoryMarker,
+  favoriteFromDongMarker,
+  favoriteFromFocusParam,
+  favoriteFromListItem,
+} from '@constant/favoriteInputs';
+import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { FocusFacilityParam, MainTabParamList, RootStackParamList } from '@navigation/types';
 
 interface Props {
@@ -114,26 +121,22 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   // 직접 고정하는 쪽이 정확하다).
   const listSheetTop = chipsBottomY + LIST_SHEET_GAP_FROM_CHIPS;
 
-  // 더미 데이터의 favorite 값을 그대로 두고, 토글한 것만 id 기준으로 덮어써서 들고 있는다.
-  const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
-  const isFavorite = useCallback(
-    (marker: { id: string; favorite?: boolean }) => favoriteOverrides[marker.id] ?? marker.favorite ?? false,
-    [favoriteOverrides],
-  );
+  // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(FavoritesProvider). 마커/리스트 항목은 favoriteFrom*로
+  // 저장 형태로 바꿔서 묻는다 — 같은 장소면 검색/마이페이지/길찾기와 같은 장소 키가 나온다.
+  const { isFavorite, toggleFavorite: toggleFavoritePlace } = useFavorites();
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const toggleFavorite = useCallback(
-    (marker: { id: string; favorite?: boolean }, name: string) => {
-      const nextIsFavorite = !isFavorite(marker);
-      setFavoriteOverrides(prev => ({ ...prev, [marker.id]: nextIsFavorite }));
+    (place: FavoriteInput, name: string) => {
+      const nextIsFavorite = toggleFavoritePlace(place);
 
       setToastMessage(`${name}의 즐겨찾기가 ${nextIsFavorite ? '등록' : '해제'}되었습니다.`);
       clearTimeout(toastTimerRef.current);
       toastTimerRef.current = setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
     },
-    [isFavorite],
+    [toggleFavoritePlace],
   );
 
   // 숫자 배지가 붙은(군집된) 카테고리 마커는 시설 하나의 정보가 아니라 그 자리에 겹친 여러
@@ -164,7 +167,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
       place: marker.buildingName,
       room: marker.room,
       description: marker.description,
-      isFavorite: isFavorite(marker),
+      isFavorite: isFavorite(favoriteFromCategoryMarker(marker)),
       images: marker.images,
     }),
     [isFavorite],
@@ -273,12 +276,12 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
 
     const entryByLabel = new Map<string, FavoriteMapEntry>();
     DUMMY_MAP_MARKERS.forEach(dongMarker => {
-      if (isFavorite(dongMarker)) {
+      if (isFavorite(favoriteFromDongMarker(dongMarker))) {
         entryByLabel.set(dongMarker.label ?? dongMarker.id, { dongMarker, facilityItems: [] });
       }
     });
     DUMMY_CATEGORY_MARKERS.forEach(marker => {
-      if (!isFavorite(marker)) return;
+      if (!isFavorite(favoriteFromCategoryMarker(marker))) return;
       let entry = entryByLabel.get(marker.buildingCode);
       if (!entry) {
         const dongMarker = DUMMY_MAP_MARKERS.find(dong => dong.label === marker.buildingCode);
@@ -301,7 +304,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         latitude: marker.latitude,
         longitude: marker.longitude,
         label: marker.label,
-        favorite: isFavorite(marker),
+        favorite: isFavorite(favoriteFromDongMarker(marker)),
         onPress: () => openDongMarkerSheet(marker),
       })),
       ...favoriteEntries.map(entry => ({
@@ -309,7 +312,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         latitude: entry.dongMarker.latitude,
         longitude: entry.dongMarker.longitude,
         label: entry.dongMarker.label,
-        favorite: isFavorite(entry.dongMarker),
+        favorite: isFavorite(favoriteFromDongMarker(entry.dongMarker)),
         count: entry.facilityItems.length || undefined,
         onPress: () => openFavoriteDongSheet(entry),
       })),
@@ -364,7 +367,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
             key={marker.id}
             latitude={marker.latitude}
             longitude={marker.longitude}
-            favorite={isFavorite(marker)}
+            favorite={isFavorite(favoriteFromCategoryMarker(marker))}
             count={marker.count}
             onPress={() => openCategoryMarkerSheet(marker)}
             {...CATEGORY_MARKER_ICONS[marker.category]}
@@ -443,9 +446,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               buildingCode={selectedFacility.marker.label ?? ''}
               buildingName={selectedFacility.marker.buildingName}
               description={selectedFacility.marker.description}
-              isFavorite={isFavorite(selectedFacility.marker)}
+              isFavorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
               onToggleFavorite={() =>
-                toggleFavorite(selectedFacility.marker, selectedFacility.marker.buildingName)
+                toggleFavorite(favoriteFromDongMarker(selectedFacility.marker), selectedFacility.marker.buildingName)
               }
               images={selectedFacility.marker.images}
               {...routeButtonProps(
@@ -460,7 +463,6 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   buildingCode: selectedFacility.marker.label ?? '',
                   buildingName: selectedFacility.marker.buildingName,
                   description: selectedFacility.marker.description,
-                  isFavorite: isFavorite(selectedFacility.marker),
                   fromCardHeight: cardHeight,
                 });
               }}
@@ -471,8 +473,10 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               buildingCode={selectedFacility.marker.buildingCode}
               buildingName={selectedFacility.marker.buildingName}
               facilityName={selectedFacility.marker.room}
-              isFavorite={isFavorite(selectedFacility.marker)}
-              onToggleFavorite={() => toggleFavorite(selectedFacility.marker, selectedFacility.marker.room)}
+              isFavorite={isFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
+              onToggleFavorite={() =>
+                toggleFavorite(favoriteFromCategoryMarker(selectedFacility.marker), selectedFacility.marker.room)
+              }
               images={selectedFacility.marker.images}
               {...routeButtonProps(
                 toRoutePlaceLabel(
@@ -487,10 +491,10 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
             <FacilityListSheet
               items={selectedFacility.items.map(item => ({
                 ...item,
-                isFavorite: favoriteOverrides[item.id] ?? item.isFavorite,
+                isFavorite: isFavorite(favoriteFromListItem(item)),
               }))}
               onSelectItem={item => setSelectedFacility({ type: 'item', item })}
-              onToggleFavorite={item => toggleFavorite({ id: item.id, favorite: item.isFavorite }, item.room ?? item.place)}
+              onToggleFavorite={item => toggleFavorite(favoriteFromListItem(item), item.room ?? item.place)}
               fillHeight
             />
           ) : selectedFacility.type === 'external' ? (
@@ -499,12 +503,10 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               buildingCode={selectedFacility.facility.buildingCode}
               buildingName={selectedFacility.facility.buildingName}
               facilityName={selectedFacility.facility.facilityName}
-              isFavorite={
-                favoriteOverrides[selectedFacility.facility.id] ?? selectedFacility.facility.isFavorite
-              }
+              isFavorite={isFavorite(favoriteFromFocusParam(selectedFacility.facility))}
               onToggleFavorite={() =>
                 toggleFavorite(
-                  { id: selectedFacility.facility.id, favorite: selectedFacility.facility.isFavorite },
+                  favoriteFromFocusParam(selectedFacility.facility),
                   selectedFacility.facility.facilityName,
                 )
               }
@@ -524,10 +526,10 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               buildingCode={selectedFacility.item.building}
               buildingName={selectedFacility.item.place}
               facilityName={selectedFacility.item.room ?? selectedFacility.item.place}
-              isFavorite={favoriteOverrides[selectedFacility.item.id] ?? selectedFacility.item.isFavorite}
+              isFavorite={isFavorite(favoriteFromListItem(selectedFacility.item))}
               onToggleFavorite={() =>
                 toggleFavorite(
-                  { id: selectedFacility.item.id, favorite: selectedFacility.item.isFavorite },
+                  favoriteFromListItem(selectedFacility.item),
                   selectedFacility.item.room ?? selectedFacility.item.place,
                 )
               }
