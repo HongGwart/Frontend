@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from 'styled-components/native';
 import { SectionHeader } from '@components/mypage/SectionHeader';
 import { DefaultDepartureCard } from '@components/mypage/DefaultDepartureCard';
 import { FavoritePlaceCard } from '@components/mypage/FavoritePlaceCard';
+import { MenuRow } from '@components/mypage/MenuRow';
+import { APP_VERSION, PRIVACY_POLICY_URL } from '@constant/appInfo';
 import { useFavorites } from '@hooks/useFavorites';
 import { DUMMY_DEFAULT_DEPARTURE, FavoritePlace, favoritePlaceToFocusParam } from '@constant/dummyMypage';
 import { toFavoritePlace } from '@constant/favoriteCards';
@@ -13,7 +15,7 @@ import { RootStackParamList } from '@navigation/types';
 import { resetOnboarding } from '@storage/onboarding';
 
 // 마이페이지 즐겨찾기 섹션에서 보여줄 최대 개수
-const MAX_FAVORITES_ON_MYPAGE = 5;
+const MAX_FAVORITES_ON_MYPAGE = 3;
 
 // 상단 헤더("마이페이지" + 뒤로가기)와 하단 탭 바(NavigationBar)는 MainTabNavigator가
 // 이미 그려주고 있어서, 여기서는 스크롤되는 본문만 담당한다.
@@ -85,7 +87,22 @@ export default function MypageScreen() {
           ))}
         </FavoritesSection>
 
-        {__DEV__ && (
+        {/* 즐겨찾기 섹션과 같은 문법(SectionHeader filled + 흰 배경 행 + 구분선). 이용약관/문의하기 등도 여기에 행으로 추가한다. */}
+        <ServiceInfoSection>
+          <SectionHeader title="서비스 정보" filled />
+          <MenuRow
+            title="개인정보처리방침"
+            onPress={() =>
+              Linking.openURL(PRIVACY_POLICY_URL).catch(error =>
+                console.warn('[mypage] 개인정보처리방침을 열지 못했어요', error),
+              )
+            }
+          />
+          <MenuRow title="앱 버전" value={APP_VERSION} showDivider={false} />
+        </ServiceInfoSection>
+
+
+        {/* {__DEV__ && (
           // [개발용] 온보딩 완료 기록을 지우고 온보딩부터 다시 본다(최초 실행 흐름 확인용).
           <Pressable
             onPress={async () => {
@@ -98,7 +115,9 @@ export default function MypageScreen() {
           >
             <DevActionText>[DEV] 온보딩 다시 보기</DevActionText>
           </Pressable>
-        )}
+        )} */}
+
+
       </ScrollView>
     </Container>
   );
@@ -123,6 +142,10 @@ const DepartureSection = styled.View`
 `;
 
 const FavoritesSection = styled.View`
+  width: 100%;
+`;
+
+const ServiceInfoSection = styled.View`
   width: 100%;
 `;
 
