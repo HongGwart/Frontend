@@ -9,9 +9,22 @@ import { SearchListItem } from '@components/common/SearchListItem';
 import { DepartureSearchBar } from '@components/mypage/DepartureSearchBar';
 import { DUMMY_SEARCH_RESULTS, SEARCH_ITEM_ICONS, SearchResultItem } from '@constant/dummySearchData';
 import { RootStackParamList } from '@navigation/types';
+import { StoredFavorite, useFavorites } from '@hooks/useFavorites';
 
 function formatLocationLabel(item: SearchResultItem) {
   return [item.building, item.place, item.room].filter(Boolean).join(' ');
+}
+
+/** 저장된 즐겨찾기를 검색 결과 항목 모양으로 바꿔서 같은 리스트 아이템/라벨 규칙을 그대로 쓴다. */
+function favoriteToSearchItem(favorite: StoredFavorite): SearchResultItem {
+  return {
+    id: `favorite-${favorite.placeKey}`,
+    building: favorite.buildingCode,
+    place: favorite.buildingName,
+    room: favorite.name,
+    category: favorite.category ?? 'building',
+    isFavorite: true,
+  };
 }
 
 // 길찾기 화면의 출발지/도착지 입력창을 누르면 오는 검색 화면. DepartureSettingScreen(마이페이지
@@ -31,6 +44,10 @@ export default function RouteLocationSearchScreen() {
       `${item.building}${item.place}${item.room ?? ''}`.toLowerCase().includes(keyword),
     );
   }, [keyword]);
+
+  // 검색어가 없을 땐 기기에 저장된 즐겨찾기를 맨 위에 먼저 보여줘서 바로 고를 수 있게 한다.
+  const { favorites, isFavorite } = useFavorites();
+  const favoriteItems = useMemo(() => (keyword ? [] : favorites.map(favoriteToSearchItem)), [keyword, favorites]);
 
   const handleSelect = (item: SearchResultItem) => {
     Keyboard.dismiss();
@@ -62,13 +79,31 @@ export default function RouteLocationSearchScreen() {
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
           >
+            {favoriteItems.length > 0 && (
+              <>
+                <SectionTitle>즐겨찾기</SectionTitle>
+                {favoriteItems.map((item, index) => (
+                  <SearchListItem
+                    key={item.id}
+                    building={item.building}
+                    place={item.place}
+                    room={item.room}
+                    isFavorite
+                    showDivider={index !== favoriteItems.length - 1}
+                    onPress={() => handleSelect(item)}
+                    {...SEARCH_ITEM_ICONS[item.category]}
+                  />
+                ))}
+                <SectionTitle>전체</SectionTitle>
+              </>
+            )}
             {results.map((item, index) => (
               <SearchListItem
                 key={item.id}
                 building={item.building}
                 place={item.place}
                 room={item.room}
-                isFavorite={item.isFavorite}
+                isFavorite={isFavorite({ buildingCode: item.building, name: item.room })}
                 showDivider={index !== results.length - 1}
                 onPress={() => handleSelect(item)}
                 {...SEARCH_ITEM_ICONS[item.category]}
@@ -84,6 +119,14 @@ export default function RouteLocationSearchScreen() {
 const Container = styled(SafeAreaView)`
   flex: 1;
   background-color: ${({ theme }) => theme.semantic.background.primary};
+`;
+
+const SectionTitle = styled.Text`
+  padding: 12px 20px 4px;
+  font-family: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontFamily};
+  font-size: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.bodyNormal.semiBold.lineHeight}px;
+  color: ${({ theme }) => theme.semantic.text.secondary};
 `;
 
 const SearchBarWrapper = styled.View`

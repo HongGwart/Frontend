@@ -9,6 +9,7 @@ import { DepartureSearchBar } from '@components/mypage/DepartureSearchBar';
 import { AnimatedToast } from '@components/mypage/AnimatedToast';
 import { DUMMY_DEPARTURE_SEARCH_RESULTS } from '@constant/dummyMypage';
 import { SEARCH_ITEM_ICONS } from '@constant/dummySearchData';
+import { useFavorites } from '@hooks/useFavorites';
 
 // 마이페이지 "기본 출발지" 카드의 "수정"을 누르면 오는 화면(Figma "마이페이지_기본 출발지 설정").
 // 검색창에 입력하면 아래에 일치하는 장소가 리스트로 뜨고(SearchListItem 재사용),
@@ -21,6 +22,9 @@ export default function DepartureSettingScreen() {
   const [toastVisible, setToastVisible] = useState(false);
   // 선택할 때마다 증가시켜 AnimatedToast를 리마운트한다(이미 떠 있어도 2초 타이머가 재시작되도록).
   const [toastKey, setToastKey] = useState(0);
+
+  // 즐겨찾기 별은 기기 로컬에 저장된 앱 전역 상태로 표시한다.
+  const { isFavorite } = useFavorites();
 
   const keyword = value.trim().toLowerCase();
   const results = useMemo(() => {
@@ -58,7 +62,7 @@ export default function DepartureSettingScreen() {
                 building={item.building}
                 place={item.place}
                 room={item.room}
-                isFavorite={item.isFavorite}
+                isFavorite={isFavorite({ buildingCode: item.building, name: item.room })}
                 selected={selectedId === item.id}
                 showDivider={index !== results.length - 1}
                 onPress={() => handleSelect(item.id)}
