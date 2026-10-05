@@ -638,6 +638,31 @@
 </g>
 <rect id="Rectangle 240653306" x="2314" y="432" width="3" height="32" fill="white"/>
 </g>
+<g id="Hitbox">
+<rect id="room_422" x="104" y="468" width="45" height="157" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_421" x="149" y="468" width="148" height="157" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_420" x="297" y="468" width="70" height="157" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_419-2" x="367" y="468" width="47" height="157" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_419-1" x="414" y="468" width="47" height="157" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_417" x="614" y="469" width="68" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_416" x="682" y="469" width="57" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_415" x="739" y="469" width="57" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_414" x="796" y="469" width="162" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_413" x="958" y="469" width="82" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_412" x="1040" y="469" width="82" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_411" x="1122" y="469" width="163" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_410" x="1285" y="469" width="155" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_409" x="1440" y="469" width="57" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_408" x="1497" y="469" width="57" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_407" x="1554" y="469" width="57" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_406" x="1611" y="469" width="57" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_405" x="1668" y="469" width="57" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_404" x="1725" y="469" width="61" height="136" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_402-2" d="M1959.5 469H2128V625H1959.5V469Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_402-1" x="2128" y="469" width="56" height="156" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_401-2" x="2184" y="469" width="56" height="156" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_401-1" x="2240" y="469" width="76" height="156" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1094_38464">

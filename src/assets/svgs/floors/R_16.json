@@ -1,0 +1,59 @@
+{
+  "floorId": "R_16",
+  "width": 1186,
+  "height": 2503,
+  "contentBounds": {
+    "minX": 205,
+    "minY": 278,
+    "width": 709,
+    "height": 767
+  },
+  "rooms": [],
+  "icons": [
+    {
+      "id": "map_elevator",
+      "type": "elevator",
+      "center": [
+        559,
+        561.352
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_elevator_2",
+      "type": "elevator",
+      "center": [
+        700,
+        561.352
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_elevator_3",
+      "type": "elevator",
+      "center": [
+        630,
+        561.352
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_stairs",
+      "type": "stairs",
+      "center": [
+        594,
+        489
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_stairs_2",
+      "type": "stairs",
+      "center": [
+        544,
+        786.352
+      ],
+      "size": 32
+    }
+  ]
+}

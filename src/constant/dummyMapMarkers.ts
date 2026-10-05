@@ -1,5 +1,4 @@
-import { FC } from 'react';
-import { SvgProps } from 'react-native-svg';
+import { PhotoSource } from '@appTypes/photo';
 import { CategoryKey } from './categoryChips';
 import { DUMMY_FACILITY_IMAGES } from './dummyFacilityInfo';
 
@@ -12,21 +11,20 @@ export interface DummyMapMarker {
   buildingName: string;
   description: string;
   /** 건물 사진 2장. 아직 등록 안 된 건물은 생략하면 FacilityInfoCard에서 이미지 영역 자체가 빠진다. */
-  images?: [FC<SvgProps>, FC<SvgProps>];
+  images?: [PhotoSource, PhotoSource];
 }
 
 // 캠퍼스 동 마커. 좌표는 개발용 좌표 찍기 모드(DevBuildingPinPicker)로 지도에서 각 동 건물을
-// 직접 탭해 모은 값이다(M동은 아직 위치 미확인이라 빠져 있다). 건물명은 campusBuildings.ts의
-// 네이버 좌표/ Figma 지도 라벨로 확인된 것만 넣었고, 확인 안 된 동은 빈 문자열로 두었다.
-// G/H/I/S/E의 이름·설명은 기존 더미 그대로다. 즐겨찾기 여부는 더미에 두지 않고 기기 로컬 저장(useFavorites)으로 관리한다.
+// 직접 탭해 모은 값이다(M동은 아직 위치 미확인이라 빠져 있다). 건물명은 네이버지도 명칭, 설명은 건물 용도
+// 한 줄 요약이다. 즐겨찾기 여부는 더미에 두지 않고 기기 로컬 저장(useFavorites)으로 관리한다.
 export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
   {
     id: 'dong-A',
     latitude: 37.5495989,
     longitude: 126.9259961,
     label: 'A동',
-    buildingName: '',
-    description: '',
+    buildingName: '인문사회관',
+    description: '경영대학 강의실·연구실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -34,8 +32,8 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5500673,
     longitude: 126.9260152,
     label: 'B동',
-    buildingName: '인문사회관 B동',
-    description: '',
+    buildingName: '인문사회관',
+    description: '경영대학 강의실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -43,8 +41,8 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5491788,
     longitude: 126.9260893,
     label: 'C동',
-    buildingName: '인문사회관 C동',
-    description: '',
+    buildingName: '인문사회관',
+    description: '문과대·사범대·경제학부 강의실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -52,8 +50,8 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5489452,
     longitude: 126.9261808,
     label: 'D동',
-    buildingName: '',
-    description: '',
+    buildingName: '인문사회관',
+    description: '인문사회계열 공용 강의동',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -61,8 +59,8 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5503847,
     longitude: 126.9261913,
     label: 'E동',
-    buildingName: '공학관',
-    description: '공과대학 전공 강의실 및 실습실',
+    buildingName: '조형관',
+    description: '미술대학(디자인) 실기실·강의실',
     // 일부러 이미지를 안 넣어서 "사진 미등록 건물" 케이스를 확인할 수 있게 했다.
   },
   {
@@ -70,8 +68,8 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5507158,
     longitude: 126.9264165,
     label: 'F동',
-    buildingName: '',
-    description: '',
+    buildingName: '미술학관',
+    description: '미술대학 실기실·작업실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -80,7 +78,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9262545,
     label: 'G동',
     buildingName: '학생회관',
-    description: '학생 복지 시설 및 동아리방',
+    description: '동아리방, 식당, 학생 편의시설',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -89,7 +87,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9267391,
     label: 'H동',
     buildingName: '중앙도서관',
-    description: '열람실 및 자료실',
+    description: '열람실, 자료실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -98,7 +96,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9272532,
     label: 'I동',
     buildingName: '과학관',
-    description: '자연과학대학 강의실 및 실습실',
+    description: '공과대학 강의실·실험실 (기초과학 실험 포함)',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -106,8 +104,8 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5517221,
     longitude: 126.9270495,
     label: 'J동',
-    buildingName: '',
-    description: '',
+    buildingName: '제3공학관',
+    description: '건축도시대학 설계실·강의실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -116,7 +114,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9261085,
     label: 'K동',
     buildingName: '제1공학관',
-    description: '',
+    description: '공과대학 전공 강의실·실험실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -125,7 +123,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9265629,
     label: 'L동',
     buildingName: '와우관',
-    description: '',
+    description: '건축도시대학 설계 스튜디오',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -134,7 +132,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9259828,
     label: 'MH동',
     buildingName: '문헌관',
-    description: '',
+    description: '행정 부서 (본부)',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -142,8 +140,8 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5511138,
     longitude: 126.9269791,
     label: 'P동',
-    buildingName: '',
-    description: '',
+    buildingName: '제2공학관',
+    description: '공과대학 전공 강의실·실험실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -151,8 +149,8 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5509640,
     longitude: 126.9264263,
     label: 'Q동',
-    buildingName: '',
-    description: '',
+    buildingName: '정보통신센터',
+    description: '전산실, 공용 PC 실습실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -161,7 +159,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9249050,
     label: 'R동',
     buildingName: '홍문관',
-    description: '',
+    description: '법과대학 강의실, 대형 강의실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -170,7 +168,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9251751,
     label: 'S동',
     buildingName: '강당',
-    description: '',
+    description: '입학식·행사·공연',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -179,7 +177,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9246340,
     label: 'T동',
     buildingName: '제4공학관',
-    description: '공과대학 전공 강의실 및 실습실',
+    description: '공과대학 전공 강의실·실습실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -187,8 +185,8 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5502311,
     longitude: 126.9264696,
     label: 'U동',
-    buildingName: '',
-    description: '',
+    buildingName: '미술종합강의동',
+    description: '미술대학 강의동',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -197,7 +195,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9255562,
     label: 'Z1동',
     buildingName: '제1강의동',
-    description: '',
+    description: '공용 강의동',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -205,8 +203,8 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     latitude: 37.5496597,
     longitude: 126.9253491,
     label: 'Z2동',
-    buildingName: '이천득관',
-    description: '',
+    buildingName: '이천득관 (제2강의동)',
+    description: '공용 강의동',
     images: DUMMY_FACILITY_IMAGES,
   },
   {
@@ -215,7 +213,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9246589,
     label: 'Z3동',
     buildingName: '제3강의동',
-    description: '',
+    description: '공용 강의동',
     images: DUMMY_FACILITY_IMAGES,
   },
 ];
@@ -232,7 +230,7 @@ export interface DummyCategoryMarker {
   room: string;
   description: string;
   /** 시설 사진 2장. 생략하면 이미지 영역 없이 카드가 뜬다. */
-  images?: [FC<SvgProps>, FC<SvgProps>];
+  images?: [PhotoSource, PhotoSource];
 }
 
 // 카테고리 칩(CategoryChipList)을 눌렀을 때 지도에 뿌려줄 카테고리 마커 더미 데이터.
@@ -299,7 +297,7 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     category: 'pcRoom',
     count: 8,
     buildingCode: 'E동',
-    buildingName: '공학관',
+    buildingName: '조형관',
     room: 'PC실',
     description: '실습용 컴퓨터실',
   },
@@ -309,7 +307,7 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     longitude: 126.9271,
     category: 'printer',
     buildingCode: 'E동',
-    buildingName: '공학관',
+    buildingName: '조형관',
     room: '프린터기',
     description: '학생증으로 이용 가능한 출력기',
   },
@@ -333,14 +331,14 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     room: '흡연 구역',
     description: '지정 흡연 구역',
   },
-  // S동도 이름은 "학생회관"이지만 G동과는 별개 건물(동)이라 시설 마커도 따로 둔다.
+  // S동(강당)도 G동(학생회관)처럼 식당·카페·편의점 시설 마커를 따로 둔다.
   {
     id: 'c10',
     latitude: 37.5507,
     longitude: 126.9271,
     category: 'restaurant',
     buildingCode: 'S동',
-    buildingName: '학생회관',
+    buildingName: '강당',
     room: '식당',
     description: '학생 할인이 적용되는 교내 식당',
     images: DUMMY_FACILITY_IMAGES,
@@ -351,7 +349,7 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     longitude: 126.9273,
     category: 'cafe',
     buildingCode: 'S동',
-    buildingName: '학생회관',
+    buildingName: '강당',
     room: '카페',
     description: '교내 카페',
     images: DUMMY_FACILITY_IMAGES,
@@ -362,7 +360,7 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     longitude: 126.9276,
     category: 'store',
     buildingCode: 'S동',
-    buildingName: '학생회관',
+    buildingName: '강당',
     room: '편의점',
     description: '24시간 운영 편의점',
   },
@@ -372,7 +370,7 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     longitude: 126.9265,
     category: 'smokingArea',
     buildingCode: 'S동',
-    buildingName: '학생회관',
+    buildingName: '강당',
     room: '흡연 구역',
     description: '지정 흡연 구역',
   },
@@ -397,5 +395,129 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     buildingName: '과학관',
     room: '305호',
     description: '자연과학대학 전공 강의실',
+  },
+  // 시연용: 시연 경로(R동 카페나무 → C동 816호)에 나오는 R동·C동과 T동의 건물 상세 편의시설 칸이 비지 않게 채운 더미.
+  // 좌표는 각 동 마커 근처에 살짝씩 흩어 놓았다. 검색의 "R동 카페나무"·"C동 816호"도 이 마커의 시설 카드로 열린다.
+  {
+    id: 'c16',
+    latitude: 37.5526642,
+    longitude: 126.924805,
+    category: 'cafe',
+    buildingCode: 'R동',
+    buildingName: '홍문관',
+    room: '카페나무',
+    description: '로비층 교내 카페',
+    images: DUMMY_FACILITY_IMAGES,
+  },
+  {
+    id: 'c17',
+    latitude: 37.5525042,
+    longitude: 126.925005,
+    category: 'store',
+    buildingCode: 'R동',
+    buildingName: '홍문관',
+    room: '편의점',
+    description: '지하 1층 교내 편의점',
+  },
+  {
+    id: 'c18',
+    latitude: 37.5526842,
+    longitude: 126.925025,
+    category: 'printer',
+    buildingCode: 'R동',
+    buildingName: '홍문관',
+    room: '프린터기',
+    description: '학생증으로 이용 가능한 출력기',
+  },
+  {
+    id: 'c19',
+    latitude: 37.5524842,
+    longitude: 126.924795,
+    category: 'pcRoom',
+    buildingCode: 'R동',
+    buildingName: '홍문관',
+    room: 'PC실',
+    description: '자유 이용 컴퓨터실',
+  },
+  {
+    id: 'c20',
+    latitude: 37.5492588,
+    longitude: 126.9259893,
+    category: 'classroom',
+    buildingCode: 'C동',
+    buildingName: '인문사회관',
+    room: '816호',
+    description: '8층 전공 강의실',
+  },
+  {
+    id: 'c21',
+    latitude: 37.5490988,
+    longitude: 126.9261893,
+    category: 'readingRoom',
+    buildingCode: 'C동',
+    buildingName: '인문사회관',
+    room: '열람실',
+    description: '조용히 공부할 수 있는 개인 열람실',
+  },
+  {
+    id: 'c22',
+    latitude: 37.5492788,
+    longitude: 126.9261893,
+    category: 'printer',
+    buildingCode: 'C동',
+    buildingName: '인문사회관',
+    room: '프린터기',
+    description: '학생증으로 이용 가능한 출력기',
+  },
+  {
+    id: 'c23',
+    latitude: 37.5490788,
+    longitude: 126.9259893,
+    category: 'smokingArea',
+    buildingCode: 'C동',
+    buildingName: '인문사회관',
+    room: '흡연 구역',
+    description: '지정 흡연 구역',
+  },
+  {
+    id: 'c24',
+    latitude: 37.5502014,
+    longitude: 126.924534,
+    category: 'pcRoom',
+    buildingCode: 'T동',
+    buildingName: '제4공학관',
+    room: 'PC실',
+    description: '전공 실습용 컴퓨터실',
+  },
+  {
+    id: 'c25',
+    latitude: 37.5500414,
+    longitude: 126.924734,
+    category: 'printer',
+    buildingCode: 'T동',
+    buildingName: '제4공학관',
+    room: '프린터기',
+    description: '학생증으로 이용 가능한 출력기',
+  },
+  {
+    id: 'c26',
+    latitude: 37.5502214,
+    longitude: 126.924754,
+    category: 'cafe',
+    buildingCode: 'T동',
+    buildingName: '제4공학관',
+    room: '카페',
+    description: '1층 교내 카페',
+    images: DUMMY_FACILITY_IMAGES,
+  },
+  {
+    id: 'c27',
+    latitude: 37.5500214,
+    longitude: 126.924514,
+    category: 'classroom',
+    buildingCode: 'T동',
+    buildingName: '제4공학관',
+    room: '503호',
+    description: '컴퓨터공학 전공 강의실',
   },
 ];

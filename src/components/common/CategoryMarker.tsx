@@ -18,6 +18,13 @@ interface Props {
   favorite?: boolean;
   /** 마커에 표시할 숫자 배지 (군집된 개수 등). favorite와 동시에 켜지면 배지가 우선한다. */
   count?: number;
+  /** true면 지금 탭해서 시설 카드가 열려있는 마커 — 원을 채운 진한 파란색으로 뒤집어서 강조한다. */
+  active?: boolean;
+  /**
+   * 마커 전체를 이 배율로 키운다(기본 1). Marker.tsx의 scale과 같은 이유로 바닥(좌표 지점)
+   * 기준으로만 커지게 transform-origin을 bottom으로 고정한다.
+   */
+  scale?: number;
 }
 
 /**
@@ -31,17 +38,28 @@ export function CategoryMarker({
   iconOffsetY = 0,
   favorite = false,
   count,
+  active = false,
+  scale = 1,
 }: Props) {
   const theme = useTheme();
   const hasCount = count !== undefined;
 
   return (
-    <Circle>
-      <IconSlot offsetY={iconOffsetY}>
-        <Icon width={iconWidth} height={iconHeight} color={theme.blue[500]} />
+    <Container
+      collapsable={false}
+      style={scale !== 1 ? { transform: [{ scale }], transformOrigin: 'center bottom' } : undefined}
+    >
+      {/* 지도 마커는 iOS에서 이 뷰를 이미지로 찍어(renderInContext) 붙이는데, 그때 배경·테두리를 가진 뷰의
+          자식이 그 배경 "아래"에 찍혀서 원 안의 아이콘이 흰 배경에 덮여 사라졌다. 그래서 원(배경·테두리)을
+          아이콘의 부모가 아니라 먼저 그려지는 형제 뷰로 따로 두고, 아이콘은 그 위 형제로 올린다. */}
+      <CircleBackground active={active} collapsable={false} />
+      <IconSlot offsetY={iconOffsetY} collapsable={false}>
+        <Icon width={iconWidth} height={iconHeight} color={active ? theme.semantic.text.white : theme.blue[500]} />
       </IconSlot>
       {hasCount ? (
-        <CountBadge>
+        <CountBadge collapsable={false}>
+          {/* 원과 같은 이유로 배지 배경도 숫자의 형제로 따로 둔다. */}
+          <CountBadgeBackground collapsable={false} />
           <CountText numberOfLines={1}>{count}</CountText>
         </CountBadge>
       ) : (
@@ -51,19 +69,27 @@ export function CategoryMarker({
           </FavoriteBadge>
         )
       )}
-    </Circle>
+    </Container>
   );
 }
 
-const Circle = styled.View`
+const Container = styled.View`
   width: ${CATEGORY_MARKER_BOX_SIZE}px;
   height: ${CATEGORY_MARKER_BOX_SIZE}px;
-  border-radius: 100px;
-  border-width: 1.5px;
-  border-color: ${({ theme }) => theme.blue[500]};
-  background-color: ${({ theme }) => theme.semantic.background.primary};
   align-items: center;
   justify-content: center;
+`;
+
+const CircleBackground = styled.View<{ active: boolean }>`
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  border-radius: 100px;
+  border-width: 1.5px;
+  border-color: ${({ theme, active }) => (active ? theme.blue[700] : theme.blue[500])};
+  background-color: ${({ theme, active }) => (active ? theme.blue[500] : theme.semantic.background.primary)};
 `;
 
 const IconSlot = styled.View<{ offsetY: number }>`
@@ -78,13 +104,20 @@ const CountBadge = styled.View`
   right: -2px;
   width: ${COUNT_BADGE_SIZE}px;
   height: ${COUNT_BADGE_SIZE}px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const CountBadgeBackground = styled.View`
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
   border-radius: ${COUNT_BADGE_SIZE / 2}px;
   border-width: 1.5px;
   border-color: ${({ theme }) => theme.semantic.background.primary};
   background-color: ${({ theme }) => theme.blue[700]};
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
 `;
 
 const CountText = styled.Text`

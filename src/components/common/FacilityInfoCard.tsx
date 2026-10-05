@@ -7,6 +7,7 @@ import { Button } from './Button';
 import { FavoriteToggle } from './FavoriteToggle';
 import { FacilityImagePair } from './FacilityImagePair';
 import { BottomFade, ShadowBottomClip } from './ShadowBottomClip';
+import { PhotoSource } from '@appTypes/photo';
 
 export interface FacilityCountItem {
   icon: React.FC<SvgProps>;
@@ -28,7 +29,7 @@ export interface OperatingHoursInfo {
 interface Props {
   /**
    * 'outside' - 지도에서 건물을 탭했을 때 뜨는 기본 바텀시트 (건물 내부 보기 CTA 포함)
-   * 'inside' - 건물 내부로 들어간 상태에서 뜨는 바텀시트 (CTA 없음, 높이 고정)
+   * 'inside' - 건물 내부로 들어간 상태에서 뜨는 바텀시트 (CTA 없음, 높이는 내용에 맞춤)
    * 'room' - 특정 강의실을 탭했을 때 뜨는 축약형 (이미지·시설 정보 없음)
    * 'facility' - 건물/강의실이 아닌 편의시설(카페, 식당 등)을 탭하거나 검색했을 때 뜨는 형태.
    *   시설명이 제목이 되고, 그 아래 "R동 홍문관 로비층"처럼 위치를 보여준다.
@@ -49,10 +50,10 @@ interface Props {
   onDeparturePress?: () => void;
   onArrivalPress?: () => void;
   /** outside/inside/facility에서만 쓰인다 */
-  images?: [React.FC<SvgProps>, React.FC<SvgProps>];
+  images?: [PhotoSource, PhotoSource];
   /** outside/inside에서만 쓰인다 (예: 프린터 2, PC실 1) */
   facilityCounts?: FacilityCountItem[];
-  /** outside/inside에서만 쓰인다 (예: "정문(1층), 후문(지하1층)") */
+  /** outside/inside에서만 쓰인다 (예: "정문(1층), 후문(지하 1층)") */
   mainEntrance?: string;
   operatingHours: OperatingHoursInfo;
   /** outside/facility에서만 쓰인다 */
@@ -70,6 +71,18 @@ interface Props {
   ctaVariant?: 'primary' | 'secondary';
   /** true면 "건물 내부 보기" CTA 버튼을 안 그린다(예: 온보딩처럼 CTA가 필요 없는 데모용). */
   hideCta?: boolean;
+  /**
+   * true면 카드 맨 위 그래버를 안 그린다. 이 카드를 CollapsibleBottomSheet처럼 스스로
+   * 그래버를 그리는 컨테이너 안에 넣을 때, 그래버가 두 번 겹쳐 보이지 않게 하는 용도.
+   */
+  hideGrabber?: boolean;
+  /**
+   * true면 카드 위쪽 그림자(shadow-offset 음수)를 안 그린다. 이 그림자는 원래 카드 바로
+   * 위의 지도에 옅게 지는 용도인데, CollapsibleBottomSheet처럼 카드 위에 그래버 영역이
+   * 따로 얹혀 있는 컨테이너 안에서는 그 그래버 영역까지 그림자가 번져 올라가 회색으로
+   * 보인다. 그 컨테이너가 자기 배경을 이미 깔고 있을 때 끈다.
+   */
+  hideShadow?: boolean;
   /**
    * true면 온보딩 편의시설 목업(Figma 1252:43655)처럼 ~0.6613배 축소 크기로 그린다.
    * facility variant 전용으로 실측한 값이라 facility가 아닌 variant에도 적용은 되지만
@@ -106,6 +119,8 @@ export function FacilityInfoCard({
   ctaIconHeight = 18,
   ctaVariant = 'primary',
   hideCta = false,
+  hideGrabber = false,
+  hideShadow = false,
   compact = false,
 }: Props) {
   const theme = useTheme();
@@ -127,8 +142,8 @@ export function FacilityInfoCard({
   );
 
   const card = (
-    <Container variant={variant} compact={compact}>
-      <Grabber compact={compact} />
+    <Container variant={variant} compact={compact} hideShadow={hideShadow}>
+      {!hideGrabber && <Grabber compact={compact} />}
       <Content compact={compact}>
         {isFacility ? (
           <FacilitySection compact={compact}>
@@ -275,16 +290,25 @@ function SubButton({
   children: string;
   compact: boolean;
 }) {
+  // 누르고 있는 동안의 배경색 — 공용 Button처럼 Pressable style 함수 대신 상태로 들고 있는다.
+  const [isPressed, setIsPressed] = useState(false);
   return (
-    <SubButtonContainer variant={variant} onPress={onPress} compact={compact}>
-      <SubButtonText variant={variant} compact={compact}>
+    <SubButtonContainer
+      variant={variant}
+      onPress={onPress}
+      onPressIn={() => setIsPressed(true)}
+      onPressOut={() => setIsPressed(false)}
+      pressed={isPressed}
+      compact={compact}
+    >
+      <SubButtonText variant={variant} pressed={isPressed} compact={compact}>
         {children}
       </SubButtonText>
     </SubButtonContainer>
   );
 }
 
-const Container = styled.View<{ variant: Props['variant']; compact: boolean }>`
+const Container = styled.View<{ variant: Props['variant']; compact: boolean; hideShadow: boolean }>`
   width: 100%;
   background-color: ${({ theme }) => theme.semantic.background.primary};
   border-top-left-radius: ${({ compact }) => (compact ? '10.581px' : '16px')};
@@ -297,10 +321,9 @@ const Container = styled.View<{ variant: Props['variant']; compact: boolean }>`
   /* compact(온보딩 편의시설 목업)만 Figma box-shadow 적용: 0 -2.645px 20px 0 rgba(0,0,0,0.10) */
   shadow-color: #000;
   shadow-offset: 0px ${({ compact }) => (compact ? '-2.645px' : '-4px')};
-  shadow-opacity: ${({ compact }) => (compact ? 0.1 : 0.05)};
+  shadow-opacity: ${({ hideShadow, compact }) => (hideShadow ? 0 : compact ? 0.1 : 0.05)};
   shadow-radius: 20px;
-  elevation: 8;
-  ${({ variant }) => (variant === 'inside' ? 'height: 400px;' : '')}
+  elevation: ${({ hideShadow }) => (hideShadow ? 0 : 8)};
 `;
 
 const Grabber = styled.View<{ compact: boolean }>`
@@ -414,24 +437,32 @@ const ActionButtonRow = styled.View<{ compact: boolean }>`
   width: 100%;
 `;
 
-const SubButtonContainer = styled(Pressable)<{ variant: 'primary' | 'secondary'; compact: boolean }>`
+// 눌렀을 때: 도착(primary)은 공용 Button과 같이 blue 800 → 900으로 한 단계 진하게, 출발(secondary)은
+// 흰 배경은 그대로 두고 테두리(blue 300 → 500)와 글자(blue 700 → 800)만 진해진다.
+const SubButtonContainer = styled(Pressable)<{ variant: 'primary' | 'secondary'; compact: boolean; pressed: boolean }>`
   padding: ${({ compact }) => (compact ? '3.968px 9.259px' : '6px 14px')};
   border-radius: 100px;
   align-items: center;
   justify-content: center;
-  background-color: ${({ theme, variant }) => (variant === 'primary' ? theme.blue[800] : theme.semantic.background.primary)};
+  background-color: ${({ theme, variant, pressed }) =>
+    variant === 'primary'
+      ? pressed
+        ? theme.blue[900]
+        : theme.blue[800]
+      : theme.semantic.background.primary};
   border-width: ${({ variant, compact }) => (variant === 'secondary' ? (compact ? '0.661px' : '1px') : '0px')};
-  border-color: ${({ theme }) => theme.blue[300]};
+  border-color: ${({ theme, pressed }) => (pressed ? theme.blue[500] : theme.blue[300])};
 `;
 
-const SubButtonText = styled.Text<{ variant: 'primary' | 'secondary'; compact: boolean }>`
+const SubButtonText = styled.Text<{ variant: 'primary' | 'secondary'; compact: boolean; pressed: boolean }>`
   font-family: ${({ theme }) => theme.typography.labelNormal.semiBold.fontFamily};
   font-size: ${({ compact, theme }) => (compact ? '9.26px' : `${theme.typography.labelNormal.semiBold.fontSize}px`)};
   line-height: ${({ compact, theme }) =>
     compact ? '13.89px' : `${theme.typography.labelNormal.semiBold.lineHeight}px`};
   letter-spacing: ${({ compact, theme }) =>
     compact ? '-0.1852px' : `${theme.typography.labelNormal.semiBold.letterSpacing}px`};
-  color: ${({ theme, variant }) => (variant === 'primary' ? theme.semantic.text.white : theme.blue[700])};
+  color: ${({ theme, variant, pressed }) =>
+    variant === 'primary' ? theme.semantic.text.white : pressed ? theme.blue[800] : theme.blue[700]};
 `;
 
 const DetailSection = styled.View`

@@ -465,6 +465,27 @@
 </g>
 <rect id="Rectangle 240653313" x="1479" y="641" width="5" height="32" fill="white"/>
 </g>
+<g id="Hitbox">
+<rect id="room_521" x="407" y="445" width="57" height="47" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_520" x="464" y="681" width="160" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_519" x="624" y="681" width="80" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_518" x="704" y="681" width="80" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_517" x="784" y="681" width="80" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_516" x="864" y="681" width="80" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_515" x="944" y="681" width="80" height="150" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_514" x="1024" y="681" width="80" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_513" x="1104" y="681" width="86" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_512" x="1190" y="681" width="76" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_511" x="1266" y="681" width="159" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_501" x="624" y="492" width="81" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_502" x="705" y="492" width="81" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_503" x="786" y="492" width="81" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_504" x="867" y="492" width="81" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_505" x="948" y="492" width="81" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_506" x="1029" y="492" width="81" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_507" x="1110" y="492" width="81" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_508" x="1191" y="492" width="75" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1131_33562">

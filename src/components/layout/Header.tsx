@@ -23,9 +23,7 @@ export default function Header({ title, subtitle, onBackPress, transparent = fal
     <Container transparent={transparent}>
       {subtitle ? (
         <TitleRow>
-          <Title numberOfLines={1} style={{ flex: 0 }}>
-            {title}
-          </Title>
+          <CodeTitle numberOfLines={1}>{title}</CodeTitle>
           <Subtitle numberOfLines={1}>{subtitle}</Subtitle>
         </TitleRow>
       ) : (
@@ -84,9 +82,20 @@ const TitleRow = styled.View`
   justify-content: center;
 `;
 
+// styled-components의 `flex: 0`/`flex: 1`은 flexBasis: 0까지 같이 들어가서(css-to-react-native 변환), 코드+명칭
+// 한 줄에서 쓰면 명칭 칸의 기본 폭이 0이 되고 코드 칸이 남는 폭을 다 가져가 명칭이 사라진다(T동처럼 글자에 따라
+// 보였다 안 보였다 함). 그래서 이 줄에서는 flex 줄임말 대신 grow/shrink/basis를 각각 명시한다.
+// 코드(title)는 글자 폭 그대로 고정.
+const CodeTitle = styled(Title)`
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: auto;
+`;
+
 // 코드+명칭이 길어 271px를 넘으면 코드(title)는 그대로 두고 명칭(subtitle)만 줄여서 말줄임(…)한다(Figma와 같음).
 const Subtitle = styled(Title)`
-  flex: 0;
+  flex-grow: 0;
   flex-shrink: 1;
+  flex-basis: auto;
   color: ${({ theme }) => theme.semantic.text.tertiary};
 `;

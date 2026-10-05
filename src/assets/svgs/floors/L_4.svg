@@ -391,6 +391,11 @@
 </g>
 <rect id="Rectangle 240653310" x="1038" y="722" width="3" height="32" transform="rotate(90 1038 722)" fill="white"/>
 </g>
+<g id="Hitbox">
+<rect id="room_401" x="588" y="283" width="226" height="283" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_401-1" x="867" y="283" width="172" height="234" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_J002" x="886" y="798" width="285" height="196" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1098_24363">

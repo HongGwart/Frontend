@@ -380,7 +380,7 @@
 <g id="Hitbox">
 <rect id="room_B102" x="695" y="496" width="215" height="518" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_B105" x="976" y="608" width="111" height="64" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_B101" d="M1171 673H1088V608H976V673H910V496H895V155H1171V673Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_B101" d="M1171 673H910V496H895V155H1171V673Z" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>

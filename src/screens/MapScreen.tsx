@@ -6,6 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
+import * as Haptics from 'expo-haptics';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
@@ -19,13 +20,10 @@ import { FacilityListSheet, FacilityListSheetItem } from '@components/common/Fac
 import { Toast } from '@components/common/Toast';
 import { DismissibleBottomSheet, DismissibleBottomSheetRef } from '@components/common/DismissibleBottomSheet';
 import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
-import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
-import { DevBuildingPinMarkers, DevBuildingPinPanel, useDevBuildingPins } from '@components/map/DevBuildingPinPicker';
-import {
-  FadingLabelMarkerItem,
-  FadingLabelMarkers,
-  FadingLabelMarkersRef,
-} from '@components/map/FadingLabelMarkers';
+import { DevFloorOverlayLayer, DevFloorOverlayPanel, useDevFloorOverlay } from '@components/map/DevFloorOverlayPicker';
+import { DevRouteNodeLayer, DevRouteNodePanel, useDevRouteNodes } from '@components/map/DevRouteNodePicker';
+import { TEST_ROUTE_DEPARTURE_LABEL, TEST_ROUTE_DESTINATION_LABEL } from '@constant/testIndoorRoute';
+import { FocusableCategoryMarker, FocusableDongMarker } from '@components/map/FocusableMarkers';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import {
@@ -66,8 +64,10 @@ interface Props {
 type SelectedFacility =
   | { type: 'dong'; marker: DummyMapMarker }
   | { type: 'category'; marker: DummyCategoryMarker }
-  | { type: 'list'; items: FacilityListSheetItem[] }
-  | { type: 'item'; item: FacilityListSheetItem }
+  // markerId는 이 리스트를 열게 한 지도 위 군집 마커의 id — 강조 표시(active)에만 쓴다.
+  | { type: 'list'; items: FacilityListSheetItem[]; markerId?: string }
+  // markerId는 이 항목이 들어있던 리스트를 열게 한 군집 마커의 id — 리스트에서 항목으로 넘어가도 그 마커만 지도에 남긴다.
+  | { type: 'item'; item: FacilityListSheetItem; markerId?: string }
   // 마이페이지/즐겨찾기 목록에서 넘어온 시설(지도 마커가 아니라 라우트 파라미터로 들어옴)
   | { type: 'external'; facility: FocusFacilityParam };
 
@@ -79,9 +79,12 @@ interface FavoriteMapEntry {
 }
 
 const TOAST_DURATION_MS = 2000;
+// 개발용 지도 도구(🏢 평면도 얹기, 🧭 경로 노드 찍기) 원형 버튼을 메인홈에 보여줄지. 기능 코드는 그대로 두고 버튼만
+// 숨겨 둔다 — 평면도/테스트 경로를 다시 손봐야 할 때 true로 바꾸면 된다(개발 빌드에서만 보인다).
+const SHOW_DEV_MAP_TOOLS = false;
+// 지도 위에서 봤을 때 마커가 다른 요소에 비해 좀 커 보여서, 기본 크기보다 살짝 줄인다.
+const MAP_MARKER_SCALE = 0.85;
 const INITIAL_ZOOM = 16;
-// 이 줌보다 더 축소하면 동 마커 네임택(R동, T동 …)을 전부 숨기고 핀만 남긴다.
-const HIDE_MARKER_LABELS_BELOW_ZOOM = 15.5;
 
 // 겹쳐진 마커 리스트 시트는 카테고리 칩 아래로 이 간격(피그마 기준)만큼 띄우고, 그 지점부터
 // 화면 끝까지를 항상 채운다(항목이 적어도 빈 공간으로 남지 않고 시트 자체가 그 높이를 가짐).
@@ -96,9 +99,43 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
   const mapViewRef = useRef<NaverMapViewRef>(null);
   const insets = useSafeAreaInsets();
-  // [개발용] 각 동 위치를 탭해서 좌표를 모으는 모드. 켜져 있는 동안엔 더미 마커를 숨기고
-  // 지도 탭을 좌표 기록으로 쓴다.
-  const pinPicker = useDevBuildingPins();
+  const floorOverlay = useDevFloorOverlay(mapViewRef);
+  // 경로 노드를 다 찍고 완료하면 길찾기로 넘어가서 카페나무 → 816호 경로를 바로 띄운다.
+  const routeNodes = useDevRouteNodes({
+    onComplete: () =>
+      navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.navigate('Navigation', {
+        routeSelection: {
+          departureLabel: TEST_ROUTE_DEPARTURE_LABEL,
+          destinationLabel: TEST_ROUTE_DESTINATION_LABEL,
+        },
+      }),
+  });
+  const devModeActive = floorOverlay.active || routeNodes.active;
+
+  // 지금 포커싱된(눌러서 카드가 열리는) 마커의 id — 이 마커만 강조(active) + 네임택으로 남기고 나머지는 숨긴다.
+  // 카드(selectedFacility)와 따로 들고 있는 이유: 마커를 누르면 마커 모양은 그 즉시 바뀌고, 무거운 카드는
+  // 다음 프레임에 열리게 해서(openFacilityCard) 카드 렌더가 마커 변화를 붙잡아 두지 않게 하려고.
+  // list/item은 그 리스트를 열게 한 군집 마커의 id다.
+  const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  const openFacilityCard = useCallback((markerId: string, next: SelectedFacility) => {
+    setSelectedMarkerId(markerId);
+    requestAnimationFrame(() => setSelectedFacility(next));
+  }, []);
+  // 카드가 닫히면 포커싱도 푼다(열려 있다가 닫힌 경우만 — 마커를 누른 직후 카드가 아직 안 열린 프레임은 제외).
+  const hadCardRef = useRef(false);
+  useEffect(() => {
+    if (selectedFacility) {
+      hadCardRef.current = true;
+    } else if (hadCardRef.current) {
+      hadCardRef.current = false;
+      setSelectedMarkerId(null);
+    }
+  }, [selectedFacility]);
+  // 마커 하나를 눌러 카드가 열려 있으면 그 마커만 지도에 남긴다(카드를 닫으면 다시 전부 보인다).
+  const isMarkerHidden = useCallback(
+    (markerId: string) => selectedMarkerId !== null && markerId !== selectedMarkerId,
+    [selectedMarkerId],
+  );
 
   // 마커(동/카테고리)를 탭했을 때만 좌표가 있어서 카메라를 옮길 수 있다. 리스트/외부에서
   // 넘어온 시설은 지금은 카메라를 건드리지 않는다(검색 화면도 동일한 범위로만 지원).
@@ -145,17 +182,19 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   // 겹칠 일이 없어서 평소엔 항상 단일 카드로 연다("즐겨찾기" 칩에서 동 안 시설이 여러 개
   // 즐겨찾기된 경우는 openFavoriteDongSheet가 별도로 처리한다).
   const openDongMarkerSheet = useCallback((marker: DummyMapMarker) => {
-    setSelectedFacility({ type: 'dong', marker });
-  }, []);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    openFacilityCard(marker.id, { type: 'dong', marker });
+  }, [openFacilityCard]);
 
   const openCategoryMarkerSheet = useCallback((marker: DummyCategoryMarker) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const listItems = marker.count !== undefined ? DUMMY_FACILITY_LIST_ITEMS[marker.id] : undefined;
     if (listItems) {
-      setSelectedFacility({ type: 'list', items: listItems });
+      openFacilityCard(marker.id, { type: 'list', items: listItems, markerId: marker.id });
     } else {
-      setSelectedFacility({ type: 'category', marker });
+      openFacilityCard(marker.id, { type: 'category', marker });
     }
-  }, []);
+  }, [openFacilityCard]);
 
   // 카테고리 마커를 리스트 시트 항목 형태로 바꾼다. "즐겨찾기" 칩에서 같은 동에 즐겨찾기가
   // 여러 개 묶였을 때, 그 묶음을 FacilityListSheet에 그대로 넘기기 위해 쓴다.
@@ -174,15 +213,16 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   );
 
   const openFavoriteClusterSheet = useCallback(
-    (group: DummyCategoryMarker[]) => {
-      setSelectedFacility({ type: 'list', items: group.map(toFacilityListItem) });
+    (group: DummyCategoryMarker[], markerId: string) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      openFacilityCard(markerId, { type: 'list', items: group.map(toFacilityListItem), markerId });
     },
-    [toFacilityListItem],
+    [toFacilityListItem, openFacilityCard],
   );
 
   const openFavoriteDongSheet = useCallback((entry: FavoriteMapEntry) => {
     if (entry.facilityItems.length > 0) {
-      openFavoriteClusterSheet(entry.facilityItems);
+      openFavoriteClusterSheet(entry.facilityItems, entry.dongMarker.id);
     } else {
       openDongMarkerSheet(entry.dongMarker);
     }
@@ -221,6 +261,22 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   const closeCardWhenCovered = useCloseWhenCovered(
     navigation.getParent<NativeStackNavigationProp<RootStackParamList>>(),
     closeFacilityCard,
+  );
+
+  // 시설 카드(카페·편의점 등)의 "건물 내부 보기"는 그 시설이 있는 건물(동)의 내부 지도로 간다. 건물명/설명은
+  // 동 마커 데이터에서 가져오고, 비어 있으면 카드에 쓰인 건물명을 쓴다.
+  const openBuildingIndoorOf = useCallback(
+    (buildingCode: string, fallbackBuildingName: string) => {
+      const dongMarker = DUMMY_MAP_MARKERS.find(marker => marker.label === buildingCode);
+      closeCardWhenCovered();
+      onOpenBuildingIndoor?.({
+        buildingCode,
+        buildingName: dongMarker?.buildingName || fallbackBuildingName,
+        description: dongMarker?.description ?? '',
+        fromCardHeight: cardHeight,
+      });
+    },
+    [closeCardWhenCovered, onOpenBuildingIndoor, cardHeight],
   );
 
   const handleSwipeUp = useCallback(() => {
@@ -294,10 +350,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     return Array.from(entryByLabel.values());
   }, [selectedKey, isFavorite]);
 
-  // 일정 줌 이하로 축소하면 동 마커 네임택끼리 겹쳐 보이니 전부 페이드로 숨긴다. 페이드 상태는
-  // FadingLabelMarkers 안에 있고 줌도 ref로 넘겨서, 카메라가 움직이는 동안 이 화면은 다시 그려지지 않는다.
-  const labelMarkersRef = useRef<FadingLabelMarkersRef>(null);
-  const labelMarkerItems = useMemo<FadingLabelMarkerItem[]>(
+  // 동 마커. 네임택(R동, T동 …)은 지금 카드가 열려 있는(포커싱된) 마커에만 붙이고 나머지는 핀만 그린다 —
+  // 네임택이 전부 떠 있으면 서로 겹치고 지도를 가려서. 포커싱이 바뀌면 그 마커만 다시 그려진다.
+  const dongMarkerItems = useMemo(
     () => [
       ...dongMarkers.map(marker => ({
         key: marker.id,
@@ -305,6 +360,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         longitude: marker.longitude,
         label: marker.label,
         favorite: isFavorite(favoriteFromDongMarker(marker)),
+        focused: selectedMarkerId === marker.id,
+        scale: MAP_MARKER_SCALE,
         onPress: () => openDongMarkerSheet(marker),
       })),
       ...favoriteEntries.map(entry => ({
@@ -314,10 +371,12 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         label: entry.dongMarker.label,
         favorite: isFavorite(favoriteFromDongMarker(entry.dongMarker)),
         count: entry.facilityItems.length || undefined,
+        focused: selectedMarkerId === entry.dongMarker.id,
+        scale: MAP_MARKER_SCALE,
         onPress: () => openFavoriteDongSheet(entry),
       })),
     ],
-    [dongMarkers, favoriteEntries, isFavorite, openDongMarkerSheet, openFavoriteDongSheet],
+    [dongMarkers, favoriteEntries, isFavorite, selectedMarkerId, openDongMarkerSheet, openFavoriteDongSheet],
   );
 
   // 마이페이지/즐겨찾기 목록에서 시설을 탭하고 넘어오면, 그 시설 정보 바텀시트를 연다.
@@ -347,28 +406,33 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
           longitude: 126.9251,
           zoom: INITIAL_ZOOM,
         }}
-        onCameraChanged={({ zoom }) => zoom !== undefined && labelMarkersRef.current?.onZoomChange(zoom)}
         minZoom={MAP_MIN_ZOOM}
         maxZoom={MAP_MAX_ZOOM}
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
-        onTapMap={pinPicker.active ? pinPicker.handleTap : closeFacilitySheet}
+        onTapMap={
+          routeNodes.active ? routeNodes.handleTap : floorOverlay.active ? undefined : closeFacilitySheet
+        }
       >
-        <DevBuildingPinMarkers picker={pinPicker} />
-        {!pinPicker.active && (
-          <FadingLabelMarkers
-            ref={labelMarkersRef}
-            items={labelMarkerItems}
-            hideBelowZoom={HIDE_MARKER_LABELS_BELOW_ZOOM}
-            initialZoom={INITIAL_ZOOM}
-          />
-        )}
-        {!pinPicker.active && categoryMarkers.map(marker => (
-          <NaverMapCategoryMarker
+        <DevFloorOverlayLayer picker={floorOverlay} />
+        <DevRouteNodeLayer
+          picker={routeNodes}
+          floorAnchors={floorOverlay.anchors}
+          liveFloorImages={floorOverlay.liveImages}
+        />
+        {!devModeActive &&
+          dongMarkerItems.map(({ key, ...item }) => (
+            <FocusableDongMarker key={key} {...item} hidden={isMarkerHidden(key)} />
+          ))}
+        {!devModeActive && categoryMarkers.map(marker => (
+          <FocusableCategoryMarker
             key={marker.id}
             latitude={marker.latitude}
             longitude={marker.longitude}
             favorite={isFavorite(favoriteFromCategoryMarker(marker))}
             count={marker.count}
+            focused={selectedMarkerId === marker.id}
+            hidden={isMarkerHidden(marker.id)}
+            scale={MAP_MARKER_SCALE}
             onPress={() => openCategoryMarkerSheet(marker)}
             {...CATEGORY_MARKER_ICONS[marker.category]}
           />
@@ -486,6 +550,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 ),
               )}
               operatingHours={DUMMY_OPERATING_HOURS}
+              onViewInsidePress={() =>
+                openBuildingIndoorOf(selectedFacility.marker.buildingCode, selectedFacility.marker.buildingName)
+              }
             />
           ) : selectedFacility.type === 'list' ? (
             <FacilityListSheet
@@ -493,7 +560,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 ...item,
                 isFavorite: isFavorite(favoriteFromListItem(item)),
               }))}
-              onSelectItem={item => setSelectedFacility({ type: 'item', item })}
+              onSelectItem={item =>
+                setSelectedFacility({ type: 'item', item, markerId: selectedFacility.markerId })
+              }
               onToggleFavorite={item => toggleFavorite(favoriteFromListItem(item), item.room ?? item.place)}
               fillHeight
             />
@@ -519,6 +588,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 ),
               )}
               operatingHours={DUMMY_OPERATING_HOURS}
+              onViewInsidePress={() =>
+                openBuildingIndoorOf(selectedFacility.facility.buildingCode, selectedFacility.facility.buildingName)
+              }
             />
           ) : (
             <FacilityInfoCard
@@ -538,6 +610,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 toRoutePlaceLabel(selectedFacility.item.building, selectedFacility.item.place, selectedFacility.item.room),
               )}
               operatingHours={DUMMY_OPERATING_HOURS}
+              onViewInsidePress={() => openBuildingIndoorOf(selectedFacility.item.building, selectedFacility.item.place)}
             />
           )}
               </View>
@@ -555,7 +628,12 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
           </GestureHandlerRootView>
         </Modal>
       )}
-      <DevBuildingPinPanel picker={pinPicker} topInset={insets.top} />
+      {SHOW_DEV_MAP_TOOLS && (
+        <>
+          <DevFloorOverlayPanel picker={floorOverlay} topInset={insets.top} />
+          <DevRouteNodePanel picker={routeNodes} topInset={insets.top} floorAnchors={floorOverlay.anchors} />
+        </>
+      )}
     </View>
   );
 }

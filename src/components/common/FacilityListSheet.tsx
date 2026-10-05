@@ -5,6 +5,7 @@ import styled from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
 import { FacilityListItem } from './FacilityListItem';
 import { BottomFade, ShadowBottomClip } from './ShadowBottomClip';
+import { PhotoSource } from '@appTypes/photo';
 
 // fillHeight가 아닐 때(부모가 높이를 고정해주지 않을 때)를 위한 fallback 상한선.
 // 화면 높이의 70%를 넘어가면 스크롤되게 한다. DismissibleBottomSheet가 이 시트를 스와이프로
@@ -24,7 +25,7 @@ export interface FacilityListSheetItem {
   room?: string;
   description: string;
   isFavorite?: boolean;
-  images?: [React.FC<SvgProps>, React.FC<SvgProps>];
+  images?: [PhotoSource, PhotoSource];
 }
 
 interface Props {

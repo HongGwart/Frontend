@@ -1,13 +1,16 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import styled, { useTheme } from 'styled-components/native';
 import Header from '@components/layout/Header';
-import { IndoorMapView } from '@components/map/IndoorMapView';
+import { IndoorMapView, IndoorMapViewControls } from '@components/map/IndoorMapView';
+import { ResetViewButton } from '@components/map/ResetViewButton';
 import { FloorSelector } from '@components/map/FloorSelector';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
+import { CollapsibleBottomSheet, CollapsibleBottomSheetRef } from '@components/common/CollapsibleBottomSheet';
 import { FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
@@ -25,8 +28,14 @@ const SLIDE_DISTANCE = 64;
 const SLIDE_DURATION = 260;
 // Figma: 헤더 아래 24px, 왼쪽 20px에 층 선택기.
 const FLOOR_SELECTOR_TOP = 24;
-// FacilityInfoCard inside variant의 고정 높이.
+// 평면도 영역은 헤더 아래~화면 맨 아래인데 아래쪽을 건물 카드가 덮어서, 정가운데에 두면 도면이 아래로
+// 치우쳐 보인다. 처음 맞춤 위치를 이만큼 위로 올린다.
+const PLAN_FIT_OFFSET_Y = -60;
+// 내부 지도 카드의 대략적인 높이(카드 높이는 내용에 따라 정해진다). 첫 프레임용 추정치이고,
+// 실제 높이는 그려진 뒤 onLayout으로 재서 바로잡는다(handleCardLayout).
 const INSIDE_CARD_HEIGHT = 400;
+// 카드를 아래로 끌어내려 접었을 때 남겨둘 그래버 영역 높이(패딩 8 + 그래버 4 + 여백 12).
+const CARD_PEEK_HEIGHT = 24;
 
 /**
  * 지도 위 건물 카드에서 "건물 내부 보기"를 누르면 뜨는 건물 내부 지도. Figma "건물 내부 지도"(762:4924).
@@ -43,11 +52,14 @@ export default function BuildingIndoorScreen() {
     () => DUMMY_MAP_MARKERS.find(item => item.label === params.buildingCode),
     [params.buildingCode],
   );
+  // 건물명은 넘겨받은 값(params)을 그대로 쓰지 않고 동 코드로 지금 데이터에서 다시 찾는다. params는 이 화면을
+  // 연 순간의 복사본이라, 넘기는 쪽이 빈 이름을 넘겼거나 데이터가 바뀐 뒤면 헤더에 이름이 안 뜨거나 옛 이름이 뜬다.
+  const buildingName = marker?.buildingName || params.buildingName;
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태. 건물 카드는 건물 자체를, 호실 카드는 그 호실을 즐겨찾기한다.
   const { isFavorite, toggleFavorite } = useFavorites();
   const buildingFavorite: FavoriteInput = {
     buildingCode: params.buildingCode,
-    buildingName: params.buildingName,
+    buildingName,
     category: 'building',
     latitude: marker?.latitude,
     longitude: marker?.longitude,
@@ -80,9 +92,20 @@ export default function BuildingIndoorScreen() {
   // 위에 그대로 떠 있고(MapScreen은 Modal), 전환이 끝나 그 카드가 닫히는 순간 같은 모양의 이 카드가
   // 같은 자리에 있어서 이어진 것처럼 보인다 — 그 뒤 버튼 높이만큼 부드럽게 내려간다.
   const cardLift = useSharedValue(Math.max(0, (params.fromCardHeight ?? 0) - INSIDE_CARD_HEIGHT));
+  // 시작 위치가 지도 카드와 몇 px만 어긋나도 크로스페이드 동안 그래버가 두 개로 보인다. 그래서 추정치 대신
+  // 실제 카드 높이로 시작 위치를 다시 맞춘다. 화면이 투명에서 페이드인하는 첫 프레임에 일어나서 튀어 보이지 않는다.
+  const settledRef = useRef(false);
+  const handleCardLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      if (settledRef.current || !params.fromCardHeight) return;
+      cardLift.value = Math.max(0, params.fromCardHeight - event.nativeEvent.layout.height);
+    },
+    [cardLift, params.fromCardHeight],
+  );
   useEffect(() => {
     if (cardLift.value === 0) return;
     const settle = () => {
+      settledRef.current = true;
       clearTimeout(fallbackId);
       cardLift.value = withDelay(60, withTiming(0, { duration: 320, easing: Easing.out(Easing.cubic) }));
     };
@@ -99,6 +122,11 @@ export default function BuildingIndoorScreen() {
   }, [navigation, cardLift]);
   const cardStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -cardLift.value }] }));
 
+  // 원위치(나침반) 버튼은 지도 안이 아니라 화면에 직접 그린다. 지도는 층을 바꿀 때 위아래로 슬라이드되는데,
+  // 버튼은 층 선택기처럼 제자리(오른쪽 위)에 있어야 해서. 층마다 지도가 새로 만들어지면 새 값으로 바뀐다.
+  const [mapControls, setMapControls] = useState<IndoorMapViewControls | null>(null);
+  const cardSheetRef = useRef<CollapsibleBottomSheetRef>(null);
+
   // 층이 많으면 층 선택기가 지도 영역 밖(카드 뒤)까지 내려가지 않게 지도 영역 높이에 맞춰 자른다.
   const [mapAreaHeight, setMapAreaHeight] = useState(0);
 
@@ -106,14 +134,14 @@ export default function BuildingIndoorScreen() {
   const routeButtonProps = useRouteButtonProps();
   const placeLabel = toRoutePlaceLabel(
     params.buildingCode,
-    params.buildingName,
+    buildingName,
     selectedRoomLabel && `${selectedRoomLabel}호`,
   );
 
   return (
     <Container>
       <HeaderWrapper style={{ paddingTop: insets.top }}>
-        <Header title={params.buildingCode} subtitle={params.buildingName} onBackPress={() => navigation.goBack()} />
+        <Header title={params.buildingCode} subtitle={buildingName} onBackPress={() => navigation.goBack()} />
       </HeaderWrapper>
 
       <MapArea onLayout={event => setMapAreaHeight(event.nativeEvent.layout.height)}>
@@ -124,8 +152,12 @@ export default function BuildingIndoorScreen() {
                 key={floorId}
                 mapData={floorAssets.data}
                 backgroundColor={theme.semantic.line.tertiary}
-                renderBackground={({ width, height }) => <floorAssets.Background width={width} height={height} />}
-                renderForeground={({ width, height }) => <floorAssets.Doors width={width} height={height} />}
+                fitOffsetY={PLAN_FIT_OFFSET_Y}
+                onControlsReady={setMapControls}
+                // LayerSize를 그대로 펼친다. viewBox가 없을 때 viewBox={undefined}로 넘기면 SVG 컴포넌트의
+                // 원래 viewBox를 덮어써서 도면 스케일이 깨진다.
+                renderBackground={layerSize => <floorAssets.Background {...layerSize} />}
+                renderForeground={layerSize => <floorAssets.Doors {...layerSize} />}
                 onRoomSelect={room => setSelectedRoomLabel(room ? room.label ?? room.id : null)}
               />
             </Animated.View>
@@ -134,48 +166,77 @@ export default function BuildingIndoorScreen() {
                 floors={floors}
                 selectedFloorId={floorId}
                 onSelect={id => {
+                  if (id === floorId) return;
                   setFloorId(id);
                   setSelectedRoomLabel(null);
+                  // 층을 옮기면 새 층 평면도를 넓게 보도록 카드를 그래버만 남기고 접는다.
+                  cardSheetRef.current?.collapse();
                 }}
                 maxHeight={Math.max(0, mapAreaHeight - FLOOR_SELECTOR_TOP * 2)}
               />
             </FloorSelectorWrapper>
+            {/* 층 선택기(왼쪽 위)와 대칭으로 오른쪽 위에 둔다 — 아래쪽은 건물 카드에 가려진다. */}
+            {mapControls && (
+              <ResetViewButton
+                rotation={mapControls.rotation}
+                onPress={mapControls.reset}
+                style={styles.resetButton}
+              />
+            )}
           </>
         ) : (
           <EmptyText>아직 내부 지도가 준비되지 않은 건물이에요</EmptyText>
         )}
       </MapArea>
 
-      <CardWrapper style={cardStyle}>
-        {selectedRoomLabel ? (
-          <FacilityInfoCard
-            variant="room"
-            buildingCode={params.buildingCode}
-            buildingName={params.buildingName}
-            roomNumber={`${selectedRoomLabel}호`}
-            description={params.description}
-            isFavorite={isFavorite({ buildingCode: params.buildingCode, name: `${selectedRoomLabel}호` })}
-            onToggleFavorite={() =>
-              toggleFavorite({ ...buildingFavorite, name: `${selectedRoomLabel}호`, category: 'classroom' })
-            }
-            {...routeButtonProps(placeLabel)}
-            operatingHours={DUMMY_OPERATING_HOURS}
-          />
-        ) : (
-          <FacilityInfoCard
-            variant="inside"
-            buildingCode={params.buildingCode}
-            buildingName={params.buildingName}
-            description={params.description}
-            isFavorite={isFavorite(buildingFavorite)}
-            onToggleFavorite={() => toggleFavorite(buildingFavorite)}
-            {...routeButtonProps(placeLabel)}
-            images={marker?.images ?? DUMMY_FACILITY_IMAGES}
-            facilityCounts={DUMMY_FACILITY_COUNTS}
-            mainEntrance={DUMMY_MAIN_ENTRANCE}
-            operatingHours={DUMMY_OPERATING_HOURS}
-          />
-        )}
+      {/* CollapsibleBottomSheet는 접힐 때 실제 레이아웃 크기가 아니라 transform으로만 밀려나서,
+          이 래퍼 자체는 항상 펼쳐진 카드 높이만큼 자리를 차지한다. box-none이 없으면 카드가
+          접혀 지도가 드러난 부분에서도 이 빈 영역이 지도 팬/줌 제스처를 가로채 버린다. */}
+      <CardWrapper style={cardStyle} pointerEvents="box-none" onLayout={handleCardLayout}>
+        <CollapsibleBottomSheet
+          ref={cardSheetRef}
+          peekHeight={CARD_PEEK_HEIGHT + insets.bottom}
+          header={<Grabber />}
+          style={{
+            backgroundColor: theme.semantic.background.primary,
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
+          }}
+        >
+          {selectedRoomLabel ? (
+            <FacilityInfoCard
+              variant="room"
+              hideGrabber
+              hideShadow
+              buildingCode={params.buildingCode}
+              buildingName={buildingName}
+              roomNumber={`${selectedRoomLabel}호`}
+              description={params.description}
+              isFavorite={isFavorite({ buildingCode: params.buildingCode, name: `${selectedRoomLabel}호` })}
+              onToggleFavorite={() =>
+                toggleFavorite({ ...buildingFavorite, name: `${selectedRoomLabel}호`, category: 'classroom' })
+              }
+              {...routeButtonProps(placeLabel)}
+              operatingHours={DUMMY_OPERATING_HOURS}
+            />
+          ) : (
+            <FacilityInfoCard
+              variant="inside"
+              hideGrabber
+              hideShadow
+              buildingCode={params.buildingCode}
+              buildingName={buildingName}
+              description={params.description}
+              isFavorite={isFavorite(buildingFavorite)}
+              onToggleFavorite={() => toggleFavorite(buildingFavorite)}
+              {...routeButtonProps(placeLabel)}
+              images={marker?.images ?? DUMMY_FACILITY_IMAGES}
+              facilityCounts={DUMMY_FACILITY_COUNTS}
+              mainEntrance={DUMMY_MAIN_ENTRANCE}
+              operatingHours={DUMMY_OPERATING_HOURS}
+            />
+          )}
+        </CollapsibleBottomSheet>
         {/* 카드가 위로 올라가 있는 동안 그 아래로 지도가 비치지 않게 흰 바닥을 이어 붙인다. */}
         <CardBottomFill />
       </CardWrapper>
@@ -213,10 +274,27 @@ const EmptyText = styled.Text`
   letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
   color: ${({ theme }) => theme.semantic.text.tertiary};
   text-align: center;
+  /* 영역 정가운데보다 위에 둔다(아래쪽을 건물 카드가 덮어서 정가운데면 낮아 보임). */
+  top: -90px;
 `;
 
+// 이제 카드는 흐름 밖에서 지도 위에 절대위치로 떠서(bottom:0), 접으면 그래버만 남기고 뒤의
+// IndoorMapView가 그대로 드러난다 — MapArea가 카드 높이만큼 줄어들지 않고 항상 화면 전체를 채운다.
 const CardWrapper = styled(Animated.View)`
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
   width: 100%;
+`;
+
+const Grabber = styled.View`
+  align-self: center;
+  width: 36px;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 100px;
+  background-color: ${({ theme }) => theme.semantic.line.primary};
 `;
 
 const CardBottomFill = styled.View`
@@ -227,3 +305,11 @@ const CardBottomFill = styled.View`
   height: 400px;
   background-color: ${({ theme }) => theme.semantic.background.primary};
 `;
+
+const styles = StyleSheet.create({
+  resetButton: {
+    position: 'absolute',
+    top: FLOOR_SELECTOR_TOP,
+    right: 20,
+  },
+});

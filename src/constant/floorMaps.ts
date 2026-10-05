@@ -11,11 +11,16 @@ export interface FloorMapAssets {
 }
 
 /**
- * 전 건물 층 평면도(processFloor.js 산출물) 목록. 키는 "{건물}_{층}"(지하는 "_B{n}").
- * 139개 층의 JSON/SVG를 앱 시작 때 한꺼번에 읽지 않도록, 층을 실제로 열 때 require하는
+ * 전 건물 층 평면도(processFloor.js 산출물) 목록. 키는 "{건물}_{층}"(지하는 "_B{n}", R동 L층은 "_L").
+ * 전 층의 JSON/SVG를 앱 시작 때 한꺼번에 읽지 않도록, 층을 실제로 열 때 require하는
  * 로더 함수로 들고 있는다. 새 층을 추가하면 여기 한 줄 추가한다.
  */
 export const FLOOR_MAPS: Record<string, () => FloorMapAssets> = {
+  A_1: () => ({
+    data: require('@assets/svgs/floors/A_1.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/A_1_bg.svg').default,
+    Doors: require('@assets/svgs/floors/A_1_doors.svg').default,
+  }),
   A_2: () => ({
     data: require('@assets/svgs/floors/A_2.json') as FloorMapData,
     Background: require('@assets/svgs/floors/A_2_bg.svg').default,
@@ -35,6 +40,11 @@ export const FLOOR_MAPS: Record<string, () => FloorMapAssets> = {
     data: require('@assets/svgs/floors/B_3.json') as FloorMapData,
     Background: require('@assets/svgs/floors/B_3_bg.svg').default,
     Doors: require('@assets/svgs/floors/B_3_doors.svg').default,
+  }),
+  B_4: () => ({
+    data: require('@assets/svgs/floors/B_4.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/B_4_bg.svg').default,
+    Doors: require('@assets/svgs/floors/B_4_doors.svg').default,
   }),
   C_1: () => ({
     data: require('@assets/svgs/floors/C_1.json') as FloorMapData,
@@ -221,6 +231,36 @@ export const FLOOR_MAPS: Record<string, () => FloorMapAssets> = {
     Background: require('@assets/svgs/floors/G_4_bg.svg').default,
     Doors: require('@assets/svgs/floors/G_4_doors.svg').default,
   }),
+  H_1: () => ({
+    data: require('@assets/svgs/floors/H_1.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/H_1_bg.svg').default,
+    Doors: require('@assets/svgs/floors/H_1_doors.svg').default,
+  }),
+  H_2: () => ({
+    data: require('@assets/svgs/floors/H_2.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/H_2_bg.svg').default,
+    Doors: require('@assets/svgs/floors/H_2_doors.svg').default,
+  }),
+  H_3: () => ({
+    data: require('@assets/svgs/floors/H_3.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/H_3_bg.svg').default,
+    Doors: require('@assets/svgs/floors/H_3_doors.svg').default,
+  }),
+  H_4: () => ({
+    data: require('@assets/svgs/floors/H_4.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/H_4_bg.svg').default,
+    Doors: require('@assets/svgs/floors/H_4_doors.svg').default,
+  }),
+  H_5: () => ({
+    data: require('@assets/svgs/floors/H_5.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/H_5_bg.svg').default,
+    Doors: require('@assets/svgs/floors/H_5_doors.svg').default,
+  }),
+  H_6: () => ({
+    data: require('@assets/svgs/floors/H_6.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/H_6_bg.svg').default,
+    Doors: require('@assets/svgs/floors/H_6_doors.svg').default,
+  }),
   I_1: () => ({
     data: require('@assets/svgs/floors/I_1.json') as FloorMapData,
     Background: require('@assets/svgs/floors/I_1_bg.svg').default,
@@ -381,6 +421,11 @@ export const FLOOR_MAPS: Record<string, () => FloorMapAssets> = {
     Background: require('@assets/svgs/floors/MH_10_bg.svg').default,
     Doors: require('@assets/svgs/floors/MH_10_doors.svg').default,
   }),
+  MH_11: () => ({
+    data: require('@assets/svgs/floors/MH_11.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/MH_11_bg.svg').default,
+    Doors: require('@assets/svgs/floors/MH_11_doors.svg').default,
+  }),
   MH_12: () => ({
     data: require('@assets/svgs/floors/MH_12.json') as FloorMapData,
     Background: require('@assets/svgs/floors/MH_12_bg.svg').default,
@@ -461,6 +506,11 @@ export const FLOOR_MAPS: Record<string, () => FloorMapAssets> = {
     Background: require('@assets/svgs/floors/Q_2_bg.svg').default,
     Doors: require('@assets/svgs/floors/Q_2_doors.svg').default,
   }),
+  Q_3: () => ({
+    data: require('@assets/svgs/floors/Q_3.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/Q_3_bg.svg').default,
+    Doors: require('@assets/svgs/floors/Q_3_doors.svg').default,
+  }),
   Q_4: () => ({
     data: require('@assets/svgs/floors/Q_4.json') as FloorMapData,
     Background: require('@assets/svgs/floors/Q_4_bg.svg').default,
@@ -510,6 +560,11 @@ export const FLOOR_MAPS: Record<string, () => FloorMapAssets> = {
     data: require('@assets/svgs/floors/R_B2.json') as FloorMapData,
     Background: require('@assets/svgs/floors/R_B2_bg.svg').default,
     Doors: require('@assets/svgs/floors/R_B2_doors.svg').default,
+  }),
+  R_L: () => ({
+    data: require('@assets/svgs/floors/R_L.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/R_L_bg.svg').default,
+    Doors: require('@assets/svgs/floors/R_L_doors.svg').default,
   }),
   R_1: () => ({
     data: require('@assets/svgs/floors/R_1.json') as FloorMapData,
@@ -575,6 +630,31 @@ export const FLOOR_MAPS: Record<string, () => FloorMapAssets> = {
     data: require('@assets/svgs/floors/R_13.json') as FloorMapData,
     Background: require('@assets/svgs/floors/R_13_bg.svg').default,
     Doors: require('@assets/svgs/floors/R_13_doors.svg').default,
+  }),
+  R_14: () => ({
+    data: require('@assets/svgs/floors/R_14.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/R_14_bg.svg').default,
+    Doors: require('@assets/svgs/floors/R_14_doors.svg').default,
+  }),
+  R_15: () => ({
+    data: require('@assets/svgs/floors/R_15.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/R_15_bg.svg').default,
+    Doors: require('@assets/svgs/floors/R_15_doors.svg').default,
+  }),
+  R_16: () => ({
+    data: require('@assets/svgs/floors/R_16.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/R_16_bg.svg').default,
+    Doors: require('@assets/svgs/floors/R_16_doors.svg').default,
+  }),
+  S_1: () => ({
+    data: require('@assets/svgs/floors/S_1.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/S_1_bg.svg').default,
+    Doors: require('@assets/svgs/floors/S_1_doors.svg').default,
+  }),
+  T_B1: () => ({
+    data: require('@assets/svgs/floors/T_B1.json') as FloorMapData,
+    Background: require('@assets/svgs/floors/T_B1_bg.svg').default,
+    Doors: require('@assets/svgs/floors/T_B1_doors.svg').default,
   }),
   T_1: () => ({
     data: require('@assets/svgs/floors/T_1.json') as FloorMapData,
@@ -722,6 +802,9 @@ export interface FloorInfo {
 }
 
 export function parseFloorId(floorId: string): FloorInfo & { building: string } {
+  // R동 L층(B2층과 1층 사이, 방 번호는 B1xx)은 숫자가 아니라 "L"로 표기한다. 순서만 맞으면 되니 0층으로 둔다.
+  const lobbyMatch = floorId.match(/^(.+)_L$/);
+  if (lobbyMatch) return { floorId, building: lobbyMatch[1], floorNum: 0, label: 'L' };
   // Z1, Z2처럼 건물 이름 자체에 숫자가 들어가는 경우도 있어서, 끝의 "_(B)?숫자"만 층으로 떼어낸다.
   const match = floorId.match(/^(.+)_(B)?(\d+)$/);
   if (!match) return { floorId, building: floorId, floorNum: 0, label: floorId };

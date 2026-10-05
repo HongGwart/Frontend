@@ -1,13 +1,24 @@
-import React, { Children, Fragment, cloneElement, isValidElement, useCallback, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
-import Animated from 'react-native-reanimated';
+import React, { Children, Fragment, cloneElement, isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { PixelRatio, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { RoomPolygons } from './RoomPolygons';
 import { IconMarkersLayer } from './IconMarkersLayer';
 import { RoomLabelsLayer } from './RoomLabelsLayer';
 import { ResetViewButton } from './ResetViewButton';
+import { SharpViewportLayer, type LayerSize } from './SharpViewportLayer';
+import type { SharedValue } from 'react-native-reanimated';
+
+/** 지도 밖(화면)에서 원위치 버튼을 직접 그릴 때 필요한 값 */
+export interface IndoorMapViewControls {
+  /** 현재 지도 회전각(라디안) — ResetViewButton 바늘용 */
+  rotation: SharedValue<number>;
+  /** 확대/이동/회전을 처음 맞춤 상태로 되돌린다 */
+  reset: () => void;
+}
 import { FloorMapData, RoomShape } from '@appTypes/room';
 import { useMapGestures } from '@hooks/map/useMapGestures';
+import { useSharpViewportVisibility } from '@hooks/map/useSharpViewport';
 
 
 /**
@@ -43,14 +54,17 @@ function flattenChildren(children: React.ReactNode): React.ReactElement[] {
 }
 
 /**
- * mapLayer(배경 SVG + RoomPolygons)를 실제로 그릴 때 이 dp를 넘지 않도록 캡한다. Android는
- * View를 화면에 합성하기 전에 "레이아웃 dp × 화면 밀도"만큼 캔버스를 먼저 할당하는데, C/K동처럼
- * 도면이 큰 층(2200dp 이상)은 고밀도(xxhdpi 등) 기기에서 그 캔버스가 Android의 하드 리밋인
- * 100MB(RecordingCanvas.MAX_BITMAP_SIZE)를 넘어 크래시가 난다. 방/문/벽은 전부 벡터(SVG path)라
- * dp를 줄이고 나중에 pinch-zoom transform으로 다시 확대해도 화질 손실이 없어서, 렌더링 dp
- * 자체를 이 값 이하로 캡하고 viewBox로 원본 좌표계를 유지하는 쪽을 택했다.
+ * mapLayer(배경 SVG + RoomPolygons + 문)의 SVG 레이어 하나가 쓸 수 있는 최대 픽셀 수. react-native-svg는
+ * "레이아웃 dp × 화면 밀도" 크기의 비트맵에 그리는데, C/K동처럼 도면이 큰 층은 고밀도 기기에서 그 비트맵이
+ * Android의 하드 리밋 100MB(RecordingCanvas.MAX_BITMAP_SIZE)를 넘어 크래시가 났다. 층마다 SVG 레이어가
+ * 3장이라 한 장당 32MB(ARGB 800만 px)로 잡는다. 예전엔 밀도와 상관없이 긴 변 1000dp로 고정했는데,
+ * 밀도가 낮은 기기일수록 여유가 남아 흐리게 그리고 있었다 — 이제 밀도에 맞춰 한도까지 크게 그린다.
+ * 줄여서 그린 만큼은 pinch-zoom transform이 늘려서 보여주고, 확대가 멈추면 SharpViewportLayer가
+ * 보이는 영역만 화면 해상도로 다시 그려 덮는다.
  */
-const MAX_RENDER_DP = 1000;
+const MAX_LAYER_PIXELS = 8_000_000;
+/** 예전 고정 한도(긴 변 1000dp). 이 크기로는 크래시 없이 써 왔으니, 초고밀도 기기에서도 이보다 작게는 안 그린다. */
+const MIN_RENDER_LONG_SIDE_DP = 1000;
 
 function AbsoluteLayer({ children }: { children: React.ReactNode }) {
   return (
@@ -76,14 +90,14 @@ interface Props {
    * width/height는 mapData와 반드시 동일해야 좌표계가 맞는다. 방 번호 라벨은 여기 넣지 않는다 —
    * 지도가 회전해도 글자는 안 돌아야 해서 RoomLabelsLayer가 mapData.rooms로 따로 그린다.
    */
-  renderBackground: (size: { width: number; height: number }) => React.ReactNode;
+  renderBackground: (size: LayerSize) => React.ReactNode;
   /**
    * 문/계단·엘리베이터 아이콘처럼 하이라이트보다 "위"에 그려야 하는 레이어.
    * 방 하이라이트는 사각형이라 문이 있는 모서리까지 덮어버리는데, 문을 이 slot에
    * 넣어 하이라이트 위에 다시 그려주면 폴리곤을 문 모양으로 오려낼 필요 없이
    * 문 부분만 원래 색으로 보인다. 기존 VisualDoors/VisualIcons 컴포넌트를 그대로 넣으면 됨.
    */
-  renderForeground?: (size: { width: number; height: number }) => React.ReactNode;
+  renderForeground?: (size: LayerSize) => React.ReactNode;
   onRoomSelect?: (room: RoomShape | null) => void;
   minScale?: number;
   maxScale?: number;
@@ -93,6 +107,13 @@ interface Props {
   labelFontSize?: number;
   /** 도면 바깥 배경색. 생략하면 흰색 (건물 내부 지도 화면은 Figma대로 회색). */
   backgroundColor?: string;
+  /** 처음 맞춤 위치를 세로 가운데에서 이만큼(px) 옮긴다. 음수면 위로(useMapGestures fitOffsetY). */
+  fitOffsetY?: number;
+  /**
+   * 넘기면 지도 안에 원위치(나침반) 버튼을 그리지 않고, 화면이 버튼을 직접 그릴 수 있게 회전값/되돌리기
+   * 함수를 넘겨준다. 층 전환 슬라이드 등으로 지도가 움직여도 버튼은 제자리에 두고 싶을 때 쓴다.
+   */
+  onControlsReady?: (controls: IndoorMapViewControls) => void;
 }
 
 export function IndoorMapView({
@@ -105,6 +126,8 @@ export function IndoorMapView({
   iconSize,
   labelFontSize = 5,
   backgroundColor,
+  fitOffsetY,
+  onControlsReady,
 }: Props) {
   const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
 
@@ -119,8 +142,10 @@ export function IndoorMapView({
 
   // SVG 캔버스(mapData.width/height)는 도면 크기와 무관하게 항상 같은 크기라, 그대로
   // fitToContainer 기준으로 쓰면 도면이 캔버스보다 훨씬 작은 층은 여백이 크게 남는다.
-  // 실제로 그려진 방/아이콘들의 바운딩 박스(=네이비 테두리 도면 영역)를 직접 구해서 넘긴다.
+  // 스크립트가 도면 외곽선으로 계산해 둔 영역이 있으면 그걸 쓰고, 없으면 방/아이콘들의
+  // 바운딩 박스(=네이비 테두리 도면 영역)를 직접 구해서 넘긴다.
   const contentBounds = useMemo(() => {
+    if (mapData.contentBounds) return mapData.contentBounds;
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
@@ -145,7 +170,7 @@ export function IndoorMapView({
       return { minX: 0, minY: 0, width: mapData.width, height: mapData.height };
     }
     return { minX, minY, width: maxX - minX, height: maxY - minY };
-  }, [mapData.rooms, mapData.icons, mapData.width, mapData.height]);
+  }, [mapData.contentBounds, mapData.rooms, mapData.icons, mapData.width, mapData.height]);
 
   // onRoomSelect(부모 setState)를 setSelectedRoomIds의 updater 안에서 부르면 "다른 컴포넌트를
   // 렌더링하는 도중 업데이트" 에러가 난다. 현재 선택은 ref로 읽고, 부모 알림은 updater 밖에서 한다.
@@ -179,16 +204,19 @@ export function IndoorMapView({
     [selectableRooms]
   );
 
-  // 긴 변이 MAX_RENDER_DP를 넘는 층만 축소해서 그린다 (대부분의 층은 1을 넘지 않으므로 그대로).
-  const renderScale = useMemo(
-    () => Math.min(1, MAX_RENDER_DP / Math.max(mapData.width, mapData.height)),
-    [mapData.width, mapData.height]
-  );
+  // 레이어 비트맵이 MAX_LAYER_PIXELS를 넘는 층만 그만큼 축소해서 그린다.
+  const renderScale = useMemo(() => {
+    const density = PixelRatio.get();
+    const byPixelBudget = Math.sqrt(MAX_LAYER_PIXELS / (mapData.width * mapData.height * density * density));
+    const byPreviousCap = MIN_RENDER_LONG_SIDE_DP / Math.max(mapData.width, mapData.height);
+    return Math.min(1, Math.max(byPixelBudget, byPreviousCap));
+  }, [mapData.width, mapData.height]);
 
   const {
     composedGesture,
     animatedStyle,
     fitToContainer,
+    hasFitted,
     resetTransform,
     scale,
     translateX,
@@ -203,6 +231,7 @@ export function IndoorMapView({
     minScale,
     maxScale,
     renderScale,
+    fitOffsetY,
   });
 
   // mapLayer(Animated.View)와 그 안의 배경 SVG에 실제로 넘길 dp 크기. renderScale이 1이면
@@ -212,30 +241,74 @@ export function IndoorMapView({
     height: mapData.height * renderScale,
   };
 
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const handleContainerLayout = useCallback(
     (e: LayoutChangeEvent) => {
       const { width, height } = e.nativeEvent.layout;
+      setContainerSize({ width, height });
       fitToContainer(width, height);
     },
     [fitToContainer]
   );
 
+  useEffect(() => {
+    onControlsReady?.({ rotation, reset: resetTransform });
+  }, [onControlsReady, rotation, resetTransform]);
+
+  // 화면에 맞추기 전(마운트 직후 첫 프레임들)엔 도면이 원본 크기로 왼쪽 위에 그려지니 통째로 숨겨 둔다.
+  // 맞춤 배율/위치와 같은 UI 스레드 업데이트로 켜져서, 맞춰진 모습부터 바로 보인다.
+  const fitRevealStyle = useAnimatedStyle(() => ({ opacity: hasFitted.value }));
+
+  const { shownTransform, overlayStyle, baseStyle } = useSharpViewportVisibility({
+    scale,
+    translateX,
+    translateY,
+    rotation,
+  });
+
   return (
     <View style={[styles.container, backgroundColor ? { backgroundColor } : null]} onLayout={handleContainerLayout}>
+      <Animated.View style={[styles.fill, fitRevealStyle]}>
       <GestureDetector gesture={composedGesture}>
         <Animated.View style={[size, styles.mapLayer, animatedStyle]}>
-          <AbsoluteLayer>{renderBackground(size)}</AbsoluteLayer>
-          <RoomPolygons
-            width={size.width}
-            height={size.height}
-            viewBoxWidth={mapData.width}
-            viewBoxHeight={mapData.height}
-            rooms={mapData.rooms}
-            selectedRoomIds={selectedRoomIds}
-          />
-          {renderForeground && <AbsoluteLayer>{renderForeground(size)}</AbsoluteLayer>}
+          {/*
+            선명한 덮개가 보이는 동안 도면만 숨긴다. 제스처를 받는 바깥 뷰(GestureDetector)까지
+            opacity 0으로 만들면 iOS가 그 뷰에 터치를 안 보내서 확대/이동이 멈춘다.
+          */}
+          <Animated.View style={[styles.fill, baseStyle]}>
+            <AbsoluteLayer>{renderBackground(size)}</AbsoluteLayer>
+            <RoomPolygons
+              width={size.width}
+              height={size.height}
+              viewBoxWidth={mapData.width}
+              viewBoxHeight={mapData.height}
+              rooms={mapData.rooms}
+              selectedRoomIds={selectedRoomIds}
+            />
+            {renderForeground && <AbsoluteLayer>{renderForeground(size)}</AbsoluteLayer>}
+          </Animated.View>
         </Animated.View>
       </GestureDetector>
+      {/* 확대가 멈추면 지금 보이는 영역만 화면 해상도로 다시 그려 mapLayer 대신 보여준다 (흐려짐 보정). */}
+      <SharpViewportLayer
+        scale={scale}
+        translateX={translateX}
+        translateY={translateY}
+        rotation={rotation}
+        shownTransform={shownTransform}
+        containerWidth={containerSize.width}
+        containerHeight={containerSize.height}
+        visibilityStyle={overlayStyle}
+        renderLayer={(layerSize, polygons) => (
+          <>
+            <AbsoluteLayer>{renderBackground(layerSize)}</AbsoluteLayer>
+            {polygons}
+            {renderForeground && <AbsoluteLayer>{renderForeground(layerSize)}</AbsoluteLayer>}
+          </>
+        )}
+        rooms={mapData.rooms}
+        selectedRoomIds={selectedRoomIds}
+      />
       {/*
         mapLayer 밖(=scale/rotate transform이 안 걸리는 곳)에 별도 오버레이로 둔다. 아이콘·라벨은
         "지도 위에 그려진 그림"이 아니라 "지도 좌표에 꽂힌 핀"이어야 지도를 돌리거나 확대해도
@@ -259,7 +332,8 @@ export function IndoorMapView({
         fontSize={labelFontSize}
         selectedRoomIds={selectedRoomIds}
       />
-      <ResetViewButton rotation={rotation} onPress={resetTransform} />
+      </Animated.View>
+      {!onControlsReady && <ResetViewButton rotation={rotation} onPress={resetTransform} />}
     </View>
   );
 }
@@ -274,6 +348,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
+  },
+  fill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   mapLayer: {
     // scale의 기준점을 RN 기본값(중심)이 아니라 좌상단으로 고정.

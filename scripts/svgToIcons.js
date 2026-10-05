@@ -54,20 +54,51 @@ function classifyType(groupId) {
   return null;
 }
 
-/** 그룹 안에서 첫 번째 <rect>의 x/y/width/height를 뽑는다 (아이콘 배경 사각형 = hitbox) */
+/** transform="matrix(a b c d e f)" / "translate(dx dy)"를 점 변환 함수로 바꾼다. 없으면 그대로. */
+function makeTransformFn(transformValue) {
+  if (!transformValue) return ([x, y]) => [x, y];
+  let m = transformValue.match(
+    /matrix\(\s*([-\d.e]+)[ ,]+([-\d.e]+)[ ,]+([-\d.e]+)[ ,]+([-\d.e]+)[ ,]+([-\d.e]+)[ ,]+([-\d.e]+)\s*\)/
+  );
+  if (m) {
+    const [a, b, c, d, e, f] = m.slice(1).map(Number);
+    return ([x, y]) => [a * x + c * y + e, b * x + d * y + f];
+  }
+  m = transformValue.match(/translate\(\s*([-\d.]+)[ ,]+([-\d.]+)\s*\)/);
+  if (m) {
+    const dx = parseFloat(m[1]);
+    const dy = parseFloat(m[2]);
+    return ([x, y]) => [x + dx, y + dy];
+  }
+  console.warn(`[경고] 지원하지 않는 transform "${transformValue}" — 무시하고 원래 좌표로 계산`);
+  return ([x, y]) => [x, y];
+}
+
+/** 그룹 안에서 첫 번째 <rect>의 x/y/width/height를 뽑는다 (아이콘 배경 사각형 = hitbox).
+ *  Figma는 좌우 반전한 아이콘을 x/y 없이 transform="matrix(-1 0 0 1 …)"로 내보내므로
+ *  (x/y 기본값 0) 네 모서리에 transform을 적용한 뒤 그 바운딩 박스를 쓴다. */
 function extractFirstRect(inner) {
   const rectTagMatch = inner.match(/<rect\b[^>]*\/?>/);
   if (!rectTagMatch) return null;
   const attrs = parseAttrs(rectTagMatch[0]);
-  if (attrs.x === undefined || attrs.y === undefined || attrs.width === undefined || attrs.height === undefined) {
-    return null;
-  }
-  return {
-    x: parseFloat(attrs.x),
-    y: parseFloat(attrs.y),
-    width: parseFloat(attrs.width),
-    height: parseFloat(attrs.height),
-  };
+  if (attrs.width === undefined || attrs.height === undefined) return null;
+  const x = attrs.x !== undefined ? parseFloat(attrs.x) : 0;
+  const y = attrs.y !== undefined ? parseFloat(attrs.y) : 0;
+  const width = parseFloat(attrs.width);
+  const height = parseFloat(attrs.height);
+  if (!attrs.transform) return { x, y, width, height };
+  const tf = makeTransformFn(attrs.transform);
+  const corners = [
+    [x, y],
+    [x + width, y],
+    [x + width, y + height],
+    [x, y + height],
+  ].map(tf);
+  const xs = corners.map(([cx]) => cx);
+  const ys = corners.map(([, cy]) => cy);
+  const minX = Math.min(...xs);
+  const minY = Math.min(...ys);
+  return { x: minX, y: minY, width: Math.max(...xs) - minX, height: Math.max(...ys) - minY };
 }
 
 function main() {

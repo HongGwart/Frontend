@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { forwardRef, useImperativeHandle, useMemo } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -9,6 +9,13 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+
+export interface CollapsibleBottomSheetRef {
+  /** 코드에서 시트를 접는다(그래버만 남김). 이미 접혀 있으면 아무것도 안 한다. */
+  collapse: () => void;
+  /** 코드에서 시트를 펼친다. */
+  expand: () => void;
+}
 
 interface Props {
   /** 접혔을 때 화면 아래에 남겨둘 시트 윗부분 높이(px). 그래버 + 하단 세이프에어리어 정도. */
@@ -44,15 +51,10 @@ const SPRING = { damping: 30, stiffness: 250 };
  * 세로 드래그를 모두 시트가 가져가고, 펼친 상태에선 스크롤이 맨 위에서 "아래로" 끌 때만
  * 가져간다(ScrollView는 bounces={false}로 둬야 그 순간 같이 튕기지 않는다).
  */
-export function CollapsibleBottomSheet({
-  peekHeight,
-  onCollapsedChange,
-  onHeightChange,
-  scrollOffset,
-  children,
-  header,
-  style,
-}: Props) {
+export const CollapsibleBottomSheet = forwardRef<CollapsibleBottomSheetRef, Props>(function CollapsibleBottomSheet(
+  { peekHeight, onCollapsedChange, onHeightChange, scrollOffset, children, header, style },
+  ref,
+) {
   const translateY = useSharedValue(0);
   const sheetHeight = useSharedValue(0);
   const collapsed = useSharedValue(false);
@@ -111,6 +113,21 @@ export function CollapsibleBottomSheet({
       });
   }, [peekHeight, onCollapsedChange, scrollOffset, translateY, sheetHeight, collapsed, dragStartY, touchStartY]);
 
+  // 드래그 없이 코드로 접고 펼친다(예: 층을 바꾸면 카드를 접어 지도를 넓게 보여줌). 드래그 스냅과 같은 스프링을 쓴다.
+  useImperativeHandle(
+    ref,
+    () => {
+      const snapTo = (toCollapsed: boolean) => {
+        translateY.value = withSpring(toCollapsed ? Math.max(0, sheetHeight.value - peekHeight) : 0, SPRING);
+        if (collapsed.value === toCollapsed) return;
+        collapsed.value = toCollapsed;
+        onCollapsedChange?.(toCollapsed);
+      };
+      return { collapse: () => snapTo(true), expand: () => snapTo(false) };
+    },
+    [peekHeight, onCollapsedChange, translateY, sheetHeight, collapsed],
+  );
+
   const sheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
@@ -138,4 +155,4 @@ export function CollapsibleBottomSheet({
       </Animated.View>
     </GestureDetector>
   );
-}
+});

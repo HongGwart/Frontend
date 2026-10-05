@@ -6,7 +6,7 @@
  * RoomLabelsLayer가 room 데이터(중심 좌표)로 새로 그리게 됐는데, 배경에 원래 라벨이 남아있으면
  * 이중으로(하나는 돌고 하나는 안 돌고) 보인다. 이 스크립트는 그 baked 라벨만 제거한다.
  *
- * svgToRoomShapes.js의 extractLabelId와 같은 id 패턴(숫자 또는 숫자-숫자)을 사용하므로,
+ * 예전 svgToRoomShapes.js(Visual 방식)의 라벨 인식과 같은 id 패턴(숫자 또는 숫자-숫자)을 사용하므로,
  * 방 JSON의 room.id와 여기서 제거되는 id가 서로 대응하는지 로그로 비교해서 확인할 수 있다.
  *
  * 사용법:
@@ -24,9 +24,9 @@ function main() {
   }
 
   const svgText = fs.readFileSync(inputPath, 'utf8');
-  // svgToRoomShapes.js의 extractLabelId와 동일한 id 패턴. self-closing <path .../> 하나가
+  // 예전 svgToRoomShapes.js(Visual 방식)의 라벨 인식과 동일한 id 패턴. self-closing <path .../> 하나가
   // 라벨 전체(여러 글자의 획이 합쳐진 한 개 path)인 경우만 대상으로 한다.
-  // svgToRoomShapes.js의 extractLabelId와 동일하게, G동 "B110"처럼 앞에 알파벳 한 글자가
+  // 예전 svgToRoomShapes.js(Visual 방식)의 라벨 인식과 동일하게, G동 "B110"처럼 앞에 알파벳 한 글자가
   // 붙는 번호 체계도 허용한다.
   // Figma에서 같은 라벨 이름이 겹치면 "106_2"처럼 뒤에 "_숫자"가 자동으로 붙는데,
   // 이것도 결국 같은 종류의 baked 숫자 라벨이므로 같이 제거 대상에 포함한다.

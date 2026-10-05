@@ -681,6 +681,39 @@
 <rect id="Rectangle 240653106_44" x="591.5" y="602" width="1" height="0.5" fill="#1D2056"/>
 </g>
 </g>
+<g id="Hitbox">
+<rect id="room_322" x="759" y="351" width="410" height="169" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_308" x="1252" y="844" width="84" height="85" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_307" x="1168" y="844" width="84" height="85" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_306" x="1084" y="844" width="84" height="85" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_305" x="1000" y="844" width="84" height="85" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_316" d="M1168 723H1252V807.5H1168V723Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_315" x="1252" y="723" width="84" height="85" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_317" x="1084" y="723" width="84" height="85" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_319" x="923" y="723" width="77" height="85" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_318" x="1000" y="723" width="84" height="85" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_301" d="M248 723H591V930H248V723Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_301-1" x="591" y="844" width="166" height="86" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_302" x="756" y="844" width="76" height="86" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_303" x="832" y="844" width="84" height="86" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_304" x="916" y="844" width="84" height="86" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_314" x="1336" y="721" width="84" height="87" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_309" x="1336" y="844" width="84" height="86" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_313-1" x="1420" y="722" width="79" height="54" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_313" x="1499" y="722" width="79" height="54" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_312" x="1578" y="722" width="94" height="72" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_311" x="1578" y="835" width="94" height="95" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_310" x="1420" y="776" width="158" height="154" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_320" d="M669 601.5H759V681H669V601.5Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_321" x="669" y="520" width="90" height="81" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_323-08" x="669" y="183" width="90" height="56" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_323-10" x="669" y="239" width="90" height="56" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_323-11" x="669" y="295" width="90" height="56" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_323-6" x="502" y="295" width="90" height="56" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_323-7" x="502" y="239" width="90" height="56" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_323-8" x="502" y="183" width="90" height="56" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_323-12" x="591" y="143" width="78" height="40" fill="#D9D9D9" fill-opacity="0.01"/>
+</g>
 </g>
 <defs>
 <clipPath id="clip0_1075_19450">

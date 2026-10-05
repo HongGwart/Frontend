@@ -1,25 +1,35 @@
 #!/usr/bin/env node
 /**
  *
- * Figma에서 export한 평면도 SVG를 읽어서 `room_{이름}` 그룹 안의 <rect>를
- * 4개 모서리 좌표 + RN-SVG용 path 문자열로 변환한 JSON을 만든다.
+ * Figma에서 export한 평면도 SVG의 `Hitbox` 레이어를 읽어서, 방마다 탭 판정(points)과
+ * 하이라이트(path)에 쓰는 도형 JSON을 만든다.
  *
- * "Hitbox" 레이어 지원: Visual 레이어의 배경 도형(rect)만으로는 대각선/복잡한 벽 모양이나
- * 여러 조각으로 나뉜 방을 정확히 못 잡는 경우가 많아서, Figma에 `Visual`과 나란히
- * `Hitbox`라는 최상위 레이어를 두고 그 안에 `<path id="room_{방번호}" d="...">` 형태로
- * 방마다 정확한 hitbox 도형을 직접 그려두면(M/L/H/V/Z만 사용, 곡선 불가) 그걸 최우선으로
- * 사용한다 — 같은 방번호가 Visual 쪽에서 이미 추출됐으면 덮어쓰고, 없으면 새로 추가한다.
- * (도형에 fill/stroke가 전혀 없으면 Figma가 export 시 통째로 생략해버리니, 아주 옅은
- * fill-opacity라도 넣어둬야 한다.)
+ * 방 도형은 Hitbox 레이어 하나만 기준으로 한다. 예전에는 Visual 레이어의 강의실 사각형을
+ * 기본으로 쓰고 Hitbox가 있는 방만 덮어썼는데, 두 방식이 섞여 층·방마다 정확도가 달랐다(#24).
+ *
+ * Figma Hitbox 레이어 규칙:
+ *   - `Visual`과 나란한 최상위 레이어 `Hitbox` 안에 방마다 도형 하나
+ *   - 이름은 `room_{방번호}` (예: room_506-1, room_열람실). 한 강의실이 여러 조각이면
+ *     room_623 / room_623_2 처럼 두면 같은 강의실로 묶여 함께 선택되고 번호는 한 번만 보인다.
+ *   - rect(회전 가능) / path / circle 지원. path 곡선은 몇 개 점으로 근사한다.
+ *   - fill이 전혀 없으면 Figma가 export 시 도형을 통째로 생략하니, 아주 옅은 fill-opacity를 넣는다.
+ *   - export 시 "Include id attribute"를 켠다.
+ *
+ * 출력 JSON이 이미 있으면 거기서 손으로 넣어둔 `labelAnchor`를 같은 방에 이어받고, 예전엔
+ * 있었는데 Hitbox에 없는 방 목록을 경고로 알려준다(Figma 누락 확인용).
  *
  * 사용법:
- *   node svgToRoomShapes.js <입력.svg> [출력.json]
+ *   node svgToRoomShapes.js <입력.svg> [출력.json] [--allow-empty]
+ *
+ * --allow-empty: 강의실이 없는 층(예: R_16)처럼 Hitbox 레이어가 없어도 되는 경우에만 붙인다.
+ *   rooms가 빈 JSON을 만든다. 없으면 Hitbox 누락을 export 실수로 보고 에러로 멈춘다.
  *
  * 결과 JSON 구조:
  * {
  *   "floorId": "A_1",
  *   "width": 1920,
  *   "height": 1080,
+ *   "contentBounds": { "minX": 212, "minY": 300, "width": 1520, "height": 640 },  // 도면 외곽 영역
  *   "rooms": [
  *     { "id": "506-1", "placeId": null, "points": [[x,y],...], "path": "M.. L.. Z" }
  *   ]
@@ -29,22 +39,18 @@
 const fs = require('fs');
 const path = require('path');
 
-/** 태그 문자열에서 attr="value" 쌍을 전부 뽑아낸다 (속성 순서에 의존하지 않음) */
-/** Figma에서 room_멀티미디어실 처럼 한글 id를 쓰면 export 시 "&#235;&#169;..." 같은
- *  숫자 HTML 엔티티(UTF-8 바이트 단위)로 깨져 나오는 경우가 있다. id에서 그런 엔티티를
- *  발견하면 원래 문자로 복원한다. */
+/** Figma에서 room_열람실 처럼 한글 이름을 쓰면 export 시 "&#236;&#151;&#180;" 같은 숫자 HTML
+ *  엔티티(UTF-8 바이트 단위)로 깨져 나온다. "(Green)"이나 "제1" 처럼 일반 문자가 섞여 있어도
+ *  연속된 엔티티 묶음만 골라 UTF-8로 복원한다. */
 function decodeHtmlEntities(str) {
   if (!str || !str.includes('&#')) return str;
-  const withoutEntities = str.replace(/&#(\d+);/g, '');
-  if (withoutEntities !== '') return str; // 엔티티 외 다른 문자가 섞여있으면 손대지 않는다
-  const bytes = [...str.matchAll(/&#(\d+);/g)].map((m) => Number(m[1]));
-  try {
+  return str.replace(/(?:&#\d+;)+/g, (run) => {
+    const bytes = [...run.matchAll(/&#(\d+);/g)].map((m) => Number(m[1]));
     return Buffer.from(bytes).toString('utf8');
-  } catch {
-    return str;
-  }
+  });
 }
 
+/** 태그 문자열에서 attr="value" 쌍을 전부 뽑아낸다 (속성 순서에 의존하지 않음) */
 function parseAttrs(tag) {
   const attrs = {};
   const attrRegex = /([\w:-]+)="([^"]*)"/g;
@@ -53,56 +59,6 @@ function parseAttrs(tag) {
     attrs[m[1]] = m[2];
   }
   return attrs;
-}
-
-/** `<g id="room_...">...</g>` 그룹들을 전부 찾는다 (중첩 <g> 없이 얕은 매칭)
- *  Figma가 레이어를 복제하면 이름을 "room", "room_2", "room_3"... 식으로 자동으로 매기는데,
- *  이 경우 그룹 안의 숫자 라벨(extractLabelId)로 방 이름을 대체한다. 라벨도 없으면 경고. */
-function extractRoomGroups(svgText) {
-  const groups = [];
-  const groupRegex = /<g id="(room(?:_[^"]+)?)"[^>]*>([\s\S]*?)<\/g>/g;
-  let match;
-  while ((match = groupRegex.exec(svgText)) !== null) {
-    groups.push({ id: match[1], inner: match[2] });
-  }
-  return groups;
-}
-
-/** 그룹 안에서 첫 번째 <rect>의 x/y/width/height(+transform)를 뽑는다.
- *  transform="rotate(...)" / "matrix(...)" 로 기울어진 방(사선 벽)도 지원하기 위해
- *  원본 attrs를 그대로 들고 있다가 rectToRoomShape에서 makeTransformFn으로 4모서리를 계산한다. */
-function extractFirstRect(inner) {
-  const rectTagMatch = inner.match(/<rect\b[^>]*\/?>/);
-  if (!rectTagMatch) return null;
-  const attrs = parseAttrs(rectTagMatch[0]);
-  if (attrs.width === undefined || attrs.height === undefined) return null;
-
-  return {
-    x: attrs.x !== undefined ? parseFloat(attrs.x) : 0,
-    y: attrs.y !== undefined ? parseFloat(attrs.y) : 0,
-    width: parseFloat(attrs.width),
-    height: parseFloat(attrs.height),
-    transform: attrs.transform,
-  };
-}
-
-/** 그룹 안에서 방 번호 라벨(<path id="103">, <path id="102-1"> 같은 숫자/하이픈 id)을 찾는다.
- *  hitbox 그룹 이름을 Figma에서 일일이 안 바꿔도, 화면에 보이는 번호 텍스트의 id를 그대로
- *  방 이름으로 재활용하기 위함. Union/Rectangle/stair/door 같은 다른 path id는 걸러진다. */
-function extractLabelId(inner) {
-  // 대부분은 순수 숫자("103", "402-1")지만 G동처럼 "B110"같이 건물 접두 알파벳 하나가
-  // 붙는 번호 체계도 있어서 앞에 알파벳 한 글자를 선택적으로 허용한다.
-  const labelRegex = /<path id="([A-Za-z]?\d+(?:-\d+)?)"/g;
-  const ids = [];
-  let m;
-  while ((m = labelRegex.exec(inner)) !== null) {
-    ids.push(m[1]);
-  }
-  if (ids.length === 0) return null;
-  if (ids.length > 1) {
-    console.warn(`[경고] 방 라벨 후보가 여러 개(${ids.join(', ')}) 발견됨 — 첫 번째 값 사용`);
-  }
-  return ids[0];
 }
 
 /** "rotate(9.96 1872.24 392.779)" / "translate(dx dy)" / "matrix(a b c d e f)" 를 파싱해서
@@ -252,185 +208,250 @@ function rectElementToPoints(attrs) {
   ];
 }
 
-/** `<g id="Hitbox" ...>` 안의 `<path id="room_XXX">` / `<rect id="room_XXX">` 들을 방 도형으로 뽑는다.
- *  Visual 레이어의 배경 조각들을 짜맞춰 추정하는 것보다 훨씬 정확한 소스이므로,
- *  같은 방 id가 있으면 이 값으로 덮어쓰고, 없으면 새로 추가한다. */
-function extractHitboxRooms(svgText) {
-  const hitboxMatch = svgText.match(/<g id="Hitbox"[^>]*>([\s\S]*?)<\/g>/);
-  if (!hitboxMatch) return [];
-  const inner = hitboxMatch[1];
-  const elRegex = /<(path|rect) id="room_([^"]+)"([^>]*)\/?>/g;
-  const rooms = [];
+/** 원형 방(<circle id="room_XXX">)은 정다각형으로 근사한다. 탭 판정/하이라이트에는 이 정도면 충분하다. */
+const CIRCLE_SEGMENTS = 24;
+function circleElementToPoints(attrs) {
+  const cx = parseFloat(attrs.cx || 0);
+  const cy = parseFloat(attrs.cy || 0);
+  const r = parseFloat(attrs.r);
+  if (Number.isNaN(r)) return null;
+  const tf = makeTransformFn(attrs.transform);
+  const points = [];
+  for (let i = 0; i < CIRCLE_SEGMENTS; i += 1) {
+    const angle = (i / CIRCLE_SEGMENTS) * Math.PI * 2;
+    points.push(
+      tf([Math.round((cx + r * Math.cos(angle)) * 1000) / 1000, Math.round((cy + r * Math.sin(angle)) * 1000) / 1000])
+    );
+  }
+  return points;
+}
+
+/** circleElementToPoints와 같지만 rx/ry가 다를 수 있는 <ellipse>용. */
+function ellipseElementToPoints(attrs) {
+  const cx = parseFloat(attrs.cx || 0);
+  const cy = parseFloat(attrs.cy || 0);
+  const rx = parseFloat(attrs.rx);
+  const ry = parseFloat(attrs.ry);
+  if (Number.isNaN(rx) || Number.isNaN(ry)) return null;
+  const tf = makeTransformFn(attrs.transform);
+  const points = [];
+  for (let i = 0; i < CIRCLE_SEGMENTS; i += 1) {
+    const angle = (i / CIRCLE_SEGMENTS) * Math.PI * 2;
+    points.push(
+      tf([
+        Math.round((cx + rx * Math.cos(angle)) * 1000) / 1000,
+        Math.round((cy + ry * Math.sin(angle)) * 1000) / 1000,
+      ])
+    );
+  }
+  return points;
+}
+
+/** `<g id="{groupId}">`의 안쪽 문자열. 중첩 <g>가 있어도 짝이 맞는 </g>까지 잘라낸다. 그룹이 없으면 null. */
+function extractGroupInner(svgText, groupId) {
+  const openMatch = svgText.match(new RegExp(`<g id="${groupId}"[^>]*>`));
+  if (!openMatch) return null;
+  const start = openMatch.index + openMatch[0].length;
+  const tagRegex = /<g\b[^>]*?(\/?)>|<\/g>/g;
+  tagRegex.lastIndex = start;
+  let depth = 1;
   let m;
-  while ((m = elRegex.exec(inner)) !== null) {
-    const [, tag, rawRoomId, attrsStr] = m;
-    const roomId = decodeHtmlEntities(rawRoomId);
-    const attrs = parseAttrs(`<${tag}${attrsStr}>`);
-    const points = tag === 'rect' ? rectElementToPoints(attrs) : parsePathToPoints(attrs.d || '');
-    if (!points) {
-      console.warn(`[경고] Hitbox "room_${roomId}" (${tag})를 파싱하지 못해 건너뜀`);
+  while ((m = tagRegex.exec(svgText)) !== null) {
+    if (m[0] === '</g>') {
+      depth -= 1;
+      if (depth === 0) return svgText.slice(start, m.index);
+    } else if (!m[1]) {
+      depth += 1;
+    }
+  }
+  return null;
+}
+
+/** Hitbox 레이어 안의 rect/path/circle 중 id가 room_ 으로 시작하는 것들을 방 도형으로 뽑는다. */
+function extractHitboxRooms(hitboxInner) {
+  const rooms = [];
+  const elRegex = /<(rect|path|circle|ellipse|polygon|line|polyline)\b([^>]*?)\/?>/g;
+  let m;
+  while ((m = elRegex.exec(hitboxInner)) !== null) {
+    const [, tag, attrsStr] = m;
+    const attrs = parseAttrs(attrsStr);
+    const rawId = attrs.id;
+    if (!rawId || !rawId.startsWith('room_')) {
+      console.warn(`[경고] Hitbox 안의 <${tag} id="${rawId ?? ''}">는 room_ 이름이 아니라 건너뜀`);
       continue;
     }
-    const path = 'M' + points.map(([x, y]) => `${x},${y}`).join(' L') + ' Z';
-    rooms.push({ id: roomId, placeId: null, points, path });
+    const roomId = decodeHtmlEntities(rawId.slice('room_'.length));
+    let points = null;
+    if (tag === 'rect') points = rectElementToPoints(attrs);
+    else if (tag === 'path') points = parsePathToPoints(attrs.d || '');
+    else if (tag === 'circle') points = circleElementToPoints(attrs);
+    else if (tag === 'ellipse') points = ellipseElementToPoints(attrs);
+    if (!points) {
+      console.warn(`[경고] Hitbox "room_${roomId}" (<${tag}>)를 도형으로 바꾸지 못해 건너뜀`);
+      continue;
+    }
+    const pathStr = 'M' + points.map(([x, y]) => `${x},${y}`).join(' L') + ' Z';
+    rooms.push({ id: roomId, placeId: null, points, path: pathStr });
   }
   return rooms;
 }
 
-function rectToRoomShape(groupId, rect, labelId) {
-  const { x, y, width, height, transform } = rect;
-  const tf = makeTransformFn(transform);
-  const points = [
-    tf([x, y]),
-    tf([x + width, y]),
-    tf([x + width, y + height]),
-    tf([x, y + height]),
-  ];
-  const path = `M${points[0][0]},${points[0][1]} L${points[1][0]},${points[1][1]} L${points[2][0]},${points[2][1]} L${points[3][0]},${points[3][1]} Z`;
-
-  const isAutoNumbered = /^room(_\d+)?$/.test(groupId);
-  let roomName;
-  if (!isAutoNumbered) {
-    // Figma에서 이미 손으로 room_506-1 처럼 바꿔둔 경우 -> 그걸 그대로 우선 사용
-    roomName = groupId.replace(/^room_/, '');
-  } else if (labelId) {
-    // 자동 이름인데 안에 숫자 라벨이 있으면 그걸 방 이름으로 사용
-    roomName = labelId;
-  } else {
-    // 라벨도 없으면 어쩔 수 없이 그룹 이름 그대로 (나중에 수동 매핑 필요)
-    roomName = groupId;
+/**
+ * Figma는 이름이 겹치는 레이어에 "_2", "_3"을 붙여서 export한다. Hitbox에서는 한 강의실을 여러
+ * 조각으로 나눠 그린 경우라, 라벨을 원래 번호로 맞춰 둔다 — IndoorMapView가 같은 라벨끼리 함께
+ * 선택하고, RoomLabelsLayer가 같은 라벨은 한 번만 그린다. id는 서로 달라야 하니 그대로 둔다.
+ */
+function labelSplitPieces(rooms) {
+  const ids = new Set(rooms.map((r) => r.id));
+  for (const room of rooms) {
+    const m = room.id.match(/^(.+)_(\d+)$/);
+    if (!m) continue;
+    room.label = m[1];
+    if (!ids.has(m[1])) {
+      console.warn(`[경고] "${room.id}"는 조각 이름인데 원래 방 "${m[1]}"이 Hitbox에 없음 — 라벨은 "${m[1]}"로 표시`);
+    }
   }
+}
 
-  return { id: roomName, placeId: null, points, path };
+/**
+ * 첫 화면 맞춤(IndoorMapView fitToContainer)에 쓸 도면 영역. Hitbox에는 강의실만 있어서 방 좌표만으로
+ * 잡으면 화장실·계단처럼 가장자리에 있던 공간이 잘려 나간다. 대신 Visual 레이어의 외곽선을 쓴다 —
+ * Figma는 바깥쪽 stroke가 있는 도형마다 그 도형을 감싸는 <mask x y width height>를 같이 export하므로,
+ * 그 사각형들과 방 도형을 합친 바운딩 박스를 도면 영역으로 본다. mask가 없으면 null(앱이 방 좌표로 계산).
+ */
+function computeContentBounds(visualInner, rooms) {
+  if (!visualInner) return null;
+  const maskRegex = /<mask\b[^>]*\bx="([-\d.]+)" y="([-\d.]+)" width="([\d.]+)" height="([\d.]+)"/g;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  const include = (x, y) => {
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+  };
+  let masks = 0;
+  let m;
+  while ((m = maskRegex.exec(visualInner)) !== null) {
+    const [x, y, width, height] = m.slice(1).map(Number);
+    include(x, y);
+    include(x + width, y + height);
+    masks += 1;
+  }
+  if (masks === 0) return null;
+  for (const room of rooms) {
+    for (const [x, y] of room.points) include(x, y);
+  }
+  const round = (v) => Math.round(v * 1000) / 1000;
+  return { minX: round(minX), minY: round(minY), width: round(maxX - minX), height: round(maxY - minY) };
+}
+
+/** 지하층 번호는 Figma 레이어에 "B"가 붙기도 하고(B404) 안 붙기도 해서(404), 기존 JSON과 맞출 때 무시한다. */
+const withoutBasementPrefix = (id) => id.replace(/^B(?=\d)/, '');
+
+/**
+ * 기존 JSON에서 이어받을 값을 반영하고, 예전엔 있었는데 Hitbox에 없는 방을 알려준다.
+ * - labelAnchor: 수동 보정값이라 같은 방이면 그대로 이어받는다.
+ * - id: "B" 접두만 다르면 예전 표시 번호(B404 등)를 유지한다.
+ * 예전 JSON의 수동 label은 이어받지 않는다 — Figma Hitbox 이름을 바로잡으면서 만든 보정이라
+ * 새 Hitbox 이름이 기준이다.
+ */
+function carryOverFromPrevious(rooms, outputPath) {
+  if (!fs.existsSync(outputPath)) return;
+  let previousRooms;
+  try {
+    previousRooms = JSON.parse(fs.readFileSync(outputPath, 'utf8')).rooms ?? [];
+  } catch {
+    console.warn(`[경고] 기존 ${outputPath}를 읽지 못해 이어받기를 건너뜀`);
+    return;
+  }
+  const previousByKey = new Map(previousRooms.map((r) => [withoutBasementPrefix(r.id), r]));
+  const matchedKeys = new Set();
+  let anchors = 0;
+  for (const room of rooms) {
+    const key = withoutBasementPrefix(room.id);
+    const previous = previousByKey.get(key);
+    if (!previous) continue;
+    matchedKeys.add(key);
+    if (previous.id !== room.id) {
+      console.log(`  · "${room.id}" → 기존 표시 번호 "${previous.id}" 유지`);
+      room.id = previous.id;
+    }
+    if (previous.labelAnchor) {
+      room.labelAnchor = previous.labelAnchor;
+      anchors += 1;
+    }
+  }
+  // 라벨이 보이던 방만 알린다. label ""(화장실 등)이나 "room_7" 같은 자동 이름은 원래 탭 대상이 아니었다.
+  const missing = previousRooms.filter(
+    (r) => !matchedKeys.has(withoutBasementPrefix(r.id)) && r.label !== '' && !/^room(_\d+)?$/.test(r.id)
+  );
+  if (anchors > 0) console.log(`✓ 기존 labelAnchor ${anchors}개 이어받음`);
+  if (missing.length > 0) {
+    console.warn(
+      `[경고] 기존에 있던 방 ${missing.length}개가 Hitbox에 없음: ${missing.map((r) => r.id).join(', ')} ` +
+        `— Figma에서 빠진 건지 확인하세요.`
+    );
+  }
 }
 
 function main() {
-  const [, , inputPath, outputPathArg] = process.argv;
+  const args = process.argv.slice(2);
+  const allowEmpty = args.includes('--allow-empty');
+  const [inputPath, outputPathArg] = args.filter((arg) => !arg.startsWith('--'));
   if (!inputPath) {
-    console.error('사용법: node svgToRoomShapes.js <입력.svg> [출력.json]');
+    console.error('사용법: node svgToRoomShapes.js <입력.svg> [출력.json] [--allow-empty]');
     process.exit(1);
   }
 
   const svgText = fs.readFileSync(inputPath, 'utf8');
   const widthMatch = svgText.match(/<svg[^>]*\bwidth="([\d.]+)"/);
   const heightMatch = svgText.match(/<svg[^>]*\bheight="([\d.]+)"/);
+  const outputPath = outputPathArg || inputPath.replace(/\.svg$/, '.json');
 
-  const groups = extractRoomGroups(svgText);
-  const rooms = [];
-  const seen = new Set();
-
-  for (const group of groups) {
-    const rect = extractFirstRect(group.inner);
-    if (!rect) {
-      console.warn(`[경고] "${group.id}" 그룹 안에서 <rect>를 찾지 못해 건너뜀`);
-      continue;
-    }
-    const labelId = extractLabelId(group.inner);
-    const shape = rectToRoomShape(group.id, rect, labelId);
-
-    const isAutoNumbered = /^room(_\d+)?$/.test(group.id);
-    if (isAutoNumbered && !labelId) {
-      console.warn(
-        `[경고] "${group.id}" 는 자동 생성 이름이고 안에 숫자 라벨도 없어서 방 이름을 못 정했습니다. ` +
-          `Figma에서 "room_506-1" 처럼 직접 이름을 바꿔주세요.`
-      );
-      // 이름을 못 정한 자동 생성 방은 대개 Hitbox 레이어에 진짜 번호가 붙은 정밀한
-      // 버전이 따로 존재한다(같은 자리를 거의 그대로 덮음). 화면에 "room_7" 같은
-      // 이상한 텍스트가 중복으로 뜨는 걸 막기 위해 라벨을 비워둔다(도형은 유지).
-      shape.label = '';
-    }
-    if (seen.has(shape.id)) {
-      console.warn(`[경고] 방 id "${shape.id}" 중복 — 나중 것이 앞의 것을 덮어씀`);
-    }
-    seen.add(shape.id);
-    rooms.push(shape);
-  }
-
-  // Hitbox 레이어(<g id="Hitbox"><path id="room_XXX" d="..."/></g>)가 있으면 그 정밀한
-  // 도형으로 같은 id의 방을 덮어쓰고, 없던 방이면 새로 추가한다.
-  const hitboxRooms = extractHitboxRooms(svgText);
-  if (hitboxRooms.length > 0) {
-    const byId = new Map(rooms.map((r, idx) => [r.id, idx]));
-    let overwritten = 0;
-    let added = 0;
-    for (const hitboxRoom of hitboxRooms) {
-      // R_B3/R_B4처럼 지하층 Hitbox 방 이름에 "B"가 안 붙어있는 경우(room_404 -> "404")가
-      // 있는데, Visual 레이어 쪽은 이미 "B404"로 뽑혀있어서 id가 정확히 안 맞아 서로 다른
-      // 방인 줄 알고 따로 남는 버그가 있었다(그 결과 부정확한 Visual 사각형이 남고 정밀한
-      // Hitbox 도형이 중복으로 취급돼 지워짐). "B" 유무만 다른 id가 이미 있으면 그것도
-      // 같은 방으로 보고 덮어쓴다 — Hitbox 쪽 도형이 항상 더 정확하므로 Hitbox를 우선한다.
-      let existingIdx = byId.get(hitboxRoom.id);
-      let displayId = hitboxRoom.id;
-      if (existingIdx === undefined && !hitboxRoom.id.startsWith('B')) {
-        const withB = 'B' + hitboxRoom.id;
-        if (byId.has(withB)) {
-          existingIdx = byId.get(withB);
-          displayId = withB; // 기존에 쓰던 표시 번호(B접두)는 그대로 유지
-        }
-      } else if (existingIdx === undefined && hitboxRoom.id.startsWith('B')) {
-        const withoutB = hitboxRoom.id.slice(1);
-        if (byId.has(withoutB)) {
-          existingIdx = byId.get(withoutB);
-          displayId = withoutB;
-        }
-      }
-      if (existingIdx !== undefined) {
-        rooms[existingIdx] = { ...hitboxRoom, id: displayId };
-        overwritten += 1;
-      } else {
-        rooms.push(hitboxRoom);
-        byId.set(hitboxRoom.id, rooms.length - 1);
-        added += 1;
-      }
-    }
-    console.log(`✓ Hitbox 레이어에서 방 ${hitboxRooms.length}개 반영 (덮어씀 ${overwritten} / 새로 추가 ${added})`);
-  }
-
-  // Figma에서 레이어 이름이 겹치면 exporter가 "_2", "_3" 처럼 접미사를 붙인다.
-  // room_101 / room_101_2 처럼 원본 id가 그대로 남아있는 방이 있으면, 화면에
-  // 같은 번호(또는 "101_2" 같은 이상한) 텍스트가 중복으로 뜨는 걸 막기 위해
-  // 접미사가 붙은 쪽은 라벨을 비워서 텍스트만 숨긴다(도형/클릭 영역은 유지).
-  // 실제로는 서로 다른 두 개의 방일 수도 있으므로 삭제하지 않고 경고만 남긴다 —
-  // Figma에서 진짜 방 번호를 확인해서 나중에 수동으로 바로잡아야 한다.
-  {
-    const idSet = new Set(rooms.map((r) => r.id));
-    let suppressed = 0;
-    for (const room of rooms) {
-      const m = room.id.match(/^(.+)_(\d+)$/);
-      if (!m) continue;
-      const baseId = m[1];
-      if (!idSet.has(baseId)) continue;
-      if (room.label === undefined || room.label !== '') {
-        room.label = '';
-        suppressed += 1;
-        console.warn(
-          `[경고] "${room.id}"가 "${baseId}"와 이름이 겹쳐서(Figma 레이어 중복) 자동 생성된 것으로 보여 ` +
-            `라벨을 숨겼습니다. 실제로 다른 방이라면 Figma에서 정확한 번호를 확인해 수동으로 고쳐주세요.`
-        );
-      }
-    }
-    if (suppressed > 0) {
-      console.log(`✓ 이름 충돌로 의심되는 방 ${suppressed}개의 중복 텍스트를 자동으로 숨겼습니다.`);
-    }
-  }
-
-  if (rooms.length === 0) {
-    console.warn(
-      '[경고] room_ 로 시작하는 그룹을 하나도 찾지 못했습니다. Figma에서 hitbox 레이어 이름이 ' +
-        '"room_방이름" 형식인지, export 시 "Include id attribute" 옵션을 켰는지 확인하세요.'
+  const hitboxInner = extractGroupInner(svgText, 'Hitbox');
+  if (hitboxInner === null && allowEmpty) {
+    console.warn('[경고] Hitbox 레이어가 없어 방 없는 층으로 처리함 (--allow-empty)');
+  } else if (hitboxInner === null) {
+    console.error(
+      `[에러] ${inputPath}에 Hitbox 레이어가 없습니다. Figma에서 최상위 "Hitbox" 레이어를 만들고, ` +
+        'export 시 "Include id attribute"를 켰는지 확인하세요. (JSON은 만들지 않음)'
     );
+    process.exit(1);
+  }
+
+  const rooms = hitboxInner === null ? [] : extractHitboxRooms(hitboxInner);
+  if (rooms.length === 0 && !allowEmpty) {
+    console.error(`[에러] ${inputPath}의 Hitbox 레이어에 room_ 도형이 하나도 없습니다. (JSON은 만들지 않음)`);
+    process.exit(1);
+  }
+
+  const seen = new Set();
+  for (const room of rooms) {
+    if (seen.has(room.id)) console.warn(`[경고] 방 id "${room.id}" 중복 — Figma 레이어 이름을 확인하세요`);
+    seen.add(room.id);
+  }
+
+  labelSplitPieces(rooms);
+  carryOverFromPrevious(rooms, outputPath);
+
+  const contentBounds = computeContentBounds(extractGroupInner(svgText, 'Visual'), rooms);
+  if (!contentBounds) {
+    console.warn('[경고] Visual 레이어에서 외곽선을 찾지 못해 contentBounds를 생략함 — 앱이 방 좌표로 도면 영역을 계산합니다');
   }
 
   const data = {
     floorId: path.basename(inputPath, path.extname(inputPath)),
     width: widthMatch ? parseFloat(widthMatch[1]) : null,
     height: heightMatch ? parseFloat(heightMatch[1]) : null,
+    ...(contentBounds && { contentBounds }),
     rooms,
   };
 
-  const outputPath = outputPathArg || inputPath.replace(/\.svg$/, '.json');
   fs.writeFileSync(outputPath, JSON.stringify(data, null, 2));
-  console.log(`✓ 방 ${rooms.length}개 추출 완료 → ${outputPath}`);
+  console.log(`✓ Hitbox에서 방 ${rooms.length}개 추출 완료 → ${outputPath}`);
 }
 
 main();

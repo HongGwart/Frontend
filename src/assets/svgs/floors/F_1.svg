@@ -216,11 +216,11 @@
 </g>
 <g id="Hitbox">
 <rect id="room_101-2" x="1055" y="1047" width="207" height="231" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_102" x="743" y="965" width="208" height="81" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_101-1" x="637" y="1047" width="313" height="229" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_101-3" x="951" y="1127" width="103" height="149" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_103-1" d="M1003 914H951V965H740V809H1003V914Z" fill="#D9D9D9" fill-opacity="0.01"/>
-<path id="room_103-2" d="M1001 914H1053V965H1264V809H1001V914Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_102" x="743" y="965" width="208" height="82" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_101-1" x="637" y="1047" width="314" height="230" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_101-3" x="951" y="1127" width="103" height="151" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_103-1" d="M1003 914H951.791V965H744V809H1003V914Z" fill="#D9D9D9" fill-opacity="0.01"/>
+<path id="room_103-2" d="M1005 914H1055V965H1263V809H1005V914Z" fill="#D9D9D9" fill-opacity="0.01"/>
 </g>
 </g>
 <defs>
