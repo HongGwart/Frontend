@@ -98,7 +98,10 @@ export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
         showsVerticalScrollIndicator={false}
       >
         <Section>
-          {dongMarker.images && <FacilityImagePair images={dongMarker.images} height={160} />}
+          {/* 사진은 한 장 249×160으로 나열하고, 화면 폭을 넘는 만큼은 오른쪽으로 가로 스크롤된다. */}
+          {dongMarker.images && (
+            <FacilityImagePair images={dongMarker.images} itemWidth={249} height={160} bleed={20} />
+          )}
           <DescriptionText>{dongMarker.description}</DescriptionText>
           <InfoList>
             <InfoRow>
