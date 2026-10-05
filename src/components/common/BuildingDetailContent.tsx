@@ -175,9 +175,10 @@ const Container = styled.View`
   background-color: ${({ theme }) => theme.semantic.background.primary};
 `;
 
+// 헤더와 첫 콘텐츠(사진) 사이 간격 8px.
 const Section = styled.View`
   width: 100%;
-  padding: 12px 20px 0;
+  padding: 8px 20px 0;
   gap: 12px;
 `;
 
