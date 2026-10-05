@@ -16,8 +16,6 @@ interface Props {
   latitude: number;
   longitude: number;
   onBack: () => void;
-  /** 상단 검색창을 눌렀을 때. map 탭 검색창처럼 검색 화면(Search)으로 보낸다. */
-  onSearchPress: () => void;
   /** 장소 좌표에 찍을 마커(NaverMapView의 children으로 들어간다). */
   marker: React.ReactNode;
   /** 화면 하단에 붙는 시설 정보 카드(FacilityInfoCard). */
@@ -25,6 +23,9 @@ interface Props {
   /** 지금 띄울 토스트 문구(예: 즐겨찾기 등록/해제). 메인 지도처럼 칩 바로 아래에 뜬다. */
   toastMessage?: string | null;
 }
+
+// 검색창은 보여주기만 하므로 아무 동작 없는 핸들러를 넘긴다(onPress가 있어야 입력 불가 상태로 그려진다).
+const noop = () => {};
 
 /**
  * 목록에서 장소 하나를 눌렀을 때 뜨는 "지도 + 시설 카드" 상세 화면의 공통 뼈대.
@@ -36,7 +37,6 @@ export function PlaceMapDetailView({
   latitude,
   longitude,
   onBack,
-  onSearchPress,
   marker,
   card,
   toastMessage = null,
@@ -55,7 +55,7 @@ export function PlaceMapDetailView({
           {/* 검색창·카테고리 칩은 메인홈(MapScreen)에서만 쓸 수 있고, 여기선 같은 모양으로 보여주기만 한다.
               SearchBar는 onPress가 없으면 입력 가능한 검색창이 되므로, onPress는 두고 터치만 막는다. */}
           <SearchBarWrap pointerEvents="none">
-            <SearchBar value="" onChangeText={() => {}} onPress={onSearchPress} />
+            <SearchBar value="" onChangeText={noop} onPress={noop} />
           </SearchBarWrap>
         </SearchRow>
         <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} disabled />

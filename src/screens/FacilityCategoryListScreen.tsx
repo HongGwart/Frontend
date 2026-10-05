@@ -81,7 +81,6 @@ export default function FacilityCategoryListScreen() {
         latitude={latitude}
         longitude={longitude}
         onBack={closeDetail}
-        onSearchPress={() => navigation.navigate('Search')}
         marker={
           markerIconKey ? (
             <NaverMapCategoryMarker

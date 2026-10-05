@@ -3,7 +3,6 @@ import { Linking, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from 'styled-components/native';
 import RestaurantIcon from '@assets/svgs/icons/restaurant.svg';
 import { FavoritePlaceCard } from '@components/mypage/FavoritePlaceCard';
@@ -16,7 +15,7 @@ import { DUMMY_FACILITY_IMAGES } from '@constant/dummyFacilityInfo';
 import { DUMMY_HONGDAE_PLACES, HongdaeCategory } from '@constant/dummyHongdaePlaces';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { useCloseOnHardwareBack } from '@hooks/useCloseOnHardwareBack';
-import { MainTabParamList, RootStackParamList } from '@navigation/types';
+import { MainTabParamList } from '@navigation/types';
 
 // 메인 지도(MapScreen)의 즐겨찾기 토스트와 같은 노출 시간
 const TOAST_DURATION_MS = 2000;
@@ -26,8 +25,6 @@ const TOAST_DURATION_MS = 2000;
 // 상세 상태일 때는 map 탭처럼 자체 검색바 UI를 쓰기 위해 헤더를 꺼야 해서 setOptions로 토글한다.
 export default function HongdaeScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList, 'hongdae'>>();
-  // Search는 탭 내비게이터의 형제(루트 스택)에 있어서, navigate가 루트 스택까지 올라가 처리된다.
-  const rootNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState<HongdaeCategory | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
@@ -92,7 +89,6 @@ export default function HongdaeScreen() {
         latitude={selectedPlace.latitude}
         longitude={selectedPlace.longitude}
         onBack={closeDetail}
-        onSearchPress={() => rootNavigation.navigate('Search')}
         toastMessage={toast?.message}
         marker={
           <NaverMapMarker

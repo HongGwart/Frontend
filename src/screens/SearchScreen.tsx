@@ -58,6 +58,9 @@ type SelectedFacility =
 // 일치하지 않는 경우가 많다(예: "S동 학생회관 식당" vs 지도의 "G동 학생회관 학생 식당").
 // 정확히 일치하는 카테고리(시설) 마커가 없으면, 같은 건물의 동 마커로라도 폴백해서
 // 어떤 검색 결과를 눌러도 최소한 카드는 뜨도록 한다.
+// 지도 모드 검색창은 보여주기만 하므로 아무 동작 없는 핸들러를 넘긴다(onPress가 있어야 입력 불가 상태로 그려진다).
+const noop = () => {};
+
 function findFacilityForSearchItem(item: SearchResultItem): SelectedFacility | null {
   if (item.category === 'building') {
     const marker = DUMMY_MAP_MARKERS.find(m => m.label === item.building);
@@ -203,7 +206,7 @@ export default function SearchScreen() {
         >
           {/* 검색창·카테고리 칩은 메인홈(MapScreen)에서만 쓸 수 있고, 여기선 같은 모양으로 보여주기만 한다. */}
           <View style={styles.searchBarPadding} pointerEvents="none">
-            <SearchBar value={value} onChangeText={setValue} onPress={() => setSelectedFacility(null)} />
+            <SearchBar value={value} onChangeText={setValue} onPress={noop} />
           </View>
           <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} disabled />
         </SafeAreaView>

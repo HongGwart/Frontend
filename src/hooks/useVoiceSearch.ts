@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import {
   ExpoSpeechRecognitionModule,
@@ -35,10 +35,13 @@ export function useVoiceSearch({ onResult, onUnavailable }: UseVoiceSearchOption
   const [permissionPrompt, setPermissionPrompt] = useState<VoicePermissionPrompt>(null);
   // onResult가 렌더마다 새로 만들어지는 인라인 함수여도 이벤트 리스너를 매번
   // 재등록하지 않도록 최신 콜백을 ref에 담아둔다.
+  // (렌더 중에 ref를 바꾸면 렌더 순수성 위반이라 커밋 직후 layout effect에서 갱신한다.)
   const onResultRef = useRef(onResult);
-  onResultRef.current = onResult;
   const onUnavailableRef = useRef(onUnavailable);
-  onUnavailableRef.current = onUnavailable;
+  useLayoutEffect(() => {
+    onResultRef.current = onResult;
+    onUnavailableRef.current = onUnavailable;
+  });
 
   const handleStart = useCallback(() => setIsListening(true), []);
   const handleEnd = useCallback(() => setIsListening(false), []);
