@@ -28,6 +28,11 @@ export interface TestRouteStage {
   to: string;
   /** 이 구간이 끝나고 다음 구간으로 넘어갈 때의 층 이동. 다음 구간이 같은 층 높이면 생략 */
   transition?: { type: 'stairs' | 'elevator'; from: string; to: string };
+  /**
+   * 긴 구간을 길 안내 카드 여러 장으로 나눌 노드 순서(0부터, 이 구간 노드 기준). 각 지점에서 꺾는 방향
+   * (왼쪽/오른쪽)과 다음 지점까지 거리로 카드 문구를 만든다. 경로 보기의 구간 목록은 그대로 한 줄이다.
+   */
+  guidanceSplits?: number[];
 }
 
 export const TEST_ROUTE_STAGES: TestRouteStage[] = [
@@ -40,7 +45,15 @@ export const TEST_ROUTE_STAGES: TestRouteStage[] = [
     transition: { type: 'stairs', from: 'R동 로비층', to: '1층' },
   },
   { key: 'R_1', floorId: 'R_1', title: 'R동 1층', from: '계단', to: 'R동 출입구' },
-  { key: 'outdoor', floorId: null, title: '바깥', from: 'R동 출입구', to: 'C동 출입구' },
+  // 바깥 구간(약 390m)은 안내 카드 한 장으로는 너무 길어서, 크게 꺾이는 지점 세 곳(노드 3·5·7)에서 나눈다.
+  {
+    key: 'outdoor',
+    floorId: null,
+    title: '바깥',
+    from: 'R동 출입구',
+    to: 'C동 출입구',
+    guidanceSplits: [3, 5, 7],
+  },
   {
     key: 'C_1',
     floorId: 'C_1',
@@ -74,6 +87,19 @@ const WALK_METERS_PER_MINUTE = 70;
 // 층 이동 소요시간(분) — 계단은 한 층, 엘리베이터는 대기 포함 대략값
 const TRANSITION_MINUTES = { stairs: 1, elevator: 2 };
 
+/** prev → at → next로 걸을 때 at에서 꺾는 방향. 거의 일직선이면 '직진'. */
+function turnAt(prev: LatLng, at: LatLng, next: LatLng) {
+  const lngScale = Math.cos((at.latitude * Math.PI) / 180);
+  const ax = (at.longitude - prev.longitude) * lngScale;
+  const ay = at.latitude - prev.latitude;
+  const bx = (next.longitude - at.longitude) * lngScale;
+  const by = next.latitude - at.latitude;
+  const angle = (Math.atan2(ax * by - ay * bx, ax * bx + ay * by) * 180) / Math.PI;
+  if (Math.abs(angle) < 25) return '직진';
+  // 위도(y)가 북쪽, 경도(x)가 동쪽이라 반시계(양수) 회전이 왼쪽이다.
+  return angle > 0 ? '왼쪽' : '오른쪽';
+}
+
 function pathMeters(path: LatLng[]) {
   return path.slice(1).reduce((sum, point, i) => sum + segmentLength(path[i], point) * METERS_PER_DEGREE, 0);
 }
@@ -103,7 +129,7 @@ export function buildTestRoute(nodes: TestRouteNodes = runtimeNodes): TestRoute 
   const path: LatLng[] = [];
   const steps: RouteStep[] = [];
   // 구간 안내 카드마다 "이 안내를 볼 때 서 있는 위치" = 그 구간이 시작되는 지점까지의 경로 길이
-  const stepStarts: { step: RouteStep; pathLength: number; floorId: string | null }[] = [];
+  const stepStarts: { step: RouteStep; pathLength: number; floorId: string | null; title?: string; durationText?: string }[] = [];
   const floorRanges: { floorId: string; from: number; to: number }[] = [];
   let indoorMeters = 0;
   let stairsCount = 0;
@@ -132,7 +158,28 @@ export function buildTestRoute(nodes: TestRouteNodes = runtimeNodes): TestRoute 
       durationMinutes: Math.max(1, Math.round(meters / WALK_METERS_PER_MINUTE)),
     };
     steps.push(walk);
-    stepStarts.push({ step: walk, pathLength: startLength, floorId: stage.floorId });
+    if (stage.guidanceSplits?.length) {
+      // 노드 0 → 나눈 지점들 → 마지막 노드까지를 카드 한 장씩으로 만든다.
+      const cuts = [0, ...stage.guidanceSplits, stageNodes.length - 1];
+      cuts.slice(0, -1).forEach((cut, i) => {
+        const next = cuts[i + 1];
+        const partMeters = Math.round(pathMeters(stageNodes.slice(cut, next + 1)));
+        const isFirst = i === 0;
+        const isLast = next === stageNodes.length - 1;
+        const turn = isFirst ? null : turnAt(stageNodes[cut - 1], stageNodes[cut], stageNodes[cut + 1]);
+        const head = isFirst ? `${stage.from}에서 나와` : turn === '직진' ? '그대로 직진해서' : `${turn}으로 돌아`;
+        const tail = isLast ? `${stage.to}까지 ${partMeters}m 이동` : `길을 따라 ${partMeters}m 이동`;
+        stepStarts.push({
+          step: walk,
+          pathLength: startLength + pathMeters(stageNodes.slice(0, cut + 1)),
+          floorId: stage.floorId,
+          title: `${head}\n${tail}`,
+          durationText: `약 ${Math.max(1, Math.round(partMeters / WALK_METERS_PER_MINUTE))}분 소요`,
+        });
+      });
+    } else {
+      stepStarts.push({ step: walk, pathLength: startLength, floorId: stage.floorId });
+    }
 
     if (stage.transition) {
       const { type, from, to } = stage.transition;
@@ -157,8 +204,19 @@ export function buildTestRoute(nodes: TestRouteNodes = runtimeNodes): TestRoute 
   const distanceMeters = Math.round(pathMeters(path));
   const total = pathMeters(path) || 1;
 
-  const guidance: GuidanceStep[] = stepStarts.map(({ step, pathLength, floorId }) => {
+  const guidance: GuidanceStep[] = stepStarts.map(({ step, pathLength, floorId, title, durationText }, index) => {
     const isStairs = step.label === '계단 이동';
+    if (title) {
+      // 긴 구간을 나눈 카드(guidanceSplits) — 같은 RouteStep에서 여러 장이 나와서 id에 순서를 붙인다.
+      return {
+        id: `g-${step.id}-${index}`,
+        moveType: 'walk' as const,
+        title,
+        durationText: durationText ?? '',
+        progress: pathLength / total,
+        ...(floorId ? { floorId } : {}),
+      };
+    }
     return {
       id: `g-${step.id}`,
       moveType: step.type === 'elevator' ? 'elevator' : isStairs ? 'stairs' : 'walk',
