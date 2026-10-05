@@ -38,7 +38,7 @@ import {
   DUMMY_ROUTE_RESULTS,
   GuidanceMoveType,
 } from '@constant/dummyRouteResults';
-import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
+import { MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
 import { LatLng, regionToFit, slicePath, splitPathAt } from '@utils/routePath';
 import { buildTestRoute, getRouteMapData, RouteMapData } from '@constant/testIndoorRoute';
@@ -63,6 +63,9 @@ const INDOOR_MIN_FIT_SPAN = 0.00018;
 const OUTDOOR_MIN_FIT_SPAN = 0.00055;
 // 오른쪽 아래 이전/다음 버튼(하단 40px + 버튼 높이)이 가리는 높이. 경로가 그 밑으로 들어가지 않게 지도 패딩으로 뺀다.
 const STEP_BUTTONS_AREA_HEIGHT = 110;
+// 길 안내 화면에서 확대할 수 있는 최대 줌. 손가락 확대와, 짧은 구간에 카메라를 맞출 때(animateRegionTo) 둘 다
+// 이 값에서 멈춘다. 1 올릴 때마다 2배 더 확대된다(공용 최대는 MAP_MAX_ZOOM = 21).
+const GUIDANCE_MAX_ZOOM = 20;
 // 구간을 넘길 때 경로선/현재 위치가 옮겨가는 시간. 카메라 이동(animateCameraTo)과 같게 맞춘다.
 const STEP_TRANSITION_MS = 300;
 
@@ -200,16 +203,12 @@ function GuidanceMapOverlays({
     return { position: split.position, remaining: slicePath(routeMap.path, clamped, visibleRange.to) };
   }, [routeMap.path, displayProgress, visibleRange]);
 
-  // 지나온 경로(회색)는 출발지부터 지금 위치까지 계속 보여준다(Figma 784:4466). 단, 지금 있는 건물의 다른 층
-  // 구간은 빼서 — 예: C동 8층에서 C동 1층 복도 경로가 같은 자리에 겹쳐 보이지 않게 — 여러 토막으로 그린다.
+  // 지나온 경로(회색, Figma 784:4466)는 바깥 길은 계속 남기고, 실내 경로는 지금 있는 층 것만 그린다. 건물 안
+  // 구불구불한 경로까지 다 남기면 지도가 지저분해져서 — 예: C동에선 R동 안 경로가 빠지고 바깥 길만 이어진다.
+  // 실내 구간을 빼고 나면 여러 토막이 될 수 있어 토막마다 따로 그린다.
   const traveledPieces = useMemo(() => {
     const end = Math.min(displayProgress, visibleRange.to);
-    const building = currentFloorId?.split('_')[0];
-    const otherFloors = building
-      ? routeMap.floorSegments.filter(
-          segment => segment.floorId !== currentFloorId && segment.floorId.split('_')[0] === building,
-        )
-      : [];
+    const otherFloors = routeMap.floorSegments.filter(segment => segment.floorId !== currentFloorId);
     let ranges: [number, number][] = [[0, end]];
     otherFloors.forEach(({ from, to }) => {
       ranges = ranges.flatMap(([a, b]): [number, number][] => [
@@ -470,7 +469,7 @@ export default function RouteGuidanceScreen() {
           bottom: insets.bottom + STEP_BUTTONS_AREA_HEIGHT,
         }}
         minZoom={MAP_MIN_ZOOM}
-        maxZoom={MAP_MAX_ZOOM}
+        maxZoom={GUIDANCE_MAX_ZOOM}
         isRotateGesturesEnabled={false}
         isTiltGesturesEnabled={false}
       >
