@@ -20,11 +20,10 @@ import { FacilityListSheet, FacilityListSheetItem } from '@components/common/Fac
 import { Toast } from '@components/common/Toast';
 import { DismissibleBottomSheet, DismissibleBottomSheetRef } from '@components/common/DismissibleBottomSheet';
 import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
-import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { DevFloorOverlayLayer, DevFloorOverlayPanel, useDevFloorOverlay } from '@components/map/DevFloorOverlayPicker';
 import { DevRouteNodeLayer, DevRouteNodePanel, useDevRouteNodes } from '@components/map/DevRouteNodePicker';
 import { TEST_ROUTE_DEPARTURE_LABEL, TEST_ROUTE_DESTINATION_LABEL } from '@constant/testIndoorRoute';
-import { NaverMapMarker } from '@components/map/NaverMapMarker';
+import { FocusableCategoryMarker, FocusableDongMarker } from '@components/map/FocusableMarkers';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import {
@@ -110,15 +109,24 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   });
   const devModeActive = floorOverlay.active || routeNodes.active;
 
-  // 지금 카드가 열려있는 마커의 id. dong/category는 marker.id를 그대로 쓰고, list/item은 그 리스트를
-  // 열게 한 군집 마커의 id(markerId)를 쓴다 — 이 마커만 강조(active)해서 남기고 나머지 마커는 숨긴다.
-  const selectedMarkerId = useMemo(() => {
-    if (!selectedFacility) return null;
-    if (selectedFacility.type === 'dong' || selectedFacility.type === 'category') {
-      return selectedFacility.marker.id;
+  // 지금 포커싱된(눌러서 카드가 열리는) 마커의 id — 이 마커만 강조(active) + 네임택으로 남기고 나머지는 숨긴다.
+  // 카드(selectedFacility)와 따로 들고 있는 이유: 마커를 누르면 마커 모양은 그 즉시 바뀌고, 무거운 카드는
+  // 다음 프레임에 열리게 해서(openFacilityCard) 카드 렌더가 마커 변화를 붙잡아 두지 않게 하려고.
+  // list/item은 그 리스트를 열게 한 군집 마커의 id다.
+  const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  const openFacilityCard = useCallback((markerId: string, next: SelectedFacility) => {
+    setSelectedMarkerId(markerId);
+    requestAnimationFrame(() => setSelectedFacility(next));
+  }, []);
+  // 카드가 닫히면 포커싱도 푼다(열려 있다가 닫힌 경우만 — 마커를 누른 직후 카드가 아직 안 열린 프레임은 제외).
+  const hadCardRef = useRef(false);
+  useEffect(() => {
+    if (selectedFacility) {
+      hadCardRef.current = true;
+    } else if (hadCardRef.current) {
+      hadCardRef.current = false;
+      setSelectedMarkerId(null);
     }
-    if (selectedFacility.type === 'list' || selectedFacility.type === 'item') return selectedFacility.markerId ?? null;
-    return null;
   }, [selectedFacility]);
   // 마커 하나를 눌러 카드가 열려 있으면 그 마커만 지도에 남긴다(카드를 닫으면 다시 전부 보인다).
   const isMarkerHidden = useCallback(
@@ -172,18 +180,18 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   // 즐겨찾기된 경우는 openFavoriteDongSheet가 별도로 처리한다).
   const openDongMarkerSheet = useCallback((marker: DummyMapMarker) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setSelectedFacility({ type: 'dong', marker });
-  }, []);
+    openFacilityCard(marker.id, { type: 'dong', marker });
+  }, [openFacilityCard]);
 
   const openCategoryMarkerSheet = useCallback((marker: DummyCategoryMarker) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const listItems = marker.count !== undefined ? DUMMY_FACILITY_LIST_ITEMS[marker.id] : undefined;
     if (listItems) {
-      setSelectedFacility({ type: 'list', items: listItems, markerId: marker.id });
+      openFacilityCard(marker.id, { type: 'list', items: listItems, markerId: marker.id });
     } else {
-      setSelectedFacility({ type: 'category', marker });
+      openFacilityCard(marker.id, { type: 'category', marker });
     }
-  }, []);
+  }, [openFacilityCard]);
 
   // 카테고리 마커를 리스트 시트 항목 형태로 바꾼다. "즐겨찾기" 칩에서 같은 동에 즐겨찾기가
   // 여러 개 묶였을 때, 그 묶음을 FacilityListSheet에 그대로 넘기기 위해 쓴다.
@@ -204,9 +212,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   const openFavoriteClusterSheet = useCallback(
     (group: DummyCategoryMarker[], markerId: string) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      setSelectedFacility({ type: 'list', items: group.map(toFacilityListItem), markerId });
+      openFacilityCard(markerId, { type: 'list', items: group.map(toFacilityListItem), markerId });
     },
-    [toFacilityListItem],
+    [toFacilityListItem, openFacilityCard],
   );
 
   const openFavoriteDongSheet = useCallback((entry: FavoriteMapEntry) => {
@@ -331,9 +339,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         key: marker.id,
         latitude: marker.latitude,
         longitude: marker.longitude,
-        label: selectedMarkerId === marker.id ? marker.label : undefined,
+        label: marker.label,
         favorite: isFavorite(favoriteFromDongMarker(marker)),
-        active: selectedMarkerId === marker.id,
+        focused: selectedMarkerId === marker.id,
         scale: MAP_MARKER_SCALE,
         onPress: () => openDongMarkerSheet(marker),
       })),
@@ -341,10 +349,10 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         key: entry.dongMarker.id,
         latitude: entry.dongMarker.latitude,
         longitude: entry.dongMarker.longitude,
-        label: selectedMarkerId === entry.dongMarker.id ? entry.dongMarker.label : undefined,
+        label: entry.dongMarker.label,
         favorite: isFavorite(favoriteFromDongMarker(entry.dongMarker)),
         count: entry.facilityItems.length || undefined,
-        active: selectedMarkerId === entry.dongMarker.id,
+        focused: selectedMarkerId === entry.dongMarker.id,
         scale: MAP_MARKER_SCALE,
         onPress: () => openFavoriteDongSheet(entry),
       })),
@@ -393,17 +401,18 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
           liveFloorImages={floorOverlay.liveImages}
         />
         {!devModeActive &&
-          dongMarkerItems
-            .filter(({ key }) => !isMarkerHidden(key))
-            .map(({ key, ...item }) => <NaverMapMarker key={key} {...item} />)}
-        {!devModeActive && categoryMarkers.filter(marker => !isMarkerHidden(marker.id)).map(marker => (
-          <NaverMapCategoryMarker
+          dongMarkerItems.map(({ key, ...item }) => (
+            <FocusableDongMarker key={key} {...item} hidden={isMarkerHidden(key)} />
+          ))}
+        {!devModeActive && categoryMarkers.map(marker => (
+          <FocusableCategoryMarker
             key={marker.id}
             latitude={marker.latitude}
             longitude={marker.longitude}
             favorite={isFavorite(favoriteFromCategoryMarker(marker))}
             count={marker.count}
-            active={selectedMarkerId === marker.id}
+            focused={selectedMarkerId === marker.id}
+            hidden={isMarkerHidden(marker.id)}
             scale={MAP_MARKER_SCALE}
             onPress={() => openCategoryMarkerSheet(marker)}
             {...CATEGORY_MARKER_ICONS[marker.category]}

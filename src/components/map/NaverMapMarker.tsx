@@ -31,6 +31,11 @@ interface Props {
    * 페이드로 숨기는 지도(MapScreen)에서만 쓴다. 0이면 라벨 오버레이를 아예 숨긴다.
    */
   labelOpacity?: number;
+  /**
+   * true면 지도에서 숨긴다(오버레이는 그대로 두고 isHidden만 켬). 언마운트했다 다시 그리면 커스텀 뷰를 새로
+   * 래스터화하느라 늦게 나타나서, 자주 숨겼다 보였다 하는 마커는 이걸로 켜고 끈다.
+   */
+  hidden?: boolean;
 }
 
 // NaverMapMarkerOverlay는 커스텀 뷰를 이 크기 그대로의 "고정 크기 이미지"로 래스터화해서
@@ -69,6 +74,7 @@ export function NaverMapMarker({
   scale = 1,
   active = false,
   labelOpacity,
+  hidden = false,
 }: Props) {
   const hasLabel = count === undefined && Boolean(label);
   if (labelOpacity !== undefined && hasLabel && label && scale === 1) {
@@ -116,6 +122,7 @@ export function NaverMapMarker({
       // 마커의 좌표 기준점은 핀 끝(뾰족한 부분)이어야 하므로, 오버레이 전체 높이가 아니라
       // 항상 하단 정렬 + 가로 중앙 정렬로 앵커를 맞춘다.
       anchor={{ x: 0.5, y: 1 }}
+      isHidden={hidden}
       onTap={onPress}
     >
       {/* 마커 생김새를 바꾸는 값(label/favorite/count)은 key로도 전달해야 리렌더 시 캐시가 꼬이지 않는다. */}

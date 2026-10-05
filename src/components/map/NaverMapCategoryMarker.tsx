@@ -18,6 +18,8 @@ interface Props {
   /** CategoryMarker의 scale과 동일 — 커지거나 작아진 만큼 래스터화 박스도 같이 맞춰준다. */
   scale?: number;
   onPress?: () => void;
+  /** true면 지도에서 숨긴다(오버레이는 두고 isHidden만 켬 — 다시 보일 때 새로 래스터화하지 않아서 즉시 보인다). */
+  hidden?: boolean;
 }
 
 // 배지가 원 밖으로 살짝 삐져나오는 만큼(-2~-3px)의 여유. Marker.tsx의 PIN_BOX_BUFFER와 같은 이유.
@@ -40,6 +42,7 @@ export function NaverMapCategoryMarker({
   active,
   scale = 1,
   onPress,
+  hidden = false,
 }: Props) {
   // NaverMapMarker.tsx와 같은 이유로, 박스는 1배보다 작게 줄이지 않는다(축소는 CategoryMarker의
   // CSS transform으로만 처리) — 그래야 박스가 실제 내용보다 작아져서 위쪽이 잘리는 일이 없다.
@@ -51,6 +54,7 @@ export function NaverMapCategoryMarker({
       width={scaledSize}
       height={scaledSize}
       anchor={{ x: 0.5, y: 1 }}
+      isHidden={hidden}
       onTap={onPress}
     >
       {/* 마커 생김새를 바꾸는 값은 key로도 전달해야 리렌더 시 캐시가 꼬이지 않는다. */}
