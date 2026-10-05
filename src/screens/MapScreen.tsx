@@ -260,6 +260,22 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     closeFacilityCard,
   );
 
+  // 시설 카드(카페·편의점 등)의 "건물 내부 보기"는 그 시설이 있는 건물(동)의 내부 지도로 간다. 건물명/설명은
+  // 동 마커 데이터에서 가져오고, 비어 있으면 카드에 쓰인 건물명을 쓴다.
+  const openBuildingIndoorOf = useCallback(
+    (buildingCode: string, fallbackBuildingName: string) => {
+      const dongMarker = DUMMY_MAP_MARKERS.find(marker => marker.label === buildingCode);
+      closeCardWhenCovered();
+      onOpenBuildingIndoor?.({
+        buildingCode,
+        buildingName: dongMarker?.buildingName || fallbackBuildingName,
+        description: dongMarker?.description ?? '',
+        fromCardHeight: cardHeight,
+      });
+    },
+    [closeCardWhenCovered, onOpenBuildingIndoor, cardHeight],
+  );
+
   const handleSwipeUp = useCallback(() => {
     if (!swipeUpBuildingCode) return;
     onOpenBuildingDetail?.(swipeUpBuildingCode);
@@ -531,6 +547,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 ),
               )}
               operatingHours={DUMMY_OPERATING_HOURS}
+              onViewInsidePress={() =>
+                openBuildingIndoorOf(selectedFacility.marker.buildingCode, selectedFacility.marker.buildingName)
+              }
             />
           ) : selectedFacility.type === 'list' ? (
             <FacilityListSheet
@@ -566,6 +585,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 ),
               )}
               operatingHours={DUMMY_OPERATING_HOURS}
+              onViewInsidePress={() =>
+                openBuildingIndoorOf(selectedFacility.facility.buildingCode, selectedFacility.facility.buildingName)
+              }
             />
           ) : (
             <FacilityInfoCard
@@ -585,6 +607,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 toRoutePlaceLabel(selectedFacility.item.building, selectedFacility.item.place, selectedFacility.item.room),
               )}
               operatingHours={DUMMY_OPERATING_HOURS}
+              onViewInsidePress={() => openBuildingIndoorOf(selectedFacility.item.building, selectedFacility.item.place)}
             />
           )}
               </View>

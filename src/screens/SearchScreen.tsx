@@ -267,6 +267,18 @@ export default function SearchScreen() {
                   ),
                 )}
                 operatingHours={DUMMY_OPERATING_HOURS}
+                // 시설이 있는 건물(동)의 내부 지도로 간다(지도 화면의 시설 카드와 같음).
+                onViewInsidePress={() => {
+                  const { buildingCode, buildingName } = selectedFacility.marker;
+                  const dongMarker = DUMMY_MAP_MARKERS.find(marker => marker.label === buildingCode);
+                  closeCardWhenCovered();
+                  navigation.navigate('BuildingIndoor', {
+                    buildingCode,
+                    buildingName: dongMarker?.buildingName || buildingName,
+                    description: dongMarker?.description ?? '',
+                    fromCardHeight: cardHeight,
+                  });
+                }}
               />
             )}
           </View>
