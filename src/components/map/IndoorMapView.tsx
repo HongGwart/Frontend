@@ -1,4 +1,4 @@
-import React, { Children, Fragment, cloneElement, isValidElement, useCallback, useMemo, useRef, useState } from 'react';
+import React, { Children, Fragment, cloneElement, isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PixelRatio, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
@@ -7,6 +7,15 @@ import { IconMarkersLayer } from './IconMarkersLayer';
 import { RoomLabelsLayer } from './RoomLabelsLayer';
 import { ResetViewButton } from './ResetViewButton';
 import { SharpViewportLayer, type LayerSize } from './SharpViewportLayer';
+import type { SharedValue } from 'react-native-reanimated';
+
+/** 지도 밖(화면)에서 원위치 버튼을 직접 그릴 때 필요한 값 */
+export interface IndoorMapViewControls {
+  /** 현재 지도 회전각(라디안) — ResetViewButton 바늘용 */
+  rotation: SharedValue<number>;
+  /** 확대/이동/회전을 처음 맞춤 상태로 되돌린다 */
+  reset: () => void;
+}
 import { FloorMapData, RoomShape } from '@appTypes/room';
 import { useMapGestures } from '@hooks/map/useMapGestures';
 import { useSharpViewportVisibility } from '@hooks/map/useSharpViewport';
@@ -100,6 +109,11 @@ interface Props {
   backgroundColor?: string;
   /** 처음 맞춤 위치를 세로 가운데에서 이만큼(px) 옮긴다. 음수면 위로(useMapGestures fitOffsetY). */
   fitOffsetY?: number;
+  /**
+   * 넘기면 지도 안에 원위치(나침반) 버튼을 그리지 않고, 화면이 버튼을 직접 그릴 수 있게 회전값/되돌리기
+   * 함수를 넘겨준다. 층 전환 슬라이드 등으로 지도가 움직여도 버튼은 제자리에 두고 싶을 때 쓴다.
+   */
+  onControlsReady?: (controls: IndoorMapViewControls) => void;
 }
 
 export function IndoorMapView({
@@ -113,6 +127,7 @@ export function IndoorMapView({
   labelFontSize = 5,
   backgroundColor,
   fitOffsetY,
+  onControlsReady,
 }: Props) {
   const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
 
@@ -235,6 +250,10 @@ export function IndoorMapView({
     [fitToContainer]
   );
 
+  useEffect(() => {
+    onControlsReady?.({ rotation, reset: resetTransform });
+  }, [onControlsReady, rotation, resetTransform]);
+
   const { shownTransform, overlayStyle, baseStyle } = useSharpViewportVisibility({
     scale,
     translateX,
@@ -307,7 +326,7 @@ export function IndoorMapView({
         fontSize={labelFontSize}
         selectedRoomIds={selectedRoomIds}
       />
-      <ResetViewButton rotation={rotation} onPress={resetTransform} />
+      {!onControlsReady && <ResetViewButton rotation={rotation} onPress={resetTransform} />}
     </View>
   );
 }

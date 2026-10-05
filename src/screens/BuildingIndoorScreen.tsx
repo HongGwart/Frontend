@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { LayoutChangeEvent } from 'react-native';
+import { StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import styled, { useTheme } from 'styled-components/native';
 import Header from '@components/layout/Header';
-import { IndoorMapView } from '@components/map/IndoorMapView';
+import { IndoorMapView, IndoorMapViewControls } from '@components/map/IndoorMapView';
+import { ResetViewButton } from '@components/map/ResetViewButton';
 import { FloorSelector } from '@components/map/FloorSelector';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { CollapsibleBottomSheet } from '@components/common/CollapsibleBottomSheet';
@@ -118,6 +119,10 @@ export default function BuildingIndoorScreen() {
   }, [navigation, cardLift]);
   const cardStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -cardLift.value }] }));
 
+  // 원위치(나침반) 버튼은 지도 안이 아니라 화면에 직접 그린다. 지도는 층을 바꿀 때 위아래로 슬라이드되는데,
+  // 버튼은 층 선택기처럼 제자리(오른쪽 위)에 있어야 해서. 층마다 지도가 새로 만들어지면 새 값으로 바뀐다.
+  const [mapControls, setMapControls] = useState<IndoorMapViewControls | null>(null);
+
   // 층이 많으면 층 선택기가 지도 영역 밖(카드 뒤)까지 내려가지 않게 지도 영역 높이에 맞춰 자른다.
   const [mapAreaHeight, setMapAreaHeight] = useState(0);
 
@@ -144,6 +149,7 @@ export default function BuildingIndoorScreen() {
                 mapData={floorAssets.data}
                 backgroundColor={theme.semantic.line.tertiary}
                 fitOffsetY={PLAN_FIT_OFFSET_Y}
+                onControlsReady={setMapControls}
                 // LayerSize를 그대로 펼친다. viewBox가 없을 때 viewBox={undefined}로 넘기면 SVG 컴포넌트의
                 // 원래 viewBox를 덮어써서 도면 스케일이 깨진다.
                 renderBackground={layerSize => <floorAssets.Background {...layerSize} />}
@@ -162,6 +168,14 @@ export default function BuildingIndoorScreen() {
                 maxHeight={Math.max(0, mapAreaHeight - FLOOR_SELECTOR_TOP * 2)}
               />
             </FloorSelectorWrapper>
+            {/* 층 선택기(왼쪽 위)와 대칭으로 오른쪽 위에 둔다 — 아래쪽은 건물 카드에 가려진다. */}
+            {mapControls && (
+              <ResetViewButton
+                rotation={mapControls.rotation}
+                onPress={mapControls.reset}
+                style={styles.resetButton}
+              />
+            )}
           </>
         ) : (
           <EmptyText>아직 내부 지도가 준비되지 않은 건물이에요</EmptyText>
@@ -281,3 +295,11 @@ const CardBottomFill = styled.View`
   height: 400px;
   background-color: ${({ theme }) => theme.semantic.background.primary};
 `;
+
+const styles = StyleSheet.create({
+  resetButton: {
+    position: 'absolute',
+    top: FLOOR_SELECTOR_TOP,
+    right: 20,
+  },
+});

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import Svg, { Circle, Path } from 'react-native-svg';
 
@@ -7,6 +7,8 @@ interface Props {
   /** 현재 지도 회전각(라디안). 버튼 안 나침반 바늘을 반대로 돌려서 "북쪽이 어디였는지" 보여준다 */
   rotation: SharedValue<number>;
   onPress: () => void;
+  /** 위치를 바꿀 때 넘긴다. 생략하면 지도 오른쪽 아래(absolute)에 뜬다. */
+  style?: StyleProp<ViewStyle>;
 }
 
 /**
@@ -14,13 +16,13 @@ interface Props {
  * 지도 오른쪽 아래에 떠있는 나침반 형태 — 바늘은 지도 회전값만큼 반대로 돌아가 있어서
  * 항상 실제 "북쪽(=원래 위쪽)"을 가리킨다. 탭하면 resetTransform 호출.
  */
-export function ResetViewButton({ rotation, onPress }: Props) {
+export function ResetViewButton({ rotation, onPress, style = styles.defaultPosition }: Props) {
   const needleStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${-rotation.value}rad` }],
   }));
 
   return (
-    <Pressable style={styles.button} onPress={onPress} hitSlop={8}>
+    <Pressable style={[styles.button, style]} onPress={onPress} hitSlop={8}>
       <Animated.View style={needleStyle}>
         <Svg width={20} height={20} viewBox="0 0 20 20">
           <Circle cx={10} cy={10} r={8.5} fill="none" stroke="#1D2056" strokeWidth={1.2} />
@@ -35,10 +37,12 @@ export function ResetViewButton({ rotation, onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  button: {
+  defaultPosition: {
     position: 'absolute',
     right: 16,
     bottom: 32,
+  },
+  button: {
     width: 40,
     height: 40,
     borderRadius: 20,
