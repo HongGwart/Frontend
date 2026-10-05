@@ -5,7 +5,6 @@ import Animated, {
   AnimatedStyle,
   Easing,
   SharedValue,
-  SlideInDown,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -59,9 +58,20 @@ const DISMISS_VELOCITY = 800;
 export const SWIPE_UP_DISTANCE = 80;
 const SWIPE_UP_VELOCITY = -800;
 
+// 처음 뜰 때 자기 높이만큼(0→100%) 아래에서 올라온다. 레이아웃 애니메이션(entering)은 카드가 마운트되는
+// 바로 그 프레임에 시작해서, 사진·그림자를 처음 그리느라 바쁜 첫 몇 프레임이 밀리고 나머지만 매끄럽게 움직여
+// 두 단계로 끊겨 보였다. 그래서 카드를 화면 밖에 숨겨 그려 두고, 레이아웃(높이)이 나온 다음 프레임에 직접
+// 슬라이드를 시작한다. 곡선은 한 번에 감속하는 easeOutCubic — 끝을 길게 끄는 곡선은 '빨리 올라왔다가 한참
+// 기어가는' 두 단계처럼 느껴진다. 투명도(opacity)는 건드리지 않는다 — 그림자·사진이 든 카드를 반투명으로
+// 그리면 iOS가 매 프레임 카드를 통째로 따로 합성해야 해서 버벅인다.
+const ENTER_DURATION = 340;
+const ENTER_EASING = Easing.out(Easing.cubic);
+// 높이를 재기 전 첫 프레임에 카드가 원래 자리에 잠깐 보이지 않게 충분히 아래로 빼 둔다.
+const OFFSCREEN_OFFSET = 2000;
+
 /**
  * 아래에서 올라오는 카드/바텀시트를 손가락으로 아래로 밀어서 닫을 수 있게 해주는 래퍼.
- * 처음 뜰 때는 SlideInDown으로 부드럽게 올라온다.
+ * 처음 뜰 때는 아래에서 부드럽게 올라온다(enterOffset).
  *
  * 닫힐 때는 항상 이 컴포넌트가 직접 들고 있는 translateY 애니메이션 하나로만 처리한다
  * (reanimated의 entering/exiting 레이아웃 애니메이션을 같이 쓰면, 제스처로 이미 내려간
@@ -79,6 +89,9 @@ export const DismissibleBottomSheet = forwardRef<DismissibleBottomSheetRef, Prop
     const internalTranslateY = useSharedValue(0);
     const translateY = externalTranslateY ?? internalTranslateY;
     const sheetHeight = useSharedValue(0);
+    // 등장 슬라이드 전용 오프셋. 부모가 관찰하는 translateY와 섞지 않아야 상세 미리보기 등이 등장 중에 따라 움직이지 않는다.
+    const enterOffset = useSharedValue(OFFSCREEN_OFFSET);
+    const enterStartedRef = useRef(false);
 
     // 부모는 onClose/onSwipeUp을 보통 인라인 화살표로 넘겨서 렌더마다 새 함수가 온다. 그걸 그대로
     // 의존값에 넣으면 아래 pan이 매 렌더 다시 만들어져 메모이즈가 의미 없어지므로, 최신 콜백은
@@ -98,12 +111,17 @@ export const DismissibleBottomSheet = forwardRef<DismissibleBottomSheetRef, Prop
     // ref.close()처럼 JS 스레드에서 불러도 그대로 동작한다.
     const animateClose = useCallback(() => {
       'worklet';
+      // 아직 올라오는 중에 닫히면, 남은 등장 오프셋을 translateY로 옮겨 지금 자리에서 그대로 내려가게 한다.
+      if (enterOffset.value !== 0) {
+        translateY.value = translateY.value + enterOffset.value;
+        enterOffset.value = 0;
+      }
       // 화면 밖으로 완전히 나갈 때까지는 최소한 sheetHeight만큼(모르면 넉넉히 1000) 더 내려가야 한다.
       const target = Math.max(sheetHeight.value || 1000, translateY.value + 400);
       translateY.value = withTiming(target, { duration: 220, easing: Easing.in(Easing.cubic) }, finished => {
         if (finished) scheduleOnRN(callOnClose);
       });
-    }, [callOnClose, sheetHeight, translateY]);
+    }, [callOnClose, enterOffset, sheetHeight, translateY]);
 
     // animateClose와 대칭 — 화면 위로 완전히 나갈 때까지 밀어올린 뒤 onSwipeUp을 호출한다.
     // onClose처럼 이 시점에 언마운트시키는 건 호출하는 쪽(onSwipeUp) 책임이다.
@@ -148,15 +166,22 @@ export const DismissibleBottomSheet = forwardRef<DismissibleBottomSheetRef, Prop
     );
 
     const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ translateY: translateY.value }],
+      transform: [{ translateY: translateY.value + enterOffset.value }],
     }));
 
     return (
       <GestureDetector gesture={pan}>
         <Animated.View
-          entering={SlideInDown.duration(280).easing(Easing.out(Easing.cubic))}
           onLayout={event => {
-            sheetHeight.value = event.nativeEvent.layout.height;
+            const { height } = event.nativeEvent.layout;
+            sheetHeight.value = height;
+            if (enterStartedRef.current) return;
+            enterStartedRef.current = true;
+            enterOffset.value = height;
+            // 마운트 직후 프레임은 카드를 처음 그리느라 바빠서, 한 프레임 쉬고 시작해야 첫 구간이 안 끊긴다.
+            requestAnimationFrame(() => {
+              enterOffset.value = withTiming(0, { duration: ENTER_DURATION, easing: ENTER_EASING });
+            });
           }}
           style={[style, animatedStyle]}
           renderToHardwareTextureAndroid={rasterize}
