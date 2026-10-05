@@ -52,11 +52,14 @@ export default function BuildingIndoorScreen() {
     () => DUMMY_MAP_MARKERS.find(item => item.label === params.buildingCode),
     [params.buildingCode],
   );
+  // 건물명은 넘겨받은 값(params)을 그대로 쓰지 않고 동 코드로 지금 데이터에서 다시 찾는다. params는 이 화면을
+  // 연 순간의 복사본이라, 넘기는 쪽이 빈 이름을 넘겼거나 데이터가 바뀐 뒤면 헤더에 이름이 안 뜨거나 옛 이름이 뜬다.
+  const buildingName = marker?.buildingName || params.buildingName;
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태. 건물 카드는 건물 자체를, 호실 카드는 그 호실을 즐겨찾기한다.
   const { isFavorite, toggleFavorite } = useFavorites();
   const buildingFavorite: FavoriteInput = {
     buildingCode: params.buildingCode,
-    buildingName: params.buildingName,
+    buildingName,
     category: 'building',
     latitude: marker?.latitude,
     longitude: marker?.longitude,
@@ -131,14 +134,14 @@ export default function BuildingIndoorScreen() {
   const routeButtonProps = useRouteButtonProps();
   const placeLabel = toRoutePlaceLabel(
     params.buildingCode,
-    params.buildingName,
+    buildingName,
     selectedRoomLabel && `${selectedRoomLabel}호`,
   );
 
   return (
     <Container>
       <HeaderWrapper style={{ paddingTop: insets.top }}>
-        <Header title={params.buildingCode} subtitle={params.buildingName} onBackPress={() => navigation.goBack()} />
+        <Header title={params.buildingCode} subtitle={buildingName} onBackPress={() => navigation.goBack()} />
       </HeaderWrapper>
 
       <MapArea onLayout={event => setMapAreaHeight(event.nativeEvent.layout.height)}>
@@ -206,7 +209,7 @@ export default function BuildingIndoorScreen() {
               hideGrabber
               hideShadow
               buildingCode={params.buildingCode}
-              buildingName={params.buildingName}
+              buildingName={buildingName}
               roomNumber={`${selectedRoomLabel}호`}
               description={params.description}
               isFavorite={isFavorite({ buildingCode: params.buildingCode, name: `${selectedRoomLabel}호` })}
@@ -222,7 +225,7 @@ export default function BuildingIndoorScreen() {
               hideGrabber
               hideShadow
               buildingCode={params.buildingCode}
-              buildingName={params.buildingName}
+              buildingName={buildingName}
               description={params.description}
               isFavorite={isFavorite(buildingFavorite)}
               onToggleFavorite={() => toggleFavorite(buildingFavorite)}
