@@ -32,6 +32,7 @@ import {
 } from '@constant/dummyRouteResults';
 import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
+import { regionToFit } from '@utils/routePath';
 
 // Header.tsx의 Container height와 동일한 값 — 경로 보기 화면에서 지도 위에 얹는
 // 투명 헤더의 실제 높이(세이프에어리어 제외)를 지도 카메라 패딩 계산에 재사용한다.
@@ -104,14 +105,27 @@ export default function NavigationScreen() {
     setIsSheetCollapsed(false);
   }, [selectedRouteId]);
 
-  // 카드를 내린 동안엔 지도를 자유롭게 확대/이동할 수 있으니, 다시 올리면 원래 경로 보기
-  // 카메라로 되돌린다. 이 effect는 mapPadding이 펼친 상태 값으로 바뀐 렌더 뒤에 돌아서,
-  // 카메라 중심도 "헤더 밑~카드 위" 영역 기준으로 맞춰진다.
+  // 경로선 꺾이는 점 + 출발·도착 핀이 전부 "헤더 밑~카드 위" 사이에 들어오게 카메라를 맞춘다. 좌표는
+  // 지금은 더미/테스트 경로지만, 백엔드가 넘겨주는 경로 좌표를 routeMap.path에 넣으면 그대로 맞춰진다.
+  const fitRegion = useMemo(
+    () => regionToFit([...routeMap.path, routeMap.start, routeMap.end]),
+    [routeMap],
+  );
+
+  // 카드를 내린 동안엔 지도를 자유롭게 확대/이동할 수 있으니, 다시 올리면 경로 전체가 보이게 되돌린다.
+  // 이 effect는 mapPadding이 펼친 상태 값(카드 높이 포함)으로 바뀐 렌더 뒤에 돌아서, 지도가 가려진 부분을
+  // 뺀 영역 기준으로 맞춘다. 카드 높이를 처음 잰 순간에는 애니메이션 없이 바로 맞춰서, 화면에 들어오자마자
+  // 줌이 한 번 더 바뀌어 보이지 않게 한다.
   const mapRef = useRef<NaverMapViewRef>(null);
+  const hasFittedRef = useRef(false);
   useEffect(() => {
-    if (isSheetCollapsed) return;
-    mapRef.current?.animateCameraTo({ ...routeMap.camera, duration: 300 });
-  }, [isSheetCollapsed, routeMap]);
+    hasFittedRef.current = false;
+  }, [selectedRouteId]);
+  useEffect(() => {
+    if (isSheetCollapsed || !fitRegion || detailSheetHeight === 0) return;
+    mapRef.current?.animateRegionTo({ ...fitRegion, duration: hasFittedRef.current ? 300 : 0 });
+    hasFittedRef.current = true;
+  }, [isSheetCollapsed, fitRegion, detailSheetHeight]);
 
   // @mj-studio/react-native-naver-map의 NaverMapPolylineOverlay 버그 우회: capType/joinType의
   // "선언된 기본값"이 둘 다 Round라서, 처음부터 "Round"를 넘기면 네이티브가 "이전 값과
@@ -221,7 +235,7 @@ export default function NavigationScreen() {
             }}
             minZoom={MAP_MIN_ZOOM}
             maxZoom={MAP_MAX_ZOOM}
-            // 카드를 펼친 경로 보기는 줌 17 고정 — 핀치/더블탭 줌을 막고, 카드를 끌어내려
+            // 카드를 펼친 경로 보기는 경로 전체가 보이는 줌으로 고정 — 핀치/더블탭 줌을 막고, 카드를 끌어내려
             // 지도를 전체로 펼쳤을 때만 확대/축소를 풀어준다.
             isZoomGesturesEnabled={isSheetCollapsed}
             // 카드를 올릴 때 animateCameraTo로 되돌리는데, 회전/기울기는 되돌릴 방법이 없어서
