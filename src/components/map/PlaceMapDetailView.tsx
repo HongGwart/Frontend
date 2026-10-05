@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NaverMapView } from '@mj-studio/react-native-naver-map';
 import styled from 'styled-components/native';
 import ChevronLeftIcon from '@assets/svgs/icons/chevronLeft.svg';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
+import { Toast } from '@components/common/Toast';
 import { CategoryKey } from '@constant/categoryChips';
 import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 
@@ -24,6 +26,8 @@ interface Props {
   chipsDisabled?: boolean;
   /** true면 상단 검색창을 눌러도 검색 화면으로 넘어가지 않는다(모양은 그대로). */
   searchDisabled?: boolean;
+  /** 지금 띄울 토스트 문구(예: 즐겨찾기 등록/해제). 메인 지도처럼 칩 바로 아래에 뜬다. */
+  toastMessage?: string | null;
 }
 
 /**
@@ -41,6 +45,7 @@ export function PlaceMapDetailView({
   card,
   chipsDisabled = false,
   searchDisabled = false,
+  toastMessage = null,
 }: Props) {
   const insets = useSafeAreaInsets();
   // 상단 카테고리 칩. 메인 지도 화면(MapScreen)과 동일한 칩 UI만 우선 갖춘다(마커 필터링 연결 없음).
@@ -60,6 +65,11 @@ export function PlaceMapDetailView({
           </SearchBarWrap>
         </SearchRow>
         <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} disabled={chipsDisabled} />
+        {toastMessage && (
+          <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} style={styles.toast}>
+            <Toast text={toastMessage} variant="success" />
+          </Animated.View>
+        )}
       </TopBar>
       <MapArea>
         <NaverMapView
@@ -75,6 +85,10 @@ export function PlaceMapDetailView({
     </Container>
   );
 }
+
+const styles = StyleSheet.create({
+  toast: { paddingHorizontal: 20 },
+});
 
 const Container = styled.View`
   flex: 1;

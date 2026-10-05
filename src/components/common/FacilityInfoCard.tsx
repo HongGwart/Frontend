@@ -289,9 +289,18 @@ function SubButton({
   children: string;
   compact: boolean;
 }) {
+  // 누르고 있는 동안의 배경색 — 공용 Button처럼 Pressable style 함수 대신 상태로 들고 있는다.
+  const [isPressed, setIsPressed] = useState(false);
   return (
-    <SubButtonContainer variant={variant} onPress={onPress} compact={compact}>
-      <SubButtonText variant={variant} compact={compact}>
+    <SubButtonContainer
+      variant={variant}
+      onPress={onPress}
+      onPressIn={() => setIsPressed(true)}
+      onPressOut={() => setIsPressed(false)}
+      pressed={isPressed}
+      compact={compact}
+    >
+      <SubButtonText variant={variant} pressed={isPressed} compact={compact}>
         {children}
       </SubButtonText>
     </SubButtonContainer>
@@ -427,24 +436,32 @@ const ActionButtonRow = styled.View<{ compact: boolean }>`
   width: 100%;
 `;
 
-const SubButtonContainer = styled(Pressable)<{ variant: 'primary' | 'secondary'; compact: boolean }>`
+// 눌렀을 때: 도착(primary)은 공용 Button과 같이 blue 800 → 900으로 한 단계 진하게, 출발(secondary)은
+// 흰 배경은 그대로 두고 테두리(blue 300 → 500)와 글자(blue 700 → 800)만 진해진다.
+const SubButtonContainer = styled(Pressable)<{ variant: 'primary' | 'secondary'; compact: boolean; pressed: boolean }>`
   padding: ${({ compact }) => (compact ? '3.968px 9.259px' : '6px 14px')};
   border-radius: 100px;
   align-items: center;
   justify-content: center;
-  background-color: ${({ theme, variant }) => (variant === 'primary' ? theme.blue[800] : theme.semantic.background.primary)};
+  background-color: ${({ theme, variant, pressed }) =>
+    variant === 'primary'
+      ? pressed
+        ? theme.blue[900]
+        : theme.blue[800]
+      : theme.semantic.background.primary};
   border-width: ${({ variant, compact }) => (variant === 'secondary' ? (compact ? '0.661px' : '1px') : '0px')};
-  border-color: ${({ theme }) => theme.blue[300]};
+  border-color: ${({ theme, pressed }) => (pressed ? theme.blue[500] : theme.blue[300])};
 `;
 
-const SubButtonText = styled.Text<{ variant: 'primary' | 'secondary'; compact: boolean }>`
+const SubButtonText = styled.Text<{ variant: 'primary' | 'secondary'; compact: boolean; pressed: boolean }>`
   font-family: ${({ theme }) => theme.typography.labelNormal.semiBold.fontFamily};
   font-size: ${({ compact, theme }) => (compact ? '9.26px' : `${theme.typography.labelNormal.semiBold.fontSize}px`)};
   line-height: ${({ compact, theme }) =>
     compact ? '13.89px' : `${theme.typography.labelNormal.semiBold.lineHeight}px`};
   letter-spacing: ${({ compact, theme }) =>
     compact ? '-0.1852px' : `${theme.typography.labelNormal.semiBold.letterSpacing}px`};
-  color: ${({ theme, variant }) => (variant === 'primary' ? theme.semantic.text.white : theme.blue[700])};
+  color: ${({ theme, variant, pressed }) =>
+    variant === 'primary' ? theme.semantic.text.white : pressed ? theme.blue[800] : theme.blue[700]};
 `;
 
 const DetailSection = styled.View`
