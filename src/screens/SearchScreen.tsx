@@ -167,16 +167,16 @@ export default function SearchScreen() {
           maxZoom={MAP_MAX_ZOOM}
           onTapMap={() => bottomSheetRef.current?.close()}
         >
-          {DUMMY_MAP_MARKERS.map(marker => (
+          {/* 지도 화면과 같이, 카드가 열린(포커싱된) 마커 하나만 네임택을 달고 남기고 나머지 마커는 숨긴다. */}
+          {selectedFacility.type === 'dong' && (
             <NaverMapMarker
-              key={marker.id}
-              latitude={marker.latitude}
-              longitude={marker.longitude}
-              label={marker.label}
-              favorite={isFavorite(favoriteFromDongMarker(marker))}
-              onPress={() => setSelectedFacility({ type: 'dong', marker })}
+              latitude={selectedFacility.marker.latitude}
+              longitude={selectedFacility.marker.longitude}
+              label={selectedFacility.marker.label}
+              active
+              favorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
             />
-          ))}
+          )}
           {selectedFacility.type === 'category' && (
             <NaverMapCategoryMarker
               latitude={selectedFacility.marker.latitude}

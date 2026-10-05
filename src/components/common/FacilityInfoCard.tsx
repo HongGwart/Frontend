@@ -28,7 +28,7 @@ export interface OperatingHoursInfo {
 interface Props {
   /**
    * 'outside' - 지도에서 건물을 탭했을 때 뜨는 기본 바텀시트 (건물 내부 보기 CTA 포함)
-   * 'inside' - 건물 내부로 들어간 상태에서 뜨는 바텀시트 (CTA 없음, 높이 고정)
+   * 'inside' - 건물 내부로 들어간 상태에서 뜨는 바텀시트 (CTA 없음, 높이는 내용에 맞춤)
    * 'room' - 특정 강의실을 탭했을 때 뜨는 축약형 (이미지·시설 정보 없음)
    * 'facility' - 건물/강의실이 아닌 편의시설(카페, 식당 등)을 탭하거나 검색했을 때 뜨는 형태.
    *   시설명이 제목이 되고, 그 아래 "R동 홍문관 로비층"처럼 위치를 보여준다.
@@ -314,7 +314,6 @@ const Container = styled.View<{ variant: Props['variant']; compact: boolean; hid
   shadow-opacity: ${({ hideShadow, compact }) => (hideShadow ? 0 : compact ? 0.1 : 0.05)};
   shadow-radius: 20px;
   elevation: ${({ hideShadow }) => (hideShadow ? 0 : 8)};
-  ${({ variant }) => (variant === 'inside' ? 'height: 400px;' : '')}
 `;
 
 const Grabber = styled.View<{ compact: boolean }>`

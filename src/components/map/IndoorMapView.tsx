@@ -98,6 +98,8 @@ interface Props {
   labelFontSize?: number;
   /** 도면 바깥 배경색. 생략하면 흰색 (건물 내부 지도 화면은 Figma대로 회색). */
   backgroundColor?: string;
+  /** 처음 맞춤 위치를 세로 가운데에서 이만큼(px) 옮긴다. 음수면 위로(useMapGestures fitOffsetY). */
+  fitOffsetY?: number;
 }
 
 export function IndoorMapView({
@@ -110,6 +112,7 @@ export function IndoorMapView({
   iconSize,
   labelFontSize = 5,
   backgroundColor,
+  fitOffsetY,
 }: Props) {
   const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
 
@@ -212,6 +215,7 @@ export function IndoorMapView({
     minScale,
     maxScale,
     renderScale,
+    fitOffsetY,
   });
 
   // mapLayer(Animated.View)와 그 안의 배경 SVG에 실제로 넘길 dp 크기. renderScale이 1이면

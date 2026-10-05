@@ -24,11 +24,7 @@ import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { DevFloorOverlayLayer, DevFloorOverlayPanel, useDevFloorOverlay } from '@components/map/DevFloorOverlayPicker';
 import { DevRouteNodeLayer, DevRouteNodePanel, useDevRouteNodes } from '@components/map/DevRouteNodePicker';
 import { TEST_ROUTE_DEPARTURE_LABEL, TEST_ROUTE_DESTINATION_LABEL } from '@constant/testIndoorRoute';
-import {
-  FadingLabelMarkerItem,
-  FadingLabelMarkers,
-  FadingLabelMarkersRef,
-} from '@components/map/FadingLabelMarkers';
+import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import {
@@ -71,7 +67,8 @@ type SelectedFacility =
   | { type: 'category'; marker: DummyCategoryMarker }
   // markerId는 이 리스트를 열게 한 지도 위 군집 마커의 id — 강조 표시(active)에만 쓴다.
   | { type: 'list'; items: FacilityListSheetItem[]; markerId?: string }
-  | { type: 'item'; item: FacilityListSheetItem }
+  // markerId는 이 항목이 들어있던 리스트를 열게 한 군집 마커의 id — 리스트에서 항목으로 넘어가도 그 마커만 지도에 남긴다.
+  | { type: 'item'; item: FacilityListSheetItem; markerId?: string }
   // 마이페이지/즐겨찾기 목록에서 넘어온 시설(지도 마커가 아니라 라우트 파라미터로 들어옴)
   | { type: 'external'; facility: FocusFacilityParam };
 
@@ -86,8 +83,6 @@ const TOAST_DURATION_MS = 2000;
 // 지도 위에서 봤을 때 마커가 다른 요소에 비해 좀 커 보여서, 기본 크기보다 살짝 줄인다.
 const MAP_MARKER_SCALE = 0.85;
 const INITIAL_ZOOM = 16;
-// 이 줌보다 더 축소하면 동 마커 네임택(R동, T동 …)을 전부 숨기고 핀만 남긴다.
-const HIDE_MARKER_LABELS_BELOW_ZOOM = 15.5;
 
 // 겹쳐진 마커 리스트 시트는 카테고리 칩 아래로 이 간격(피그마 기준)만큼 띄우고, 그 지점부터
 // 화면 끝까지를 항상 채운다(항목이 적어도 빈 공간으로 남지 않고 시트 자체가 그 높이를 가짐).
@@ -115,16 +110,21 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   });
   const devModeActive = floorOverlay.active || routeNodes.active;
 
-  // 지금 카드가 열려있는 마커의 id. dong/category는 marker.id를 그대로 쓰고, list는 그 리스트를
-  // 열게 한 군집 마커의 id(markerId)를 쓴다 — 지도 위 마커에 강조(active) 표시를 하는 데만 쓴다.
+  // 지금 카드가 열려있는 마커의 id. dong/category는 marker.id를 그대로 쓰고, list/item은 그 리스트를
+  // 열게 한 군집 마커의 id(markerId)를 쓴다 — 이 마커만 강조(active)해서 남기고 나머지 마커는 숨긴다.
   const selectedMarkerId = useMemo(() => {
     if (!selectedFacility) return null;
     if (selectedFacility.type === 'dong' || selectedFacility.type === 'category') {
       return selectedFacility.marker.id;
     }
-    if (selectedFacility.type === 'list') return selectedFacility.markerId ?? null;
+    if (selectedFacility.type === 'list' || selectedFacility.type === 'item') return selectedFacility.markerId ?? null;
     return null;
   }, [selectedFacility]);
+  // 마커 하나를 눌러 카드가 열려 있으면 그 마커만 지도에 남긴다(카드를 닫으면 다시 전부 보인다).
+  const isMarkerHidden = useCallback(
+    (markerId: string) => selectedMarkerId !== null && markerId !== selectedMarkerId,
+    [selectedMarkerId],
+  );
 
   // 마커(동/카테고리)를 탭했을 때만 좌표가 있어서 카메라를 옮길 수 있다. 리스트/외부에서
   // 넘어온 시설은 지금은 카메라를 건드리지 않는다(검색 화면도 동일한 범위로만 지원).
@@ -323,16 +323,15 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     return Array.from(entryByLabel.values());
   }, [selectedKey, isFavorite]);
 
-  // 일정 줌 이하로 축소하면 동 마커 네임택끼리 겹쳐 보이니 전부 페이드로 숨긴다. 페이드 상태는
-  // FadingLabelMarkers 안에 있고 줌도 ref로 넘겨서, 카메라가 움직이는 동안 이 화면은 다시 그려지지 않는다.
-  const labelMarkersRef = useRef<FadingLabelMarkersRef>(null);
-  const labelMarkerItems = useMemo<FadingLabelMarkerItem[]>(
+  // 동 마커. 네임택(R동, T동 …)은 지금 카드가 열려 있는(포커싱된) 마커에만 붙이고 나머지는 핀만 그린다 —
+  // 네임택이 전부 떠 있으면 서로 겹치고 지도를 가려서. 포커싱이 바뀌면 그 마커만 다시 그려진다.
+  const dongMarkerItems = useMemo(
     () => [
       ...dongMarkers.map(marker => ({
         key: marker.id,
         latitude: marker.latitude,
         longitude: marker.longitude,
-        label: marker.label,
+        label: selectedMarkerId === marker.id ? marker.label : undefined,
         favorite: isFavorite(favoriteFromDongMarker(marker)),
         active: selectedMarkerId === marker.id,
         scale: MAP_MARKER_SCALE,
@@ -342,7 +341,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         key: entry.dongMarker.id,
         latitude: entry.dongMarker.latitude,
         longitude: entry.dongMarker.longitude,
-        label: entry.dongMarker.label,
+        label: selectedMarkerId === entry.dongMarker.id ? entry.dongMarker.label : undefined,
         favorite: isFavorite(favoriteFromDongMarker(entry.dongMarker)),
         count: entry.facilityItems.length || undefined,
         active: selectedMarkerId === entry.dongMarker.id,
@@ -380,7 +379,6 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
           longitude: 126.9251,
           zoom: INITIAL_ZOOM,
         }}
-        onCameraChanged={({ zoom }) => zoom !== undefined && labelMarkersRef.current?.onZoomChange(zoom)}
         minZoom={MAP_MIN_ZOOM}
         maxZoom={MAP_MAX_ZOOM}
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
@@ -394,15 +392,11 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
           floorAnchors={floorOverlay.anchors}
           liveFloorImages={floorOverlay.liveImages}
         />
-        {!devModeActive && (
-          <FadingLabelMarkers
-            ref={labelMarkersRef}
-            items={labelMarkerItems}
-            hideBelowZoom={HIDE_MARKER_LABELS_BELOW_ZOOM}
-            initialZoom={INITIAL_ZOOM}
-          />
-        )}
-        {!devModeActive && categoryMarkers.map(marker => (
+        {!devModeActive &&
+          dongMarkerItems
+            .filter(({ key }) => !isMarkerHidden(key))
+            .map(({ key, ...item }) => <NaverMapMarker key={key} {...item} />)}
+        {!devModeActive && categoryMarkers.filter(marker => !isMarkerHidden(marker.id)).map(marker => (
           <NaverMapCategoryMarker
             key={marker.id}
             latitude={marker.latitude}
@@ -535,7 +529,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 ...item,
                 isFavorite: isFavorite(favoriteFromListItem(item)),
               }))}
-              onSelectItem={item => setSelectedFacility({ type: 'item', item })}
+              onSelectItem={item =>
+                setSelectedFacility({ type: 'item', item, markerId: selectedFacility.markerId })
+              }
               onToggleFavorite={item => toggleFavorite(favoriteFromListItem(item), item.room ?? item.place)}
               fillHeight
             />

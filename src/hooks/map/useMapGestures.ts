@@ -77,6 +77,11 @@ interface UseMapGesturesOptions {
    * 보여주는 보정치만 받는다 — 생략(1)하면 기존과 동일하게 동작한다.
    */
   renderScale?: number;
+  /**
+   * 처음 맞춤 위치를 세로 가운데에서 이만큼(px) 옮긴다. 음수면 위로. 컨테이너 아래쪽을 다른 요소(하단 카드 등)가
+   * 덮어서 정가운데면 도면이 아래로 치우쳐 보일 때 쓴다. 생략(0)하면 정가운데. "원위치" 버튼도 이 위치로 돌아간다.
+   */
+  fitOffsetY?: number;
 }
 
 /**
@@ -97,6 +102,7 @@ export function useMapGestures({
   minScale = 1,
   maxScale = 5,
   renderScale = 1,
+  fitOffsetY: fitShiftY = 0,
 }: UseMapGesturesOptions) {
   const scale = useSharedValue(1);
   const savedScale = useSharedValue(1);
@@ -389,7 +395,7 @@ export function useMapGestures({
       // 도면 바운딩 박스를 컨테이너 중앙에 놓는 translate. 캔버스 원점(0,0)이 도면 시작점과
       // 다를 수 있어서(contentMinX/Y) 그만큼 먼저 빼준다.
       const offsetX = (containerWidth - contentWidth * initialScale) / 2 - contentMinX * initialScale;
-      const offsetY = (containerHeight - contentHeight * initialScale) / 2 - contentMinY * initialScale;
+      const offsetY = (containerHeight - contentHeight * initialScale) / 2 - contentMinY * initialScale + fitShiftY;
 
       // pinch-out 하한은 "전체가 다 보이는" fitScale과 기본 배율 중 더 작은 쪽으로 잡는다.
       // widthFitScale이 fitScale보다 작은 층(도면이 세로로 길어 높이가 먼저 꽉 차는 경우)에서
@@ -412,6 +418,7 @@ export function useMapGestures({
       mapHeight,
       contentBounds,
       maxScale,
+      fitShiftY,
       scale,
       savedScale,
       translateX,

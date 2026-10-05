@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -26,7 +27,11 @@ const SLIDE_DISTANCE = 64;
 const SLIDE_DURATION = 260;
 // Figma: 헤더 아래 24px, 왼쪽 20px에 층 선택기.
 const FLOOR_SELECTOR_TOP = 24;
-// FacilityInfoCard inside variant의 고정 높이.
+// 평면도 영역은 헤더 아래~화면 맨 아래인데 아래쪽을 건물 카드가 덮어서, 정가운데에 두면 도면이 아래로
+// 치우쳐 보인다. 처음 맞춤 위치를 이만큼 위로 올린다.
+const PLAN_FIT_OFFSET_Y = -60;
+// 내부 지도 카드의 대략적인 높이(카드 높이는 내용에 따라 정해진다). 첫 프레임용 추정치이고,
+// 실제 높이는 그려진 뒤 onLayout으로 재서 바로잡는다(handleCardLayout).
 const INSIDE_CARD_HEIGHT = 400;
 // 카드를 아래로 끌어내려 접었을 때 남겨둘 그래버 영역 높이(패딩 8 + 그래버 4 + 여백 12).
 const CARD_PEEK_HEIGHT = 24;
@@ -83,9 +88,20 @@ export default function BuildingIndoorScreen() {
   // 위에 그대로 떠 있고(MapScreen은 Modal), 전환이 끝나 그 카드가 닫히는 순간 같은 모양의 이 카드가
   // 같은 자리에 있어서 이어진 것처럼 보인다 — 그 뒤 버튼 높이만큼 부드럽게 내려간다.
   const cardLift = useSharedValue(Math.max(0, (params.fromCardHeight ?? 0) - INSIDE_CARD_HEIGHT));
+  // 시작 위치가 지도 카드와 몇 px만 어긋나도 크로스페이드 동안 그래버가 두 개로 보인다. 그래서 추정치 대신
+  // 실제 카드 높이로 시작 위치를 다시 맞춘다. 화면이 투명에서 페이드인하는 첫 프레임에 일어나서 튀어 보이지 않는다.
+  const settledRef = useRef(false);
+  const handleCardLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      if (settledRef.current || !params.fromCardHeight) return;
+      cardLift.value = Math.max(0, params.fromCardHeight - event.nativeEvent.layout.height);
+    },
+    [cardLift, params.fromCardHeight],
+  );
   useEffect(() => {
     if (cardLift.value === 0) return;
     const settle = () => {
+      settledRef.current = true;
       clearTimeout(fallbackId);
       cardLift.value = withDelay(60, withTiming(0, { duration: 320, easing: Easing.out(Easing.cubic) }));
     };
@@ -127,6 +143,7 @@ export default function BuildingIndoorScreen() {
                 key={floorId}
                 mapData={floorAssets.data}
                 backgroundColor={theme.semantic.line.tertiary}
+                fitOffsetY={PLAN_FIT_OFFSET_Y}
                 // LayerSize를 그대로 펼친다. viewBox가 없을 때 viewBox={undefined}로 넘기면 SVG 컴포넌트의
                 // 원래 viewBox를 덮어써서 도면 스케일이 깨진다.
                 renderBackground={layerSize => <floorAssets.Background {...layerSize} />}
@@ -154,7 +171,7 @@ export default function BuildingIndoorScreen() {
       {/* CollapsibleBottomSheet는 접힐 때 실제 레이아웃 크기가 아니라 transform으로만 밀려나서,
           이 래퍼 자체는 항상 펼쳐진 카드 높이만큼 자리를 차지한다. box-none이 없으면 카드가
           접혀 지도가 드러난 부분에서도 이 빈 영역이 지도 팬/줌 제스처를 가로채 버린다. */}
-      <CardWrapper style={cardStyle} pointerEvents="box-none">
+      <CardWrapper style={cardStyle} pointerEvents="box-none" onLayout={handleCardLayout}>
         <CollapsibleBottomSheet
           peekHeight={CARD_PEEK_HEIGHT + insets.bottom}
           header={<Grabber />}
