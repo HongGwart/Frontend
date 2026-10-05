@@ -4,6 +4,7 @@ import styled, { css, useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
 import { FavoriteToggle } from './FavoriteToggle';
 import { FacilityImagePair } from './FacilityImagePair';
+import { PhotoSource } from '@appTypes/photo';
 
 interface Props {
   /** 왼쪽 원형 아바타에 들어갈 카테고리 아이콘 */
@@ -23,7 +24,7 @@ interface Props {
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   /** 이미지 2장. 생략하면 이미지 없이 제목/설명만 있는 리스트 아이템이 된다. */
-  images?: [React.FC<SvgProps>, React.FC<SvgProps>];
+  images?: [PhotoSource, PhotoSource];
   /** 아이템 사이 구분선을 보여줄지 (리스트 마지막 아이템은 보통 false) */
   showDivider?: boolean;
   onPress?: () => void;

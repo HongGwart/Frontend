@@ -1,10 +1,10 @@
 import React from 'react';
-import { ScrollView } from 'react-native';
+import { Image, ScrollView, StyleSheet } from 'react-native';
 import styled from 'styled-components/native';
-import { SvgProps } from 'react-native-svg';
+import { PhotoSource } from '@appTypes/photo';
 
 interface Props {
-  images: [React.FC<SvgProps>, React.FC<SvgProps>];
+  images: [PhotoSource, PhotoSource];
   /** 기본 100px(FacilityInfoCard 등). 건물 상세보기(BuildingDetailScreen)는 160px(가로 249px, 가로 스크롤)을 쓴다. */
   height?: number;
   /**
@@ -34,9 +34,9 @@ export function FacilityImagePair({ images, height = 100, compact = false, itemW
         style={{ marginHorizontal: -bleed }}
         contentContainerStyle={{ paddingHorizontal: bleed, gap: 4 }}
       >
-        {images.map((ImageIcon, index) => (
+        {images.map((source, index) => (
           <FixedImageSlot key={index} first={index === 0} compact={false} style={{ width: itemWidth, height }}>
-            <ImageIcon width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
+            <Image source={source} style={StyleSheet.absoluteFill} resizeMode="cover" />
           </FixedImageSlot>
         ))}
       </ScrollView>
@@ -45,9 +45,10 @@ export function FacilityImagePair({ images, height = 100, compact = false, itemW
 
   return (
     <ImageRow height={height} compact={compact}>
-      {images.map((ImageIcon, index) => (
+      {images.map((source, index) => (
         <ImageSlot key={index} first={index === 0} compact={compact}>
-          <ImageIcon width="100%" height="100%" />
+          {/* 칸 비율과 사진 비율이 달라도 빈 여백 없이 칸을 꽉 채우고 넘치는 부분만 가운데 기준으로 자른다. */}
+          <Image source={source} style={StyleSheet.absoluteFill} resizeMode="cover" />
         </ImageSlot>
       ))}
     </ImageRow>

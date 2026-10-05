@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Pressable } from 'react-native';
+import { Image, Pressable, StyleSheet } from 'react-native';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
 import { FavoriteToggle } from '@components/common/FavoriteToggle';
 import { LocationName } from './LocationName';
 import { OperatingStatusRow } from './OperatingStatusRow';
+import { PhotoSource } from '@appTypes/photo';
 
 interface Props {
   /**
@@ -17,7 +18,7 @@ interface Props {
   /** 시설 레이아웃에서 위치 끝에 붙는 층/호실 (예: "1층") */
   locationDetail?: string;
   /** 썸네일 사진. 넘기면 120x120 박스를 꽉 채운다. photo와 icon 중 하나만 쓴다. */
-  photo?: React.FC<SvgProps>;
+  photo?: PhotoSource;
   /** 사진이 없을 때 옅은 남색 박스 위에 올리는 카테고리 아이콘 */
   icon?: React.FC<SvgProps>;
   iconWidth?: number;
@@ -43,7 +44,7 @@ export function FavoritePlaceCard({
   buildingCode,
   buildingName,
   locationDetail,
-  photo: Photo,
+  photo,
   icon: Icon,
   iconWidth = 72,
   iconHeight = 72,
@@ -67,9 +68,9 @@ export function FavoritePlaceCard({
       pressed={isPressed}
       showDivider={showDivider}
     >
-      <ImageBox plain={!Photo}>
-        {Photo ? (
-          <Photo width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
+      <ImageBox plain={!photo}>
+        {photo ? (
+          <Image source={photo} style={StyleSheet.absoluteFill} resizeMode="cover" />
         ) : Icon ? (
           // Figma: 120px "Image" 박스 안에 72x72(flex-shrink:0) 아이콘 노드가 들어간다.
           // repo 아이콘 원본 비율이 정사각이 아닐 수 있어, 늘어나지 않도록 비율 유지(meet)로

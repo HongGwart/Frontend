@@ -7,6 +7,7 @@ import { Button } from './Button';
 import { FavoriteToggle } from './FavoriteToggle';
 import { FacilityImagePair } from './FacilityImagePair';
 import { BottomFade, ShadowBottomClip } from './ShadowBottomClip';
+import { PhotoSource } from '@appTypes/photo';
 
 export interface FacilityCountItem {
   icon: React.FC<SvgProps>;
@@ -49,7 +50,7 @@ interface Props {
   onDeparturePress?: () => void;
   onArrivalPress?: () => void;
   /** outside/inside/facility에서만 쓰인다 */
-  images?: [React.FC<SvgProps>, React.FC<SvgProps>];
+  images?: [PhotoSource, PhotoSource];
   /** outside/inside에서만 쓰인다 (예: 프린터 2, PC실 1) */
   facilityCounts?: FacilityCountItem[];
   /** outside/inside에서만 쓰인다 (예: "정문(1층), 후문(지하 1층)") */

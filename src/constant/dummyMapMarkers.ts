@@ -1,5 +1,4 @@
-import { FC } from 'react';
-import { SvgProps } from 'react-native-svg';
+import { PhotoSource } from '@appTypes/photo';
 import { CategoryKey } from './categoryChips';
 import { DUMMY_FACILITY_IMAGES } from './dummyFacilityInfo';
 
@@ -12,7 +11,7 @@ export interface DummyMapMarker {
   buildingName: string;
   description: string;
   /** 건물 사진 2장. 아직 등록 안 된 건물은 생략하면 FacilityInfoCard에서 이미지 영역 자체가 빠진다. */
-  images?: [FC<SvgProps>, FC<SvgProps>];
+  images?: [PhotoSource, PhotoSource];
 }
 
 // 캠퍼스 동 마커. 좌표는 개발용 좌표 찍기 모드(DevBuildingPinPicker)로 지도에서 각 동 건물을
@@ -231,7 +230,7 @@ export interface DummyCategoryMarker {
   room: string;
   description: string;
   /** 시설 사진 2장. 생략하면 이미지 영역 없이 카드가 뜬다. */
-  images?: [FC<SvgProps>, FC<SvgProps>];
+  images?: [PhotoSource, PhotoSource];
 }
 
 // 카테고리 칩(CategoryChipList)을 눌렀을 때 지도에 뿌려줄 카테고리 마커 더미 데이터.

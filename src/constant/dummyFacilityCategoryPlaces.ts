@@ -7,8 +7,7 @@ import PrinterIcon from '@assets/svgs/icons/printer.svg';
 import BookReturnIcon from '@assets/svgs/icons/bookReturn.svg';
 import SmokeIcon from '@assets/svgs/icons/smoke.svg';
 import EtcIcon from '@assets/svgs/icons/etc.svg';
-import DummyImage1 from '@assets/svgs/dummy/T_dummy1.svg';
-import DummyImage2 from '@assets/svgs/dummy/T_dummy2.svg';
+import { DUMMY_FACILITY_IMAGES } from './dummyFacilityInfo';
 import { FacilityCategoryId } from '@navigation/types';
 import { FavoritePlace } from './dummyMypage';
 
@@ -48,7 +47,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingCode: 'R동',
       buildingName: '홍문관',
       locationDetail: '로비층',
-      photo: DummyImage1,
+      photo: DUMMY_FACILITY_IMAGES[0],
       isOpen: true,
       statusText: '운영 중',
       hours: '08:00 - 22:00',
@@ -59,7 +58,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingCode: 'A동',
       buildingName: '인문사회관',
       locationDetail: '1층',
-      photo: DummyImage1,
+      photo: DUMMY_FACILITY_IMAGES[0],
       isOpen: true,
       statusText: '운영 중',
       hours: '08:00 - 22:00',
@@ -70,7 +69,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingCode: 'H동',
       buildingName: '중앙도서관',
       locationDetail: '3층',
-      photo: DummyImage2,
+      photo: DUMMY_FACILITY_IMAGES[1],
       isOpen: false,
       statusText: '운영 종료',
       hours: '10:00 - 19:00',

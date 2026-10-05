@@ -1,8 +1,10 @@
 import React from 'react';
+import { Image, StyleSheet } from 'react-native';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
 import { BouncyPressable } from './BouncyPressable';
 import { FavoriteToggle } from './FavoriteToggle';
+import { PhotoSource } from '@appTypes/photo';
 
 interface Props {
   /** 이 카드가 가리키는 시설 id. onToggleFavorite에 그대로 넘겨준다(콜백 자체가 특정
@@ -10,7 +12,7 @@ interface Props {
    * 실제로 효과를 보려면 부모가 map 콜백 안에서 매번 새 화살표 함수를 만들어 넘기면 안 된다). */
   id: string;
   /** 대표 사진 한 장(DummyCategoryMarker.images의 첫 장 등). 없으면 icon으로 대체한다. */
-  photo?: React.FC<SvgProps>;
+  photo?: PhotoSource;
   /** photo가 없을 때 옅은 배경 위에 보여줄 카테고리 아이콘. */
   icon: React.FC<SvgProps>;
   title: string;
@@ -28,7 +30,7 @@ interface Props {
  */
 export const BuildingFacilityCard = React.memo(function BuildingFacilityCard({
   id,
-  photo: Photo,
+  photo,
   icon: Icon,
   title,
   isOpen,
@@ -41,10 +43,10 @@ export const BuildingFacilityCard = React.memo(function BuildingFacilityCard({
   return (
     <Container onPress={() => onPress?.()}>
       <Card>
-        {Photo ? (
+        {photo ? (
           <PhotoSlot>
             {/* 사진 원본 비율이 칸과 달라도 칸을 꽉 채우고 넘치는 부분만 가운데 기준으로 자른다(빈 여백 없음). */}
-            <Photo width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
+            <Image source={photo} style={StyleSheet.absoluteFill} resizeMode="cover" />
           </PhotoSlot>
         ) : (
           <IconSlot>
