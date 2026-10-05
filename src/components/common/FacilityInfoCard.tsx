@@ -52,7 +52,7 @@ interface Props {
   images?: [React.FC<SvgProps>, React.FC<SvgProps>];
   /** outside/inside에서만 쓰인다 (예: 프린터 2, PC실 1) */
   facilityCounts?: FacilityCountItem[];
-  /** outside/inside에서만 쓰인다 (예: "정문(1층), 후문(지하1층)") */
+  /** outside/inside에서만 쓰인다 (예: "정문(1층), 후문(지하 1층)") */
   mainEntrance?: string;
   operatingHours: OperatingHoursInfo;
   /** outside/facility에서만 쓰인다 */

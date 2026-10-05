@@ -376,7 +376,7 @@ export default function NavigationScreen() {
               값으로 주면 옆으로 눌려 보인다. 세로 120px 기준으로 원본 비율을 유지한 가로값을 쓴다. */}
           <BlueLogoSymbol width={92} height={120} style={{ opacity: 0.35 }} />
           <EmptyText>
-            도착지를 설정하면{'\n'}경로를 안내해드릴게요
+            도착지를 설정하면{'\n'}경로를 안내해 드릴게요
           </EmptyText>
         </EmptyState>
       )}

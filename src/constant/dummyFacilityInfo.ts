@@ -16,7 +16,7 @@ export const DUMMY_FACILITY_COUNTS: FacilityCountItem[] = [
   { icon: PcIcon, iconWidth: 17, iconHeight: 17, label: 'PC실', count: 1 },
 ];
 
-export const DUMMY_MAIN_ENTRANCE = '정문(1층), 후문(지하1층)';
+export const DUMMY_MAIN_ENTRANCE = '정문(1층), 후문(지하 1층)';
 
 export const DUMMY_OPERATING_HOURS: OperatingHoursInfo = {
   isOpen: true,

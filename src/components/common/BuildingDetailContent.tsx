@@ -17,6 +17,8 @@ import { useFavorites } from '@hooks/useFavorites';
 interface Props {
   buildingCode: string;
   onBack?: () => void;
+  /** "건물 내부 보기"를 눌렀을 때. 없으면(지도 위 슬라이드 미리보기 등) 버튼만 보여준다. */
+  onViewInsidePress?: () => void;
 }
 
 const GRID_COLUMNS = 2;
@@ -48,7 +50,13 @@ export function BuildingDetailHeader({ buildingCode, onBack }: { buildingCode: s
 }
 
 /** 건물 상세보기 본문(스크롤 영역 + 하단 CTA). BuildingDetailHeader를 뺀 나머지 전부. */
-export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
+export function BuildingDetailBody({
+  buildingCode,
+  onViewInsidePress,
+}: {
+  buildingCode: string;
+  onViewInsidePress?: () => void;
+}) {
   const insets = useSafeAreaInsets();
 
   // buildingCode가 바뀔 때만 다시 계산한다 — 즐겨찾기 토글처럼 buildingCode와
@@ -151,7 +159,13 @@ export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
 
       <CtaBar style={{ paddingBottom: insets.bottom + 8 }}>
         {/* 실내 지도 화면이 아직 없어서, 지금은 눌러도 아무 일도 없는 대신 비활성화해둔다. */}
-        <Button label="건물 내부 보기" icon={BuildingViewIcon} iconWidth={17} iconHeight={18} disabled />
+        <Button
+          label="건물 내부 보기"
+          icon={BuildingViewIcon}
+          iconWidth={17}
+          iconHeight={18}
+          onPress={onViewInsidePress}
+        />
       </CtaBar>
     </Container>
   );
@@ -161,11 +175,11 @@ export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
  * 헤더 + 본문을 그대로 이어붙인 완성형. BuildingDetailScreen처럼 둘을 따로 애니메이션
  *시킬 필요 없이 평범한 화면으로 쓰는 곳에서만 이걸 쓴다.
  */
-export function BuildingDetailContent({ buildingCode, onBack }: Props) {
+export function BuildingDetailContent({ buildingCode, onBack, onViewInsidePress }: Props) {
   return (
     <Container>
       <BuildingDetailHeader buildingCode={buildingCode} onBack={onBack} />
-      <BuildingDetailBody buildingCode={buildingCode} />
+      <BuildingDetailBody buildingCode={buildingCode} onViewInsidePress={onViewInsidePress} />
     </Container>
   );
 }

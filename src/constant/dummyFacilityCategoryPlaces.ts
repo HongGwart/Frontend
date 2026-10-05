@@ -20,7 +20,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
   restaurant: [
     {
       id: 'restaurant-1',
-      name: '학생식당',
+      name: '학생 식당',
       buildingCode: 'H동',
       buildingName: '중앙도서관',
       locationDetail: '지하 1층',

@@ -6,7 +6,7 @@ import { RouteOptionKey } from './routeOptions';
 export interface RouteStep {
   id: string;
   type: 'walk' | 'elevator';
-  /** 이동 수단 라벨 (예: "도보 이동", "구름 다리 이동", "엘리베이터") */
+  /** 이동 수단 라벨 (예: "도보 이동", "구름다리 이동", "엘리베이터") */
   label: string;
   from: string;
   to: string;
@@ -37,7 +37,7 @@ export const DUMMY_ROUTE_RESULTS: RouteResult[] = [
     stairsCount: 2,
     steps: [
       { id: 's1', type: 'walk', label: '도보 이동', from: '현재 위치', to: 'Z1동 앞', distanceMeters: 120, durationMinutes: 2 },
-      { id: 's2', type: 'walk', label: '구름 다리 이동', from: 'Z1동', to: '홍문관 2층', distanceMeters: 80, durationMinutes: 1 },
+      { id: 's2', type: 'walk', label: '구름다리 이동', from: 'Z1동', to: '홍문관 2층', distanceMeters: 80, durationMinutes: 1 },
       { id: 's3', type: 'elevator', label: '엘리베이터', from: '홍문관 2층', to: '1층', distanceMeters: 120, durationMinutes: 2 },
       { id: 's4', type: 'walk', label: '도보 이동', from: '홍문관', to: 'T동 정문', distanceMeters: 120, durationMinutes: 2 },
       { id: 's5', type: 'elevator', label: '엘리베이터', from: 'T동 1층', to: '3층', distanceMeters: 120, durationMinutes: 2 },
@@ -69,7 +69,7 @@ export const DUMMY_ROUTE_RESULTS: RouteResult[] = [
     elevatorWarning: true,
     steps: [
       { id: 'a1', type: 'walk', label: '도보 이동', from: '현재 위치', to: 'Z1동 앞', distanceMeters: 120, durationMinutes: 2 },
-      { id: 'a2', type: 'walk', label: '구름 다리 이동', from: 'Z1동', to: '홍문관 2층', distanceMeters: 80, durationMinutes: 1 },
+      { id: 'a2', type: 'walk', label: '구름다리 이동', from: 'Z1동', to: '홍문관 2층', distanceMeters: 80, durationMinutes: 1 },
       { id: 'a3', type: 'elevator', label: '엘리베이터', from: '홍문관 2층', to: '1층', distanceMeters: 120, durationMinutes: 2 },
       { id: 'a4', type: 'walk', label: '도보 이동', from: '홍문관', to: 'T동 정문', distanceMeters: 380, durationMinutes: 5 },
       { id: 'a5', type: 'elevator', label: '엘리베이터', from: 'T동 1층', to: '3층', distanceMeters: 120, durationMinutes: 2 },

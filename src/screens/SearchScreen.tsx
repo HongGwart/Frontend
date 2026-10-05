@@ -348,7 +348,7 @@ export default function SearchScreen() {
                       <SearchIcon width={28} height={28} color={theme.semantic.text.tertiary} />
                     </EmptyIconCircle>
                     <EmptyTitleText>검색 결과가 없어요</EmptyTitleText>
-                    <EmptySubtitleText>다른 검색어로 다시 시도해보세요</EmptySubtitleText>
+                    <EmptySubtitleText>다른 검색어로 다시 시도해 보세요</EmptySubtitleText>
                   </EmptyResultView>
                 )
               ) : (

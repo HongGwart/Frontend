@@ -178,7 +178,7 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     longitude: 126.9246340,
     label: 'T동',
     buildingName: '제4공학관',
-    description: '공과대학 전공 강의실·실습실 (컴공·전전 수업 다수)',
+    description: '공과대학 전공 강의실·실습실',
     images: DUMMY_FACILITY_IMAGES,
   },
   {

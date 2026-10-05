@@ -256,7 +256,7 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
     id: 'restaurant',
     icon: RestaurantIcon,
     cardProps: {
-      facilityName: '학생식당',
+      facilityName: '학생 식당',
       buildingCode: 'S동',
       buildingName: '학생회관',
       locationDetail: '1층',
@@ -280,7 +280,7 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
     id: 'smoke',
     icon: SmokeIcon,
     cardProps: {
-      facilityName: '흡연구역',
+      facilityName: '흡연 구역',
       buildingCode: 'G동',
       buildingName: '신관',
       locationDetail: '옥상',
@@ -741,7 +741,7 @@ export default function OnboardingScreen() {
             </SearchMockupScene>
 
             <Caption style={{ marginTop: CAPTION_TO_PHONE_BOTTOM_GAP }}>
-              지금 열려있는 시설을 확인하세요
+              지금 열려 있는 시설을 확인하세요
             </Caption>
           </FadeInContent>
           <BottomSpacer />

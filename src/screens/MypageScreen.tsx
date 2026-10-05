@@ -63,7 +63,7 @@ export default function MypageScreen() {
             filled
           />
           {visibleFavorites.length === 0 && (
-            <EmptyFavoritesText>지도에서 별을 눌러 자주 가는 장소를 즐겨찾기 해보세요</EmptyFavoritesText>
+            <EmptyFavoritesText>지도에서 별을 눌러 자주 가는 장소를 즐겨찾기해 보세요</EmptyFavoritesText>
           )}
           {visibleFavorites.map((item, index) => (
             <FavoritePlaceCard
