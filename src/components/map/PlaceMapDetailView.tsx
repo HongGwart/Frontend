@@ -22,10 +22,6 @@ interface Props {
   marker: React.ReactNode;
   /** 화면 하단에 붙는 시설 정보 카드(FacilityInfoCard). */
   card: React.ReactNode;
-  /** true면 상단 카테고리 칩을 눌러도 반응하지 않는다(주변상권 상세처럼 캠퍼스 카테고리와 무관한 화면). */
-  chipsDisabled?: boolean;
-  /** true면 상단 검색창을 눌러도 검색 화면으로 넘어가지 않는다(모양은 그대로). */
-  searchDisabled?: boolean;
   /** 지금 띄울 토스트 문구(예: 즐겨찾기 등록/해제). 메인 지도처럼 칩 바로 아래에 뜬다. */
   toastMessage?: string | null;
 }
@@ -43,8 +39,6 @@ export function PlaceMapDetailView({
   onSearchPress,
   marker,
   card,
-  chipsDisabled = false,
-  searchDisabled = false,
   toastMessage = null,
 }: Props) {
   const insets = useSafeAreaInsets();
@@ -58,13 +52,13 @@ export function PlaceMapDetailView({
           <BackButton onPress={onBack} hitSlop={8}>
             <ChevronLeftIcon width={24} height={24} />
           </BackButton>
-          {/* map 탭 상단 검색창과 동일하게, 여기서는 입력 불가이고 누르면 검색 화면으로 넘어간다. */}
-          {/* SearchBar는 onPress가 없으면 입력 가능한 검색창이 되므로, onPress는 두고 터치만 막는다. */}
-          <SearchBarWrap pointerEvents={searchDisabled ? 'none' : 'auto'}>
+          {/* 검색창·카테고리 칩은 메인홈(MapScreen)에서만 쓸 수 있고, 여기선 같은 모양으로 보여주기만 한다.
+              SearchBar는 onPress가 없으면 입력 가능한 검색창이 되므로, onPress는 두고 터치만 막는다. */}
+          <SearchBarWrap pointerEvents="none">
             <SearchBar value="" onChangeText={() => {}} onPress={onSearchPress} />
           </SearchBarWrap>
         </SearchRow>
-        <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} disabled={chipsDisabled} />
+        <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} disabled />
         {toastMessage && (
           <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} style={styles.toast}>
             <Toast text={toastMessage} variant="success" />

@@ -44,6 +44,8 @@ import { RootStackParamList } from '@navigation/types';
 import { formatSearchedDate, useRecentSearches } from '@hooks/useRecentSearches';
 import { useFavorites } from '@hooks/useFavorites';
 import { favoriteFromCategoryMarker, favoriteFromDongMarker } from '@constant/favoriteInputs';
+import { VoicePermissionDialog } from '@components/common/VoicePermissionDialog';
+import { AnimatedToast } from '@components/mypage/AnimatedToast';
 
 // 지도 화면(MapScreen)과 동일한 형태. 검색 뷰 안에서 지도를 띄울 때도 마커를 직접
 // 탭한 것과 같은 방식으로 시설 정보 바텀시트를 채운다.
@@ -78,7 +80,11 @@ export default function SearchScreen() {
   const [value, setValue] = useState('');
   // 마이크 버튼 -> 듣기 시작 -> 인식된 텍스트로 검색창 내용을 그대로 갱신(중간 결과 포함).
   // expo-speech-recognition은 네이티브 모듈이라 Expo Go가 아니라 dev-client 빌드에서만 동작한다.
-  const { isListening, toggleListening } = useVoiceSearch({ onResult: setValue });
+  // 마이크 권한은 버튼을 누를 때 앱 안 안내(VoicePermissionDialog) → 시스템 팝업 순서로 묻는다. 거부해도
+  // 글자 검색은 그대로 쓸 수 있게 토스트로 안내만 한다.
+  const [voiceDeniedToastKey, setVoiceDeniedToastKey] = useState(0);
+  const { isListening, toggleListening, permissionPrompt, confirmPermissionPrompt, dismissPermissionPrompt } =
+    useVoiceSearch({ onResult: setValue, onUnavailable: () => setVoiceDeniedToastKey(key => key + 1) });
 
   // "최근 검색한 장소"는 기기 로컬(AsyncStorage)에 저장된다. 검색 결과나 최근 검색어를 탭해 찾아간 장소가 맨 위에 쌓인다.
   const { recentSearches, addRecentSearch, removeRecentSearch } = useRecentSearches();
@@ -195,10 +201,11 @@ export default function SearchScreen() {
           pointerEvents="box-none"
           onLayout={handleTopOverlayLayout}
         >
-          <View style={styles.searchBarPadding}>
+          {/* 검색창·카테고리 칩은 메인홈(MapScreen)에서만 쓸 수 있고, 여기선 같은 모양으로 보여주기만 한다. */}
+          <View style={styles.searchBarPadding} pointerEvents="none">
             <SearchBar value={value} onChangeText={setValue} onPress={() => setSelectedFacility(null)} />
           </View>
-          <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} />
+          <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} disabled />
         </SafeAreaView>
         <View style={styles.navBarWrapper}>
           <NavigationBar activeTab="map" bottomInset={insets.bottom} />
@@ -365,6 +372,20 @@ export default function SearchScreen() {
           </View>
         </View>
       </TouchableWithoutFeedback>
+      <VoicePermissionDialog
+        prompt={permissionPrompt}
+        onConfirm={confirmPermissionPrompt}
+        onDismiss={dismissPermissionPrompt}
+      />
+      {voiceDeniedToastKey > 0 && (
+        <AnimatedToast
+          key={voiceDeniedToastKey}
+          text="마이크 권한이 없어요. 검색창에 글자로 입력해 주세요."
+          variant="warning"
+          bottomOffset={insets.bottom + 16}
+          onHide={() => setVoiceDeniedToastKey(0)}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -431,4 +452,28 @@ const EmptySubtitleText = styled.Text`
   line-height: ${({ theme }) => theme.typography.labelNormal.medium.lineHeight}px;
   letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
   color: ${({ theme }) => theme.semantic.text.tertiary};
+`;
+
+const ListeningRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-horizontal: 20px;
+`;
+
+// 녹음 중 표시 — 일반적인 "녹음 중" 빨간 점(warning 색).
+const ListeningDot = styled.View`
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: ${({ theme }) => theme.semantic.warning};
+`;
+
+const ListeningText = styled.Text`
+  font-family: ${({ theme }) => theme.typography.labelReading.medium.fontFamily};
+  font-size: ${({ theme }) => theme.typography.labelReading.medium.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.labelReading.medium.lineHeight}px;
+  letter-spacing: ${({ theme }) => theme.typography.labelReading.medium.letterSpacing}px;
+  color: ${({ theme }) => theme.semantic.text.secondary};
 `;
