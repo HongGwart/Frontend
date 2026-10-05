@@ -40,7 +40,7 @@ import {
 } from '@constant/dummyRouteResults';
 import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
-import { slicePath, splitPathAt } from '@utils/routePath';
+import { regionToFit, slicePath, splitPathAt } from '@utils/routePath';
 import { buildTestRoute, getRouteMapData, RouteMapData } from '@constant/testIndoorRoute';
 import { FLOOR_GEO_ANCHORS } from '@constant/floorGeoAnchors';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
@@ -55,8 +55,14 @@ const MOVE_TYPE_ICONS: Record<GuidanceMoveType, React.FC<SvgProps>> = {
 
 // 길찾기 경로 보기 화면과 같은 줌으로 시작한다.
 const GUIDANCE_ZOOM = 17;
-// 건물 안 구간은 평면도가 보이도록 더 당겨서 보여준다.
-const INDOOR_GUIDANCE_ZOOM = 18.5;
+// 건물 안 구간은 평면도가 보이도록 더 당겨서 시작한다(첫 화면용 — 지도가 준비되면 지금 구간 경로에 맞춘다).
+const INDOOR_GUIDANCE_ZOOM = 19;
+// 지금 구간 경로에 카메라를 맞출 때, 구간이 아주 짧아도 이보다는 좁게 잡지 않는다(위도 도 단위).
+// 실내는 약 20m, 실외는 약 60m.
+const INDOOR_MIN_FIT_SPAN = 0.00018;
+const OUTDOOR_MIN_FIT_SPAN = 0.00055;
+// 오른쪽 아래 이전/다음 버튼(하단 40px + 버튼 높이)이 가리는 높이. 경로가 그 밑으로 들어가지 않게 지도 패딩으로 뺀다.
+const STEP_BUTTONS_AREA_HEIGHT = 110;
 // 구간을 넘길 때 경로선/현재 위치가 옮겨가는 시간. 카메라 이동(animateCameraTo)과 같게 맞춘다.
 const STEP_TRANSITION_MS = 300;
 
@@ -369,28 +375,39 @@ export default function RouteGuidanceScreen() {
   // 지금 있는 층 — 건물 안 구간이면 그 층 평면도를 지도에 깔고, 바깥 구간이면 아무것도 안 깐다.
   // 도착하면 마지막 구간의 층(도착지가 있는 층)을 그대로 보여준다.
   const currentFloorId = hasArrived ? guidanceSteps[guidanceSteps.length - 1].floorId : step.floorId;
-  const guidanceZoom = currentFloorId ? INDOOR_GUIDANCE_ZOOM : GUIDANCE_ZOOM;
   useEffect(() => {
     if (hasArrived) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [hasArrived]);
 
-  // 구간을 넘기면 현재 위치가 옮겨가니 카메라도 새 위치로 한 번에 애니메이션한다(선 애니메이션과
-  // 같은 시간). 매 프레임 바뀌는 position이 아니라 목표 구간 기준이다. 첫 위치는 initialCamera로 잡는다.
   const mapRef = useRef<NaverMapViewRef>(null);
-  // initialCamera는 처음 한 번만 쓰이니 첫 구간 위치로 고정해 둔다.
+  // initialCamera는 처음 한 번만 쓰이니 첫 구간 위치로 고정해 둔다(지도가 준비되기 전 첫 화면용).
   const [initialCamera] = useState(() => ({
     ...splitPathAt(routeMap.path, guidanceSteps[0].progress).position,
     zoom: guidanceSteps[0].floorId ? INDOOR_GUIDANCE_ZOOM : GUIDANCE_ZOOM,
   }));
-  const isFirstStep = useRef(true);
+
+  // 지금 구간(현재 위치 ~ 다음 안내 지점)의 경로 전체가 "상단 안내 카드 밑 ~ 하단 버튼 위" 사이에 꽉 차게
+  // 확대한다. 구간을 넘기면 경로선 애니메이션과 같은 시간으로 다음 구간에 맞춰 옮겨간다.
+  const activeStepIndex = hasArrived ? guidanceSteps.length - 1 : stepIndex;
+  const segmentFrom = guidanceSteps[activeStepIndex].progress;
+  const segmentTo = guidanceSteps[activeStepIndex + 1]?.progress ?? 1;
+  const fitRegion = useMemo(
+    () =>
+      regionToFit(
+        slicePath(routeMap.path, segmentFrom, segmentTo),
+        currentFloorId ? INDOOR_MIN_FIT_SPAN : OUTDOOR_MIN_FIT_SPAN,
+      ),
+    [routeMap.path, segmentFrom, segmentTo, currentFloorId],
+  );
+  const [cardHeight, setCardHeight] = useState(0);
+  const [isMapReady, setIsMapReady] = useState(false);
+  const hasFittedRef = useRef(false);
   useEffect(() => {
-    if (isFirstStep.current) {
-      isFirstStep.current = false;
-      return;
-    }
-    const target = splitPathAt(routeMap.path, targetProgress).position;
-    mapRef.current?.animateCameraTo({ ...target, zoom: guidanceZoom, duration: STEP_TRANSITION_MS });
-  }, [targetProgress, guidanceZoom]);
+    // 지도가 준비되고 상단 카드 높이(지도 패딩)를 잰 뒤에 맞춘다. 첫 번째는 애니메이션 없이 바로.
+    if (!isMapReady || cardHeight === 0 || !fitRegion) return;
+    mapRef.current?.animateRegionTo({ ...fitRegion, duration: hasFittedRef.current ? STEP_TRANSITION_MS : 0 });
+    hasFittedRef.current = true;
+  }, [isMapReady, cardHeight, fitRegion]);
 
   // 길찾기를 마쳤으니 경로 보기로 돌아가지 않고 지도 탭으로 나간다.
   const endGuidance = () => navigation.popTo('MainTabs', { screen: 'map' });
@@ -401,6 +418,14 @@ export default function RouteGuidanceScreen() {
         ref={mapRef}
         style={StyleSheet.absoluteFill}
         initialCamera={initialCamera}
+        onInitialized={() => setIsMapReady(true)}
+        // 상단 안내 카드와 하단 버튼에 가려진 만큼 빼서, 경로가 보이는 영역 가운데에 맞춰지게 한다.
+        mapPadding={{
+          top: insets.top + 8 + cardHeight,
+          left: 0,
+          right: 0,
+          bottom: insets.bottom + STEP_BUTTONS_AREA_HEIGHT,
+        }}
         minZoom={MAP_MIN_ZOOM}
         maxZoom={MAP_MAX_ZOOM}
         isRotateGesturesEnabled={false}
@@ -422,7 +447,12 @@ export default function RouteGuidanceScreen() {
       </NaverMapView>
 
       {/* 도착하면 key가 바뀌면서 카드가 도착 안내로 페이드 전환된다. */}
-      <CardWrapper key={hasArrived ? 'arrived' : 'guiding'} entering={FadeIn.duration(250)} style={{ top: insets.top + 8 }}>
+      <CardWrapper
+        key={hasArrived ? 'arrived' : 'guiding'}
+        entering={FadeIn.duration(250)}
+        style={{ top: insets.top + 8 }}
+        onLayout={event => setCardHeight(event.nativeEvent.layout.height)}
+      >
         {hasArrived ? (
           <MoveInfoCard
             icon={DestinationMarkerIcon}

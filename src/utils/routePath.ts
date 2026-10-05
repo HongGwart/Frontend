@@ -69,8 +69,9 @@ const MIN_REGION_SPAN = 0.0012;
 /**
  * 주어진 좌표(경로선 꺾이는 점 + 출발·도착 핀 등)가 전부 화면에 들어오는 영역. 백엔드가 경로 좌표를 몇 개를
  * 넘겨주든 그대로 넣으면 된다. 지도의 mapPadding(헤더·카드에 가려진 높이)을 뺀 남은 영역 기준으로 맞춰진다.
+ * minSpan(위도 도 단위)보다 좁은 영역은 그만큼 넓혀서 지나치게 확대되지 않게 한다.
  */
-export function regionToFit(points: LatLng[]): LatLngRegion | null {
+export function regionToFit(points: LatLng[], minSpan = MIN_REGION_SPAN): LatLngRegion | null {
   if (points.length === 0) return null;
   const lats = points.map(p => p.latitude);
   const lngs = points.map(p => p.longitude);
@@ -81,11 +82,11 @@ export function regionToFit(points: LatLng[]): LatLngRegion | null {
 
   // 최소 크기보다 작으면 가운데를 기준으로 넓힌다. 경도는 위도에 따라 짧아지므로 cos(위도)로 보정한다.
   const lngScale = Math.cos((((minLat + maxLat) / 2) * Math.PI) / 180);
-  const minLngSpan = MIN_REGION_SPAN / lngScale;
-  if (maxLat - minLat < MIN_REGION_SPAN) {
+  const minLngSpan = minSpan / lngScale;
+  if (maxLat - minLat < minSpan) {
     const mid = (minLat + maxLat) / 2;
-    minLat = mid - MIN_REGION_SPAN / 2;
-    maxLat = mid + MIN_REGION_SPAN / 2;
+    minLat = mid - minSpan / 2;
+    maxLat = mid + minSpan / 2;
   }
   if (maxLng - minLng < minLngSpan) {
     const mid = (minLng + maxLng) / 2;
