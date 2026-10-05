@@ -79,6 +79,9 @@ interface FavoriteMapEntry {
 }
 
 const TOAST_DURATION_MS = 2000;
+// 개발용 지도 도구(🏢 평면도 얹기, 🧭 경로 노드 찍기) 원형 버튼을 메인홈에 보여줄지. 기능 코드는 그대로 두고 버튼만
+// 숨겨 둔다 — 평면도/테스트 경로를 다시 손봐야 할 때 true로 바꾸면 된다(개발 빌드에서만 보인다).
+const SHOW_DEV_MAP_TOOLS = false;
 // 지도 위에서 봤을 때 마커가 다른 요소에 비해 좀 커 보여서, 기본 크기보다 살짝 줄인다.
 const MAP_MARKER_SCALE = 0.85;
 const INITIAL_ZOOM = 16;
@@ -625,8 +628,12 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
           </GestureHandlerRootView>
         </Modal>
       )}
-      <DevFloorOverlayPanel picker={floorOverlay} topInset={insets.top} />
-      <DevRouteNodePanel picker={routeNodes} topInset={insets.top} floorAnchors={floorOverlay.anchors} />
+      {SHOW_DEV_MAP_TOOLS && (
+        <>
+          <DevFloorOverlayPanel picker={floorOverlay} topInset={insets.top} />
+          <DevRouteNodePanel picker={routeNodes} topInset={insets.top} floorAnchors={floorOverlay.anchors} />
+        </>
+      )}
     </View>
   );
 }
