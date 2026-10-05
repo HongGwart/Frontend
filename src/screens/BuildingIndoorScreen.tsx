@@ -266,6 +266,8 @@ const EmptyText = styled.Text`
   letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
   color: ${({ theme }) => theme.semantic.text.tertiary};
   text-align: center;
+  /* 영역 정가운데보다 위에 둔다(아래쪽을 건물 카드가 덮어서 정가운데면 낮아 보임). */
+  top: -90px;
 `;
 
 // 이제 카드는 흐름 밖에서 지도 위에 절대위치로 떠서(bottom:0), 접으면 그래버만 남기고 뒤의
