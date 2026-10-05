@@ -112,7 +112,7 @@ export function BuildingDetailBody({ buildingCode }: { buildingCode: string }) {
               <InfoLabelText>운영 시간</InfoLabelText>
               <InfoValueColumn>
                 <OperatingHoursRow operatingHours={DUMMY_OPERATING_HOURS} />
-                <InfoValueText>연중무휴</InfoValueText>
+                <InfoNoteText>연중무휴</InfoNoteText>
               </InfoValueColumn>
             </InfoRow>
           </InfoList>
@@ -217,6 +217,11 @@ const InfoValueText = styled.Text`
   line-height: ${({ theme }) => theme.typography.labelNormal.medium.lineHeight}px;
   letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
   color: ${({ theme }) => theme.semantic.text.secondary};
+`;
+
+// 운영 시간 아래 보조 문구("연중무휴") — 왼쪽 라벨(주 출입구·운영 시간)과 같은 옅은 색.
+const InfoNoteText = styled(InfoValueText)`
+  color: ${({ theme }) => theme.semantic.text.tertiary};
 `;
 
 const InfoValueColumn = styled.View`
