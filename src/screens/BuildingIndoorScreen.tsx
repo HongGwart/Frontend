@@ -10,7 +10,7 @@ import { IndoorMapView, IndoorMapViewControls } from '@components/map/IndoorMapV
 import { ResetViewButton } from '@components/map/ResetViewButton';
 import { FloorSelector } from '@components/map/FloorSelector';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
-import { CollapsibleBottomSheet } from '@components/common/CollapsibleBottomSheet';
+import { CollapsibleBottomSheet, CollapsibleBottomSheetRef } from '@components/common/CollapsibleBottomSheet';
 import { FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
@@ -122,6 +122,7 @@ export default function BuildingIndoorScreen() {
   // 원위치(나침반) 버튼은 지도 안이 아니라 화면에 직접 그린다. 지도는 층을 바꿀 때 위아래로 슬라이드되는데,
   // 버튼은 층 선택기처럼 제자리(오른쪽 위)에 있어야 해서. 층마다 지도가 새로 만들어지면 새 값으로 바뀐다.
   const [mapControls, setMapControls] = useState<IndoorMapViewControls | null>(null);
+  const cardSheetRef = useRef<CollapsibleBottomSheetRef>(null);
 
   // 층이 많으면 층 선택기가 지도 영역 밖(카드 뒤)까지 내려가지 않게 지도 영역 높이에 맞춰 자른다.
   const [mapAreaHeight, setMapAreaHeight] = useState(0);
@@ -162,8 +163,11 @@ export default function BuildingIndoorScreen() {
                 floors={floors}
                 selectedFloorId={floorId}
                 onSelect={id => {
+                  if (id === floorId) return;
                   setFloorId(id);
                   setSelectedRoomLabel(null);
+                  // 층을 옮기면 새 층 평면도를 넓게 보도록 카드를 그래버만 남기고 접는다.
+                  cardSheetRef.current?.collapse();
                 }}
                 maxHeight={Math.max(0, mapAreaHeight - FLOOR_SELECTOR_TOP * 2)}
               />
@@ -187,6 +191,7 @@ export default function BuildingIndoorScreen() {
           접혀 지도가 드러난 부분에서도 이 빈 영역이 지도 팬/줌 제스처를 가로채 버린다. */}
       <CardWrapper style={cardStyle} pointerEvents="box-none" onLayout={handleCardLayout}>
         <CollapsibleBottomSheet
+          ref={cardSheetRef}
           peekHeight={CARD_PEEK_HEIGHT + insets.bottom}
           header={<Grabber />}
           style={{

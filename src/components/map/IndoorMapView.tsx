@@ -1,6 +1,6 @@
 import React, { Children, Fragment, cloneElement, isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PixelRatio, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { RoomPolygons } from './RoomPolygons';
 import { IconMarkersLayer } from './IconMarkersLayer';
@@ -216,6 +216,7 @@ export function IndoorMapView({
     composedGesture,
     animatedStyle,
     fitToContainer,
+    hasFitted,
     resetTransform,
     scale,
     translateX,
@@ -254,6 +255,10 @@ export function IndoorMapView({
     onControlsReady?.({ rotation, reset: resetTransform });
   }, [onControlsReady, rotation, resetTransform]);
 
+  // 화면에 맞추기 전(마운트 직후 첫 프레임들)엔 도면이 원본 크기로 왼쪽 위에 그려지니 통째로 숨겨 둔다.
+  // 맞춤 배율/위치와 같은 UI 스레드 업데이트로 켜져서, 맞춰진 모습부터 바로 보인다.
+  const fitRevealStyle = useAnimatedStyle(() => ({ opacity: hasFitted.value }));
+
   const { shownTransform, overlayStyle, baseStyle } = useSharpViewportVisibility({
     scale,
     translateX,
@@ -263,6 +268,7 @@ export function IndoorMapView({
 
   return (
     <View style={[styles.container, backgroundColor ? { backgroundColor } : null]} onLayout={handleContainerLayout}>
+      <Animated.View style={[styles.fill, fitRevealStyle]}>
       <GestureDetector gesture={composedGesture}>
         <Animated.View style={[size, styles.mapLayer, animatedStyle]}>
           {/*
@@ -326,6 +332,7 @@ export function IndoorMapView({
         fontSize={labelFontSize}
         selectedRoomIds={selectedRoomIds}
       />
+      </Animated.View>
       {!onControlsReady && <ResetViewButton rotation={rotation} onPress={resetTransform} />}
     </View>
   );

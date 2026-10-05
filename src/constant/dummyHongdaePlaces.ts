@@ -1,5 +1,3 @@
-import DummyImage1 from '@assets/svgs/dummy/T_dummy1.svg';
-import DummyImage2 from '@assets/svgs/dummy/T_dummy2.svg';
 import { FavoritePlace } from './dummyMypage';
 
 // 주변상권(HongdaeScreen) 카테고리 칩. Figma "All / 식당 / 술집".
@@ -22,7 +20,6 @@ export const DUMMY_HONGDAE_PLACES: HongdaePlace[] = [
     name: '카미야',
     buildingCode: '서울 마포구',
     buildingName: '서교동',
-    photo: DummyImage1,
     isOpen: true,
     statusText: '운영 중',
     hours: '08:00 - 22:00',
@@ -36,7 +33,6 @@ export const DUMMY_HONGDAE_PLACES: HongdaePlace[] = [
     name: '율촌',
     buildingCode: '서울 마포구',
     buildingName: '서교동',
-    photo: DummyImage2,
     isOpen: true,
     statusText: '운영 중',
     hours: '08:00 - 22:00',
@@ -50,7 +46,6 @@ export const DUMMY_HONGDAE_PLACES: HongdaePlace[] = [
     name: '발바리네',
     buildingCode: '서울 마포구',
     buildingName: '서교동',
-    photo: DummyImage1,
     isOpen: false,
     statusText: '운영 종료',
     hours: '08:00 - 19:00',
@@ -64,7 +59,6 @@ export const DUMMY_HONGDAE_PLACES: HongdaePlace[] = [
     name: '식스티즈',
     buildingCode: '서울 마포구',
     buildingName: '서교동',
-    photo: DummyImage2,
     isOpen: false,
     statusText: '운영 종료',
     hours: '08:30 - 19:00',

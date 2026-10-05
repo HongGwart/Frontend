@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from 'styled-components/native';
+import RestaurantIcon from '@assets/svgs/icons/restaurant.svg';
 import { FavoritePlaceCard } from '@components/mypage/FavoritePlaceCard';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
@@ -128,7 +129,8 @@ export default function HongdaeScreen() {
             buildingName={place.buildingName}
             locationDetail={place.locationDetail}
             photo={place.photo}
-            icon={place.icon}
+            // 사진이 없는 가게는 즐겨찾기/편의시설 목록의 기본 썸네일처럼 옅은 남색 박스에 식당 아이콘을 띄운다.
+            icon={place.icon ?? RestaurantIcon}
             iconWidth={place.iconWidth}
             iconHeight={place.iconHeight}
             isOpen={place.isOpen}

@@ -105,6 +105,9 @@ export function useMapGestures({
   fitOffsetY: fitShiftY = 0,
 }: UseMapGesturesOptions) {
   const scale = useSharedValue(1);
+  // fitToContainer가 한 번이라도 돌았는지(1 = 맞춤 끝). 그 전엔 배율 1·위치 (0,0) 기본값이라 도면이 원본 크기로
+  // 왼쪽 위에 그려지므로, 화면은 이 값이 1이 될 때까지 도면을 숨긴다(층을 바꿔 새로 마운트될 때 번쩍임 방지).
+  const hasFitted = useSharedValue(0);
   const savedScale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -407,6 +410,7 @@ export function useMapGestures({
       containerHeightShared.value = containerHeight;
       fitOffsetX.value = offsetX;
       fitOffsetY.value = offsetY;
+      hasFitted.value = 1;
 
       scale.value = savedScale.value = initialScale;
       translateX.value = savedTranslateX.value = offsetX;
@@ -434,6 +438,7 @@ export function useMapGestures({
       containerHeightShared,
       fitOffsetX,
       fitOffsetY,
+      hasFitted,
     ]
   );
 
@@ -442,6 +447,7 @@ export function useMapGestures({
     animatedStyle,
     resetTransform,
     fitToContainer,
+    hasFitted,
     // 아이콘/라벨 오버레이 레이어가 mapLayer와 같은 translate+rotate+scale 공식으로
     // 화면 좌표를 계산해야 해서 shared value 자체를 그대로 노출한다.
     scale,
