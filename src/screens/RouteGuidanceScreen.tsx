@@ -40,7 +40,7 @@ import {
 } from '@constant/dummyRouteResults';
 import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
-import { regionToFit, slicePath, splitPathAt } from '@utils/routePath';
+import { LatLng, regionToFit, slicePath, splitPathAt } from '@utils/routePath';
 import { buildTestRoute, getRouteMapData, RouteMapData } from '@constant/testIndoorRoute';
 import { FLOOR_GEO_ANCHORS } from '@constant/floorGeoAnchors';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
@@ -92,6 +92,29 @@ const toRippleFrame = (t: number): RippleFrame => ({
   radius: RIPPLE_MAX_RADIUS_M * t,
   alpha: RIPPLE_MAX_ALPHA * (1 - t),
 });
+
+/**
+ * 경로선 한 줄. 지나온 경로처럼 토막 수가 바뀌어 새로 마운트되는 선도 끝·꺾임이 둥글게 나오도록, 아래
+ * lineCapReady 우회(Butt/Miter로 그렸다가 다음 틱에 Round)를 선마다 스스로 한다.
+ */
+function RouteLine({ coords, color }: { coords: LatLng[]; color: string }) {
+  const [capReady, setCapReady] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setCapReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  return (
+    <NaverMapPolylineOverlay
+      coords={coords}
+      width={6}
+      color={color}
+      capType={capReady ? 'Round' : 'Butt'}
+      joinType={capReady ? 'Round' : 'Miter'}
+      // 토막이 나중에 새로 붙어도 파란 남은 경로(zIndex 0) 아래에 깔리게 한다.
+      zIndex={-1}
+    />
+  );
+}
 
 /**
  * 길 안내 지도 위 오버레이(경로선, 출발/도착 핀, 도착 파동, 현재 위치 마커). 경로선·파동·마커
@@ -170,22 +193,48 @@ function GuidanceMapOverlays({
     return segment ?? { from: 0, to: 1 };
   }, [currentFloorId, routeMap.floorSegments, targetProgress]);
 
-  const { position, traveled, remaining } = useMemo(() => {
+  const { position, remaining } = useMemo(() => {
     const split = splitPathAt(routeMap.path, displayProgress);
     if (visibleRange.from === 0 && visibleRange.to === 1) return split;
     const clamped = Math.min(visibleRange.to, Math.max(visibleRange.from, displayProgress));
-    return {
-      position: split.position,
-      traveled: slicePath(routeMap.path, visibleRange.from, clamped),
-      remaining: slicePath(routeMap.path, clamped, visibleRange.to),
-    };
+    return { position: split.position, remaining: slicePath(routeMap.path, clamped, visibleRange.to) };
   }, [routeMap.path, displayProgress, visibleRange]);
-  // 출발지/도착지 핀도 그 지점이 지금 보이는 구간에 있을 때만 (출발 = 경로 맨 앞, 도착 = 맨 끝)
-  const showStart = visibleRange.from === 0;
+
+  // 지나온 경로(회색)는 출발지부터 지금 위치까지 계속 보여준다(Figma 784:4466). 단, 지금 있는 건물의 다른 층
+  // 구간은 빼서 — 예: C동 8층에서 C동 1층 복도 경로가 같은 자리에 겹쳐 보이지 않게 — 여러 토막으로 그린다.
+  const traveledPieces = useMemo(() => {
+    const end = Math.min(displayProgress, visibleRange.to);
+    const building = currentFloorId?.split('_')[0];
+    const otherFloors = building
+      ? routeMap.floorSegments.filter(
+          segment => segment.floorId !== currentFloorId && segment.floorId.split('_')[0] === building,
+        )
+      : [];
+    let ranges: [number, number][] = [[0, end]];
+    otherFloors.forEach(({ from, to }) => {
+      ranges = ranges.flatMap(([a, b]): [number, number][] => [
+        [a, Math.min(b, from)],
+        [Math.max(a, to), b],
+      ]);
+    });
+    return ranges
+      .filter(([a, b]) => b - a > 1e-6)
+      .map(([a, b]) => slicePath(routeMap.path, a, b))
+      .filter(coords => coords.length >= 2);
+  }, [routeMap.path, routeMap.floorSegments, displayProgress, visibleRange.to, currentFloorId]);
+  // 출발지 핀은 지나온 회색 경로의 시작점이라 계속 띄운다. 회색 경로와 같은 규칙으로, 지금 있는 건물의
+  // 다른 층(예: R동 1층에 있을 때 R동 로비층의 출발지)일 때만 겹쳐 보이지 않게 숨긴다.
+  // 도착지 핀은 그 지점이 지금 보이는 구간(경로 맨 끝)에 있을 때만.
+  const startFloorId = routeMap.floorSegments.find(segment => segment.from === 0)?.floorId;
+  const showStart =
+    !currentFloorId ||
+    !startFloorId ||
+    startFloorId === currentFloorId ||
+    startFloorId.split('_')[0] !== currentFloorId.split('_')[0];
   const showEnd = visibleRange.to === 1;
   // 폴리라인은 점 2개 미만이면 못 그려서, 비었을 땐 현재 위치 두 점으로 채우고 숨긴다(오버레이는 계속 마운트 —
   // 아래 lineCapReady 우회가 마운트 직후 한 번만 먹기 때문).
-  const lineCoords = (coords: typeof traveled) => (coords.length >= 2 ? coords : [position, position]);
+  const lineCoords = (coords: typeof remaining) => (coords.length >= 2 ? coords : [position, position]);
 
   // NavigationScreen의 routeLineCapReady와 같은 우회: 선언된 기본값(Round)을 처음부터 넘기면
   // 네이티브가 변경으로 보지 않아 반영이 안 되니, Butt/Miter로 그렸다가 다음 틱에 Round로 바꾼다.
@@ -197,15 +246,9 @@ function GuidanceMapOverlays({
 
   return (
     <>
-      <NaverMapPolylineOverlay
-        coords={lineCoords(traveled)}
-        isHidden={traveled.length < 2}
-        width={6}
-        color={theme.semantic.line.primary}
-        capType={lineCapReady ? 'Round' : 'Butt'}
-        joinType={lineCapReady ? 'Round' : 'Miter'}
-        zIndex={0}
-      />
+      {traveledPieces.map((coords, index) => (
+        <RouteLine key={index} coords={coords} color={theme.semantic.line.primary} />
+      ))}
       <NaverMapPolylineOverlay
         coords={lineCoords(remaining)}
         width={6}
