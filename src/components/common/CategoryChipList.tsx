@@ -9,13 +9,15 @@ interface Props {
   selectedKey: CategoryKey | null;
   /** 이미 선택된 칩을 다시 누르면 선택 해제(null)해서 넘겨준다 */
   onSelect: (key: CategoryKey | null) => void;
+  /** true면 칩을 눌러도 아무 반응이 없다(모양은 그대로). 필터링이 연결되지 않은 화면에서 보여주기만 할 때 쓴다. */
+  disabled?: boolean;
 }
 
 /**
  * 검색 페이지 상단의 카테고리 필터 칩 목록. 즐겨찾기/열람실/식당 등 CATEGORY_CHIPS에
  * 정의된 카테고리를 가로 스크롤로 보여주고, 한 번에 하나만 선택할 수 있다(라디오 방식).
  */
-export function CategoryChipList({ selectedKey, onSelect }: Props) {
+export function CategoryChipList({ selectedKey, onSelect, disabled = false }: Props) {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
       <Row>
@@ -27,6 +29,7 @@ export function CategoryChipList({ selectedKey, onSelect }: Props) {
             iconWidth={iconWidth}
             iconHeight={iconHeight}
             active={selectedKey === key}
+            disabled={disabled}
             // 칩 그림자가 칩 사이/주변에 회색으로 번져 보여서 끈다(테두리만으로 구분).
             elevated={false}
             onPress={() => onSelect(selectedKey === key ? null : key)}

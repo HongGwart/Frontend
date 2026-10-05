@@ -78,6 +78,9 @@ export default function HongdaeScreen() {
         longitude={selectedPlace.longitude}
         onBack={closeDetail}
         onSearchPress={() => rootNavigation.navigate('Search')}
+        // 주변상권은 캠퍼스 검색·편의시설 카테고리와 무관해서 상단 검색창과 칩은 보여주기만 하고 못 누르게 한다.
+        chipsDisabled
+        searchDisabled
         marker={
           <NaverMapMarker
             latitude={selectedPlace.latitude}
