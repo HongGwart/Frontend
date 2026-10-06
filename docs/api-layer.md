@@ -10,7 +10,7 @@
 | `errors.ts` | `ApiError`(kind/status/code/serverMessage), 사용자용 문구 결정 | ⭕ |
 | `queryClient.ts` | TanStack Query 설정, 전역 에러 토스트, 앱 포그라운드 복귀 시 갱신 | ⭕ |
 | `errorToast.tsx` | 전역 에러 토스트 저장소 + `<ApiErrorToastHost />`(App 루트) | ⭕ |
-| `{도메인}/` | 생성 훅을 화면에 맞게 감싼 훅(디바운스, 응답 → 화면 모델 변환 등). 예: `search/useSearchSuggestions.ts` | ⭕ |
+| `{도메인}/` | 생성 훅을 화면에 맞게 감싼 훅(디바운스, 응답 → 화면 모델 변환 등). 예: `search/useSearchSuggestions.ts`, `route/useRouteSearch.ts`(+ `route/toRouteView.ts`: 경로 응답 → 경로 카드·지도·길 안내 모델) | ⭕ |
 
 ## 규칙
 - 화면은 axios를 직접 부르지 않고 **쿼리 훅**만 쓴다. 응답을 화면 모델로 바꾸는 일은 `{도메인}/` 훅에서 한다.
@@ -27,4 +27,6 @@
 환경 변수를 바꾼 뒤에는 Metro를 다시 시작한다(`npx expo start -c`).
 
 ## 알려진 제약
+- 길찾기는 출발/도착을 **둘 다 서버 검색 결과**로 골랐을 때만 서버 경로를 쓴다. 앱 더미 장소(즐겨찾기·기본 출발지 포함)가 끼면 기존 더미/테스트 경로를 보여준다.
+- 서버는 엘리베이터로 여러 층을 가도 층마다 `FLOOR_CHANGE`를 따로 주고 `summary.features`도 층마다 센다. 앱(`toRouteView`)에서 한 번의 층 이동으로 합쳐 보여준다.
 - Swagger 스키마에 `required`/`nullable`이 없어 생성 타입의 필드가 전부 optional이다(백엔드에 요청함, #28).

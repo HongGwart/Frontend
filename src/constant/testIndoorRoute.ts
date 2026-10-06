@@ -100,7 +100,8 @@ function turnAt(prev: LatLng, at: LatLng, next: LatLng) {
   return angle > 0 ? '왼쪽' : '오른쪽';
 }
 
-function pathMeters(path: LatLng[]) {
+/** 경로선 길이(m) */
+export function pathMeters(path: LatLng[]) {
   return path.slice(1).reduce((sum, point, i) => sum + segmentLength(path[i], point) * METERS_PER_DEGREE, 0);
 }
 
@@ -265,13 +266,22 @@ export interface RouteMapData {
   camera: LatLng & { zoom: number };
 }
 
-function toCamera(path: LatLng[], zoom: number) {
+/**
+ * 경로 보기 카메라 — 경로 바운딩 박스 중앙. R동 → C동처럼 건물을 건너가는 경로는 줌 17로는 한 화면에 안
+ * 들어와서, 경로 길이에 맞춰 줌을 15까지 낮춘다.
+ */
+export function routeCamera(path: LatLng[]) {
   const lats = path.map(p => p.latitude);
   const lngs = path.map(p => p.longitude);
+  const southWest = { latitude: Math.min(...lats), longitude: Math.min(...lngs) };
+  const spanMeters = Math.max(
+    segmentLength(southWest, { ...southWest, latitude: Math.max(...lats) }),
+    segmentLength(southWest, { ...southWest, longitude: Math.max(...lngs) }),
+  ) * METERS_PER_DEGREE;
   return {
     latitude: (Math.min(...lats) + Math.max(...lats)) / 2,
     longitude: (Math.min(...lngs) + Math.max(...lngs)) / 2,
-    zoom,
+    zoom: Math.min(17, Math.max(15, 17 - Math.log2(Math.max(spanMeters, 1) / 200))),
   };
 }
 
@@ -285,22 +295,13 @@ export function getRouteMapData(routeId: string | null | undefined): RouteMapDat
     const { path, guidance, floorSegments } = testRoute;
     const first = TEST_ROUTE_STAGES[0];
     const last = TEST_ROUTE_STAGES[TEST_ROUTE_STAGES.length - 1];
-    // R동 → C동처럼 건물을 건너가는 경로는 줌 17로는 한 화면에 안 들어와서, 길이에 맞춰 줌을 낮춘다.
-    const lats = path.map(p => p.latitude);
-    const lngs = path.map(p => p.longitude);
-    const southWest = { latitude: Math.min(...lats), longitude: Math.min(...lngs) };
-    const spanMeters = Math.max(
-      segmentLength(southWest, { ...southWest, latitude: Math.max(...lats) }),
-      segmentLength(southWest, { ...southWest, longitude: Math.max(...lngs) }),
-    ) * METERS_PER_DEGREE;
-    const zoom = Math.min(17, Math.max(15, 17 - Math.log2(Math.max(spanMeters, 1) / 200)));
     return {
       path,
       start: { ...path[0], label: first.from },
       end: { ...path[path.length - 1], label: last.to },
       guidance,
       floorSegments,
-      camera: toCamera(path, zoom),
+      camera: routeCamera(path),
     };
   }
   return {

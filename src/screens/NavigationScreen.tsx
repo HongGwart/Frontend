@@ -33,6 +33,8 @@ import {
 import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
 import { regionToFit } from '@utils/routePath';
+import { useRouteSearch } from '@api/route/useRouteSearch';
+import { getErrorMessage } from '@api/errors';
 
 // Header.tsx의 Container height와 동일한 값 — 경로 보기 화면에서 지도 위에 얹는
 // 투명 헤더의 실제 높이(세이프에어리어 제외)를 지도 카메라 패딩 계산에 재사용한다.
@@ -53,6 +55,9 @@ export default function NavigationScreen() {
 
   const [departure, setDeparture] = useState('');
   const [destination, setDestination] = useState('');
+  // 서버 검색 결과에서 고른 출발/도착의 노드 id. 둘 다 있으면 실제 경로 탐색 API를 쓴다.
+  const [departureNodeId, setDepartureNodeId] = useState<number | undefined>();
+  const [destinationNodeId, setDestinationNodeId] = useState<number | undefined>();
   // 경로 옵션은 라디오처럼 한 번에 하나만 고를 수 있다. 같은 칩을 다시 누르면 선택 해제.
   const [selectedOption, setSelectedOption] = useState<RouteOptionKey | null>(null);
 
@@ -63,14 +68,22 @@ export default function NavigationScreen() {
   useEffect(() => {
     const selection = params?.routeSelection;
     if (!selection) return;
-    if (selection.departureLabel !== undefined) setDeparture(selection.departureLabel);
-    if (selection.destinationLabel !== undefined) setDestination(selection.destinationLabel);
+    if (selection.departureLabel !== undefined) {
+      setDeparture(selection.departureLabel);
+      setDepartureNodeId(selection.departureNodeId);
+    }
+    if (selection.destinationLabel !== undefined) {
+      setDestination(selection.destinationLabel);
+      setDestinationNodeId(selection.destinationNodeId);
+    }
     navigation.setParams({ routeSelection: undefined });
   }, [params?.routeSelection, navigation]);
 
   const swapValues = () => {
     setDeparture(destination);
     setDestination(departure);
+    setDepartureNodeId(destinationNodeId);
+    setDestinationNodeId(departureNodeId);
   };
 
   const toggleOption = (key: RouteOptionKey) => {
@@ -79,11 +92,30 @@ export default function NavigationScreen() {
 
   // 출발/도착지가 둘 다 채워지면 빈 상태 대신 경로 목록을 보여준다.
   const hasRoute = departure.length > 0 && destination.length > 0;
-  // 출발/도착이 실내 길찾기 테스트 쌍(R동 카페나무 → C동 816호)이고 노드를 다 찍어뒀으면 그 경로 하나만 보여준다.
-  const routeResults = useMemo(() => {
+  // 둘 다 서버 검색 결과로 골랐으면 서버 경로(GET /api/route)를 쓴다.
+  const routeSearch = useRouteSearch({ fromNodeId: departureNodeId, toNodeId: destinationNodeId });
+  // 서버 경로를 못 쓰면(앱 더미 장소를 골랐을 때) — 출발/도착이 실내 길찾기 테스트 쌍(R동 카페나무 → C동
+  // 816호)이고 노드를 다 찍어뒀으면 그 경로 하나만, 아니면 더미 경로를 보여준다.
+  const allRouteResults = useMemo(() => {
+    if (routeSearch.enabled) return routeSearch.routes.map(view => view.result);
     const testRoute = isTestRoutePair(departure, destination) ? buildTestRoute() : null;
     return testRoute ? [testRoute.result] : DUMMY_ROUTE_RESULTS;
-  }, [departure, destination]);
+  }, [routeSearch.enabled, routeSearch.routes, departure, destination]);
+  // 경로 옵션 칩을 고르면 그 옵션 경로만 보여준다.
+  const routeResults = useMemo(
+    () => (selectedOption ? allRouteResults.filter(route => route.option === selectedOption) : allRouteResults),
+    [allRouteResults, selectedOption],
+  );
+  // 경로 목록 대신 띄울 안내 — 찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
+  const routeStatusText = routeSearch.isLoading
+    ? '경로를 찾고 있어요'
+    : routeSearch.notFound
+      ? '두 장소를 잇는 경로를 찾지 못했어요'
+      : routeSearch.error
+        ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
+        : routeResults.length === 0
+          ? '이 옵션으로 갈 수 있는 경로가 없어요'
+          : null;
   const hasElevatorWarning = useMemo(() => routeResults.some(route => route.elevatorWarning), [routeResults]);
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
@@ -93,7 +125,10 @@ export default function NavigationScreen() {
     [routeResults, selectedRouteId],
   );
   // 경로선/출발·도착 핀/경로 보기 카메라 — 선택한 경로 기준.
-  const routeMap = useMemo(() => getRouteMapData(selectedRouteId), [selectedRouteId]);
+  const routeMap = useMemo(() => {
+    const apiView = routeSearch.routes.find(view => view.result.id === selectedRouteId);
+    return apiView ? apiView.map : getRouteMapData(selectedRouteId);
+  }, [routeSearch.routes, selectedRouteId]);
 
   // 경로 보기 카드를 끌어내리면(Figma "길 찾기_전체 경로" 762:4620) 지도를 전체로 펼치고
   // 상단에 헤더 + 출발/도착 입력을 띄운다. 지도 카메라 패딩을 맞추려고 시트/상단 패널 높이를 잰다.
@@ -159,17 +194,24 @@ export default function NavigationScreen() {
               target: 'departure',
               departureLabel: departure,
               destinationLabel: destination,
+              departureNodeId,
+              destinationNodeId,
             })
           }
-          onClear={() => setDeparture('')}
+          onClear={() => {
+            setDeparture('');
+            setDepartureNodeId(undefined);
+          }}
           disabled={disabled}
           rightSlot={
             <GpsButton
-              onPress={() =>
+              onPress={() => {
+                // 기본 출발지는 아직 앱 더미라 노드 id가 없다(서버 경로 대신 더미 경로가 나온다).
                 setDeparture(
                   `${DUMMY_DEFAULT_DEPARTURE.buildingCode} ${DUMMY_DEFAULT_DEPARTURE.buildingName} ${DUMMY_DEFAULT_DEPARTURE.roomNumber}`,
-                )
-              }
+                );
+                setDepartureNodeId(undefined);
+              }}
               hitSlop={8}
             >
               <GpsIcon width={24} height={24} />
@@ -185,9 +227,14 @@ export default function NavigationScreen() {
               target: 'destination',
               departureLabel: departure,
               destinationLabel: destination,
+              departureNodeId,
+              destinationNodeId,
             })
           }
-          onClear={() => setDestination('')}
+          onClear={() => {
+            setDestination('');
+            setDestinationNodeId(undefined);
+          }}
           disabled={disabled}
         />
       </InputColumn>
@@ -319,7 +366,14 @@ export default function NavigationScreen() {
               <Button
                 label="경로 안내 시작"
                 icon={NavigationStartIcon}
-                onPress={() => navigation.navigate('RouteGuidance', { routeId: selectedRoute.id, destinationLabel: destination })}
+                onPress={() =>
+                  navigation.navigate('RouteGuidance', {
+                    routeId: selectedRoute.id,
+                    destinationLabel: destination,
+                    fromNodeId: departureNodeId,
+                    toNodeId: destinationNodeId,
+                  })
+                }
               />
             </CtaWrapper>
           </DetailSheetBody>
@@ -348,7 +402,11 @@ export default function NavigationScreen() {
         ))}
       </OptionRow>
 
-      {hasRoute ? (
+      {hasRoute && routeStatusText ? (
+        <EmptyState>
+          <EmptyText>{routeStatusText}</EmptyText>
+        </EmptyState>
+      ) : hasRoute ? (
         <ResultsArea>
           <ScrollView
             contentContainerStyle={{ paddingBottom: hasElevatorWarning ? insets.bottom + 76 : insets.bottom + 16 }}

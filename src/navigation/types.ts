@@ -22,6 +22,9 @@ export interface FocusFacilityParam {
 export interface RouteLocationSelection {
   departureLabel?: string;
   destinationLabel?: string;
+  /** 서버 검색 결과에서 골랐으면 그 노드 id(GET /api/route의 출발/도착). 앱 더미 장소면 없다. */
+  departureNodeId?: number;
+  destinationNodeId?: number;
 }
 
 // 하단 탭 4개. 길찾기는 탭이 아니라 루트 스택에 푸시되는 화면이다(RootStackParamList.Navigation) —
@@ -65,10 +68,10 @@ export type RootStackParamList = {
   // 입력창을 구분하고, 나머지 한쪽 값(departureLabel/destinationLabel)은 이미 골라둔 값을
   // 그대로 들고 있다가 결과와 함께 돌려보내기 위해 같이 받아온다.
   RouteLocationSearch: { target: 'departure' | 'destination' } & RouteLocationSelection;
-  // 길찾기 경로 보기의 "경로 안내 시작"을 누르면 뜨는 길 안내 화면. 구간 안내는 아직 더미
-  // (DUMMY_GUIDANCE_STEPS)이고, routeId로 찾은 경로의 요약값과 destinationLabel은 도착했을 때
-  // 상단 카드("…에 도착했어요")에 쓴다.
-  RouteGuidance: { routeId: string; destinationLabel: string };
+  // 길찾기 경로 보기의 "경로 안내 시작"을 누르면 뜨는 길 안내 화면. 출발/도착 노드가 있으면 서버 경로
+  // (useRouteSearch 캐시)에서 routeId로 경로를 찾고, 없으면 더미/테스트 경로를 쓴다. 경로의 요약값과
+  // destinationLabel은 도착했을 때 상단 카드("…에 도착했어요")에 쓴다.
+  RouteGuidance: { routeId: string; destinationLabel: string; fromNodeId?: number; toNodeId?: number };
 };
 
 // 편의시설 카테고리 그리드(FacilityScreen)의 카테고리 id. 여기서 export해서
