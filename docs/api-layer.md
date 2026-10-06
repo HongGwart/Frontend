@@ -10,7 +10,7 @@
 | `errors.ts` | `ApiError`(kind/status/code/serverMessage), 사용자용 문구 결정 | ⭕ |
 | `queryClient.ts` | TanStack Query 설정, 전역 에러 토스트, 앱 포그라운드 복귀 시 갱신 | ⭕ |
 | `errorToast.tsx` | 전역 에러 토스트 저장소 + `<ApiErrorToastHost />`(App 루트) | ⭕ |
-| `{도메인}/` | 생성 훅을 화면에 맞게 감싼 훅(디바운스, 응답 → 화면 모델 변환 등). 예: `search/useSearchSuggestions.ts`, `route/useRouteSearch.ts`(+ `route/toRouteView.ts`: 경로 응답 → 경로 카드·지도·길 안내 모델) | ⭕ |
+| `{도메인}/` | 생성 훅을 화면에 맞게 감싼 훅(디바운스, 응답 → 화면 모델 변환 등). 예: `search/useSearchSuggestions.ts`, `route/useRouteSearch.ts`(+ `route/toRouteView.ts`: 경로 응답 → 경로 카드·지도·길 안내 모델), `node/useNodeDetail.ts`(장소 상세 → 시설 카드의 층·호실·출입구) | ⭕ |
 
 ## 규칙
 - 화면은 axios를 직접 부르지 않고 **쿼리 훅**만 쓴다. 응답을 화면 모델로 바꾸는 일은 `{도메인}/` 훅에서 한다.

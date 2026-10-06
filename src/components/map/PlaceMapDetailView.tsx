@@ -67,6 +67,8 @@ export function PlaceMapDetailView({
       </TopBar>
       <MapArea>
         <NaverMapView
+          // 서비스에서 현재 위치를 제공하지 않으므로 현위치 버튼(위치 권한 요청 경로)을 끈다.
+          isShowLocationButton={false}
           style={StyleSheet.absoluteFill}
           initialCamera={{ latitude, longitude, zoom: 17 }}
           minZoom={MAP_MIN_ZOOM}

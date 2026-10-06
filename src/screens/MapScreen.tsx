@@ -399,6 +399,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   return (
     <View style={styles.container}>
       <NaverMapView
+        // 서비스에서 현재 위치를 제공하지 않으므로 현위치 버튼(위치 권한 요청 경로)을 끈다.
+        isShowLocationButton={false}
         ref={mapViewRef}
         style={StyleSheet.absoluteFill}
         initialCamera={{

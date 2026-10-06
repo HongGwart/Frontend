@@ -16,6 +16,8 @@ export interface FavoriteInput {
   category?: SearchItemCategory;
   latitude?: number;
   longitude?: number;
+  /** 서버 장소면 노드 id — 즐겨찾기를 길찾기 출발/도착으로 고를 때 실제 경로 탐색에 쓴다 */
+  nodeId?: number;
 }
 
 /**

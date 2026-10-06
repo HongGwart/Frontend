@@ -20,6 +20,7 @@ function formatLocationLabel(item: SearchResultItem) {
 function favoriteToSearchItem(favorite: StoredFavorite): SearchResultItem {
   return {
     id: `favorite-${favorite.placeKey}`,
+    nodeId: favorite.nodeId,
     building: favorite.buildingCode,
     place: favorite.buildingName,
     room: favorite.name,

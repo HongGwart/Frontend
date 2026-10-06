@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Frontend",
+    "name": "홍그와트",
     "slug": "Frontend",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,6 +10,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.honggwart",
       "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "현재 위치를 기반으로 캠퍼스 지도를 안내하기 위해 위치 정보가 필요합니다.",
         "NSAppTransportSecurity": {
           "NSExceptionDomains": {
             "map.naver.com": {
