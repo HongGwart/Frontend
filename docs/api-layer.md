@@ -27,5 +27,4 @@
 환경 변수를 바꾼 뒤에는 Metro를 다시 시작한다(`npx expo start -c`).
 
 ## 알려진 제약
-- 서버가 아직 `http://`라 `app.json`에 iOS ATS 예외(`honggwart.duckdns.org`)와 Android `usesCleartextTraffic`을 열어 두었다. 네이티브 설정이라 **dev-client를 다시 빌드**해야 적용된다. HTTPS가 되면 둘 다 지운다.
 - Swagger 스키마에 `required`/`nullable`이 없어 생성 타입의 필드가 전부 optional이다(백엔드에 요청함, #28).

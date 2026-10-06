@@ -19,9 +19,6 @@
             "map.naver.net": {
               "NSExceptionAllowsInsecureHTTPLoads": true,
               "NSIncludesSubdomains": true
-            },
-            "honggwart.duckdns.org": {
-              "NSExceptionAllowsInsecureHTTPLoads": true
             }
           }
         }
@@ -56,8 +53,7 @@
           "android": {
             "extraMavenRepos": [
               "https://repository.map.naver.com/archive/maven"
-            ],
-            "usesCleartextTraffic": true
+            ]
           }
         }
       ],

@@ -6,7 +6,7 @@ import { defineConfig } from 'orval';
  * 생성물(src/api/generated)은 손으로 고치지 않는다 — 서버 스펙이 바뀌면 다시 생성한다.
  * 관리자 API(/api/admin/**)는 앱에서 안 쓰므로 태그로 걸러 앱용 API만 만든다.
  */
-const SPEC_URL = 'http://honggwart.duckdns.org:8081/v3/api-docs';
+const SPEC_URL = 'https://dev-api.honggwart.com/v3/api-docs';
 const APP_TAGS = ['검색', '길찾기'];
 
 export default defineConfig({
