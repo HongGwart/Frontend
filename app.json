@@ -7,10 +7,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.honggwart",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "현재 위치를 기반으로 캠퍼스 지도를 안내하기 위해 위치 정보가 필요합니다.",
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "지도 표시 기능에 위치 정보가 사용될 수 있습니다. 이 앱은 현재 위치를 수집하지 않습니다.",
         "NSAppTransportSecurity": {
           "NSExceptionDomains": {
             "map.naver.com": {
@@ -44,7 +45,7 @@
         {
           "client_id": "41u83ejd91",
           "ios": {
-            "NSLocationWhenInUseUsageDescription": "현재 위치를 기반으로 캠퍼스 지도를 안내하기 위해 위치 정보가 필요합니다."
+            "NSLocationWhenInUseUsageDescription": "지도 표시 기능에 위치 정보가 사용될 수 있습니다. 이 앱은 현재 위치를 수집하지 않습니다."
           }
         }
       ],
