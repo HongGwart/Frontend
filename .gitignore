@@ -41,3 +41,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# env (.env.example을 복사해서 사용)
+.env

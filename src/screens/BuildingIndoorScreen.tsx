@@ -22,6 +22,7 @@ import {
 } from '@constant/dummyFacilityInfo';
 import { RootStackParamList } from '@navigation/types';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
+import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 
 // 층 전환 시 슬라이드 이동 거리(px). 위층으로 가면 아래에서, 아래층으로 가면 위에서 들어온다.
 const SLIDE_DISTANCE = 64;
@@ -47,6 +48,8 @@ export default function BuildingIndoorScreen() {
   const { params } = useRoute<RouteProp<RootStackParamList, 'BuildingIndoor'>>();
   const insets = useSafeAreaInsets();
   const theme = useTheme();
+  // 건물 내부 평면도가 밖으로 퍼지지 않게 이 화면이 떠 있는 동안 캡처를 막는다.
+  useBlockScreenCapture('buildingIndoor');
 
   const marker = useMemo(
     () => DUMMY_MAP_MARKERS.find(item => item.label === params.buildingCode),

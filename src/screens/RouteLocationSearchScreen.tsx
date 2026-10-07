@@ -7,6 +7,7 @@ import styled from 'styled-components/native';
 import Header from '@components/layout/Header';
 import { SearchListItem } from '@components/common/SearchListItem';
 import { DepartureSearchBar } from '@components/mypage/DepartureSearchBar';
+import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
 import { DUMMY_SEARCH_RESULTS, SEARCH_ITEM_ICONS, SearchResultItem } from '@constant/dummySearchData';
 import { RootStackParamList } from '@navigation/types';
 import { StoredFavorite, useFavorites } from '@hooks/useFavorites';
@@ -19,6 +20,7 @@ function formatLocationLabel(item: SearchResultItem) {
 function favoriteToSearchItem(favorite: StoredFavorite): SearchResultItem {
   return {
     id: `favorite-${favorite.placeKey}`,
+    nodeId: favorite.nodeId,
     building: favorite.buildingCode,
     place: favorite.buildingName,
     room: favorite.name,
@@ -37,13 +39,10 @@ export default function RouteLocationSearchScreen() {
   const [value, setValue] = useState('');
 
   const keyword = value.trim().toLowerCase();
-  // 검색어가 없으면 전체 목록을, 있으면 필터링된 결과를 보여준다(길찾기는 최근 검색어 개념이 없다).
-  const results = useMemo(() => {
-    if (!keyword) return DUMMY_SEARCH_RESULTS;
-    return DUMMY_SEARCH_RESULTS.filter(item =>
-      `${item.building}${item.place}${item.room ?? ''}`.toLowerCase().includes(keyword),
-    );
-  }, [keyword]);
+  // 검색어가 없으면 앱 더미 전체 목록을, 있으면 서버 검색 결과(+ 앱 더미)를 보여준다(길찾기는 최근 검색어 개념이
+  // 없다). 서버 결과엔 nodeId가 있어서, 출발/도착을 둘 다 서버 결과로 고르면 실제 경로 탐색 API를 쓴다.
+  const { results: searchResults } = useSearchSuggestions(value);
+  const results = keyword ? searchResults : DUMMY_SEARCH_RESULTS;
 
   // 검색어가 없을 땐 기기에 저장된 즐겨찾기를 맨 위에 먼저 보여줘서 바로 고를 수 있게 한다.
   const { favorites, isFavorite } = useFavorites();
@@ -59,6 +58,8 @@ export default function RouteLocationSearchScreen() {
       routeSelection: {
         departureLabel: params.target === 'departure' ? label : params.departureLabel,
         destinationLabel: params.target === 'destination' ? label : params.destinationLabel,
+        departureNodeId: params.target === 'departure' ? item.nodeId : params.departureNodeId,
+        destinationNodeId: params.target === 'destination' ? item.nodeId : params.destinationNodeId,
       },
     });
   };

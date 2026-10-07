@@ -42,6 +42,8 @@ export type SearchItemCategory = keyof typeof SEARCH_ITEM_ICONS;
 
 export interface SearchResultItem {
   id: string;
+  /** 서버 검색 결과면 노드 id(GET /api/nodes/{nodeId}, 길찾기 출발/도착에 쓴다). 앱 더미 항목엔 없다. */
+  nodeId?: number;
   building: string;
   place: string;
   /** 특정 호실 등 세부 정보. 건물/장소 자체가 검색 결과인 경우엔 비운다(예: "학생회관"). */

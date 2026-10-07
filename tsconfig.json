@@ -4,7 +4,7 @@
     "strict": true,
     "paths": {
       "@assets/*": ["./src/assets/*"],
-      "@axios/*": ["./src/axios/*"],
+      "@api/*": ["./src/api/*"],
       "@components/*": ["./src/components/*"],
       "@config/*": ["./src/config/*"],
       "@constant/*": ["./src/constant/*"],

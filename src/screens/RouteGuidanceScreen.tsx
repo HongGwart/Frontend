@@ -45,6 +45,8 @@ import { buildTestRoute, getRouteMapData, RouteMapData } from '@constant/testInd
 import { FLOOR_GEO_ANCHORS } from '@constant/floorGeoAnchors';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
 import { animateValue } from '@utils/animateValue';
+import { useRouteSearch } from '@api/route/useRouteSearch';
+import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 
 const MOVE_TYPE_ICONS: Record<GuidanceMoveType, React.FC<SvgProps>> = {
   walk: WalkIcon,
@@ -303,8 +305,13 @@ function GuidanceMapOverlays({
 export default function RouteGuidanceScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'RouteGuidance'>>();
+  // 서버 경로면 경로 선택 화면이 불러둔 캐시에서 꺼낸다(같은 출발/도착이라 다시 요청하지 않는다).
+  const { routes: apiRoutes } = useRouteSearch({ fromNodeId: params.fromNodeId, toNodeId: params.toNodeId });
   // 실내 길찾기 테스트 경로면 찍어둔 노드로 만든 경로/구간 안내를, 아니면 기존 더미를 쓴다.
+  // 안내 도중 경로가 바뀌면 구간 순서가 어긋나니 처음 연 경로로 고정한다.
   const [{ route, routeMap }] = useState(() => {
+    const apiView = apiRoutes.find(view => view.result.id === params.routeId);
+    if (apiView) return { route: apiView.result, routeMap: apiView.map };
     const testRoute = buildTestRoute();
     const routes = testRoute ? [testRoute.result, ...DUMMY_ROUTE_RESULTS] : DUMMY_ROUTE_RESULTS;
     return {
@@ -313,6 +320,7 @@ export default function RouteGuidanceScreen() {
     };
   });
   const guidanceSteps = routeMap.guidance;
+  useBlockScreenCapture('routeGuidance');
   const insets = useSafeAreaInsets();
   const theme = useTheme();
 
@@ -457,6 +465,8 @@ export default function RouteGuidanceScreen() {
   return (
     <Container>
       <NaverMapView
+        // 서비스에서 현재 위치를 제공하지 않으므로 현위치 버튼(위치 권한 요청 경로)을 끈다.
+        isShowLocationButton={false}
         ref={mapRef}
         style={StyleSheet.absoluteFill}
         initialCamera={initialCamera}
