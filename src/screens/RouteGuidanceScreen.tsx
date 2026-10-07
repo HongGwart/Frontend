@@ -46,6 +46,7 @@ import { FLOOR_GEO_ANCHORS } from '@constant/floorGeoAnchors';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
 import { animateValue } from '@utils/animateValue';
 import { useRouteSearch } from '@api/route/useRouteSearch';
+import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 
 const MOVE_TYPE_ICONS: Record<GuidanceMoveType, React.FC<SvgProps>> = {
   walk: WalkIcon,
@@ -319,6 +320,7 @@ export default function RouteGuidanceScreen() {
     };
   });
   const guidanceSteps = routeMap.guidance;
+  useBlockScreenCapture('routeGuidance');
   const insets = useSafeAreaInsets();
   const theme = useTheme();
 

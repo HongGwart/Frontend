@@ -35,6 +35,7 @@ import { RootStackParamList } from '@navigation/types';
 import { regionToFit } from '@utils/routePath';
 import { useRouteSearch } from '@api/route/useRouteSearch';
 import { getErrorMessage } from '@api/errors';
+import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 
 // Header.tsx의 Container height와 동일한 값 — 경로 보기 화면에서 지도 위에 얹는
 // 투명 헤더의 실제 높이(세이프에어리어 제외)를 지도 카메라 패딩 계산에 재사용한다.
@@ -124,6 +125,9 @@ export default function NavigationScreen() {
     () => routeResults.find(route => route.id === selectedRouteId) ?? null,
     [routeResults, selectedRouteId],
   );
+  // 경로를 골라 지도로 보는 동안만 캡처를 막는다(출발/도착 입력·경로 목록은 그대로 캡처할 수 있다).
+  useBlockScreenCapture('routeView', selectedRoute !== null);
+
   // 경로선/출발·도착 핀/경로 보기 카메라 — 선택한 경로 기준.
   const routeMap = useMemo(() => {
     const apiView = routeSearch.routes.find(view => view.result.id === selectedRouteId);
