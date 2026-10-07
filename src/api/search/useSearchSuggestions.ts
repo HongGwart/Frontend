@@ -59,7 +59,10 @@ function useDebouncedValue<T>(value: T, delayMs: number) {
  * 때까지 이전 결과를 그대로 보여준다. 서버 요청이 실패하면 전역 토스트가 뜨고, 목록은 앱 더미 결과로 대신한다.
  */
 export function useSearchSuggestions(keyword: string) {
-  const query = useDebouncedValue(keyword.trim(), DEBOUNCE_MS);
+  // 앱 더미 결과는 입력하자마자 거르고, 서버 요청만 디바운스한다 — 디바운스된 값으로 다 거르면 첫 글자 입력 후
+  // 250ms 동안 목록이 통째로 비었다가 채워진다.
+  const immediate = keyword.trim();
+  const query = useDebouncedValue(immediate, DEBOUNCE_MS);
   const enabled = !USE_MOCK_API && query.length > 0;
 
   const { data, isError, isFetching } = useAutocomplete(
@@ -74,14 +77,14 @@ export function useSearchSuggestions(keyword: string) {
   );
 
   const results = useMemo(() => {
-    if (!query) return [];
-    const local = searchLocalDummy(query);
+    if (!immediate) return [];
+    const local = searchLocalDummy(immediate);
     if (!enabled || isError) return local;
     const remote = (data?.suggestions ?? []).map(toSearchResultItem);
     if (!MERGE_LOCAL_DUMMY) return remote;
     const seen = new Set(remote.map(item => `${item.building}/${item.room ?? ''}`));
     return [...remote, ...local.filter(item => !seen.has(`${item.building}/${item.room ?? ''}`))];
-  }, [query, enabled, isError, data]);
+  }, [immediate, enabled, isError, data]);
 
   return { results, isLoading: enabled && isFetching && !data };
 }
