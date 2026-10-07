@@ -37,6 +37,7 @@ import { NaverMapUserPointMarker } from '@components/map/NaverMapUserPointMarker
 import {
   DUMMY_ROUTE_RESULTS,
   GuidanceMoveType,
+  RouteResult,
 } from '@constant/dummyRouteResults';
 import { MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
@@ -47,6 +48,8 @@ import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
 import { animateValue } from '@utils/animateValue';
 import { useRouteSearch } from '@api/route/useRouteSearch';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
+import { getErrorMessage } from '@api/errors';
+import Header from '@components/layout/Header';
 
 const MOVE_TYPE_ICONS: Record<GuidanceMoveType, React.FC<SvgProps>> = {
   walk: WalkIcon,
@@ -296,29 +299,75 @@ function GuidanceMapOverlays({
   );
 }
 
+interface GuidanceRoute {
+  route: RouteResult;
+  routeMap: RouteMapData;
+}
+
+/** 서버 경로(useRouteSearch의 경로 id는 "api-{mode}")인지 */
+const isApiRouteId = (routeId: string) => routeId.startsWith('api-');
+
+/** 앱 안의 실내 테스트 경로/더미 경로 — 서버 경로가 아닐 때만 쓴다. */
+function getLocalGuidanceRoute(routeId: string): GuidanceRoute {
+  const testRoute = buildTestRoute();
+  const routes = testRoute ? [testRoute.result, ...DUMMY_ROUTE_RESULTS] : DUMMY_ROUTE_RESULTS;
+  return {
+    route: routes.find(result => result.id === routeId) ?? DUMMY_ROUTE_RESULTS[0],
+    routeMap: getRouteMapData(routeId),
+  };
+}
+
 /**
- * 길찾기 "경로 안내 시작"을 누르면 뜨는 길 안내 화면. Figma "길 안내_걷기"(784:4466).
- * 지도 전체 위에 상단 "move info" 카드(지금 구간 안내)와 우하단 이전/다음 버튼을 얹는다.
- * 지나온 구간은 회색, 남은 구간은 파란색 경로선으로 나누고, 그 경계에 현재 위치 마커를
- * 찍은 뒤 카메라를 현재 위치에 맞춘다. 아직 실제 위치 추적이 없어서 구간은 버튼으로 넘긴다.
+ * 길 안내에 쓸 경로를 정한 뒤 안내 화면을 그린다. 서버 경로는 경로 선택 화면이 불러둔 캐시에서 꺼내고, 캐시에 없으면
+ * (캐시가 비워졌거나 화면이 복원된 경우) 다시 불러올 때까지 기다린다 — 더미 경로로 바꿔치기하지 않는다. 안내 도중
+ * 경로가 바뀌면 구간 순서가 어긋나니 처음 정한 경로로 고정한다.
  */
 export default function RouteGuidanceScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'RouteGuidance'>>();
-  // 서버 경로면 경로 선택 화면이 불러둔 캐시에서 꺼낸다(같은 출발/도착이라 다시 요청하지 않는다).
-  const { routes: apiRoutes } = useRouteSearch({ fromNodeId: params.fromNodeId, toNodeId: params.toNodeId });
-  // 실내 길찾기 테스트 경로면 찍어둔 노드로 만든 경로/구간 안내를, 아니면 기존 더미를 쓴다.
-  // 안내 도중 경로가 바뀌면 구간 순서가 어긋나니 처음 연 경로로 고정한다.
-  const [{ route, routeMap }] = useState(() => {
-    const apiView = apiRoutes.find(view => view.result.id === params.routeId);
-    if (apiView) return { route: apiView.result, routeMap: apiView.map };
-    const testRoute = buildTestRoute();
-    const routes = testRoute ? [testRoute.result, ...DUMMY_ROUTE_RESULTS] : DUMMY_ROUTE_RESULTS;
-    return {
-      route: routes.find(result => result.id === params.routeId) ?? DUMMY_ROUTE_RESULTS[0],
-      routeMap: getRouteMapData(params.routeId),
-    };
-  });
+  const insets = useSafeAreaInsets();
+  const isApiRoute = isApiRouteId(params.routeId);
+  const routeSearch = useRouteSearch({ fromNodeId: params.fromNodeId, toNodeId: params.toNodeId });
+  const findApiRoute = (): GuidanceRoute | null => {
+    const view = routeSearch.routes.find(item => item.result.id === params.routeId);
+    return view ? { route: view.result, routeMap: view.map } : null;
+  };
+  const [guidanceRoute, setGuidanceRoute] = useState<GuidanceRoute | null>(() =>
+    isApiRoute ? findApiRoute() : getLocalGuidanceRoute(params.routeId),
+  );
+  const apiRoute = guidanceRoute ? null : findApiRoute();
+  useEffect(() => {
+    if (apiRoute) setGuidanceRoute(apiRoute);
+  }, [apiRoute]);
+
+  if (guidanceRoute) return <RouteGuidanceView {...guidanceRoute} />;
+
+  // 서버 경로를 기다리는 중이거나 못 불러왔을 때. 노드 id가 없으면 다시 불러올 수도 없다.
+  const failed = !routeSearch.enabled || routeSearch.notFound || !!routeSearch.error || (!routeSearch.isLoading && !apiRoute);
+  const message = !failed
+    ? '경로를 불러오고 있어요'
+    : routeSearch.error
+      ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
+      : '경로를 찾지 못했어요';
+  return (
+    <StatusContainer style={{ paddingTop: insets.top }}>
+      <Header title="길 안내" onBackPress={() => navigation.goBack()} />
+      <StatusBody>
+        <StatusText>{message}</StatusText>
+      </StatusBody>
+    </StatusContainer>
+  );
+}
+
+/**
+ * 길찾기 "경로 안내 시작"을 누르면 뜨는 길 안내 화면 본체. Figma "길 안내_걷기"(784:4466).
+ * 지도 전체 위에 상단 "move info" 카드(지금 구간 안내)와 우하단 이전/다음 버튼을 얹는다.
+ * 지나온 구간은 회색, 남은 구간은 파란색 경로선으로 나누고, 그 경계에 현재 위치 마커를
+ * 찍은 뒤 카메라를 현재 위치에 맞춘다. 아직 실제 위치 추적이 없어서 구간은 버튼으로 넘긴다.
+ */
+function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { params } = useRoute<RouteProp<RootStackParamList, 'RouteGuidance'>>();
   const guidanceSteps = routeMap.guidance;
   useBlockScreenCapture('routeGuidance');
   const insets = useSafeAreaInsets();
@@ -553,6 +602,24 @@ export default function RouteGuidanceScreen() {
 const Container = styled.View`
   flex: 1;
   background-color: ${({ theme }) => theme.semantic.background.fill};
+`;
+
+const StatusContainer = styled.View`
+  flex: 1;
+  background-color: ${({ theme }) => theme.semantic.background.primary};
+`;
+
+const StatusBody = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+`;
+
+const StatusText = styled.Text`
+  font-family: ${({ theme }) => theme.typography.labelNormal.medium.fontFamily};
+  font-size: ${({ theme }) => theme.typography.labelNormal.medium.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.labelNormal.medium.lineHeight}px;
+  color: ${({ theme }) => theme.semantic.text.tertiary};
 `;
 
 // Figma: 상태바(48) 아래 8px, 좌우 20px 여백으로 지도 위에 뜬다.

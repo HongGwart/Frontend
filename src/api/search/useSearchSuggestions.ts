@@ -15,11 +15,12 @@ const LIMIT = '20'; // 서버 스펙상 string(1~50). 스펙이 integer로 고�
  */
 const MERGE_LOCAL_DUMMY = true;
 
+const matchesKeyword = (item: SearchResultItem, lower: string) =>
+  `${item.building}${item.place}${item.room ?? ''}`.toLowerCase().includes(lower);
+
 function searchLocalDummy(keyword: string): SearchResultItem[] {
   const lower = keyword.toLowerCase();
-  return DUMMY_SEARCH_RESULTS.filter(item =>
-    `${item.building}${item.place}${item.room ?? ''}`.toLowerCase().includes(lower),
-  );
+  return DUMMY_SEARCH_RESULTS.filter(item => matchesKeyword(item, lower));
 }
 
 // "C동 630호" → 동 코드 "C동" + 나머지 "630호". "R동"처럼 건물 자체면 나머지는 없다.
@@ -65,7 +66,7 @@ export function useSearchSuggestions(keyword: string) {
   const query = useDebouncedValue(immediate, DEBOUNCE_MS);
   const enabled = !USE_MOCK_API && query.length > 0;
 
-  const { data, isError, isFetching } = useAutocomplete(
+  const { data, isError, isFetching, isPlaceholderData } = useAutocomplete(
     { q: query, limit: LIMIT },
     {
       query: {
@@ -80,11 +81,17 @@ export function useSearchSuggestions(keyword: string) {
     if (!immediate) return [];
     const local = searchLocalDummy(immediate);
     if (!enabled || isError) return local;
-    const remote = (data?.suggestions ?? []).map(toSearchResultItem);
+    let remote = (data?.suggestions ?? []).map(toSearchResultItem);
+    // 아직 지금 입력값의 응답이 아니면(디바운스 중이거나 새 요청을 기다리는 중) 이전 검색어의 서버 결과 중 지금 입력값에도
+    // 맞는 것만 남긴다 — 다 숨기면 목록이 깜빡이고, 다 보여주면 다른 검색어 결과가 섞인다.
+    if (query !== immediate || isPlaceholderData) {
+      const lower = immediate.toLowerCase();
+      remote = remote.filter(item => matchesKeyword(item, lower));
+    }
     if (!MERGE_LOCAL_DUMMY) return remote;
     const seen = new Set(remote.map(item => `${item.building}/${item.room ?? ''}`));
     return [...remote, ...local.filter(item => !seen.has(`${item.building}/${item.room ?? ''}`))];
-  }, [immediate, enabled, isError, data]);
+  }, [immediate, query, enabled, isError, data, isPlaceholderData]);
 
   return { results, isLoading: enabled && isFetching && !data };
 }
