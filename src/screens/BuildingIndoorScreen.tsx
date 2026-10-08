@@ -164,7 +164,11 @@ export default function BuildingIndoorScreen() {
                 // 원래 viewBox를 덮어써서 도면 스케일이 깨진다.
                 renderBackground={layerSize => <floorAssets.Background {...layerSize} />}
                 renderForeground={layerSize => <floorAssets.Doors {...layerSize} />}
-                onRoomSelect={room => setSelectedRoomLabel(room ? room.label ?? room.id : null)}
+                onRoomSelect={room => {
+                  setSelectedRoomLabel(room ? room.label ?? room.id : null);
+                  // 카드를 내려 둔 상태에서 강의실을 탭하면 카드를 부드럽게 올려 그 강의실 정보를 보여준다.
+                  if (room) cardSheetRef.current?.expand();
+                }}
               />
             </Animated.View>
             <FloorSelectorWrapper>
