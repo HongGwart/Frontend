@@ -30,7 +30,7 @@ export function floorLabel(floor?: string) {
 }
 
 /** "R동" + "L" → floorMaps 키 "R_L". 건물/층을 모르면 undefined(실외 구간처럼 평면도를 안 깐다). */
-function toFloorId(buildingName?: string, floor?: string) {
+export function toFloorId(buildingName?: string, floor?: string) {
   const code = buildingName?.match(/^([A-Z]+\d*)동$/)?.[1];
   return code && floor ? `${code}_${floor}` : undefined;
 }

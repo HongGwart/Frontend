@@ -5,13 +5,18 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled, { useTheme } from 'styled-components/native';
 import Animated from 'react-native-reanimated';
-import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
+import { NaverMapPolygonOverlay, NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import SearchIcon from '@assets/svgs/icons/search.svg';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { CAMPUS_EXTENT, MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
+import { findRoomFloor } from '@constant/floorMaps';
+import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
+import { useFloorGeoAnchors } from '@api/floorPlan/useFloorGeoAnchors';
+import { createFloorToGeo, getContentBounds } from '@utils/floorGeoTransform';
+import { theme as colors } from '@theme/color';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
 import { SearchListItem } from '@components/common/SearchListItem';
@@ -61,6 +66,10 @@ type SelectedFacility =
 // 어떤 검색 결과를 눌러도 최소한 카드는 뜨도록 한다.
 // 지도 모드 검색창은 보여주기만 하므로 아무 동작 없는 핸들러를 넘긴다(onPress가 있어야 입력 불가 상태로 그려진다).
 const noop = () => {};
+
+// 검색한 호실을 평면도 위에 칠하는 색(브랜드 남색 반투명 — 위의 호실 번호가 가려지지 않게)과 카메라 줌.
+const SEARCHED_ROOM_FILL = 'rgba(29, 32, 86, 0.25)';
+const SEARCHED_ROOM_ZOOM = 19;
 
 function findFacilityForSearchItem(item: SearchResultItem): SelectedFacility | null {
   if (item.category === 'building') {
@@ -139,6 +148,30 @@ export default function SearchScreen() {
       : null;
   // 건물 자체를 서버 검색 결과로 골랐으면 그 노드(출입구 정보·길찾기 출발/도착에 쓴다).
   const buildingNodeId = selectedItem?.category === 'building' ? selectedItem.nodeId : undefined;
+
+  // 호실을 골랐으면 그 호실이 있는 층 평면도를 지도에 깔고 호실을 칠한다. 층은 서버 장소 상세에 있으면 그 층을
+  // 먼저 보고, 없으면(앱 더미 장소) 건물의 평면도들에서 같은 번호의 방을 찾는다.
+  const searchedRoom = useMemo(() => {
+    if (!selectedItem || selectedItem.category === 'building' || nodeDetail?.isBuilding) return null;
+    const buildingCode = nodeDetail?.buildingCode ?? selectedItem.building;
+    const roomNumber = nodeDetail?.roomNumber ?? selectedItem.room;
+    if (!buildingCode || !roomNumber) return null;
+    return findRoomFloor(buildingCode, roomNumber, nodeDetail?.floorId);
+  }, [selectedItem, nodeDetail]);
+  const searchedRoomAnchors = useFloorGeoAnchors(searchedRoom?.floorId);
+  const searchedRoomShape = useMemo(() => {
+    if (!searchedRoom || !searchedRoomAnchors) return null;
+    const toGeo = createFloorToGeo(getContentBounds(searchedRoom.data), searchedRoomAnchors);
+    const shapes = searchedRoom.rooms.map(room => room.points.map(([x, y]) => toGeo(x, y)));
+    const all = shapes.flat();
+    const center = {
+      latitude: all.reduce((sum, point) => sum + point.latitude, 0) / all.length,
+      longitude: all.reduce((sum, point) => sum + point.longitude, 0) / all.length,
+      // 평면도와 호실 번호가 보일 만큼 확대한다.
+      zoom: SEARCHED_ROOM_ZOOM,
+    };
+    return { shapes, center };
+  }, [searchedRoom, searchedRoomAnchors]);
   // "건물 내부 보기"로 넘어가면 내부 지도 화면이 이 화면을 완전히 덮은 뒤 카드를 조용히 닫는다(MapScreen과 같음).
   const closeCardWhenCovered = useCloseWhenCovered(navigation, closeFacilityCard);
   // 카드의 출발/도착 → 길찾기 탭으로 가서 입력창을 채운다(검색 화면은 스택에서 빠지며 같이 닫힌다).
@@ -147,7 +180,7 @@ export default function SearchScreen() {
   // 마커가 시설 카드에 가리지 않도록, 검색창+카테고리 칩 아래쪽 끝과 시설 카드 위쪽 끝
   // 사이의 세로 중앙에 마커가 오도록 카메라를 옮긴다(MapScreen과 공유하는 훅).
   const { cardHeight, handleChipsAreaLayout: handleTopOverlayLayout, handleFacilityCardLayout } =
-    useFacilityCardCameraFocus(mapViewRef, selectedFacility?.marker ?? null);
+    useFacilityCardCameraFocus(mapViewRef, searchedRoomShape?.center ?? selectedFacility?.marker ?? null);
   // 지도 모드 상단 카테고리 칩. 실제 마커 필터링과의 연결 없이 Figma와 동일한 UI만 우선 갖춘다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const insets = useSafeAreaInsets();
@@ -254,6 +287,23 @@ export default function SearchScreen() {
           maxZoom={MAP_MAX_ZOOM}
           onTapMap={() => bottomSheetRef.current?.close()}
         >
+          {searchedRoom && searchedRoomAnchors && (
+            <FloorPlanOverlay
+              key={searchedRoom.floorId}
+              floorId={searchedRoom.floorId}
+              anchors={searchedRoomAnchors}
+            />
+          )}
+          {searchedRoomShape?.shapes.map((coords, index) => (
+            <NaverMapPolygonOverlay
+              key={`searched-room-${index}`}
+              coords={coords}
+              color={SEARCHED_ROOM_FILL}
+              outlineColor={colors.blue[800]}
+              outlineWidth={2}
+              zIndex={3}
+            />
+          ))}
           {/* 지도 화면과 같이, 카드가 열린(포커싱된) 마커 하나만 네임택을 달고 남기고 나머지 마커는 숨긴다. */}
           {selectedFacility.type === 'dong' && (
             <NaverMapMarker

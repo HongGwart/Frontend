@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useNode } from '@api/generated/honggwart';
 import type { NodeDetailResponse } from '@api/generated/model';
 import { USE_MOCK_API } from '@api/config';
-import { floorLabel } from '@api/route/toRouteView';
+import { floorLabel, toFloorId } from '@api/route/toRouteView';
 
 // 출입구가 많은 건물(R동은 7곳)은 카드 한 줄에 다 안 들어가서 이만큼만 보여주고 "외 n곳"으로 줄인다.
 const MAX_ENTRANCES = 2;
@@ -20,6 +20,8 @@ export interface NodeDetailView {
   roomNumber?: string;
   /** "1층", "지하 1층", "로비층". 건물 자체는 층이 없어서 undefined */
   floorText?: string;
+  /** 평면도 키(예: "R_1"). 건물 자체이거나 층을 모르면 undefined */
+  floorId?: string;
   /** 건물 카드의 "주출입구" 값 (예: "C1 남측 출입구, C1 북측 출입구") */
   mainEntrance?: string;
 }
@@ -45,6 +47,7 @@ function toNodeDetailView(detail: NodeDetailResponse): NodeDetailView {
     buildingCode: isBuilding ? detail.displayName : detail.parent?.displayName,
     roomNumber: detail.roomNumber ? `${detail.roomNumber}호` : undefined,
     floorText: isBuilding ? undefined : floorLabel(detail.floor) || undefined,
+    floorId: isBuilding ? undefined : toFloorId(detail.parent?.displayName, detail.floor),
     mainEntrance: formatEntrances(detail.entrances),
   };
 }

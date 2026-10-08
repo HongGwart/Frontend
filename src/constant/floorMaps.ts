@@ -829,3 +829,22 @@ export function getBuildingFloors(buildingCode: string): FloorInfo[] {
     .sort((a, b) => b.floorNum - a.floorNum)
     .map(({ floorId, floorNum, label }) => ({ floorId, floorNum, label }));
 }
+
+/**
+ * 건물 코드("C동" 또는 "C")와 호실 번호("816" 또는 "816호")로 그 호실이 있는 층과 방 도형들을 찾는다. 한 호실이
+ * 도형 여러 개로 나뉜 경우가 있어 같은 번호의 방을 모두 돌려준다. 층을 이미 알면(서버 장소 상세) preferredFloorId를
+ * 먼저 본다. 평면도에 없는 호실이면 null.
+ */
+export function findRoomFloor(buildingCode: string, roomNumber: string, preferredFloorId?: string) {
+  const room = roomNumber.replace(/호$/, '');
+  // H동처럼 평면도 방 번호에 건물 글자가 붙은 경우("H314")도 같은 호실로 본다.
+  const prefixed = `${buildingCode.replace(/동$/, '')}${room}`;
+  const floorIds = getBuildingFloors(buildingCode).map(info => info.floorId);
+  const ordered = preferredFloorId && FLOOR_MAPS[preferredFloorId] ? [preferredFloorId, ...floorIds] : floorIds;
+  for (const floorId of ordered) {
+    const data = FLOOR_MAPS[floorId]().data;
+    const rooms = data.rooms.filter(shape => [room, prefixed].includes(shape.label ?? shape.id));
+    if (rooms.length > 0) return { floorId, data, rooms };
+  }
+  return null;
+}
