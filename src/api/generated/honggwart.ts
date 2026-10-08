@@ -25,6 +25,7 @@ import type {
   AutocompleteResponse,
   ErrorResponse,
   NodeDetailResponse,
+  Response,
   RouteParams,
   RouteResponse
 } from './model';
@@ -322,6 +323,100 @@ export function useNode<TData = Awaited<ReturnType<typeof node>>, TError = Error
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getNodeQueryOptions(nodeId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+/**
+ * 인증 없이 조회합니다. 미등록 레이어는 imageId=null, points=[]입니다.
+ * @summary 평면도 기준 꼭짓점 조회
+ */
+export const floorPlanCorners = (
+    layerId: number,
+ options?: SecondParameter<typeof apiRequest>,signal?: AbortSignal
+) => {
+
+
+      return apiRequest<Response>(
+      {url: `/api/layers/${layerId}/floor-plan-corners`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getFloorPlanCornersQueryKey = (layerId: number,) => {
+    return [
+    `/api/layers/${layerId}/floor-plan-corners`
+    ] as const;
+    }
+
+
+export const getFloorPlanCornersQueryOptions = <TData = Awaited<ReturnType<typeof floorPlanCorners>>, TError = ErrorType<ErrorResponse>>(layerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof floorPlanCorners>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getFloorPlanCornersQueryKey(layerId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof floorPlanCorners>>> = ({ signal }) => floorPlanCorners(layerId, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: layerId !== null && layerId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof floorPlanCorners>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type FloorPlanCornersQueryResult = NonNullable<Awaited<ReturnType<typeof floorPlanCorners>>>
+export type FloorPlanCornersQueryError = ErrorType<ErrorResponse>
+
+
+export function useFloorPlanCorners<TData = Awaited<ReturnType<typeof floorPlanCorners>>, TError = ErrorType<ErrorResponse>>(
+ layerId: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof floorPlanCorners>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof floorPlanCorners>>,
+          TError,
+          Awaited<ReturnType<typeof floorPlanCorners>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useFloorPlanCorners<TData = Awaited<ReturnType<typeof floorPlanCorners>>, TError = ErrorType<ErrorResponse>>(
+ layerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof floorPlanCorners>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof floorPlanCorners>>,
+          TError,
+          Awaited<ReturnType<typeof floorPlanCorners>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useFloorPlanCorners<TData = Awaited<ReturnType<typeof floorPlanCorners>>, TError = ErrorType<ErrorResponse>>(
+ layerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof floorPlanCorners>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 평면도 기준 꼭짓점 조회
+ */
+
+export function useFloorPlanCorners<TData = Awaited<ReturnType<typeof floorPlanCorners>>, TError = ErrorType<ErrorResponse>>(
+ layerId: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof floorPlanCorners>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getFloorPlanCornersQueryOptions(layerId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

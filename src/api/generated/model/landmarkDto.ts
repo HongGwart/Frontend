@@ -6,9 +6,16 @@
  * OpenAPI spec version: v1
  */
 
+/**
+ * 랜드마크
+ */
 export interface LandmarkDto {
+  /** 랜드마크 노드 ID */
   nodeId?: number;
+  /** 랜드마크 이름 */
   name?: string;
+  /** 위도 */
   lat?: number;
+  /** 경도 */
   lng?: number;
 }

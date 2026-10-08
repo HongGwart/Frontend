@@ -8,10 +8,18 @@
 import type { BoundDto } from './boundDto';
 import type { FeaturesDto } from './featuresDto';
 
+/**
+ * 경로 요약
+ */
 export interface SummaryDto {
+  /** 총 거리(m). 모드별 가중치를 적용하기 전 간선 거리의 합이다. */
   distanceMeters?: number;
+  /** 예상 보행 시간(초). 총 거리를 1.2m/s로 나눠 반올림한다. */
   durationSeconds?: number;
+  /** 층 이동 안내 횟수(FLOOR_CHANGE step 수). 1층에서 5층까지 계단으로 한 번에 오르면 1이다. */
   floorChanges?: number;
+  /** polyline 전체를 감싸는 영역. 지도 초기 줌·중심 맞춤에 쓴다. */
   bound?: BoundDto;
+  /** 경로가 지나는 시설별 간선 수 */
   features?: FeaturesDto;
 }

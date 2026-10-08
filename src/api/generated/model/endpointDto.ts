@@ -6,12 +6,22 @@
  * OpenAPI spec version: v1
  */
 
+/**
+ * 출발·도착 지점. name·lat·lng는 usedNodeId가 아니라 요청한 nodeId 기준이다.
+ */
 export interface EndpointDto {
+  /** 요청한 노드 ID(fromNodeId 또는 toNodeId) */
   nodeId?: number;
+  /** nodeId 노드의 표시명. display_name이 없으면 name이다. */
   name?: string;
+  /** nodeId 노드의 위도 */
   lat?: number;
+  /** nodeId 노드의 경도 */
   lng?: number;
+  /** 경로가 실제로 출발·도착한 노드 ID. nodeId가 SYMBOLIC(건물 등)이면 그 자손 중 하나이고, 아니면 nodeId와 같다. */
   usedNodeId?: number;
+  /** usedNodeId가 출입구(ENTRANCE)일 때 그 이름(예: 정문). 출입구가 아니면 null이다. */
   entranceName?: string;
+  /** nodeId가 출입구(ENTRANCE) 자손을 2개 이상 가지면 true */
   multiEntrance?: boolean;
 }

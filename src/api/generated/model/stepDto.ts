@@ -8,18 +8,34 @@
 import type { ContextDto } from './contextDto';
 import type { FloorChangeMetaDto } from './floorChangeMetaDto';
 import type { LandmarkDto } from './landmarkDto';
+import type { StepDtoType } from './stepDtoType';
 
+/**
+ * 안내 step 하나
+ */
 export interface StepDto {
-  type?: string;
+  /** 안내 종류 */
+  type?: StepDtoType;
+  /** 사용자에게 보여 줄 안내 문구 */
   instruction?: string;
+  /** step이 시작하는 지점의 위도. polyline[polylineRange[0]]과 같은 점이다. */
   lat?: number;
+  /** step이 시작하는 지점의 경도. polyline[polylineRange[0]]과 같은 점이다. */
   lng?: number;
+  /** step 첫 구간(ARRIVE는 마지막 구간)의 진행 방위(도). 정북이 0이고 시계 방향으로 증가하는 [0, 360) 값이며 소수점 첫째 자리까지 반올림한다. 기준 구간이 계단·엘리베이터이거나 출발지와 도착지가 같으면 null이다. */
   bearing?: number;
+  /** 이 step이 덮는 구간의 거리(m) */
   distanceMeters?: number;
+  /** 이 step이 덮는 구간의 예상 보행 시간(초) */
   durationSeconds?: number;
+  /** 이 step이 덮는 polyline 인덱스 [start, end]. end는 다음 step의 start와 같다. 같은 지점에서 step이 연달아 나오면 앞 step은 [i, i]이고 거리는 0이다. */
   polylineRange?: number[];
+  /** 이 step 동안 표시할 지도 정보 */
   context?: ContextDto;
+  /** 층 이동 정보. FLOOR_CHANGE에만 있고 다른 step에는 필드가 없다. */
   meta?: FloorChangeMetaDto;
+  /** 실외는 도로명, 실내는 복도명. 없으면 null이다. */
   road?: string;
+  /** step 구간 안이나 바로 옆의 랜드마크. 없으면 null이다. */
   landmark?: LandmarkDto;
 }
