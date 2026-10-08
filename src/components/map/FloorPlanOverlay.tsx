@@ -5,10 +5,9 @@ import {
   NaverMapMarkerOverlay,
   NaverMapPolygonOverlay,
 } from '@mj-studio/react-native-naver-map';
-import { FloorMapData } from '@appTypes/room';
 import { FLOOR_MAPS } from '@constant/floorMaps';
 import { FLOOR_OVERLAY_IMAGES, FloorOverlayImage } from '@constant/floorOverlayImages';
-import { createFloorToGeo, FloorGeoAnchors } from '@utils/floorGeoTransform';
+import { createFloorToGeo, FloorGeoAnchors, getContentBounds } from '@utils/floorGeoTransform';
 import ElevatorIcon from '@assets/svgs/icons/elevator.svg';
 import StairsIcon from '@assets/svgs/icons/stairs.svg';
 
@@ -20,17 +19,15 @@ const ICON_BOX = 22;
 // 위에 깐다. 이걸 안 주면 zIndex가 같은 전역 층에서 비교돼서 방 도형이 길찾기 경로선을 덮는다.
 const FLOOR_SHAPE_GLOBAL_Z = -250000;
 
-/** contentBounds가 없는 층은 방 좌표로 바운딩 박스를 계산한다. */
-function getContentBounds(data: FloorMapData) {
-  if (data.contentBounds) return data.contentBounds;
-  const xs = data.rooms.flatMap(r => r.points.map(p => p[0]));
-  const ys = data.rooms.flatMap(r => r.points.map(p => p[1]));
-  const minX = Math.min(...xs);
-  const minY = Math.min(...ys);
-  return { minX, minY, width: Math.max(...xs) - minX, height: Math.max(...ys) - minY };
-}
-
-const sameAnchors = (a: FloorGeoAnchors, b: FloorGeoAnchors) => JSON.stringify(a) === JSON.stringify(b);
+// 기준점이 이만큼(위경도 도 단위, 약 0.1m) 안에서 같으면 같은 위치로 본다. 서버 기준점으로 앱에서 계산한 값과
+// PNG를 구울 때 스크립트로 계산한 값은 같은 식이어도 부동소수점 끝자리가 다를 수 있다.
+const SAME_ANCHOR_EPSILON = 1e-6;
+const sameAnchors = (a: FloorGeoAnchors, b: FloorGeoAnchors) =>
+  a.every(
+    (point, i) =>
+      Math.abs(point.latitude - b[i].latitude) < SAME_ANCHOR_EPSILON &&
+      Math.abs(point.longitude - b[i].longitude) < SAME_ANCHOR_EPSILON,
+  );
 
 /**
  * 이 층에 지금 기준점으로 구운 평면도 PNG가 있으면 돌려준다 — 번들된 PNG 우선, 없으면 개발 서버가 방금 구운 것.

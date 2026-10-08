@@ -1,3 +1,5 @@
+import { FloorMapData } from '@appTypes/room';
+
 /** 위경도 한 점 */
 export interface GeoCoord {
   latitude: number;
@@ -64,4 +66,59 @@ export function createFloorToGeo(
       latitude: (h[3] * x + h[4] * y + h[5]) / w,
     };
   };
+}
+
+/** 평면도 네 모서리 기준이 되는 도면 영역. contentBounds가 없는 층은 방 좌표로 바운딩 박스를 계산한다. */
+export function getContentBounds(data: FloorMapData) {
+  if (data.contentBounds) return data.contentBounds;
+  const xs = data.rooms.flatMap(r => r.points.map(p => p[0]));
+  const ys = data.rooms.flatMap(r => r.points.map(p => p[1]));
+  const minX = Math.min(...xs);
+  const minY = Math.min(...ys);
+  return { minX, minY, width: Math.max(...xs) - minX, height: Math.max(...ys) - minY };
+}
+
+// 위도 1도의 길이(m). 경도 1도는 여기에 cos(위도)를 곱한다.
+const METERS_PER_DEGREE = 111320;
+
+/**
+ * 도면 위 기준점 두 개와 그 두 점의 실제 위경도로 평면도 네 모서리(FloorGeoAnchors)를 계산한다. 두 점만으로
+ * 이동·회전·균일 확대(닮음 변환)를 정할 수 있어서, 도면이 찌그러지지 않은 채 지도에 앉는다.
+ * 서버 평면도 기준 꼭짓점(GET /api/layers/{layerId}/floor-plan-corners)과 Figma 기준점 좌표로 쓴다.
+ *
+ * 도면 좌표는 y가 아래로, 위경도는 위도가 위로 커지니 도면 y를 뒤집어 같은 방향으로 맞춘 뒤 계산한다.
+ */
+export function anchorsFromReferencePoints(
+  bounds: { minX: number; minY: number; width: number; height: number },
+  floorPoints: [[number, number], [number, number]],
+  geoPoints: [GeoCoord, GeoCoord],
+): FloorGeoAnchors {
+  const lngScale = METERS_PER_DEGREE * Math.cos((geoPoints[0].latitude * Math.PI) / 180);
+  // 미터 단위 평면 좌표(동쪽 x, 북쪽 y)와 도면 좌표(y 뒤집음)
+  const geo = geoPoints.map(p => [p.longitude * lngScale, p.latitude * METERS_PER_DEGREE]);
+  const floor = floorPoints.map(([x, y]) => [x, -y]);
+
+  // 복소수 곱으로 닮음 변환 z_geo = s · z_floor + t 를 푼다(s: 회전+확대, t: 이동).
+  const [dx, dy] = [floor[1][0] - floor[0][0], floor[1][1] - floor[0][1]];
+  const [gx, gy] = [geo[1][0] - geo[0][0], geo[1][1] - geo[0][1]];
+  const denominator = dx * dx + dy * dy;
+  const sRe = (gx * dx + gy * dy) / denominator;
+  const sIm = (gy * dx - gx * dy) / denominator;
+  const tRe = geo[0][0] - (sRe * floor[0][0] - sIm * floor[0][1]);
+  const tIm = geo[0][1] - (sRe * floor[0][1] + sIm * floor[0][0]);
+
+  const toGeo = (x: number, y: number): GeoCoord => {
+    const fy = -y;
+    return {
+      longitude: (sRe * x - sIm * fy + tRe) / lngScale,
+      latitude: (sRe * fy + sIm * x + tIm) / METERS_PER_DEGREE,
+    };
+  };
+  const { minX, minY, width, height } = bounds;
+  return [
+    toGeo(minX, minY),
+    toGeo(minX + width, minY),
+    toGeo(minX + width, minY + height),
+    toGeo(minX, minY + height),
+  ];
 }
