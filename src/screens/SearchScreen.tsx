@@ -127,10 +127,12 @@ export default function SearchScreen() {
     const marker = DUMMY_MAP_MARKERS.find(m => m.label === nodeDetail.buildingCode);
     if (marker) setSelectedFacility({ type: 'dong', marker });
   }, [selectedFacility, selectedItem, nodeDetail]);
-  // 동 마커 위에 띄우되 건물이 아니라 그 안의 호실/시설 카드로 보여줄 서버 장소(건물 자체 검색은 제외).
+  // 동 마커 위에 띄우되 건물이 아니라 그 안의 호실/시설 카드로 보여줄 장소(건물 자체 검색은 제외) — 서버 장소,
+  // 또는 "C동 816호"처럼 호실 번호가 있는 앱 더미 장소(지도 마커가 따로 없어서 동 마커로 열린다).
   const placeItem =
     selectedFacility?.type === 'dong' &&
-    selectedItem?.nodeId !== undefined &&
+    selectedItem &&
+    (selectedItem.nodeId !== undefined || selectedItem.room !== undefined) &&
     selectedItem.category !== 'building' &&
     !nodeDetail?.isBuilding
       ? selectedItem

@@ -21,6 +21,8 @@ function getScreenCapture() {
 // 다르게 넘기면 이미 막힌 상태에서 네이티브 막기가 또 불려서, iOS가 앱 창을 보안 텍스트필드 안에 한 번 더 겹쳐
 // 넣는 바람에 화면 전체가 까맣게 나온다(경로 보기 위에 길 안내를 열 때). 그래서 막는 화면 수를 여기서 센다.
 const LIBRARY_KEY = 'app';
+// TODO: 임시로 캡처 차단을 끈다(스크린샷이 필요한 동안). 다시 막으려면 true로 되돌린다.
+const BLOCK_SCREEN_CAPTURE = false;
 const activeScreens = new Set<string>();
 
 /**
@@ -34,7 +36,7 @@ const activeScreens = new Set<string>();
  */
 export function useBlockScreenCapture(key: string, enabled = true) {
   const isFocused = useIsFocused();
-  const active = enabled && isFocused;
+  const active = BLOCK_SCREEN_CAPTURE && enabled && isFocused;
   useEffect(() => {
     const module = active ? getScreenCapture() : null;
     if (!module) return;
