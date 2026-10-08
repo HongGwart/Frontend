@@ -13,6 +13,7 @@ import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { CollapsibleBottomSheet, CollapsibleBottomSheetRef } from '@components/common/CollapsibleBottomSheet';
 import { FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
+import { useBuildingMainEntrance } from '@api/node/useBuildingNodeId';
 import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
 import {
   DUMMY_FACILITY_COUNTS,
@@ -46,6 +47,8 @@ const CARD_PEEK_HEIGHT = 24;
 export default function BuildingIndoorScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'BuildingIndoor'>>();
+  // 건물 카드의 주 출입구 — 서버 장소 상세에서 받고, 없으면 더미 값.
+  const mainEntrance = useBuildingMainEntrance(params.buildingCode, DUMMY_MAIN_ENTRANCE);
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   // 건물 내부 평면도가 밖으로 퍼지지 않게 이 화면이 떠 있는 동안 캡처를 막는다.
@@ -235,7 +238,7 @@ export default function BuildingIndoorScreen() {
               {...routeButtonProps(placeLabel)}
               images={marker?.images ?? DUMMY_FACILITY_IMAGES}
               facilityCounts={DUMMY_FACILITY_COUNTS}
-              mainEntrance={DUMMY_MAIN_ENTRANCE}
+              mainEntrance={mainEntrance}
               operatingHours={DUMMY_OPERATING_HOURS}
             />
           )}

@@ -13,6 +13,7 @@ import { DUMMY_MAP_MARKERS, DUMMY_CATEGORY_MARKERS } from '@constant/dummyMapMar
 import { DUMMY_MAIN_ENTRANCE, DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
 import { favoriteFromCategoryMarker } from '@constant/favoriteInputs';
 import { useFavorites } from '@hooks/useFavorites';
+import { useBuildingMainEntrance } from '@api/node/useBuildingNodeId';
 
 interface Props {
   buildingCode: string;
@@ -70,6 +71,8 @@ export function BuildingDetailBody({
     () => DUMMY_CATEGORY_MARKERS.filter(marker => marker.buildingCode === buildingCode),
     [buildingCode],
   );
+  // 주 출입구는 서버 장소 상세의 출입구 목록으로 채운다. 서버에 없는 건물이거나 아직 응답 전이면 더미 값.
+  const mainEntrance = useBuildingMainEntrance(buildingCode, DUMMY_MAIN_ENTRANCE);
 
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(지도/마이페이지와 같은 상태).
   const { isFavorite, toggleFavorite: toggleFavoritePlace } = useFavorites();
@@ -114,7 +117,7 @@ export function BuildingDetailBody({
           <InfoList>
             <InfoRow>
               <InfoLabelText>주 출입구</InfoLabelText>
-              <InfoValueText>{DUMMY_MAIN_ENTRANCE}</InfoValueText>
+              <InfoValueText>{mainEntrance}</InfoValueText>
             </InfoRow>
             <InfoRow>
               <InfoLabelText>운영 시간</InfoLabelText>

@@ -33,6 +33,7 @@ import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { useVoiceSearch } from '@hooks/useVoiceSearch';
 import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
 import { useNodeDetail } from '@api/node/useNodeDetail';
+import { useBuildingMainEntrance } from '@api/node/useBuildingNodeId';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import {
@@ -148,6 +149,11 @@ export default function SearchScreen() {
       : null;
   // 건물 자체를 서버 검색 결과로 골랐으면 그 노드(출입구 정보·길찾기 출발/도착에 쓴다).
   const buildingNodeId = selectedItem?.category === 'building' ? selectedItem.nodeId : undefined;
+  // 건물 카드의 주 출입구 — 앱 더미 건물을 골랐을 때도 건물 코드로 서버 장소 상세를 찾아 채운다.
+  const dongMainEntrance = useBuildingMainEntrance(
+    selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined,
+    DUMMY_MAIN_ENTRANCE,
+  );
 
   // 호실을 골랐으면 그 호실이 있는 층 평면도를 지도에 깔고 호실을 칠한다. 층은 서버 장소 상세에 있으면 그 층을
   // 먼저 보고, 없으면(앱 더미 장소) 건물의 평면도들에서 같은 번호의 방을 찾는다.
@@ -382,7 +388,7 @@ export default function SearchScreen() {
                 )}
                 facilityCounts={DUMMY_FACILITY_COUNTS}
                 // 서버 건물이면 장소 상세의 출입구 목록을, 아니면(또는 불러오기 전) 더미를 보여준다.
-                mainEntrance={(buildingNodeId !== undefined && nodeDetail?.mainEntrance) || DUMMY_MAIN_ENTRANCE}
+                mainEntrance={(buildingNodeId !== undefined && nodeDetail?.mainEntrance) || dongMainEntrance}
                 operatingHours={DUMMY_OPERATING_HOURS}
                 onViewInsidePress={() => {
                   closeCardWhenCovered();

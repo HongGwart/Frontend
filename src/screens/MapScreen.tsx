@@ -46,6 +46,7 @@ import {
   favoriteFromListItem,
 } from '@constant/favoriteInputs';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
+import { useBuildingMainEntrance } from '@api/node/useBuildingNodeId';
 import { FocusFacilityParam, MainTabParamList, RootStackParamList } from '@navigation/types';
 
 interface Props {
@@ -96,6 +97,11 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   // 추후 지도 데이터가 준비되면 여기 selectedKey를 그대로 넘기면 된다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
+  // 건물 카드의 주 출입구 — 서버 장소 상세에서 받고, 없으면 더미 값.
+  const dongMainEntrance = useBuildingMainEntrance(
+    selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined,
+    DUMMY_MAIN_ENTRANCE,
+  );
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
   const mapViewRef = useRef<NaverMapViewRef>(null);
   const insets = useSafeAreaInsets();
@@ -522,7 +528,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
               )}
               facilityCounts={DUMMY_FACILITY_COUNTS}
-              mainEntrance={DUMMY_MAIN_ENTRANCE}
+              mainEntrance={dongMainEntrance}
               operatingHours={DUMMY_OPERATING_HOURS}
               onViewInsidePress={() => {
                 closeCardWhenCovered();
