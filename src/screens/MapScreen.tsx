@@ -12,7 +12,7 @@ import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
+import { CAMPUS_EXTENT, MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
@@ -409,6 +409,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
           zoom: INITIAL_ZOOM,
         }}
         minZoom={MAP_MIN_ZOOM}
+        extent={CAMPUS_EXTENT}
         maxZoom={MAP_MAX_ZOOM}
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
         onTapMap={

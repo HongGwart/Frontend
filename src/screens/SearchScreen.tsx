@@ -11,7 +11,7 @@ import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
-import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
+import { CAMPUS_EXTENT, MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
 import { SearchListItem } from '@components/common/SearchListItem';
@@ -250,6 +250,7 @@ export default function SearchScreen() {
             zoom: 16,
           }}
           minZoom={MAP_MIN_ZOOM}
+          extent={CAMPUS_EXTENT}
           maxZoom={MAP_MAX_ZOOM}
           onTapMap={() => bottomSheetRef.current?.close()}
         >

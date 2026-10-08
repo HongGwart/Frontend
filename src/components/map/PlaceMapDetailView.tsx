@@ -9,7 +9,7 @@ import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { Toast } from '@components/common/Toast';
 import { CategoryKey } from '@constant/categoryChips';
-import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
+import { CAMPUS_EXTENT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 
 interface Props {
   /** 지도 첫 카메라 중심 = 장소 좌표 */
@@ -72,6 +72,7 @@ export function PlaceMapDetailView({
           style={StyleSheet.absoluteFill}
           initialCamera={{ latitude, longitude, zoom: 17 }}
           minZoom={MAP_MIN_ZOOM}
+          extent={CAMPUS_EXTENT}
           maxZoom={MAP_MAX_ZOOM}
         >
           {marker}

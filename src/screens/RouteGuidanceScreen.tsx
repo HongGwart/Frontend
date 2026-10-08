@@ -39,7 +39,7 @@ import {
   GuidanceMoveType,
   RouteResult,
 } from '@constant/dummyRouteResults';
-import { MAP_MIN_ZOOM } from '@constant/mapCamera';
+import { CAMPUS_EXTENT, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
 import { LatLng, regionToFit, slicePath, splitPathAt } from '@utils/routePath';
 import { buildTestRoute, getRouteMapData, RouteMapData } from '@constant/testIndoorRoute';
@@ -530,6 +530,7 @@ function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
           bottom: insets.bottom + STEP_BUTTONS_AREA_HEIGHT,
         }}
         minZoom={MAP_MIN_ZOOM}
+        extent={CAMPUS_EXTENT}
         maxZoom={GUIDANCE_MAX_ZOOM}
         isRotateGesturesEnabled={false}
         isTiltGesturesEnabled={false}
