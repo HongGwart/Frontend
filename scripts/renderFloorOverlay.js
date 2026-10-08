@@ -12,6 +12,10 @@
  * 사용법:
  *   node scripts/renderFloorOverlay.js            # floorGeoAnchors.json에 있는 층 전부
  *   node scripts/renderFloorOverlay.js R_L C_1    # 지정한 층만 (나머지 기존 PNG는 유지)
+ *   node scripts/renderFloorOverlay.js --anchors=src/constant/floorPlanAnchors.json R_L
+ *                                                 # 서버 기준점으로 계산한 네 모서리(buildFloorPlanAnchors.js)로 굽기
+ *
+ * 앱 용량을 줄이려고 PNG는 256색으로 줄여(upng-js) 저장한다. 평면도는 색 수가 적어서 눈으로는 차이가 거의 없다.
  *
  * 기준점은 앱에서 도면을 이동·회전·균일 확대로만 맞춘 것이라 직사각형 그대로여서 affine으로 정확히 맞는다
  * (로그의 "최대 오차"가 0에 가까워야 정상). 모양이 찌그러지지 않는다.
@@ -20,11 +24,12 @@
 const fs = require('fs');
 const path = require('path');
 const { Resvg } = require('@resvg/resvg-js');
+const UPNG = require('upng-js');
 const { extractTopLevelChildren } = require('./splitVisualLayers');
 
 const ROOT = path.join(__dirname, '..');
 const FLOORS_DIR = path.join(ROOT, 'src/assets/svgs/floors');
-const ANCHORS_PATH = path.join(ROOT, 'src/constant/floorGeoAnchors.json');
+const DEFAULT_ANCHORS_PATH = path.join(ROOT, 'src/constant/floorGeoAnchors.json');
 const OUT_DIR = path.join(ROOT, 'src/assets/floorOverlays');
 const INDEX_PATH = path.join(ROOT, 'src/constant/floorOverlayImages.ts');
 
@@ -33,6 +38,8 @@ const MARGIN = 8;
 // 도면 1px당 PNG 픽셀 수, 그리고 PNG 한 변 최대 길이 (모바일 텍스처 한도 고려)
 const PX_PER_SVG_PX = 1;
 const MAX_SIDE = 4096;
+// PNG 색 수(0이면 무손실). 256색이면 원본 대비 대략 1/3 크기.
+const PNG_COLORS = 256;
 
 /** (x, y) → (u, v) affine을 최소제곱으로 푼다. 반환: [a, b, c, d, e, f] (u = ax+by+c, v = dx+ey+f) */
 function fitAffine(src, dst) {
@@ -133,7 +140,10 @@ function renderFloor(floorId, anchors) {
     '</svg>',
   ].join('\n');
 
-  const png = new Resvg(out, { background: 'rgba(0,0,0,0)' }).render().asPng();
+  const rendered = new Resvg(out, { background: 'rgba(0,0,0,0)' }).render();
+  const png = Buffer.from(
+    UPNG.encode([new Uint8Array(rendered.pixels).buffer], rendered.width, rendered.height, PNG_COLORS),
+  );
   fs.writeFileSync(path.join(OUT_DIR, `${floorId}.png`), png);
 
   const region = {
@@ -142,7 +152,9 @@ function renderFloor(floorId, anchors) {
     latitudeDelta: vMax - vMin,
     longitudeDelta: (uMax - uMin) / cosLat,
   };
-  console.log(`✓ ${floorId}: ${W}x${H}px, 모서리 최대 오차 ${maxErr.toFixed(2)}m → src/assets/floorOverlays/${floorId}.png`);
+  console.log(
+    `✓ ${floorId}: ${W}x${H}px, ${Math.round(png.length / 1024)}KB, 모서리 최대 오차 ${maxErr.toFixed(2)}m → src/assets/floorOverlays/${floorId}.png`,
+  );
   return { region, anchors };
 }
 
@@ -190,8 +202,11 @@ ${body}
 }
 
 function main() {
-  const allAnchors = JSON.parse(fs.readFileSync(ANCHORS_PATH, 'utf8'));
-  const requested = process.argv.slice(2);
+  const args = process.argv.slice(2);
+  const anchorsArg = args.find(arg => arg.startsWith('--anchors='));
+  const anchorsPath = anchorsArg ? path.resolve(ROOT, anchorsArg.slice('--anchors='.length)) : DEFAULT_ANCHORS_PATH;
+  const allAnchors = JSON.parse(fs.readFileSync(anchorsPath, 'utf8'));
+  const requested = args.filter(arg => !arg.startsWith('--'));
   const targets = requested.length > 0 ? requested : Object.keys(allAnchors);
   if (targets.length === 0) {
     console.error('[에러] floorGeoAnchors.json이 비어 있습니다. [FLOOR_ANCHORS] 로그를 먼저 붙여넣으세요.');
@@ -202,7 +217,7 @@ function main() {
   const entries = readExistingIndex();
   for (const id of targets) {
     if (!allAnchors[id]) {
-      console.error(`[건너뜀] ${id}: floorGeoAnchors.json에 기준점이 없습니다`);
+      console.error(`[건너뜀] ${id}: ${path.basename(anchorsPath)}에 기준점이 없습니다`);
       continue;
     }
     entries[id] = renderFloor(id, allAnchors[id]);

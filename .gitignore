@@ -44,3 +44,6 @@ yarn-error.*
 
 # env (.env.example을 복사해서 사용)
 .env
+
+# 관리자 API 키(로컬 스크립트 전용, 앱/저장소에 넣지 않는다)
+.admin-key
