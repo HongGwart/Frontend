@@ -6,15 +6,37 @@ import {
   NaverMapPolygonOverlay,
 } from '@mj-studio/react-native-naver-map';
 import { FLOOR_MAPS } from '@constant/floorMaps';
-import { FLOOR_OVERLAY_IMAGES, FloorOverlayImage } from '@constant/floorOverlayImages';
-import { createFloorToGeo, FloorGeoAnchors, getContentBounds } from '@utils/floorGeoTransform';
+import { FLOOR_OVERLAY_IMAGES, FloorOverlayIconType, FloorOverlayImage } from '@constant/floorOverlayImages';
+import { createFloorToGeo, FloorGeoAnchors, GeoCoord, getContentBounds } from '@utils/floorGeoTransform';
 import ElevatorIcon from '@assets/svgs/icons/elevator.svg';
 import StairsIcon from '@assets/svgs/icons/stairs.svg';
+import MapElevatorIcon from '@assets/svgs/mapIcon/map_elevator.svg';
+import MapStairsIcon from '@assets/svgs/mapIcon/map_stairs.svg';
+import MapToiletFemaleIcon from '@assets/svgs/mapIcon/map_toilet_female.svg';
+import MapToiletMaleIcon from '@assets/svgs/mapIcon/map_toilet_male.svg';
 
 /** 개발 서버가 방금 구워서 httpUri로 바로 띄우는 평면도 (앱에 번들된 PNG가 HMR로 들어오기 전까지 쓴다) */
 export type LiveFloorImage = Omit<FloorOverlayImage, 'image'> & { image: { httpUri: string } };
 
 const ICON_BOX = 22;
+// PNG에서 뺀 엘리베이터/계단/화장실 아이콘 — 도면 PNG에 그려져 있던 것과 같은 그림(내부지도 뷰 아이콘)을 쓴다.
+const MAP_ICON_BY_TYPE: Record<FloorOverlayIconType, React.FC<{ width: number; height: number }>> = {
+  elevator: MapElevatorIcon,
+  stairs: MapStairsIcon,
+  toilet_female: MapToiletFemaleIcon,
+  toilet_male: MapToiletMaleIcon,
+};
+const MAP_ICON_SIZE = 20;
+// 도면 아이콘은 실제 1m 남짓이라 방 번호처럼 "들어갈 때부터" 보이게 하면 거의 안 보인다. 평면도를 알아볼 만큼
+// 확대했을 때부터 보이게 고정 줌으로 정한다.
+const MAP_ICON_MIN_ZOOM = 18;
+// 호수 라벨 글자 크기(pt)와, 방 안에 들어가는지 볼 때 쓰는 글자 한 개 폭/위아래 높이 어림값(pt)
+const LABEL_FONT_SIZE = 11;
+const LABEL_CHAR_WIDTH = 6.5;
+const LABEL_LINE_HEIGHT = 13;
+// PNG 위 라벨은 내부지도 뷰(RoomLabelsLayer)와 같은 검정, PNG 없이 파란 방 도형 위에 그릴 땐 파랑.
+const LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '500', color: '#000000' } as const;
+const FALLBACK_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '600', color: '#003E80' } as const;
 // 방 도형 폴리곤을 경로선(폴리라인, 같은 기본 전역 z -200000)보다 아래, 평면도 PNG(GroundOverlay -300000)보다
 // 위에 깐다. 이걸 안 주면 zIndex가 같은 전역 층에서 비교돼서 방 도형이 길찾기 경로선을 덮는다.
 const FLOOR_SHAPE_GLOBAL_Z = -250000;
@@ -45,6 +67,48 @@ export function getFreshOverlayImage(
   return null;
 }
 
+// 줌 0에서 지구 둘레(m)가 화면 256pt에 들어간다. 줌이 1 오를 때마다 2배 확대.
+const EARTH_CIRCUMFERENCE_M = 40075016.686;
+const METERS_PER_DEGREE_LAT = 111320;
+
+/**
+ * 라벨 중심을 지나는 가로/세로 선이 방 도형 안에 걸치는 길이(m). 방이 기울어 있어도 화면에 똑바로 선 글자가
+ * 실제로 차지하는 방향(가로·세로)으로 잰다. 중심이 도형 밖이면 0.
+ */
+function chordLengths(coords: GeoCoord[], center: GeoCoord) {
+  const cosLat = Math.cos((center.latitude * Math.PI) / 180);
+  const pts = coords.map(p => [
+    (p.longitude - center.longitude) * METERS_PER_DEGREE_LAT * cosLat,
+    (p.latitude - center.latitude) * METERS_PER_DEGREE_LAT,
+  ]);
+  // 중심(0, 0)을 지나는 축 위에서 변들과 만나는 점들을 모아, 0을 감싸는 구간 길이를 구한다.
+  const chord = (axis: 0 | 1) => {
+    const other = axis === 0 ? 1 : 0;
+    const hits: number[] = [];
+    pts.forEach((a, i) => {
+      const b = pts[(i + 1) % pts.length];
+      if (a[other] > 0 === b[other] > 0) return;
+      hits.push(a[axis] + ((b[axis] - a[axis]) * -a[other]) / (b[other] - a[other]));
+    });
+    const lower = Math.max(...hits.filter(h => h <= 0), -Infinity);
+    const upper = Math.min(...hits.filter(h => h >= 0), Infinity);
+    return Number.isFinite(lower) && Number.isFinite(upper) ? upper - lower : 0;
+  };
+  return { width: chord(0), height: chord(1), cosLat };
+}
+
+/**
+ * 이 줌보다 축소하면 글자가 방보다 커서 삐져나오므로 숨긴다. 글자는 줌과 상관없이 화면 크기가 같고 방은
+ * 축소할수록 작아지니, 방의 가로·세로가 글자 폭·높이 이상이 되는 가장 낮은 줌을 구한다.
+ */
+function labelMinZoom(coords: GeoCoord[], center: GeoCoord, label: string) {
+  const { width, height, cosLat } = chordLengths(coords, center);
+  if (width <= 0 || height <= 0) return Infinity;
+  const metersPerPtAtZoom0 = (EARTH_CIRCUMFERENCE_M * cosLat) / 256;
+  const zoomToFit = (meters: number, pt: number) => Math.log2((metersPerPtAtZoom0 * pt) / meters);
+  return Math.max(zoomToFit(width, label.length * LABEL_CHAR_WIDTH), zoomToFit(height, LABEL_LINE_HEIGHT));
+}
+
 interface Props {
   floorId: string;
   anchors: FloorGeoAnchors | undefined;
@@ -56,15 +120,17 @@ interface Props {
 /**
  * [개발용] 층 평면도를 네이버 지도 위에 그린다. renderFloorOverlay.js로 구운 PNG가 지금 기준점과 맞으면
  * 그 PNG를 GroundOverlay로 얹고, 없거나 낡았으면(PNG를 굽는 중이거나 개발 서버가 없을 때) 방 도형 폴리곤 +
- * 호수 라벨 + 계단/엘리베이터 아이콘으로 대신 그린다.
+ * 계단/엘리베이터 아이콘으로 대신 그린다.
+ * 호수 라벨과 엘리베이터/계단/화장실 아이콘은 마커로 따로 그린다 — PNG는 건물 기울기만큼 돌려 구워서 글자·
+ * 아이콘을 넣으면 같이 기울어지므로, 내부지도 뷰처럼 위치만 도면을 따라가고 그림은 항상 똑바로 보이게 한다.
  * 기준점이 없는 층은 아무것도 안 그린다. NaverMapView의 children으로 넣는다.
  */
 export function FloorPlanOverlay({ floorId, anchors, showAnchorOutline = false, liveImage }: Props) {
   const overlayImage = getFreshOverlayImage(floorId, anchors, liveImage);
   const hasImage = Boolean(overlayImage);
 
-  const fallback = useMemo(() => {
-    if (!anchors || hasImage) return null;
+  const floor = useMemo(() => {
+    if (!anchors) return null;
     const data = FLOOR_MAPS[floorId]().data;
     const toGeo = createFloorToGeo(getContentBounds(data), anchors);
     const icons = (data.icons ?? []).map(icon => ({ ...icon, position: toGeo(icon.center[0], icon.center[1]) }));
@@ -74,16 +140,29 @@ export function FloorPlanOverlay({ floorId, anchors, showAnchorOutline = false, 
         room.points
           .reduce(([sx, sy], [x, y]) => [sx + x, sy + y], [0, 0])
           .map(v => v / room.points.length);
-      return {
-        id: room.id,
-        label: room.label ?? room.id,
-        coords: room.points.map(([x, y]) => toGeo(x, y)),
-        center: toGeo(cx, cy),
-      };
+      const label = room.label ?? room.id;
+      const coords = room.points.map(([x, y]) => toGeo(x, y));
+      const center = toGeo(cx, cy);
+      return { id: room.id, label, coords, center, minZoom: label ? labelMinZoom(coords, center, label) : Infinity };
     });
-    return { rooms, icons };
-  }, [floorId, anchors, hasImage]);
-  const shapes = fallback?.rooms;
+    return { rooms, icons, toGeo };
+  }, [floorId, anchors]);
+  const labels = floor?.rooms;
+  // PNG가 있으면 방 도형은 PNG에 그려져 있고, 아이콘은 PNG를 구울 때 빼서 위치만 남겨 둔 것을 마커로 그린다.
+  const shapes = hasImage ? undefined : floor?.rooms;
+  const icons = hasImage ? undefined : floor?.icons;
+  const overlayIcons = overlayImage?.icons;
+  const mapIcons = useMemo(
+    () =>
+      floor && overlayIcons
+        ? overlayIcons.map((icon, index) => ({
+            key: `${icon.type}-${index}`,
+            type: icon.type,
+            position: floor.toGeo(icon.center[0], icon.center[1]),
+          }))
+        : undefined,
+    [floor, overlayIcons],
+  );
 
   return (
     <>
@@ -116,24 +195,45 @@ export function FloorPlanOverlay({ floorId, anchors, showAnchorOutline = false, 
           zIndex={3}
         />
       ))}
-      {shapes?.map(shape =>
-        shape.label ? (
+      {labels?.map(room =>
+        room.label && Number.isFinite(room.minZoom) ? (
           <NaverMapMarkerOverlay
-            key={`floor-label-${floorId}-${shape.id}`}
-            latitude={shape.center.latitude}
-            longitude={shape.center.longitude}
-            width={shape.label.length * 8 + 8}
+            key={`floor-label-${floorId}-${room.id}`}
+            latitude={room.center.latitude}
+            longitude={room.center.longitude}
+            width={room.label.length * 8 + 8}
             height={16}
             anchor={{ x: 0.5, y: 0.5 }}
+            // 축소해서 글자가 방보다 커지면 숨긴다(방마다 다르다).
+            minZoom={room.minZoom}
             zIndex={4}
           >
-            <View key={shape.label} collapsable={false} style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 11, fontWeight: '600', color: '#003E80' }}>{shape.label}</Text>
+            <View key={room.label} collapsable={false} style={{ alignItems: 'center' }}>
+              <Text style={hasImage ? LABEL_TEXT_STYLE : FALLBACK_LABEL_TEXT_STYLE}>{room.label}</Text>
             </View>
           </NaverMapMarkerOverlay>
         ) : null,
       )}
-      {fallback?.icons.map(icon => {
+      {mapIcons?.map(icon => {
+        const Icon = MAP_ICON_BY_TYPE[icon.type];
+        return (
+          <NaverMapMarkerOverlay
+            key={`floor-map-icon-${floorId}-${icon.key}`}
+            latitude={icon.position.latitude}
+            longitude={icon.position.longitude}
+            width={MAP_ICON_SIZE}
+            height={MAP_ICON_SIZE}
+            anchor={{ x: 0.5, y: 0.5 }}
+            minZoom={MAP_ICON_MIN_ZOOM}
+            zIndex={5}
+          >
+            <View key={icon.type} collapsable={false}>
+              <Icon width={MAP_ICON_SIZE} height={MAP_ICON_SIZE} />
+            </View>
+          </NaverMapMarkerOverlay>
+        );
+      })}
+      {icons?.map(icon => {
         const Icon = icon.type === 'elevator' ? ElevatorIcon : StairsIcon;
         return (
           <NaverMapMarkerOverlay
