@@ -43,9 +43,6 @@
         "android.permission.SYSTEM_ALERT_WINDOW"
       ]
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
     "plugins": [
       [
         "@mj-studio/react-native-naver-map",
