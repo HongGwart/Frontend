@@ -69,6 +69,8 @@ export function PlaceMapDetailView({
         <NaverMapView
           // 서비스에서 현재 위치를 제공하지 않으므로 현위치 버튼(위치 권한 요청 경로)을 끈다.
           isShowLocationButton={false}
+          // 안드로이드 네이버 지도는 +/- 줌 버튼을 기본으로 띄운다(디자인에 없음). 핀치 줌으로 충분하다.
+          isShowZoomControls={false}
           style={StyleSheet.absoluteFill}
           initialCamera={{ latitude, longitude, zoom: 17 }}
           minZoom={MAP_MIN_ZOOM}
