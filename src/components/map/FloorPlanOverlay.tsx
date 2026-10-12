@@ -8,6 +8,7 @@ import {
 import { FLOOR_MAPS } from '@constant/floorMaps';
 import { FLOOR_OVERLAY_IMAGES, FloorOverlayIconType, FloorOverlayImage } from '@constant/floorOverlayImages';
 import { createFloorToGeo, FloorGeoAnchors, GeoCoord, getContentBounds } from '@utils/floorGeoTransform';
+import { theme } from '@theme/color';
 import ElevatorIcon from '@assets/svgs/icons/elevator.svg';
 import StairsIcon from '@assets/svgs/icons/stairs.svg';
 import MapElevatorIcon from '@assets/svgs/mapIcon/map_elevator.svg';
@@ -37,6 +38,11 @@ const LABEL_LINE_HEIGHT = 13;
 // PNG 위 라벨은 내부지도 뷰(RoomLabelsLayer)와 같은 검정, PNG 없이 파란 방 도형 위에 그릴 땐 파랑.
 const LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '500', color: '#000000' } as const;
 const FALLBACK_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '600', color: '#003E80' } as const;
+// 강조한 방(검색한 호실)은 내부지도 뷰(RoomPolygons·RoomLabelsLayer)와 같게 브랜드 남색으로 불투명하게 칠하고 번호는 흰색.
+const HIGHLIGHT_FILL = theme.blue[800];
+const HIGHLIGHT_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '500', color: '#FFFFFF' } as const;
+// 네이버 지도 폴리곤은 outlineWidth=0이 반영되지 않는 버그가 있어 테두리를 투명색으로 지운다.
+const NO_OUTLINE = 'rgba(0, 0, 0, 0)';
 // 방 도형 폴리곤을 경로선(폴리라인, 같은 기본 전역 z -200000)보다 아래, 평면도 PNG(GroundOverlay -300000)보다
 // 위에 깐다. 이걸 안 주면 zIndex가 같은 전역 층에서 비교돼서 방 도형이 길찾기 경로선을 덮는다.
 const FLOOR_SHAPE_GLOBAL_Z = -250000;
@@ -115,6 +121,8 @@ interface Props {
   /** 기준점 네 모서리를 이은 빨간 테두리를 같이 그릴지 (평면도 앉히기 모드에서 위치 비교용) */
   showAnchorOutline?: boolean;
   liveImage?: LiveFloorImage;
+  /** 강조할 방 id들(같은 번호로 나뉜 조각 전부). 내부지도 뷰에서 방을 고른 것과 같은 모양으로 칠한다 */
+  highlightRoomIds?: string[];
 }
 
 /**
@@ -125,7 +133,7 @@ interface Props {
  * 아이콘을 넣으면 같이 기울어지므로, 내부지도 뷰처럼 위치만 도면을 따라가고 그림은 항상 똑바로 보이게 한다.
  * 기준점이 없는 층은 아무것도 안 그린다. NaverMapView의 children으로 넣는다.
  */
-export function FloorPlanOverlay({ floorId, anchors, showAnchorOutline = false, liveImage }: Props) {
+export function FloorPlanOverlay({ floorId, anchors, showAnchorOutline = false, liveImage, highlightRoomIds }: Props) {
   const overlayImage = getFreshOverlayImage(floorId, anchors, liveImage);
   const hasImage = Boolean(overlayImage);
 
@@ -148,6 +156,8 @@ export function FloorPlanOverlay({ floorId, anchors, showAnchorOutline = false, 
     return { rooms, icons, toGeo };
   }, [floorId, anchors]);
   const labels = floor?.rooms;
+  const isHighlighted = (id: string) => !!highlightRoomIds?.includes(id);
+  const highlighted = floor?.rooms.filter(room => isHighlighted(room.id));
   // PNG가 있으면 방 도형은 PNG에 그려져 있고, 아이콘은 PNG를 구울 때 빼서 위치만 남겨 둔 것을 마커로 그린다.
   const shapes = hasImage ? undefined : floor?.rooms;
   const icons = hasImage ? undefined : floor?.icons;
@@ -195,21 +205,42 @@ export function FloorPlanOverlay({ floorId, anchors, showAnchorOutline = false, 
           zIndex={3}
         />
       ))}
+      {highlighted?.map(room => (
+        <NaverMapPolygonOverlay
+          key={`floor-highlight-${floorId}-${room.id}`}
+          coords={room.coords}
+          color={HIGHLIGHT_FILL}
+          outlineColor={NO_OUTLINE}
+          globalZIndex={FLOOR_SHAPE_GLOBAL_Z}
+          zIndex={3}
+        />
+      ))}
       {labels?.map(room =>
         room.label && Number.isFinite(room.minZoom) ? (
           <NaverMapMarkerOverlay
-            key={`floor-label-${floorId}-${room.id}`}
+            key={`floor-label-${floorId}-${room.id}${isHighlighted(room.id) ? '-on' : ''}`}
             latitude={room.center.latitude}
             longitude={room.center.longitude}
             width={room.label.length * 8 + 8}
             height={16}
             anchor={{ x: 0.5, y: 0.5 }}
             // 축소해서 글자가 방보다 커지면 숨긴다(방마다 다르다).
-            minZoom={room.minZoom}
+            // 강조한 방 번호는 줌과 상관없이 보인다.
+            minZoom={isHighlighted(room.id) ? 0 : room.minZoom}
             zIndex={4}
           >
             <View key={room.label} collapsable={false} style={{ alignItems: 'center' }}>
-              <Text style={hasImage ? LABEL_TEXT_STYLE : FALLBACK_LABEL_TEXT_STYLE}>{room.label}</Text>
+              <Text
+                style={
+                  isHighlighted(room.id)
+                    ? HIGHLIGHT_LABEL_TEXT_STYLE
+                    : hasImage
+                      ? LABEL_TEXT_STYLE
+                      : FALLBACK_LABEL_TEXT_STYLE
+                }
+              >
+                {room.label}
+              </Text>
             </View>
           </NaverMapMarkerOverlay>
         ) : null,
