@@ -22,10 +22,10 @@
 </g>
 <g id="Rectangle 240653265">
 <mask id="path-8-inside-2_1072_55139" fill="white">
-<path d="M680 964H952V1048H680V964Z"/>
+<path d="M679.5 963.5H951.5V1047.5H679.5V963.5Z"/>
 </mask>
-<path d="M680 964H952V1048H680V964Z" fill="#EBEBF5"/>
-<path d="M680 964V963H679V964H680ZM952 964H953V963H952V964ZM680 964V965H952V964V963H680V964ZM952 964H951V1048H952H953V964H952ZM680 1048H681V964H680H679V1048H680Z" fill="#1D2056" mask="url(#path-8-inside-2_1072_55139)"/>
+<path d="M679.5 963.5H951.5V1047.5H679.5V963.5Z" fill="#EBEBF5"/>
+<path d="M679.5 963.5V962.5H678.5V963.5H679.5ZM951.5 963.5H952.5V962.5H951.5V963.5ZM679.5 963.5V964.5H951.5V963.5V962.5H679.5V963.5ZM951.5 963.5H950.5V1047.5H951.5H952.5V963.5H951.5ZM679.5 1047.5H680.5V963.5H679.5H678.5V1047.5H679.5Z" fill="#1D2056" mask="url(#path-8-inside-2_1072_55139)"/>
 </g>
 <g id="room_3">
 <rect x="1055" y="1157" width="206" height="120" fill="#EBEBF5"/>
@@ -36,8 +36,8 @@
 <rect x="1055" y="1046" width="206" height="111" stroke="#1D2056"/>
 </g>
 <g id="room_5">
-<rect x="680" y="743" width="272" height="222" fill="#EBEBF5"/>
-<rect x="680" y="743" width="272" height="222" stroke="#1D2056"/>
+<rect x="679" y="743" width="272" height="222" fill="#EBEBF5"/>
+<rect x="679" y="743" width="272" height="222" stroke="#1D2056"/>
 </g>
 <g id="room_6">
 <rect x="1055" y="743" width="206" height="222" fill="#EBEBF5"/>

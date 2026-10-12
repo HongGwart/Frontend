@@ -351,6 +351,7 @@
 <rect id="Rectangle 240653105_20" width="1" height="0.5" transform="matrix(-4.37114e-08 -1 -1 4.37114e-08 729 1153.5)" fill="#1D2056"/>
 <rect id="Rectangle 240653106_20" width="1" height="0.5" transform="matrix(-4.37114e-08 -1 -1 4.37114e-08 729 1137.5)" fill="#1D2056"/>
 </g>
+<rect id="Rectangle 240653386" width="40" height="1" transform="matrix(1 0 0 -1 376 1072.5)" fill="white"/>
 </g>
 <g id="Hitbox">
 <rect id="room_1101" x="415" y="903" width="80" height="168" fill="#D9D9D9" fill-opacity="0.01"/>

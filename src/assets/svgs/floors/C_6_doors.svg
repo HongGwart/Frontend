@@ -470,11 +470,11 @@
 <rect id="Rectangle 240653106_67" x="970" y="2004.5" width="1" height="0.5" transform="rotate(90 970 2004.5)" fill="#1D2056"/>
 </g>
 <g id="door_68">
-<path id="Intersect_135" d="M806 2024H790C790 2015.16 797.163 2008 806 2008V2024Z" fill="white"/>
-<path id="Intersect_136" d="M806 2024V2008C797.163 2008 790 2015.16 790 2024" stroke="#1D2056"/>
-<rect id="Rectangle 240653104_68" x="790.5" y="2024" width="15" height="0.5" fill="white"/>
-<rect id="Rectangle 240653105_68" x="789.5" y="2024" width="1" height="0.5" fill="#1D2056"/>
-<rect id="Rectangle 240653106_68" x="805.5" y="2024" width="1" height="0.5" fill="#1D2056"/>
+<path id="Intersect_135" d="M806 2023H790C790 2014.16 797.163 2007 806 2007V2023Z" fill="white"/>
+<path id="Intersect_136" d="M806 2023V2007C797.163 2007 790 2014.16 790 2023" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_68" x="790.5" y="2023" width="15" height="0.5" fill="white"/>
+<rect id="Rectangle 240653105_68" x="789.5" y="2023" width="1" height="0.5" fill="#1D2056"/>
+<rect id="Rectangle 240653106_68" x="805.5" y="2023" width="1" height="0.5" fill="#1D2056"/>
 </g>
 <g id="door_69">
 <path id="Intersect_137" d="M970 2231L970 2215C978.837 2215 986 2222.16 986 2231L970 2231Z" fill="white"/>

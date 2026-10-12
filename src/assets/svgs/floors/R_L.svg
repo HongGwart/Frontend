@@ -545,6 +545,7 @@
 <rect id="Rectangle 240653106_23" width="1" height="0.5" transform="matrix(1 0 0 -1 957.5 1249)" fill="#1D2056"/>
 </g>
 <rect id="Rectangle 240653128" x="720" y="416" width="4" height="63" transform="rotate(-90 720 416)" fill="white"/>
+<rect id="Rectangle 240653377" x="1550" y="1396.6" width="12" height="3" fill="#E8EDF3"/>
 </g>
 <g id="Hitbox">
 <rect id="room_B106" x="513" y="230" width="129" height="210" fill="#D9D9D9" fill-opacity="0.01"/>

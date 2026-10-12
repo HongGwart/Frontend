@@ -8,18 +8,18 @@
 <rect id="Rectangle 240653106" width="1" height="0.5" transform="matrix(1 0 0 -1 617.5 997)" fill="#1D2056"/>
 </g>
 <g id="door_2">
-<path id="Intersect_3" d="M674 1049H658C658 1057.84 665.163 1065 674 1065V1049Z" fill="white"/>
-<path id="Intersect_4" d="M674 1049V1065C665.163 1065 658 1057.84 658 1049" stroke="#1D2056"/>
-<rect id="Rectangle 240653104_2" width="15" height="0.5" transform="matrix(1 0 0 -1 658.5 1049)" fill="white"/>
-<rect id="Rectangle 240653105_2" width="1" height="0.5" transform="matrix(1 0 0 -1 657.5 1049)" fill="#1D2056"/>
-<rect id="Rectangle 240653106_2" width="1" height="0.5" transform="matrix(1 0 0 -1 673.5 1049)" fill="#1D2056"/>
+<path id="Intersect_3" d="M674 1049.5H658C658 1058.34 665.163 1065.5 674 1065.5V1049.5Z" fill="white"/>
+<path id="Intersect_4" d="M674 1049.5V1065.5C665.163 1065.5 658 1058.34 658 1049.5" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_2" width="15" height="0.5" transform="matrix(1 0 0 -1 658.5 1049.5)" fill="white"/>
+<rect id="Rectangle 240653105_2" width="1" height="0.5" transform="matrix(1 0 0 -1 657.5 1049.5)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_2" width="1" height="0.5" transform="matrix(1 0 0 -1 673.5 1049.5)" fill="#1D2056"/>
 </g>
 <g id="door_3">
-<path id="Intersect_5" d="M642 1049H658C658 1057.84 650.837 1065 642 1065V1049Z" fill="white"/>
-<path id="Intersect_6" d="M642 1049V1065C650.837 1065 658 1057.84 658 1049" stroke="#1D2056"/>
-<rect id="Rectangle 240653104_3" x="657.5" y="1049" width="15" height="0.5" transform="rotate(-180 657.5 1049)" fill="white"/>
-<rect id="Rectangle 240653105_3" x="658.5" y="1049" width="1" height="0.5" transform="rotate(-180 658.5 1049)" fill="#1D2056"/>
-<rect id="Rectangle 240653106_3" x="642.5" y="1049" width="1" height="0.5" transform="rotate(-180 642.5 1049)" fill="#1D2056"/>
+<path id="Intersect_5" d="M642 1049.5H658C658 1058.34 650.837 1065.5 642 1065.5V1049.5Z" fill="white"/>
+<path id="Intersect_6" d="M642 1049.5V1065.5C650.837 1065.5 658 1058.34 658 1049.5" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_3" x="657.5" y="1049.5" width="15" height="0.5" transform="rotate(-180 657.5 1049.5)" fill="white"/>
+<rect id="Rectangle 240653105_3" x="658.5" y="1049.5" width="1" height="0.5" transform="rotate(-180 658.5 1049.5)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_3" x="642.5" y="1049.5" width="1" height="0.5" transform="rotate(-180 642.5 1049.5)" fill="#1D2056"/>
 </g>
 <g id="door_4">
 <path id="Intersect_7" d="M719 513L719 497C710.163 497 703 504.163 703 513L719 513Z" fill="white"/>
