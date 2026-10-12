@@ -84,7 +84,7 @@ function extractIconGroups(svgFragment) {
 
 /** 아이콘 그룹이 도면에서 차지하는 영역의 중심(도면 좌표). 클립 경로 등 defs가 필요해서 같이 넘긴다. */
 function iconCenter(groupSvg, viewBox, defs) {
-  const bbox = new Resvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${defs}${groupSvg}</svg>`).getBBox();
+  const bbox = new Resvg(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="${viewBox}">${defs}${groupSvg}</svg>`).getBBox();
   if (!bbox) return null;
   const round = v => Math.round(v * 10) / 10;
   return [round(bbox.x + bbox.width / 2), round(bbox.y + bbox.height / 2)];
@@ -198,7 +198,7 @@ function renderFloor(floorId, anchors) {
   });
   if (visual.length === 0) throw new Error(`${floorId}: id="Visual" 그룹을 찾지 못했습니다`);
   const out = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none">`,
     `<g transform="matrix(${matrix.join(' ')})">`,
     ...visual,
     '</g>',
