@@ -5,7 +5,8 @@ import {
   NaverMapMarkerOverlay,
   NaverMapPolygonOverlay,
 } from '@mj-studio/react-native-naver-map';
-import { FLOOR_MAPS } from '@constant/floorMaps';
+import { getBuildingMask } from '@constant/buildingMasks';
+import { FLOOR_MAPS, parseFloorId } from '@constant/floorMaps';
 import { FLOOR_OVERLAY_IMAGES, FloorOverlayIconType, FloorOverlayImage } from '@constant/floorOverlayImages';
 import { createFloorToGeo, FloorGeoAnchors, GeoCoord, getContentBounds } from '@utils/floorGeoTransform';
 import { theme } from '@theme/color';
@@ -43,6 +44,12 @@ const HIGHLIGHT_FILL = theme.blue[800];
 const HIGHLIGHT_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '500', color: '#FFFFFF' } as const;
 // 네이버 지도 폴리곤은 outlineWidth=0이 반영되지 않는 버그가 있어 테두리를 투명색으로 지운다.
 const NO_OUTLINE = 'rgba(0, 0, 0, 0)';
+// 건물 덮개(buildingMasks.ts): 네이버 지도 캠퍼스 바닥색으로 칠해 그 건물의 네이버 윤곽만 가린다. 찍은 모서리보다
+// 테두리 두께(화면 px)만큼 넓게 칠해 네이버 건물 테두리 선까지 덮는다. 평면도 PNG(GroundOverlay 기본 전역 z
+// -300000)보다 아래, 바탕 지도보다는 위에 깔린다.
+const BUILDING_MASK_COLOR = '#EEF1F6';
+const BUILDING_MASK_SPREAD_PX = 4;
+const BUILDING_MASK_GLOBAL_Z = -310000;
 // 방 도형 폴리곤을 경로선(폴리라인, 같은 기본 전역 z -200000)보다 아래, 평면도 PNG(GroundOverlay -300000)보다
 // 위에 깐다. 이걸 안 주면 zIndex가 같은 전역 층에서 비교돼서 방 도형이 길찾기 경로선을 덮는다.
 const FLOOR_SHAPE_GLOBAL_Z = -250000;
@@ -123,6 +130,8 @@ interface Props {
   liveImage?: LiveFloorImage;
   /** 강조할 방 id들(같은 번호로 나뉜 조각 전부). 내부지도 뷰에서 방을 고른 것과 같은 모양으로 칠한다 */
   highlightRoomIds?: string[];
+  /** 건물 덮개를 깔지 않는다(덮개 찍기 모드: 네이버 건물이 보여야 모서리를 찍을 수 있다) */
+  hideBuildingMask?: boolean;
 }
 
 /**
@@ -133,7 +142,14 @@ interface Props {
  * 아이콘을 넣으면 같이 기울어지므로, 내부지도 뷰처럼 위치만 도면을 따라가고 그림은 항상 똑바로 보이게 한다.
  * 기준점이 없는 층은 아무것도 안 그린다. NaverMapView의 children으로 넣는다.
  */
-export function FloorPlanOverlay({ floorId, anchors, showAnchorOutline = false, liveImage, highlightRoomIds }: Props) {
+export function FloorPlanOverlay({
+  floorId,
+  anchors,
+  showAnchorOutline = false,
+  liveImage,
+  highlightRoomIds,
+  hideBuildingMask = false,
+}: Props) {
   const overlayImage = getFreshOverlayImage(floorId, anchors, liveImage);
   const hasImage = Boolean(overlayImage);
 
@@ -174,8 +190,20 @@ export function FloorPlanOverlay({ floorId, anchors, showAnchorOutline = false, 
     [floor, overlayIcons],
   );
 
+  const buildingMask = hideBuildingMask || !anchors ? undefined : getBuildingMask(parseFloorId(floorId).building);
+
   return (
     <>
+      {buildingMask && (
+        <NaverMapPolygonOverlay
+          key={`floor-mask-${floorId}`}
+          coords={buildingMask}
+          color={BUILDING_MASK_COLOR}
+          outlineColor={BUILDING_MASK_COLOR}
+          outlineWidth={BUILDING_MASK_SPREAD_PX}
+          globalZIndex={BUILDING_MASK_GLOBAL_Z}
+        />
+      )}
       {overlayImage && (
         <NaverMapGroundOverlay
           key={`floor-image-${floorId}-${typeof overlayImage.image === 'number' ? 'bundled' : overlayImage.image.httpUri}`}

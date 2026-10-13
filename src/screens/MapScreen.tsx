@@ -22,6 +22,7 @@ import { DismissibleBottomSheet, DismissibleBottomSheetRef } from '@components/c
 import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
 import { DevFloorOverlayLayer, DevFloorOverlayPanel, useDevFloorOverlay } from '@components/map/DevFloorOverlayPicker';
 import { DevRouteNodeLayer, DevRouteNodePanel, useDevRouteNodes } from '@components/map/DevRouteNodePicker';
+import { DevBuildingMaskLayer, DevBuildingMaskPanel, useDevBuildingMasks } from '@components/map/DevBuildingMaskPicker';
 import { TEST_ROUTE_DEPARTURE_LABEL, TEST_ROUTE_DESTINATION_LABEL } from '@constant/testIndoorRoute';
 import { FocusableCategoryMarker, FocusableDongMarker } from '@components/map/FocusableMarkers';
 import { CategoryKey } from '@constant/categoryChips';
@@ -116,7 +117,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         },
       }),
   });
-  const devModeActive = floorOverlay.active || routeNodes.active;
+  const buildingMasks = useDevBuildingMasks(mapViewRef);
+  const devModeActive = floorOverlay.active || routeNodes.active || buildingMasks.active;
 
   // 지금 포커싱된(눌러서 카드가 열리는) 마커의 id — 이 마커만 강조(active) + 네임택으로 남기고 나머지는 숨긴다.
   // 카드(selectedFacility)와 따로 들고 있는 이유: 마커를 누르면 마커 모양은 그 즉시 바뀌고, 무거운 카드는
@@ -421,10 +423,17 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         maxZoom={MAP_MAX_ZOOM}
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
         onTapMap={
-          routeNodes.active ? routeNodes.handleTap : floorOverlay.active ? undefined : closeFacilitySheet
+          buildingMasks.active
+            ? buildingMasks.handleTap
+            : routeNodes.active
+              ? routeNodes.handleTap
+              : floorOverlay.active
+                ? undefined
+                : closeFacilitySheet
         }
       >
         <DevFloorOverlayLayer picker={floorOverlay} />
+        <DevBuildingMaskLayer picker={buildingMasks} />
         <DevRouteNodeLayer
           picker={routeNodes}
           floorAnchors={floorOverlay.anchors}
@@ -643,6 +652,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         <>
           <DevFloorOverlayPanel picker={floorOverlay} topInset={insets.top} />
           <DevRouteNodePanel picker={routeNodes} topInset={insets.top} floorAnchors={floorOverlay.anchors} />
+          <DevBuildingMaskPanel picker={buildingMasks} topInset={insets.top} />
         </>
       )}
     </View>

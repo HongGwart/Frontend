@@ -6,7 +6,7 @@ import { Region } from '@mj-studio/react-native-naver-map';
 import type { FloorOverlayIcon } from '@constant/floorOverlayImages';
 import { FloorGeoAnchors } from './floorGeoTransform';
 
-export type DevSaveTarget = 'floorGeoAnchors' | 'testRouteNodes';
+export type DevSaveTarget = 'floorGeoAnchors' | 'testRouteNodes' | 'buildingMasks';
 
 /** 개발 서버가 방금 구운 평면도 PNG 정보. path는 개발 서버 기준 상대 주소 */
 export interface DevRenderedOverlay {
