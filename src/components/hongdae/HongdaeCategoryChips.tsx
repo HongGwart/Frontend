@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView } from 'react-native';
 import styled from 'styled-components/native';
 import { Chip } from '@components/common/Chip';
-import { HongdaeCategory } from '@constant/dummyHongdaePlaces';
+import { HongdaeCategory } from '@constant/hongdaePlaces';
 
 interface Props {
   /** null이면 "All" 선택 상태 */

@@ -10,10 +10,13 @@ import { OperatingHoursRow } from './FacilityInfoCard';
 import { BuildingFacilityCard } from './BuildingFacilityCard';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import { DUMMY_MAP_MARKERS, DUMMY_CATEGORY_MARKERS } from '@constant/dummyMapMarkers';
-import { DUMMY_MAIN_ENTRANCE, DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
+import { DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
 import { favoriteFromCategoryMarker } from '@constant/favoriteInputs';
 import { useFavorites } from '@hooks/useFavorites';
-import { useBuildingMainEntrance } from '@api/node/useBuildingNodeId';
+import { useBuildingDetail } from '@api/building/useBuildingDetail';
+
+// "2026-10-13" → "2026년 10월"
+const formatAsOf = (date: string) => `${date.slice(0, 4)}년 ${Number(date.slice(5, 7))}월`;
 
 interface Props {
   buildingCode: string;
@@ -71,8 +74,8 @@ export function BuildingDetailBody({
     () => DUMMY_CATEGORY_MARKERS.filter(marker => marker.buildingCode === buildingCode),
     [buildingCode],
   );
-  // 주 출입구는 서버 장소 상세의 출입구 목록으로 채운다. 서버에 없는 건물이거나 아직 응답 전이면 더미 값.
-  const mainEntrance = useBuildingMainEntrance(buildingCode, DUMMY_MAIN_ENTRANCE);
+  // 설명·사진·운영 시간(지금 시각 기준)·주 출입구(서버 장소 상세). 확인 안 된 항목은 그 줄이 빠진다.
+  const detail = useBuildingDetail(buildingCode);
 
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(지도/마이페이지와 같은 상태).
   const { isFavorite, toggleFavorite: toggleFavoritePlace } = useFavorites();
@@ -110,22 +113,32 @@ export function BuildingDetailBody({
       >
         <Section>
           {/* 사진은 한 장 249×160으로 나열하고, 화면 폭을 넘는 만큼은 오른쪽으로 가로 스크롤된다. */}
-          {dongMarker.images && (
-            <FacilityImagePair images={dongMarker.images} itemWidth={249} height={160} bleed={20} />
+          {detail.images && (
+            <FacilityImagePair images={detail.images} itemWidth={249} height={160} bleed={20} />
           )}
-          <DescriptionText>{dongMarker.description}</DescriptionText>
+          {detail.description && <DescriptionText>{detail.description}</DescriptionText>}
           <InfoList>
-            <InfoRow>
-              <InfoLabelText>주 출입구</InfoLabelText>
-              <InfoValueText>{mainEntrance}</InfoValueText>
-            </InfoRow>
-            <InfoRow>
-              <InfoLabelText>운영 시간</InfoLabelText>
-              <InfoValueColumn>
-                <OperatingHoursRow operatingHours={DUMMY_OPERATING_HOURS} />
-                <InfoNoteText>연중무휴</InfoNoteText>
-              </InfoValueColumn>
-            </InfoRow>
+            {detail.mainEntrance && (
+              <InfoRow>
+                <InfoLabelText>주 출입구</InfoLabelText>
+                <InfoValueText>{detail.mainEntrance}</InfoValueText>
+              </InfoRow>
+            )}
+            {detail.operatingHours && (
+              <InfoRow>
+                <InfoLabelText>운영 시간</InfoLabelText>
+                <InfoValueColumn>
+                  <OperatingHoursRow operatingHours={detail.operatingHours} />
+                  {(detail.hoursNote || detail.asOf) && (
+                    <InfoNoteText>
+                      {[detail.hoursNote, detail.asOf && `${formatAsOf(detail.asOf)} 기준, 변동될 수 있어요`]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </InfoNoteText>
+                  )}
+                </InfoValueColumn>
+              </InfoRow>
+            )}
           </InfoList>
         </Section>
 

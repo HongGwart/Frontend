@@ -11,8 +11,10 @@ import { AnimatedToast } from '@components/mypage/AnimatedToast';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { PlaceMapDetailView } from '@components/map/PlaceMapDetailView';
 import { HongdaeCategoryChips } from '@components/hongdae/HongdaeCategoryChips';
-import { DUMMY_FACILITY_IMAGES } from '@constant/dummyFacilityInfo';
-import { DUMMY_HONGDAE_PLACES, HongdaeCategory } from '@constant/dummyHongdaePlaces';
+import { HongdaeCategory } from '@constant/hongdaePlaces';
+import { useHongdaePlaces } from '@api/hongdae/useHongdaePlaces';
+import { useNow } from '@hooks/useNow';
+import { getOperatingStatus } from '@utils/operatingHours';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { useCloseOnHardwareBack } from '@hooks/useCloseOnHardwareBack';
 import { MainTabParamList } from '@navigation/types';
@@ -29,6 +31,9 @@ export default function HongdaeScreen() {
   const [selectedCategory, setSelectedCategory] = useState<HongdaeCategory | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const routeButtonProps = useRouteButtonProps();
+  const { places: allPlaces, asOf } = useHongdaePlaces();
+  // 운영 상태는 데이터에 고정된 문구가 아니라 지금 시각으로 계산한다(1분마다 갱신).
+  const now = useNow();
 
   // 실제 즐겨찾기 연동 전까지, 이 화면 안에서만 유지되는 로컬 토글 상태.
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
@@ -56,16 +61,13 @@ export default function HongdaeScreen() {
   };
 
   const places = useMemo(
-    () =>
-      selectedCategory === null
-        ? DUMMY_HONGDAE_PLACES
-        : DUMMY_HONGDAE_PLACES.filter(place => place.category === selectedCategory),
-    [selectedCategory],
+    () => (selectedCategory === null ? allPlaces : allPlaces.filter(place => place.category === selectedCategory)),
+    [allPlaces, selectedCategory],
   );
 
   const selectedPlace = useMemo(
-    () => DUMMY_HONGDAE_PLACES.find(place => place.id === selectedPlaceId) ?? null,
-    [selectedPlaceId],
+    () => allPlaces.find(place => place.id === selectedPlaceId) ?? null,
+    [allPlaces, selectedPlaceId],
   );
 
   useLayoutEffect(() => {
@@ -82,7 +84,7 @@ export default function HongdaeScreen() {
   if (selectedPlace) {
     // 홍대 상권은 건물 내부가 없는 외부 장소라, 시설카드의 CTA를 "건물 내부 보기" 대신
     // 네이버 지도 딥링크로 바꿔서 그대로 재활용한다(FacilityInfoCard 'facility' variant).
-    const closingTime = selectedPlace.hours.split(' - ')[1] ?? selectedPlace.hours;
+    const status = getOperatingStatus(selectedPlace.hours, now);
 
     return (
       <PlaceMapDetailView
@@ -100,18 +102,14 @@ export default function HongdaeScreen() {
         card={
           <FacilityInfoCard
             variant="facility"
-            buildingCode={selectedPlace.tagline}
+            buildingCode={selectedPlace.tagline ?? `${selectedPlace.district} ${selectedPlace.neighborhood}`}
             buildingName=""
             facilityName={selectedPlace.name}
             isFavorite={favoriteIds.has(selectedPlace.id)}
             onToggleFavorite={() => toggleFavorite(selectedPlace.id, selectedPlace.name)}
             {...routeButtonProps(toRoutePlaceLabel(selectedPlace.name))}
-            images={DUMMY_FACILITY_IMAGES}
-            operatingHours={{
-              isOpen: selectedPlace.isOpen,
-              statusText: selectedPlace.statusText,
-              detailText: `${closingTime}에 운영 종료`,
-            }}
+            images={selectedPlace.photos}
+            operatingHours={status}
             ctaLabel="네이버 지도에서 열기"
             ctaIcon={null}
             ctaVariant="secondary"
@@ -133,27 +131,28 @@ export default function HongdaeScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 8 }}
         showsVerticalScrollIndicator={false}
       >
-        {places.map((place, index) => (
-          <FavoritePlaceCard
-            key={place.id}
-            name={place.name}
-            buildingCode={place.buildingCode}
-            buildingName={place.buildingName}
-            locationDetail={place.locationDetail}
-            photo={place.photo}
-            // 사진이 없는 가게는 즐겨찾기/편의시설 목록의 기본 썸네일처럼 옅은 남색 박스에 식당 아이콘을 띄운다.
-            icon={place.icon ?? RestaurantIcon}
-            iconWidth={place.iconWidth}
-            iconHeight={place.iconHeight}
-            isOpen={place.isOpen}
-            statusText={place.statusText}
-            hours={place.hours}
-            isFavorite={favoriteIds.has(place.id)}
-            onToggleFavorite={() => toggleFavorite(place.id, place.name)}
-            onPress={() => setSelectedPlaceId(place.id)}
-            showDivider={index !== places.length - 1}
-          />
-        ))}
+        {asOf && <AsOfText>운영 시간은 변동될 수 있어요 · {formatAsOf(asOf)} 기준</AsOfText>}
+        {places.map((place, index) => {
+          const status = getOperatingStatus(place.hours, now);
+          return (
+            <FavoritePlaceCard
+              key={place.id}
+              name={place.name}
+              buildingCode={place.district}
+              buildingName={place.neighborhood}
+              photo={place.photos?.[0]}
+              // 사진이 없는 가게는 즐겨찾기/편의시설 목록의 기본 썸네일처럼 옅은 남색 박스에 식당 아이콘을 띄운다.
+              icon={RestaurantIcon}
+              isOpen={status.isOpen}
+              statusText={status.statusText}
+              hours={status.todayText}
+              isFavorite={favoriteIds.has(place.id)}
+              onToggleFavorite={() => toggleFavorite(place.id, place.name)}
+              onPress={() => setSelectedPlaceId(place.id)}
+              showDivider={index !== places.length - 1}
+            />
+          );
+        })}
       </ScrollView>
       {toast && (
         // 사라지는 애니메이션은 AnimatedToast가 직접 재고, 끝나면 onHide로 내린다. 위의 타이머는 상세용이라
@@ -169,6 +168,16 @@ export default function HongdaeScreen() {
     </Container>
   );
 }
+
+// "2026-10-13" → "2026년 10월"
+const formatAsOf = (date: string) => `${date.slice(0, 4)}년 ${Number(date.slice(5, 7))}월`;
+
+const AsOfText = styled.Text`
+  padding: 12px 20px 4px;
+  font-family: ${({ theme }) => theme.typography.labelNormal.medium.fontFamily};
+  font-size: ${({ theme }) => theme.typography.labelNormal.medium.fontSize}px;
+  color: ${({ theme }) => theme.semantic.text.tertiary};
+`;
 
 const Container = styled.View`
   flex: 1;

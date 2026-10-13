@@ -55,7 +55,8 @@ interface Props {
   facilityCounts?: FacilityCountItem[];
   /** outside/inside에서만 쓰인다 (예: "정문(1층), 후문(지하 1층)") */
   mainEntrance?: string;
-  operatingHours: OperatingHoursInfo;
+  /** 없으면(확인된 운영 시간이 없는 곳) 운영 시간 줄을 빼고 그린다 */
+  operatingHours?: OperatingHoursInfo;
   /** outside/facility에서만 쓰인다 */
   onViewInsidePress?: () => void;
   /**
@@ -165,7 +166,7 @@ export function FacilityInfoCard({
                   {locationDetail && <LocationCodeText compact={compact}>{locationDetail}</LocationCodeText>}
                 </FacilityLocationRow>
               </FacilityTitleBlock>
-              <OperatingHoursRow operatingHours={operatingHours} compact={compact} />
+              {operatingHours && <OperatingHoursRow operatingHours={operatingHours} compact={compact} />}
             </FacilityHeaderGroup>
             {actionButtons}
           </FacilitySection>
@@ -182,7 +183,7 @@ export function FacilityInfoCard({
               </TitleRow>
               <DescriptionText numberOfLines={1}>{description}</DescriptionText>
               {/* Header 자체 gap(4px)에 2px를 더해서 room에서만 설명-운영시간 간격을 6px로 맞춘다 */}
-              {isRoom && (
+              {isRoom && operatingHours && (
                 <RoomOperatingHoursSpacer>
                   <OperatingHoursRow operatingHours={operatingHours} />
                 </RoomOperatingHoursSpacer>
@@ -229,10 +230,12 @@ export function FacilityInfoCard({
                   <InfoValueText>{mainEntrance}</InfoValueText>
                 </InfoRow>
               )}
-              <InfoRow>
-                <InfoLabelText>운영 시간</InfoLabelText>
-                <OperatingHoursRow operatingHours={operatingHours} />
-              </InfoRow>
+              {operatingHours && (
+                <InfoRow>
+                  <InfoLabelText>운영 시간</InfoLabelText>
+                  <OperatingHoursRow operatingHours={operatingHours} />
+                </InfoRow>
+              )}
             </InfoList>
           </DetailSection>
         )}

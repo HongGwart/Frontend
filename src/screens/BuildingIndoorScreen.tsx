@@ -13,12 +13,9 @@ import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { CollapsibleBottomSheet, CollapsibleBottomSheetRef } from '@components/common/CollapsibleBottomSheet';
 import { FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
-import { useBuildingMainEntrance } from '@api/node/useBuildingNodeId';
+import { useBuildingDetail } from '@api/building/useBuildingDetail';
 import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
 import {
-  DUMMY_FACILITY_COUNTS,
-  DUMMY_FACILITY_IMAGES,
-  DUMMY_MAIN_ENTRANCE,
   DUMMY_OPERATING_HOURS,
 } from '@constant/dummyFacilityInfo';
 import { RootStackParamList } from '@navigation/types';
@@ -47,8 +44,8 @@ const CARD_PEEK_HEIGHT = 24;
 export default function BuildingIndoorScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'BuildingIndoor'>>();
-  // 건물 카드의 주 출입구 — 서버 장소 상세에서 받고, 없으면 더미 값.
-  const mainEntrance = useBuildingMainEntrance(params.buildingCode, DUMMY_MAIN_ENTRANCE);
+  // 건물 카드 정보(사진·운영 시간·주 출입구) — 확인된 건물 정보 + 서버 장소 상세의 출입구.
+  const buildingDetail = useBuildingDetail(params.buildingCode);
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   // 건물 내부 평면도가 밖으로 퍼지지 않게 이 화면이 떠 있는 동안 캡처를 막는다.
@@ -240,10 +237,10 @@ export default function BuildingIndoorScreen() {
               isFavorite={isFavorite(buildingFavorite)}
               onToggleFavorite={() => toggleFavorite(buildingFavorite)}
               {...routeButtonProps(placeLabel)}
-              images={marker?.images ?? DUMMY_FACILITY_IMAGES}
-              facilityCounts={DUMMY_FACILITY_COUNTS}
-              mainEntrance={mainEntrance}
-              operatingHours={DUMMY_OPERATING_HOURS}
+              images={buildingDetail.images}
+              facilityCounts={buildingDetail.facilityCounts}
+              mainEntrance={buildingDetail.mainEntrance}
+              operatingHours={buildingDetail.operatingHours}
             />
           )}
         </CollapsibleBottomSheet>

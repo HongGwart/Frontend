@@ -32,7 +32,7 @@ import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { useVoiceSearch } from '@hooks/useVoiceSearch';
 import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
 import { useNodeDetail } from '@api/node/useNodeDetail';
-import { useBuildingMainEntrance } from '@api/node/useBuildingNodeId';
+import { useBuildingDetail } from '@api/building/useBuildingDetail';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import {
@@ -41,7 +41,7 @@ import {
   DummyMapMarker,
   DummyCategoryMarker,
 } from '@constant/dummyMapMarkers';
-import { DUMMY_FACILITY_COUNTS, DUMMY_MAIN_ENTRANCE, DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
+import { DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
 import {
   SEARCH_ITEM_ICONS,
   SearchResultItem,
@@ -147,11 +147,8 @@ export default function SearchScreen() {
       : null;
   // 건물 자체를 서버 검색 결과로 골랐으면 그 노드(출입구 정보·길찾기 출발/도착에 쓴다).
   const buildingNodeId = selectedItem?.category === 'building' ? selectedItem.nodeId : undefined;
-  // 건물 카드의 주 출입구 — 앱 더미 건물을 골랐을 때도 건물 코드로 서버 장소 상세를 찾아 채운다.
-  const dongMainEntrance = useBuildingMainEntrance(
-    selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined,
-    DUMMY_MAIN_ENTRANCE,
-  );
+  // 건물 카드 정보(설명·사진·운영 시간·주 출입구) — 확인된 건물 정보 + 서버 장소 상세의 출입구.
+  const dongDetail = useBuildingDetail(selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined);
 
   // 호실을 골랐으면 그 호실이 있는 층 평면도를 지도에 깔고 호실을 칠한다. 층은 서버 장소 상세에 있으면 그 층을
   // 먼저 보고, 없으면(앱 더미 장소) 건물의 평면도들에서 같은 번호의 방을 찾는다.
@@ -365,20 +362,20 @@ export default function SearchScreen() {
                 variant="outside"
                 buildingCode={selectedFacility.marker.label ?? ''}
                 buildingName={selectedFacility.marker.buildingName}
-                description={selectedFacility.marker.description}
+                description={dongDetail.description}
                 isFavorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
                 onToggleFavorite={() =>
                   toggleFavorite({ ...favoriteFromDongMarker(selectedFacility.marker), nodeId: buildingNodeId })
                 }
-                images={selectedFacility.marker.images}
+                images={dongDetail.images}
                 {...routeButtonProps(
                   toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
                   buildingNodeId,
                 )}
-                facilityCounts={DUMMY_FACILITY_COUNTS}
-                // 서버 건물이면 장소 상세의 출입구 목록을, 아니면(또는 불러오기 전) 더미를 보여준다.
-                mainEntrance={(buildingNodeId !== undefined && nodeDetail?.mainEntrance) || dongMainEntrance}
-                operatingHours={DUMMY_OPERATING_HOURS}
+                facilityCounts={dongDetail.facilityCounts}
+                // 서버 건물이면 장소 상세의 출입구 목록을, 아니면(또는 불러오기 전) 건물 코드로 찾은 값을 보여준다.
+                mainEntrance={(buildingNodeId !== undefined && nodeDetail?.mainEntrance) || dongDetail.mainEntrance}
+                operatingHours={dongDetail.operatingHours}
                 onViewInsidePress={() => {
                   closeCardWhenCovered();
                   navigation.navigate('BuildingIndoor', {
