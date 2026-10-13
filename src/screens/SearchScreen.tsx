@@ -33,6 +33,8 @@ import { useVoiceSearch } from '@hooks/useVoiceSearch';
 import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
 import { useNodeDetail } from '@api/node/useNodeDetail';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
+import { useOperatingStatus } from '@hooks/useOperatingStatus';
+import { getFacilityHours } from '@constant/facilityHours';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import {
@@ -41,7 +43,6 @@ import {
   DummyMapMarker,
   DummyCategoryMarker,
 } from '@constant/dummyMapMarkers';
-import { DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
 import {
   SEARCH_ITEM_ICONS,
   SearchResultItem,
@@ -149,6 +150,12 @@ export default function SearchScreen() {
   const buildingNodeId = selectedItem?.category === 'building' ? selectedItem.nodeId : undefined;
   // 건물 카드 정보(설명·사진·운영 시간·주 출입구) — 확인된 건물 정보 + 서버 장소 상세의 출입구.
   const dongDetail = useBuildingDetail(selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined);
+  // 카테고리(시설) 카드의 운영 상태 — 시설 운영 시간을 지금 시각으로 계산.
+  const facilityStatus = useOperatingStatus(
+    selectedFacility?.type === 'category'
+      ? getFacilityHours(selectedFacility.marker.buildingCode, selectedFacility.marker.room)
+      : undefined,
+  );
 
   // 호실을 골랐으면 그 호실이 있는 층 평면도를 지도에 깔고 호실을 칠한다. 층은 서버 장소 상세에 있으면 그 층을
   // 먼저 보고, 없으면(앱 더미 장소) 건물의 평면도들에서 같은 번호의 방을 찾는다.
@@ -234,7 +241,8 @@ export default function SearchScreen() {
       isFavorite: isFavorite(favorite),
       onToggleFavorite: () => toggleFavorite(favorite),
       ...routeButtonProps(toRoutePlaceLabel(buildingCode, marker.buildingName, name), item.nodeId),
-      operatingHours: DUMMY_OPERATING_HOURS,
+      // 호실·시설에는 따로 운영 시간이 없어 그 건물의 운영 시간을 쓴다.
+      operatingHours: dongDetail.operatingHours,
     };
     if (roomNumber) {
       return (
@@ -402,7 +410,7 @@ export default function SearchScreen() {
                     selectedFacility.marker.room,
                   ),
                 )}
-                operatingHours={DUMMY_OPERATING_HOURS}
+                operatingHours={facilityStatus}
                 // 시설이 있는 건물(동)의 내부 지도로 간다(지도 화면의 시설 카드와 같음).
                 onViewInsidePress={() => {
                   const { buildingCode, buildingName } = selectedFacility.marker;

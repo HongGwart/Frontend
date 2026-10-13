@@ -33,10 +33,7 @@ import {
   DummyMapMarker,
   DummyCategoryMarker,
 } from '@constant/dummyMapMarkers';
-import {
-  DUMMY_FACILITY_IMAGES,
-  DUMMY_OPERATING_HOURS,
-} from '@constant/dummyFacilityInfo';
+import { DUMMY_FACILITY_IMAGES } from '@constant/dummyFacilityInfo';
 import { DUMMY_FACILITY_LIST_ITEMS } from '@constant/dummyFacilityListItems';
 import {
   favoriteFromCategoryMarker,
@@ -46,6 +43,8 @@ import {
 } from '@constant/favoriteInputs';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
+import { useOperatingStatus } from '@hooks/useOperatingStatus';
+import { getFacilityHours } from '@constant/facilityHours';
 import { FocusFacilityParam, MainTabParamList, RootStackParamList } from '@navigation/types';
 
 interface Props {
@@ -98,6 +97,16 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
   // 건물 카드 정보(설명·사진·운영 시간·주 출입구) — 확인된 건물 정보 + 서버 장소 상세의 출입구.
   const dongDetail = useBuildingDetail(selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined);
+  // 시설 카드(카테고리 마커·목록·다른 화면에서 넘어온 시설)의 운영 상태 — 시설 운영 시간을 지금 시각으로 계산.
+  const facilityStatus = useOperatingStatus(
+    selectedFacility?.type === 'category'
+      ? getFacilityHours(selectedFacility.marker.buildingCode, selectedFacility.marker.room)
+      : selectedFacility?.type === 'item'
+        ? getFacilityHours(selectedFacility.item.building, selectedFacility.item.room ?? selectedFacility.item.place)
+        : selectedFacility?.type === 'external'
+          ? getFacilityHours(selectedFacility.facility.buildingCode, selectedFacility.facility.facilityName)
+          : undefined,
+  );
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
   const mapViewRef = useRef<NaverMapViewRef>(null);
   const insets = useSafeAreaInsets();
@@ -564,7 +573,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   selectedFacility.marker.room,
                 ),
               )}
-              operatingHours={DUMMY_OPERATING_HOURS}
+              operatingHours={facilityStatus}
               onViewInsidePress={() =>
                 openBuildingIndoorOf(selectedFacility.marker.buildingCode, selectedFacility.marker.buildingName)
               }
@@ -602,7 +611,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   selectedFacility.facility.facilityName,
                 ),
               )}
-              operatingHours={DUMMY_OPERATING_HOURS}
+              operatingHours={facilityStatus}
               onViewInsidePress={() =>
                 openBuildingIndoorOf(selectedFacility.facility.buildingCode, selectedFacility.facility.buildingName)
               }
@@ -624,7 +633,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               {...routeButtonProps(
                 toRoutePlaceLabel(selectedFacility.item.building, selectedFacility.item.place, selectedFacility.item.room),
               )}
-              operatingHours={DUMMY_OPERATING_HOURS}
+              operatingHours={facilityStatus}
               onViewInsidePress={() => openBuildingIndoorOf(selectedFacility.item.building, selectedFacility.item.place)}
             />
           )}

@@ -6,6 +6,7 @@ import { PhotoSource } from '@appTypes/photo';
 import { DUMMY_FACILITY_IMAGES } from './dummyFacilityInfo';
 import { FocusFacilityParam } from '@navigation/types';
 import { SearchResultItem } from './dummySearchData';
+import { everyDay, OperatingHours } from '@utils/operatingHours';
 
 // 실제 API 연동 전까지 마이페이지 UI 확인용으로 쓰는 더미 데이터.
 
@@ -27,9 +28,8 @@ export interface FavoritePlace {
   icon?: FC<SvgProps>;
   iconWidth?: number;
   iconHeight?: number;
-  isOpen: boolean;
-  statusText: string;
-  hours: string;
+  /** 요일별 운영 시간. 운영 상태 문구는 지금 시각으로 계산한다(utils/operatingHours). 없으면 운영 줄을 숨긴다 */
+  operatingHours?: OperatingHours;
 }
 
 // Figma 마이페이지의 즐겨찾기 4종(건물+아이콘 / 시설+사진 x2 / 시설+아이콘)을 그대로 담았다.
@@ -43,9 +43,7 @@ export const DUMMY_FAVORITE_PLACES: FavoritePlace[] = [
     icon: BuildingIcon,
     iconWidth: 72,
     iconHeight: 72,
-    isOpen: true,
-    statusText: '운영 중',
-    hours: '08:00 - 22:00',
+    operatingHours: everyDay('08:00', '22:00'),
   },
   {
     id: 'fav-2',
@@ -54,9 +52,7 @@ export const DUMMY_FAVORITE_PLACES: FavoritePlace[] = [
     buildingName: '인문사회관',
     locationDetail: '1층',
     photo: DUMMY_FACILITY_IMAGES[0],
-    isOpen: true,
-    statusText: '운영 중',
-    hours: '08:00 - 22:00',
+    operatingHours: everyDay('08:00', '22:00'),
   },
   {
     id: 'fav-3',
@@ -65,9 +61,7 @@ export const DUMMY_FAVORITE_PLACES: FavoritePlace[] = [
     buildingName: '중앙도서관',
     locationDetail: '3층',
     photo: DUMMY_FACILITY_IMAGES[1],
-    isOpen: false,
-    statusText: '운영 종료',
-    hours: '10:00 - 19:00',
+    operatingHours: everyDay('10:00', '19:00'),
   },
   {
     id: 'fav-4',
@@ -78,9 +72,7 @@ export const DUMMY_FAVORITE_PLACES: FavoritePlace[] = [
     icon: CafeIcon,
     iconWidth: 72,
     iconHeight: 72,
-    isOpen: false,
-    statusText: '운영 종료',
-    hours: '08:30 - 19:00',
+    operatingHours: everyDay('08:30', '19:00'),
   },
 ];
 

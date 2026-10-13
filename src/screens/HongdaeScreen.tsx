@@ -132,27 +132,22 @@ export default function HongdaeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {asOf && <AsOfText>운영 시간은 변동될 수 있어요 · {formatAsOf(asOf)} 기준</AsOfText>}
-        {places.map((place, index) => {
-          const status = getOperatingStatus(place.hours, now);
-          return (
-            <FavoritePlaceCard
-              key={place.id}
-              name={place.name}
-              buildingCode={place.district}
-              buildingName={place.neighborhood}
-              photo={place.photos?.[0]}
-              // 사진이 없는 가게는 즐겨찾기/편의시설 목록의 기본 썸네일처럼 옅은 남색 박스에 식당 아이콘을 띄운다.
-              icon={RestaurantIcon}
-              isOpen={status.isOpen}
-              statusText={status.statusText}
-              hours={status.todayText}
-              isFavorite={favoriteIds.has(place.id)}
-              onToggleFavorite={() => toggleFavorite(place.id, place.name)}
-              onPress={() => setSelectedPlaceId(place.id)}
-              showDivider={index !== places.length - 1}
-            />
-          );
-        })}
+        {places.map((place, index) => (
+          <FavoritePlaceCard
+            key={place.id}
+            name={place.name}
+            buildingCode={place.district}
+            buildingName={place.neighborhood}
+            photo={place.photos?.[0]}
+            // 사진이 없는 가게는 즐겨찾기/편의시설 목록의 기본 썸네일처럼 옅은 남색 박스에 식당 아이콘을 띄운다.
+            icon={RestaurantIcon}
+            operatingHours={place.hours}
+            isFavorite={favoriteIds.has(place.id)}
+            onToggleFavorite={() => toggleFavorite(place.id, place.name)}
+            onPress={() => setSelectedPlaceId(place.id)}
+            showDivider={index !== places.length - 1}
+          />
+        ))}
       </ScrollView>
       {toast && (
         // 사라지는 애니메이션은 AnimatedToast가 직접 재고, 끝나면 onHide로 내린다. 위의 타이머는 상세용이라

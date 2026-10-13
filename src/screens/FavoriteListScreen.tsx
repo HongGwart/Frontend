@@ -48,9 +48,7 @@ export default function FavoriteListScreen() {
             icon={item.icon}
             iconWidth={item.iconWidth}
             iconHeight={item.iconHeight}
-            isOpen={item.isOpen}
-            statusText={item.statusText}
-            hours={item.hours}
+            operatingHours={item.operatingHours}
             isFavorite
             onToggleFavorite={() => removeFavorite(item.id)}
             onPress={() => openFacilityOnMap(item)}

@@ -15,9 +15,6 @@ import { FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
 import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
-import {
-  DUMMY_OPERATING_HOURS,
-} from '@constant/dummyFacilityInfo';
 import { RootStackParamList } from '@navigation/types';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
@@ -224,7 +221,8 @@ export default function BuildingIndoorScreen() {
                 toggleFavorite({ ...buildingFavorite, name: `${selectedRoomLabel}호`, category: 'classroom' })
               }
               {...routeButtonProps(placeLabel)}
-              operatingHours={DUMMY_OPERATING_HOURS}
+              // 강의실에는 따로 운영 시간이 없어 그 건물의 운영 시간을 쓴다.
+              operatingHours={buildingDetail.operatingHours}
             />
           ) : (
             <FacilityInfoCard
