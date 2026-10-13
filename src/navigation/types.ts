@@ -33,7 +33,8 @@ export interface RouteLocationSelection {
 export type MainTabParamList = {
   map: { focusFacility?: FocusFacilityParam } | undefined;
   facility: undefined;
-  hongdae: undefined;
+  /** 마이페이지 즐겨찾기에서 넘어오면 그 장소 상세를 바로 연다 */
+  hongdae: { focusPlaceId?: string } | undefined;
   mypage: undefined;
 };
 

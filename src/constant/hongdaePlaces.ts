@@ -1,5 +1,7 @@
 import { PhotoSource } from '@appTypes/photo';
 import { everyDay, OperatingHours } from '@utils/operatingHours';
+import { toPlaceKey } from '@utils/placeKey';
+import type { FavoriteInput } from '@hooks/useFavorites';
 import { DUMMY_FACILITY_IMAGES } from './dummyFacilityInfo';
 
 // 주변상권(HongdaeScreen) 카테고리 칩. Figma "All / 식당 / 술집".
@@ -83,3 +85,24 @@ export const HONGDAE_PLACES: HongdaePlace[] = [
     photos: DUMMY_FACILITY_IMAGES,
   },
 ];
+
+/**
+ * 주변상권 장소를 즐겨찾기로 저장할 값. 캠퍼스 건물이 아니라서 동 코드 자리에 주소 앞부분("서울 마포구")을,
+ * 건물명 자리에 동("서교동")을 넣는다 — 마이페이지 즐겨찾기 카드에 그대로 "서울 마포구 서교동"으로 보인다.
+ */
+export function hongdaeFavoriteInput(place: HongdaePlace): FavoriteInput {
+  return {
+    buildingCode: place.district,
+    buildingName: place.neighborhood,
+    name: place.name,
+    // 즐겨찾기 아이콘용. 술집 아이콘이 따로 없어서 식당 아이콘을 쓴다.
+    category: 'restaurant',
+    latitude: place.latitude,
+    longitude: place.longitude,
+  };
+}
+
+/** 즐겨찾기 장소 키로 주변상권 장소를 찾는다. 마이페이지에서 누르면 캠퍼스 지도 대신 주변상권 상세로 연다 */
+export function findHongdaePlaceByKey(placeKey: string): HongdaePlace | undefined {
+  return HONGDAE_PLACES.find(place => toPlaceKey(place.district, place.name) === placeKey);
+}

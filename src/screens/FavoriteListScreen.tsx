@@ -10,6 +10,7 @@ import { useFavorites } from '@hooks/useFavorites';
 import { FavoritePlace, favoritePlaceToFocusParam } from '@constant/dummyMypage';
 import { toFavoritePlace } from '@constant/favoriteCards';
 import { RootStackParamList } from '@navigation/types';
+import { findHongdaePlaceByKey } from '@constant/hongdaePlaces';
 
 // 마이페이지 "즐겨찾기" 섹션의 "더보기"를 누르면 오는 전체 목록 화면(Figma "마이페이지_즐겨찾기 목록").
 // 탭 바 없이 전체화면으로 뜨고, 상단은 공통 Header(뒤로가기 + "즐겨찾기"), 본문은 마이페이지와
@@ -22,6 +23,12 @@ export default function FavoriteListScreen() {
   const favorites = useMemo(() => storedFavorites.map(toFavoritePlace), [storedFavorites]);
 
   const openFacilityOnMap = (place: FavoritePlace) => {
+    // 주변상권 장소는 캠퍼스 지도가 아니라 주변상권 탭의 상세로 연다.
+    const hongdaePlace = findHongdaePlaceByKey(place.id);
+    if (hongdaePlace) {
+      navigation.popTo('MainTabs', { screen: 'hongdae', params: { focusPlaceId: hongdaePlace.id } });
+      return;
+    }
     // navigate는 새 MainTabs를 위에 쌓으므로(React Navigation 7), 이미 있는 MainTabs로 되돌아간다.
     navigation.popTo('MainTabs', {
       screen: 'map',

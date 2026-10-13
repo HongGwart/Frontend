@@ -6,14 +6,25 @@ import { getBuildingDetail } from './buildingDetails';
 import { getFacilityHours } from './facilityHours';
 import { DUMMY_FAVORITE_PLACES, FavoritePlace } from './dummyMypage';
 import { SEARCH_ITEM_ICONS } from './dummySearchData';
+import { HONGDAE_PLACES } from './hongdaePlaces';
 
 // 즐겨찾기 카드(FavoritePlaceCard)에 그릴 사진/운영시간을 찾아올 장소 데이터. 실제 장소 API가 붙기 전까지는
 // Figma 즐겨찾기 더미와 편의시설 카테고리 더미를 장소 키로 모아 쓴다.
+// 주변상권 장소도 같은 카드 모양으로 바꿔 넣는다(동 코드 자리에 주소, 건물명 자리에 동 — hongdaeFavoriteInput과 같다).
+const HONGDAE_CARD_PLACES: FavoritePlace[] = HONGDAE_PLACES.map(place => ({
+  id: place.id,
+  name: place.name,
+  buildingCode: place.district,
+  buildingName: place.neighborhood,
+  photo: place.photos?.[0],
+  icon: SEARCH_ITEM_ICONS.restaurant.icon,
+  operatingHours: place.hours,
+}));
+
 const PLACE_CATALOG = new Map<string, FavoritePlace>(
-  [...DUMMY_FAVORITE_PLACES, ...Object.values(DUMMY_FACILITY_CATEGORY_PLACES).flat()].map(place => [
-    toPlaceKey(place.buildingCode, place.name),
-    place,
-  ]),
+  [...DUMMY_FAVORITE_PLACES, ...Object.values(DUMMY_FACILITY_CATEGORY_PLACES).flat(), ...HONGDAE_CARD_PLACES].map(
+    place => [toPlaceKey(place.buildingCode, place.name), place],
+  ),
 );
 
 /**

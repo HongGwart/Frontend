@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Linking, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import styled from 'styled-components/native';
 import RestaurantIcon from '@assets/svgs/icons/restaurant.svg';
@@ -11,7 +11,8 @@ import { AnimatedToast } from '@components/mypage/AnimatedToast';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { PlaceMapDetailView } from '@components/map/PlaceMapDetailView';
 import { HongdaeCategoryChips } from '@components/hongdae/HongdaeCategoryChips';
-import { HongdaeCategory } from '@constant/hongdaePlaces';
+import { HongdaeCategory, HongdaePlace, hongdaeFavoriteInput } from '@constant/hongdaePlaces';
+import { useFavorites } from '@hooks/useFavorites';
 import { useHongdaePlaces } from '@api/hongdae/useHongdaePlaces';
 import { useNow } from '@hooks/useNow';
 import { getOperatingStatus } from '@utils/operatingHours';
@@ -35,25 +36,18 @@ export default function HongdaeScreen() {
   // 운영 상태는 데이터에 고정된 문구가 아니라 지금 시각으로 계산한다(1분마다 갱신).
   const now = useNow();
 
-  // 실제 즐겨찾기 연동 전까지, 이 화면 안에서만 유지되는 로컬 토글 상태.
-  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  // 즐겨찾기는 기기에 저장되는 앱 전역 상태(지도·마이페이지와 같은 상태). 앱을 다시 켜도 남고 MY 탭에도 보인다.
+  const { isFavorite: isFavoriteInput, toggleFavorite: toggleFavoriteInput } = useFavorites();
+  const isFavorite = (place: HongdaePlace) => isFavoriteInput(hongdaeFavoriteInput(place));
   // 즐겨찾기를 누를 때마다 "OOO의 즐겨찾기가 등록/해제되었습니다." 토스트를 띄운다(메인 지도와 같은 문구).
   // 목록에서는 화면 아래에서 올라오는 AnimatedToast, 상세에서는 메인 지도처럼 칩 아래에 뜬다.
   const [toast, setToast] = useState<{ key: number; message: string } | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(toastTimerRef.current), []);
 
-  const toggleFavorite = (id: string, name = '이 장소') => {
-    const nextIsFavorite = !favoriteIds.has(id);
-    setFavoriteIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+  const toggleFavorite = (place: HongdaePlace) => {
+    const name = place.name;
+    const nextIsFavorite = toggleFavoriteInput(hongdaeFavoriteInput(place));
     // key를 바꿔서 이미 떠 있는 토스트도 새로 띄우고(목록의 AnimatedToast 리마운트) 타이머를 다시 잰다.
     setToast(prev => ({ key: (prev?.key ?? 0) + 1, message: `${name}의 즐겨찾기가 ${nextIsFavorite ? '등록' : '해제'}되었습니다.` }));
     clearTimeout(toastTimerRef.current);
@@ -64,6 +58,14 @@ export default function HongdaeScreen() {
     () => (selectedCategory === null ? allPlaces : allPlaces.filter(place => place.category === selectedCategory)),
     [allPlaces, selectedCategory],
   );
+
+  // 마이페이지 즐겨찾기에서 넘어오면 그 장소 상세를 바로 열고, 파라미터는 비워서 탭을 다시 와도 되살아나지 않게 한다.
+  const focusPlaceId = useRoute<RouteProp<MainTabParamList, 'hongdae'>>().params?.focusPlaceId;
+  useEffect(() => {
+    if (!focusPlaceId) return;
+    setSelectedPlaceId(focusPlaceId);
+    navigation.setParams({ focusPlaceId: undefined });
+  }, [focusPlaceId, navigation]);
 
   const selectedPlace = useMemo(
     () => allPlaces.find(place => place.id === selectedPlaceId) ?? null,
@@ -96,7 +98,7 @@ export default function HongdaeScreen() {
           <NaverMapMarker
             latitude={selectedPlace.latitude}
             longitude={selectedPlace.longitude}
-            favorite={favoriteIds.has(selectedPlace.id)}
+            favorite={isFavorite(selectedPlace)}
           />
         }
         card={
@@ -105,8 +107,8 @@ export default function HongdaeScreen() {
             buildingCode={selectedPlace.tagline ?? `${selectedPlace.district} ${selectedPlace.neighborhood}`}
             buildingName=""
             facilityName={selectedPlace.name}
-            isFavorite={favoriteIds.has(selectedPlace.id)}
-            onToggleFavorite={() => toggleFavorite(selectedPlace.id, selectedPlace.name)}
+            isFavorite={isFavorite(selectedPlace)}
+            onToggleFavorite={() => toggleFavorite(selectedPlace)}
             {...routeButtonProps(toRoutePlaceLabel(selectedPlace.name))}
             images={selectedPlace.photos}
             operatingHours={status}
@@ -142,8 +144,8 @@ export default function HongdaeScreen() {
             // 사진이 없는 가게는 즐겨찾기/편의시설 목록의 기본 썸네일처럼 옅은 남색 박스에 식당 아이콘을 띄운다.
             icon={RestaurantIcon}
             operatingHours={place.hours}
-            isFavorite={favoriteIds.has(place.id)}
-            onToggleFavorite={() => toggleFavorite(place.id, place.name)}
+            isFavorite={isFavorite(place)}
+            onToggleFavorite={() => toggleFavorite(place)}
             onPress={() => setSelectedPlaceId(place.id)}
             showDivider={index !== places.length - 1}
           />
