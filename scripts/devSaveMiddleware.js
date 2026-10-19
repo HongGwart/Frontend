@@ -4,7 +4,7 @@
  * 않아도 동 마커 좌표처럼 코드에 남는다(앱을 껐다 켜도 유지). 평면도 기준점이면 renderFloorOverlay.js도
  * 이어서 돌려 PNG까지 새로 굽는다. 저장 대상은 아래 TARGETS에 적힌 파일로만 제한한다.
  *
- * 요청 본문: { target: 'floorGeoAnchors' | 'testRouteNodes', data: object, render?: string[] }
+ * 요청 본문: { target: 'floorGeoAnchors' | 'testRouteNodes' | 'buildingMasks', data: object, render?: string[] }
  * 구운 층은 응답의 overlays에 region과 PNG 주소(GET /__dev/floor-overlay/{층}.png)를 담아 돌려준다 — 앱이
  * 새로고침(HMR)을 기다리지 않고 그 주소로 바로 평면도를 띄울 수 있게.
  */
@@ -19,6 +19,7 @@ const OVERLAY_INDEX = 'src/constant/floorOverlayImages.ts';
 const TARGETS = {
   floorGeoAnchors: 'src/constant/floorGeoAnchors.json',
   testRouteNodes: 'src/constant/testRouteNodes.json',
+  buildingMasks: 'src/constant/buildingMasks.json',
 };
 
 function send(res, status, body) {

@@ -13,13 +13,8 @@ import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { CollapsibleBottomSheet, CollapsibleBottomSheetRef } from '@components/common/CollapsibleBottomSheet';
 import { FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
+import { useBuildingDetail } from '@api/building/useBuildingDetail';
 import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
-import {
-  DUMMY_FACILITY_COUNTS,
-  DUMMY_FACILITY_IMAGES,
-  DUMMY_MAIN_ENTRANCE,
-  DUMMY_OPERATING_HOURS,
-} from '@constant/dummyFacilityInfo';
 import { RootStackParamList } from '@navigation/types';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
@@ -46,6 +41,8 @@ const CARD_PEEK_HEIGHT = 24;
 export default function BuildingIndoorScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'BuildingIndoor'>>();
+  // 건물 카드 정보(사진·운영 시간·주 출입구) — 확인된 건물 정보 + 서버 장소 상세의 출입구.
+  const buildingDetail = useBuildingDetail(params.buildingCode);
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   // 건물 내부 평면도가 밖으로 퍼지지 않게 이 화면이 떠 있는 동안 캡처를 막는다.
@@ -161,7 +158,11 @@ export default function BuildingIndoorScreen() {
                 // 원래 viewBox를 덮어써서 도면 스케일이 깨진다.
                 renderBackground={layerSize => <floorAssets.Background {...layerSize} />}
                 renderForeground={layerSize => <floorAssets.Doors {...layerSize} />}
-                onRoomSelect={room => setSelectedRoomLabel(room ? room.label ?? room.id : null)}
+                onRoomSelect={room => {
+                  setSelectedRoomLabel(room ? room.label ?? room.id : null);
+                  // 카드를 내려 둔 상태에서 강의실을 탭하면 카드를 부드럽게 올려 그 강의실 정보를 보여준다.
+                  if (room) cardSheetRef.current?.expand();
+                }}
               />
             </Animated.View>
             <FloorSelectorWrapper>
@@ -220,7 +221,8 @@ export default function BuildingIndoorScreen() {
                 toggleFavorite({ ...buildingFavorite, name: `${selectedRoomLabel}호`, category: 'classroom' })
               }
               {...routeButtonProps(placeLabel)}
-              operatingHours={DUMMY_OPERATING_HOURS}
+              // 강의실에는 따로 운영 시간이 없어 그 건물의 운영 시간을 쓴다.
+              operatingHours={buildingDetail.operatingHours}
             />
           ) : (
             <FacilityInfoCard
@@ -233,10 +235,10 @@ export default function BuildingIndoorScreen() {
               isFavorite={isFavorite(buildingFavorite)}
               onToggleFavorite={() => toggleFavorite(buildingFavorite)}
               {...routeButtonProps(placeLabel)}
-              images={marker?.images ?? DUMMY_FACILITY_IMAGES}
-              facilityCounts={DUMMY_FACILITY_COUNTS}
-              mainEntrance={DUMMY_MAIN_ENTRANCE}
-              operatingHours={DUMMY_OPERATING_HOURS}
+              images={buildingDetail.images}
+              facilityCounts={buildingDetail.facilityCounts}
+              mainEntrance={buildingDetail.mainEntrance}
+              operatingHours={buildingDetail.operatingHours}
             />
           )}
         </CollapsibleBottomSheet>

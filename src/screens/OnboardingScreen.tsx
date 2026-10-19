@@ -613,7 +613,7 @@ export default function OnboardingScreen() {
             </LogoLayer>
           </LogoStack>
           <FadeInContent style={contentStyle}>
-            <Subtitle>홍익대 캠퍼스 내비게이션 앱</Subtitle>
+            <Subtitle>캠퍼스 내비게이션 앱</Subtitle>
           </FadeInContent>
           <BottomSpacer />
         </Page>

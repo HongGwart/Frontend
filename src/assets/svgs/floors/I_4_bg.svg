@@ -53,20 +53,20 @@
 <rect x="1222" y="288" width="107" height="176" stroke="#1D2056"/>
 </g>
 <g id="room_10">
-<rect x="911" y="159" width="134" height="250" fill="#EBEBF5"/>
-<rect x="911" y="159" width="134" height="250" stroke="#1D2056"/>
+<rect x="911" y="159" width="134" height="249" fill="#EBEBF5"/>
+<rect x="911" y="159" width="134" height="249" stroke="#1D2056"/>
 </g>
 <g id="room_11">
 <rect x="1045" y="159" width="139" height="175" fill="#EBEBF5"/>
 <rect x="1045" y="159" width="139" height="175" stroke="#1D2056"/>
 </g>
 <g id="room_12">
-<rect x="1045" y="334" width="139" height="75" fill="#F5F7FA"/>
-<rect x="1045" y="334" width="139" height="75" stroke="#1D2056"/>
+<rect x="1045" y="334" width="139" height="74" fill="#F5F7FA"/>
+<rect x="1045" y="334" width="139" height="74" stroke="#1D2056"/>
 </g>
 <g id="room_13">
-<rect x="627" y="480" width="212" height="168" fill="#EBEBF5"/>
-<rect x="627" y="480" width="212" height="168" stroke="#1D2056"/>
+<rect x="627" y="480" width="212.5" height="168" fill="#EBEBF5"/>
+<rect x="627" y="480" width="212.5" height="168" stroke="#1D2056"/>
 </g>
 <rect id="Rectangle 240653299" x="840" y="648" width="64" height="1" fill="white"/>
 <g id="room_14">
@@ -79,8 +79,8 @@
 <rect x="1184" y="536" width="145" height="112" stroke="#1D2056"/>
 </g>
 <g id="room_16">
-<rect x="914" y="480" width="140" height="169" fill="#EBEBF5"/>
-<rect x="914" y="480" width="140" height="169" stroke="#1D2056"/>
+<rect x="913.5" y="480" width="140.5" height="168" fill="#EBEBF5"/>
+<rect x="913.5" y="480" width="140.5" height="168" stroke="#1D2056"/>
 </g>
 <g id="Frame 2087332189">
 <g id="stair">

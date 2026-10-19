@@ -11,7 +11,11 @@ import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
-import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
+import { CAMPUS_EXTENT, MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
+import { findRoomFloor } from '@constant/floorMaps';
+import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
+import { useFloorGeoAnchors } from '@api/floorPlan/useFloorGeoAnchors';
+import { createFloorToGeo, getContentBounds } from '@utils/floorGeoTransform';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
 import { SearchListItem } from '@components/common/SearchListItem';
@@ -28,6 +32,9 @@ import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { useVoiceSearch } from '@hooks/useVoiceSearch';
 import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
 import { useNodeDetail } from '@api/node/useNodeDetail';
+import { useBuildingDetail } from '@api/building/useBuildingDetail';
+import { useOperatingStatus } from '@hooks/useOperatingStatus';
+import { getFacilityHours } from '@constant/facilityHours';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import {
@@ -36,7 +43,6 @@ import {
   DummyMapMarker,
   DummyCategoryMarker,
 } from '@constant/dummyMapMarkers';
-import { DUMMY_FACILITY_COUNTS, DUMMY_MAIN_ENTRANCE, DUMMY_OPERATING_HOURS } from '@constant/dummyFacilityInfo';
 import {
   SEARCH_ITEM_ICONS,
   SearchResultItem,
@@ -61,6 +67,9 @@ type SelectedFacility =
 // 어떤 검색 결과를 눌러도 최소한 카드는 뜨도록 한다.
 // 지도 모드 검색창은 보여주기만 하므로 아무 동작 없는 핸들러를 넘긴다(onPress가 있어야 입력 불가 상태로 그려진다).
 const noop = () => {};
+
+// 검색한 호실로 카메라를 옮길 때의 줌(평면도와 호실 번호가 보일 만큼).
+const SEARCHED_ROOM_ZOOM = 19;
 
 function findFacilityForSearchItem(item: SearchResultItem): SelectedFacility | null {
   if (item.category === 'building') {
@@ -127,16 +136,48 @@ export default function SearchScreen() {
     const marker = DUMMY_MAP_MARKERS.find(m => m.label === nodeDetail.buildingCode);
     if (marker) setSelectedFacility({ type: 'dong', marker });
   }, [selectedFacility, selectedItem, nodeDetail]);
-  // 동 마커 위에 띄우되 건물이 아니라 그 안의 호실/시설 카드로 보여줄 서버 장소(건물 자체 검색은 제외).
+  // 동 마커 위에 띄우되 건물이 아니라 그 안의 호실/시설 카드로 보여줄 장소(건물 자체 검색은 제외) — 서버 장소,
+  // 또는 "C동 816호"처럼 호실 번호가 있는 앱 더미 장소(지도 마커가 따로 없어서 동 마커로 열린다).
   const placeItem =
     selectedFacility?.type === 'dong' &&
-    selectedItem?.nodeId !== undefined &&
+    selectedItem &&
+    (selectedItem.nodeId !== undefined || selectedItem.room !== undefined) &&
     selectedItem.category !== 'building' &&
     !nodeDetail?.isBuilding
       ? selectedItem
       : null;
   // 건물 자체를 서버 검색 결과로 골랐으면 그 노드(출입구 정보·길찾기 출발/도착에 쓴다).
   const buildingNodeId = selectedItem?.category === 'building' ? selectedItem.nodeId : undefined;
+  // 건물 카드 정보(설명·사진·운영 시간·주 출입구) — 확인된 건물 정보 + 서버 장소 상세의 출입구.
+  const dongDetail = useBuildingDetail(selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined);
+  // 카테고리(시설) 카드의 운영 상태 — 시설 운영 시간을 지금 시각으로 계산.
+  const facilityStatus = useOperatingStatus(
+    selectedFacility?.type === 'category'
+      ? getFacilityHours(selectedFacility.marker.buildingCode, selectedFacility.marker.room)
+      : undefined,
+  );
+
+  // 호실을 골랐으면 그 호실이 있는 층 평면도를 지도에 깔고 호실을 칠한다. 층은 서버 장소 상세에 있으면 그 층을
+  // 먼저 보고, 없으면(앱 더미 장소) 건물의 평면도들에서 같은 번호의 방을 찾는다.
+  const searchedRoom = useMemo(() => {
+    if (!selectedItem || selectedItem.category === 'building' || nodeDetail?.isBuilding) return null;
+    const buildingCode = nodeDetail?.buildingCode ?? selectedItem.building;
+    const roomNumber = nodeDetail?.roomNumber ?? selectedItem.room;
+    if (!buildingCode || !roomNumber) return null;
+    return findRoomFloor(buildingCode, roomNumber, nodeDetail?.floorId);
+  }, [selectedItem, nodeDetail]);
+  const searchedRoomAnchors = useFloorGeoAnchors(searchedRoom?.floorId);
+  // 카메라를 옮길 호실 중심(호실 도형 꼭짓점들의 평균). 칠하기는 FloorPlanOverlay가 한다.
+  const searchedRoomCenter = useMemo(() => {
+    if (!searchedRoom || !searchedRoomAnchors) return null;
+    const toGeo = createFloorToGeo(getContentBounds(searchedRoom.data), searchedRoomAnchors);
+    const points = searchedRoom.rooms.flatMap(room => room.points.map(([x, y]) => toGeo(x, y)));
+    return {
+      latitude: points.reduce((sum, point) => sum + point.latitude, 0) / points.length,
+      longitude: points.reduce((sum, point) => sum + point.longitude, 0) / points.length,
+      zoom: SEARCHED_ROOM_ZOOM,
+    };
+  }, [searchedRoom, searchedRoomAnchors]);
   // "건물 내부 보기"로 넘어가면 내부 지도 화면이 이 화면을 완전히 덮은 뒤 카드를 조용히 닫는다(MapScreen과 같음).
   const closeCardWhenCovered = useCloseWhenCovered(navigation, closeFacilityCard);
   // 카드의 출발/도착 → 길찾기 탭으로 가서 입력창을 채운다(검색 화면은 스택에서 빠지며 같이 닫힌다).
@@ -145,7 +186,7 @@ export default function SearchScreen() {
   // 마커가 시설 카드에 가리지 않도록, 검색창+카테고리 칩 아래쪽 끝과 시설 카드 위쪽 끝
   // 사이의 세로 중앙에 마커가 오도록 카메라를 옮긴다(MapScreen과 공유하는 훅).
   const { cardHeight, handleChipsAreaLayout: handleTopOverlayLayout, handleFacilityCardLayout } =
-    useFacilityCardCameraFocus(mapViewRef, selectedFacility?.marker ?? null);
+    useFacilityCardCameraFocus(mapViewRef, searchedRoomCenter ?? selectedFacility?.marker ?? null);
   // 지도 모드 상단 카테고리 칩. 실제 마커 필터링과의 연결 없이 Figma와 동일한 UI만 우선 갖춘다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const insets = useSafeAreaInsets();
@@ -200,7 +241,8 @@ export default function SearchScreen() {
       isFavorite: isFavorite(favorite),
       onToggleFavorite: () => toggleFavorite(favorite),
       ...routeButtonProps(toRoutePlaceLabel(buildingCode, marker.buildingName, name), item.nodeId),
-      operatingHours: DUMMY_OPERATING_HOURS,
+      // 호실·시설에는 따로 운영 시간이 없어 그 건물의 운영 시간을 쓴다.
+      operatingHours: dongDetail.operatingHours,
     };
     if (roomNumber) {
       return (
@@ -240,6 +282,8 @@ export default function SearchScreen() {
         <NaverMapView
           // 서비스에서 현재 위치를 제공하지 않으므로 현위치 버튼(위치 권한 요청 경로)을 끈다.
           isShowLocationButton={false}
+          // 안드로이드 네이버 지도는 +/- 줌 버튼을 기본으로 띄운다(디자인에 없음). 핀치 줌으로 충분하다.
+          isShowZoomControls={false}
           ref={mapViewRef}
           style={StyleSheet.absoluteFill}
           initialCamera={{
@@ -248,9 +292,18 @@ export default function SearchScreen() {
             zoom: 16,
           }}
           minZoom={MAP_MIN_ZOOM}
+          extent={CAMPUS_EXTENT}
           maxZoom={MAP_MAX_ZOOM}
           onTapMap={() => bottomSheetRef.current?.close()}
         >
+          {searchedRoom && searchedRoomAnchors && (
+            <FloorPlanOverlay
+              key={searchedRoom.floorId}
+              floorId={searchedRoom.floorId}
+              anchors={searchedRoomAnchors}
+              highlightRoomIds={searchedRoom.rooms.map(room => room.id)}
+            />
+          )}
           {/* 지도 화면과 같이, 카드가 열린(포커싱된) 마커 하나만 네임택을 달고 남기고 나머지 마커는 숨긴다. */}
           {selectedFacility.type === 'dong' && (
             <NaverMapMarker
@@ -317,20 +370,20 @@ export default function SearchScreen() {
                 variant="outside"
                 buildingCode={selectedFacility.marker.label ?? ''}
                 buildingName={selectedFacility.marker.buildingName}
-                description={selectedFacility.marker.description}
+                description={dongDetail.description}
                 isFavorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
                 onToggleFavorite={() =>
                   toggleFavorite({ ...favoriteFromDongMarker(selectedFacility.marker), nodeId: buildingNodeId })
                 }
-                images={selectedFacility.marker.images}
+                images={dongDetail.images}
                 {...routeButtonProps(
                   toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
                   buildingNodeId,
                 )}
-                facilityCounts={DUMMY_FACILITY_COUNTS}
-                // 서버 건물이면 장소 상세의 출입구 목록을, 아니면(또는 불러오기 전) 더미를 보여준다.
-                mainEntrance={(buildingNodeId !== undefined && nodeDetail?.mainEntrance) || DUMMY_MAIN_ENTRANCE}
-                operatingHours={DUMMY_OPERATING_HOURS}
+                facilityCounts={dongDetail.facilityCounts}
+                // 서버 건물이면 장소 상세의 출입구 목록을, 아니면(또는 불러오기 전) 건물 코드로 찾은 값을 보여준다.
+                mainEntrance={(buildingNodeId !== undefined && nodeDetail?.mainEntrance) || dongDetail.mainEntrance}
+                operatingHours={dongDetail.operatingHours}
                 onViewInsidePress={() => {
                   closeCardWhenCovered();
                   navigation.navigate('BuildingIndoor', {
@@ -357,7 +410,7 @@ export default function SearchScreen() {
                     selectedFacility.marker.room,
                   ),
                 )}
-                operatingHours={DUMMY_OPERATING_HOURS}
+                operatingHours={facilityStatus}
                 // 시설이 있는 건물(동)의 내부 지도로 간다(지도 화면의 시설 카드와 같음).
                 onViewInsidePress={() => {
                   const { buildingCode, buildingName } = selectedFacility.marker;

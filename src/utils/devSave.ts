@@ -3,14 +3,17 @@
  * 바로 저장한다. 개발 서버 주소는 지금 번들을 받아온 주소에서 뽑는다. 실패해도 앱은 그대로 두고 로그만 남긴다.
  */
 import { Region } from '@mj-studio/react-native-naver-map';
+import type { FloorOverlayIcon } from '@constant/floorOverlayImages';
 import { FloorGeoAnchors } from './floorGeoTransform';
 
-export type DevSaveTarget = 'floorGeoAnchors' | 'testRouteNodes';
+export type DevSaveTarget = 'floorGeoAnchors' | 'testRouteNodes' | 'buildingMasks';
 
 /** 개발 서버가 방금 구운 평면도 PNG 정보. path는 개발 서버 기준 상대 주소 */
 export interface DevRenderedOverlay {
   region: Region;
   anchors: FloorGeoAnchors;
+  /** PNG에서 뺀 아이콘 위치(예전 스크립트로 구운 응답엔 없을 수 있다) */
+  icons?: FloorOverlayIcon[];
   path: string;
 }
 

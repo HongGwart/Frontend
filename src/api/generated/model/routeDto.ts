@@ -7,14 +7,24 @@
  */
 import type { EndpointDto } from './endpointDto';
 import type { PolylinePointDto } from './polylinePointDto';
+import type { RouteDtoMode } from './routeDtoMode';
 import type { StepDto } from './stepDto';
 import type { SummaryDto } from './summaryDto';
 
+/**
+ * 경로 후보 하나
+ */
 export interface RouteDto {
-  mode?: string;
+  /** 이 후보를 만든 라우팅 모드 */
+  mode?: RouteDtoMode;
+  /** 경로 요약 */
   summary?: SummaryDto;
+  /** 출발 지점 */
   from?: EndpointDto;
+  /** 도착 지점 */
   to?: EndpointDto;
+  /** 지도에 그릴 경로 좌표열. 경로가 지나는 노드를 순서대로 모두 담는다. */
   polyline?: PolylinePointDto[];
+  /** 안내 step 목록. 출발·회전·건물 출입·층 이동·도착처럼 안내가 필요한 지점만 담으며, step들의 polylineRange가 polyline 전체를 빈틈없이 나눈다. */
   steps?: StepDto[];
 }

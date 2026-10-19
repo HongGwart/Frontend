@@ -468,6 +468,8 @@
 <rect id="Rectangle 240653313" x="1480" y="588" width="5" height="32" fill="white"/>
 <rect id="Rectangle 240653314" x="1471" y="679" width="5" height="32" transform="rotate(90 1471 679)" fill="#F5F7FA"/>
 <rect id="Rectangle 240653315" x="1424.5" y="676.5" width="4" height="5" transform="rotate(90 1424.5 676.5)" fill="white"/>
+<rect id="Rectangle 240653388" x="1423.5" y="679.5" width="1" height="1" fill="white"/>
+<rect id="Rectangle 240653387" x="464.5" y="679.5" width="1" height="1" fill="white"/>
 </g>
 <g id="Hitbox">
 <rect id="room_315" x="407" y="445" width="57" height="47" fill="#D9D9D9" fill-opacity="0.01"/>

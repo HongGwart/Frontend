@@ -13,6 +13,7 @@ import { DUMMY_DEFAULT_DEPARTURE, FavoritePlace, favoritePlaceToFocusParam } fro
 import { toFavoritePlace } from '@constant/favoriteCards';
 import { RootStackParamList } from '@navigation/types';
 import { resetOnboarding } from '@storage/onboarding';
+import { findHongdaePlaceByKey } from '@constant/hongdaePlaces';
 
 // 마이페이지 즐겨찾기 섹션에서 보여줄 최대 개수
 const MAX_FAVORITES_ON_MYPAGE = 3;
@@ -31,6 +32,12 @@ export default function MypageScreen() {
   );
 
   const openFacilityOnMap = (place: FavoritePlace) => {
+    // 주변상권 장소는 캠퍼스 지도가 아니라 주변상권 탭의 상세로 연다.
+    const hongdaePlace = findHongdaePlaceByKey(place.id);
+    if (hongdaePlace) {
+      navigation.navigate('MainTabs', { screen: 'hongdae', params: { focusPlaceId: hongdaePlace.id } });
+      return;
+    }
     navigation.navigate('MainTabs', {
       screen: 'map',
       params: { focusFacility: favoritePlaceToFocusParam(place) },
@@ -76,9 +83,7 @@ export default function MypageScreen() {
               icon={item.icon}
               iconWidth={item.iconWidth}
               iconHeight={item.iconHeight}
-              isOpen={item.isOpen}
-              statusText={item.statusText}
-              hours={item.hours}
+              operatingHours={item.operatingHours}
               isFavorite
               onToggleFavorite={() => removeFavorite(item.id)}
               onPress={() => openFacilityOnMap(item)}

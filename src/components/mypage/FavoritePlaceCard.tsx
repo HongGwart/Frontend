@@ -6,6 +6,8 @@ import { FavoriteToggle } from '@components/common/FavoriteToggle';
 import { LocationName } from './LocationName';
 import { OperatingStatusRow } from './OperatingStatusRow';
 import { PhotoSource } from '@appTypes/photo';
+import { useOperatingStatus } from '@hooks/useOperatingStatus';
+import { OperatingHours } from '@utils/operatingHours';
 
 interface Props {
   /**
@@ -23,11 +25,8 @@ interface Props {
   icon?: React.FC<SvgProps>;
   iconWidth?: number;
   iconHeight?: number;
-  isOpen: boolean;
-  /** 예: "운영 중" / "운영 종료" */
-  statusText: string;
-  /** 예: "08:00 - 22:00" */
-  hours: string;
+  /** 요일별 운영 시간. "● 운영 중 · 08:00 - 22:00" 줄을 지금 시각으로 계산해 그린다. 없으면 그 줄을 숨긴다 */
+  operatingHours?: OperatingHours;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   onPress?: () => void;
@@ -48,15 +47,14 @@ export function FavoritePlaceCard({
   icon: Icon,
   iconWidth = 72,
   iconHeight = 72,
-  isOpen,
-  statusText,
-  hours,
+  operatingHours,
   isFavorite = true,
   onToggleFavorite,
   onPress,
   showDivider = true,
 }: Props) {
   const theme = useTheme();
+  const status = useOperatingStatus(operatingHours);
   const [isPressed, setIsPressed] = useState(false);
   const isFacilityLayout = Boolean(name);
 
@@ -104,7 +102,7 @@ export function FavoritePlaceCard({
           <FavoriteToggle isFavorite={isFavorite} onPress={onToggleFavorite} />
         </TopRow>
 
-        <OperatingStatusRow isOpen={isOpen} statusText={statusText} hours={hours} />
+        {status && <OperatingStatusRow isOpen={status.isOpen} statusText={status.statusText} hours={status.todayText} />}
       </Right>
     </Container>
   );

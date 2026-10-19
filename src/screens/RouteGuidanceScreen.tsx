@@ -39,11 +39,11 @@ import {
   GuidanceMoveType,
   RouteResult,
 } from '@constant/dummyRouteResults';
-import { MAP_MIN_ZOOM } from '@constant/mapCamera';
+import { CAMPUS_EXTENT, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
 import { LatLng, regionToFit, slicePath, splitPathAt } from '@utils/routePath';
 import { buildTestRoute, getRouteMapData, RouteMapData } from '@constant/testIndoorRoute';
-import { FLOOR_GEO_ANCHORS } from '@constant/floorGeoAnchors';
+import { useFloorGeoAnchors } from '@api/floorPlan/useFloorGeoAnchors';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
 import { animateValue } from '@utils/animateValue';
 import { useRouteSearch } from '@api/route/useRouteSearch';
@@ -474,6 +474,8 @@ function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
   // 지금 있는 층 — 건물 안 구간이면 그 층 평면도를 지도에 깔고, 바깥 구간이면 아무것도 안 깐다.
   // 도착하면 마지막 구간의 층(도착지가 있는 층)을 그대로 보여준다.
   const currentFloorId = hasArrived ? guidanceSteps[guidanceSteps.length - 1].floorId : step.floorId;
+  // 그 층 평면도를 지도에 앉힐 네 모서리 — 서버 기준 꼭짓점 + Figma 도면 기준점으로 계산(없으면 앱에 맞춰 둔 값).
+  const currentFloorAnchors = useFloorGeoAnchors(currentFloorId);
   useEffect(() => {
     if (hasArrived) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [hasArrived]);
@@ -516,6 +518,8 @@ function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
       <NaverMapView
         // 서비스에서 현재 위치를 제공하지 않으므로 현위치 버튼(위치 권한 요청 경로)을 끈다.
         isShowLocationButton={false}
+        // 안드로이드 네이버 지도는 +/- 줌 버튼을 기본으로 띄운다(디자인에 없음). 핀치 줌으로 충분하다.
+        isShowZoomControls={false}
         ref={mapRef}
         style={StyleSheet.absoluteFill}
         initialCamera={initialCamera}
@@ -528,6 +532,7 @@ function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
           bottom: insets.bottom + STEP_BUTTONS_AREA_HEIGHT,
         }}
         minZoom={MAP_MIN_ZOOM}
+        extent={CAMPUS_EXTENT}
         maxZoom={GUIDANCE_MAX_ZOOM}
         isRotateGesturesEnabled={false}
         isTiltGesturesEnabled={false}
@@ -536,7 +541,7 @@ function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
           <FloorPlanOverlay
             key={currentFloorId}
             floorId={currentFloorId}
-            anchors={FLOOR_GEO_ANCHORS[currentFloorId]}
+            anchors={currentFloorAnchors}
           />
         )}
         <GuidanceMapOverlays

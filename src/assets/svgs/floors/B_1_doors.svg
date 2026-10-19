@@ -85,11 +85,11 @@
 <rect id="Rectangle 240653106_12" x="1368" y="487.5" width="1" height="0.5" transform="rotate(90 1368 487.5)" fill="#1D2056"/>
 </g>
 <g id="door_13">
-<path id="Intersect_25" d="M1473 569H1489C1489 577.837 1481.84 585 1473 585L1473 569Z" fill="white"/>
-<path id="Intersect_26" d="M1473 569L1473 585C1481.84 585 1489 577.837 1489 569" stroke="#1D2056"/>
-<rect id="Rectangle 240653104_13" x="1488.5" y="569" width="15" height="0.5" transform="rotate(-180 1488.5 569)" fill="white"/>
-<rect id="Rectangle 240653105_13" x="1489.5" y="569" width="1" height="0.5" transform="rotate(-180 1489.5 569)" fill="#1D2056"/>
-<rect id="Rectangle 240653106_13" x="1473.5" y="569" width="1" height="0.5" transform="rotate(-180 1473.5 569)" fill="#1D2056"/>
+<path id="Intersect_25" d="M1473 570H1489C1489 578.837 1481.84 586 1473 586L1473 570Z" fill="white"/>
+<path id="Intersect_26" d="M1473 570L1473 586C1481.84 586 1489 578.837 1489 570" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_13" x="1488.5" y="570" width="15" height="0.5" transform="rotate(-180 1488.5 570)" fill="white"/>
+<rect id="Rectangle 240653105_13" x="1489.5" y="570" width="1" height="0.5" transform="rotate(-180 1489.5 570)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_13" x="1473.5" y="570" width="1" height="0.5" transform="rotate(-180 1473.5 570)" fill="#1D2056"/>
 </g>
 <g id="door_14">
 <path id="Intersect_27" d="M527 488L527 472C518.163 472 511 479.163 511 488L527 488Z" fill="white"/>

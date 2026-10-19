@@ -7,6 +7,10 @@
  */
 import type { RouteDto } from './routeDto';
 
+/**
+ * 길찾기 응답
+ */
 export interface RouteResponse {
+  /** 경로 후보 목록. SHORTEST → INDOOR_PREFERRED → STAIR_AVOIDANCE 순서로 고정된다. 경로가 없는 모드는 빠지고, mode를 지정해도 길이 1의 배열이다. */
   routes?: RouteDto[];
 }

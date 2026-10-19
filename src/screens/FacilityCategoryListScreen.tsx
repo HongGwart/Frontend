@@ -15,6 +15,7 @@ import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
 import { DUMMY_FACILITY_IMAGES } from '@constant/dummyFacilityInfo';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { useCloseOnHardwareBack } from '@hooks/useCloseOnHardwareBack';
+import { useOperatingStatus } from '@hooks/useOperatingStatus';
 import { FACILITY_CATEGORIES } from '@constant/facilityCategories';
 import { DUMMY_FACILITY_CATEGORY_PLACES } from '@constant/dummyFacilityCategoryPlaces';
 import { FacilityCategoryId, RootStackParamList } from '@navigation/types';
@@ -68,12 +69,13 @@ export default function FacilityCategoryListScreen() {
   );
   const closeDetail = useCallback(() => setSelectedPlaceId(null), []);
   useCloseOnHardwareBack(!!selectedPlace, closeDetail);
+  // 상세 카드의 운영 상태 — 지금 시각으로 계산(1분마다 갱신)
+  const selectedStatus = useOperatingStatus(selectedPlace?.operatingHours);
 
   if (selectedPlace) {
     const building = DUMMY_MAP_MARKERS.find(marker => marker.label === selectedPlace.buildingCode);
     const { latitude, longitude } = building ?? CAMPUS_CENTER;
     const markerIconKey = MARKER_ICON_BY_CATEGORY[params.categoryId];
-    const closingTime = selectedPlace.hours.split(' - ')[1] ?? selectedPlace.hours;
     const facilityName = selectedPlace.name ?? selectedPlace.buildingName;
 
     return (
@@ -107,11 +109,7 @@ export default function FacilityCategoryListScreen() {
               toRoutePlaceLabel(selectedPlace.buildingCode, selectedPlace.buildingName, selectedPlace.name),
             )}
             images={DUMMY_FACILITY_IMAGES}
-            operatingHours={{
-              isOpen: selectedPlace.isOpen,
-              statusText: selectedPlace.statusText,
-              detailText: `${closingTime}에 운영 종료`,
-            }}
+            operatingHours={selectedStatus}
             onViewInsidePress={() =>
               navigation.navigate('BuildingIndoor', {
                 buildingCode: selectedPlace.buildingCode,
@@ -144,9 +142,7 @@ export default function FacilityCategoryListScreen() {
               icon={place.icon}
               iconWidth={place.iconWidth}
               iconHeight={place.iconHeight}
-              isOpen={place.isOpen}
-              statusText={place.statusText}
-              hours={place.hours}
+              operatingHours={place.operatingHours}
               isFavorite={isFavorite(toFavoriteInput(place))}
               onToggleFavorite={() => togglePlaceFavorite(toFavoriteInput(place))}
               onPress={() => setSelectedPlaceId(place.id)}

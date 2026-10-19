@@ -449,11 +449,11 @@
 <rect id="Rectangle 240653106_64" x="1162.5" y="1704" width="1" height="0.5" fill="#1D2056"/>
 </g>
 <g id="door_65">
-<path id="Intersect_129" d="M1128 1609H1112C1112 1600.16 1119.16 1593 1128 1593V1609Z" fill="white"/>
-<path id="Intersect_130" d="M1128 1609V1593C1119.16 1593 1112 1600.16 1112 1609" stroke="#1D2056"/>
-<rect id="Rectangle 240653104_65" x="1112.5" y="1609" width="15" height="0.5" fill="white"/>
-<rect id="Rectangle 240653105_65" x="1111.5" y="1609" width="1" height="0.5" fill="#1D2056"/>
-<rect id="Rectangle 240653106_65" x="1127.5" y="1609" width="1" height="0.5" fill="#1D2056"/>
+<path id="Intersect_129" d="M1128 1608H1112C1112 1599.16 1119.16 1592 1128 1592V1608Z" fill="white"/>
+<path id="Intersect_130" d="M1128 1608V1592C1119.16 1592 1112 1599.16 1112 1608" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_65" x="1112.5" y="1608" width="15" height="0.5" fill="white"/>
+<rect id="Rectangle 240653105_65" x="1111.5" y="1608" width="1" height="0.5" fill="#1D2056"/>
+<rect id="Rectangle 240653106_65" x="1127.5" y="1608" width="1" height="0.5" fill="#1D2056"/>
 </g>
 <g id="door_66">
 <path id="Intersect_131" d="M1402 1752L1402 1736C1410.84 1736 1418 1743.16 1418 1752L1402 1752Z" fill="white"/>

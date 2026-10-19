@@ -553,6 +553,8 @@
 <rect id="room_404" x="952" y="492" width="162" height="140" fill="#D9D9D9" fill-opacity="0.01"/>
 <path id="room_405" d="M1266 491H1146V632H1114V368H1266V491Z" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_406" x="1146" y="491" width="120" height="141" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="Rectangle 240653388" x="1423.5" y="679.5" width="1" height="1" fill="white"/>
+<rect id="Rectangle 240653387" x="464.5" y="679.5" width="1" height="1" fill="white"/>
 </g>
 </g>
 <defs>

@@ -15,8 +15,8 @@
 <rect id="Rectangle 240653307" x="628" y="1128" width="4" height="32" fill="white"/>
 <rect id="Rectangle 240653306" x="966" y="767" width="5" height="32" transform="rotate(-90 966 767)" fill="white"/>
 <g id="room">
-<rect x="830" y="1369" width="309" height="487" fill="#EBEBF5"/>
-<rect x="830" y="1369" width="309" height="487" stroke="#1D2056"/>
+<rect x="830" y="1369.5" width="309" height="487" fill="#EBEBF5"/>
+<rect x="830" y="1369.5" width="309" height="487" stroke="#1D2056"/>
 </g>
 <g id="room_2">
 <rect x="715" y="1233" width="77" height="112" fill="#F5F7FA"/>
@@ -34,15 +34,15 @@
 </g>
 </g>
 <g id="room_4">
-<rect x="631" y="944" width="162" height="127" fill="#F5F7FA"/>
-<rect x="631" y="944" width="162" height="127" stroke="#1D2056"/>
+<rect x="631" y="944" width="162" height="127.5" fill="#F5F7FA"/>
+<rect x="631" y="944" width="162" height="127.5" stroke="#1D2056"/>
 </g>
 <g id="room_5">
-<rect x="830" y="136" width="309" height="784" fill="#EBEBF5"/>
-<rect x="830" y="136" width="309" height="784" stroke="#1D2056"/>
+<rect x="830" y="136" width="309" height="783.5" fill="#EBEBF5"/>
+<rect x="830" y="136" width="309" height="783.5" stroke="#1D2056"/>
 </g>
 <g id="room_6">
-<rect width="363" height="449" transform="translate(830 920)" fill="white"/>
+<rect width="362" height="449" transform="translate(830 920)" fill="white"/>
 </g>
 <g id="Frame 2087332196">
 <g id="stair">

@@ -63,10 +63,10 @@
 </g>
 <g id="Rectangle 240653360">
 <mask id="path-21-inside-2_1149_42687" fill="white">
-<path d="M894 154H961V337H894V154Z"/>
+<path d="M895 154.5H960.5V337.5H895V154.5Z"/>
 </mask>
-<path d="M894 154H961V337H894V154Z" fill="#EBEBF5"/>
-<path d="M894 154V153H893V154H894ZM894 337H893V338H894V337ZM894 154V155H961V154V153H894V154ZM961 337V336H894V337V338H961V337ZM894 337H895V154H894H893V337H894Z" fill="#1D2056" mask="url(#path-21-inside-2_1149_42687)"/>
+<path d="M895 154.5H960.5V337.5H895V154.5Z" fill="#EBEBF5"/>
+<path d="M895 154.5V153.5H894V154.5H895ZM895 337.5H894V338.5H895V337.5ZM895 154.5V155.5H960.5V154.5V153.5H895V154.5ZM960.5 337.5V336.5H895V337.5V338.5H960.5V337.5ZM895 337.5H896V154.5H895H894V337.5H895Z" fill="#1D2056" mask="url(#path-21-inside-2_1149_42687)"/>
 </g>
 <g id="Rectangle 240653361">
 <mask id="path-23-inside-3_1149_42687" fill="white">
@@ -77,40 +77,40 @@
 </g>
 <g id="Frame 2087332193">
 <g id="stair">
-<rect id="Rectangle 240653086" x="813" y="1212" width="6" height="42" transform="rotate(-180 813 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086" x="813" y="1213" width="6" height="43" transform="rotate(-180 813 1213)" fill="white" stroke="#1D2056"/>
 </g>
 <g id="stair_2">
-<rect id="Rectangle 240653086_2" x="807" y="1212" width="6" height="42" transform="rotate(-180 807 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086_2" x="807" y="1213" width="6" height="43" transform="rotate(-180 807 1213)" fill="white" stroke="#1D2056"/>
 </g>
 <g id="stair_3">
-<rect id="Rectangle 240653086_3" x="801" y="1212" width="6" height="42" transform="rotate(-180 801 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086_3" x="801" y="1213" width="6" height="43" transform="rotate(-180 801 1213)" fill="white" stroke="#1D2056"/>
 </g>
 <g id="stair_4">
-<rect id="Rectangle 240653086_4" x="795" y="1212" width="6" height="42" transform="rotate(-180 795 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086_4" x="795" y="1213" width="6" height="43" transform="rotate(-180 795 1213)" fill="white" stroke="#1D2056"/>
 </g>
 <g id="stair_5">
-<rect id="Rectangle 240653086_5" x="789" y="1212" width="6" height="42" transform="rotate(-180 789 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086_5" x="789" y="1213" width="6" height="43" transform="rotate(-180 789 1213)" fill="white" stroke="#1D2056"/>
 </g>
 <g id="stair_6">
-<rect id="Rectangle 240653086_6" x="783" y="1212" width="6" height="42" transform="rotate(-180 783 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086_6" x="783" y="1213" width="6" height="43" transform="rotate(-180 783 1213)" fill="white" stroke="#1D2056"/>
 </g>
 <g id="stair_7">
-<rect id="Rectangle 240653086_7" x="777" y="1212" width="6" height="42" transform="rotate(-180 777 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086_7" x="777" y="1213" width="6" height="43" transform="rotate(-180 777 1213)" fill="white" stroke="#1D2056"/>
 </g>
 <g id="stair_8">
-<rect id="Rectangle 240653086_8" x="771" y="1212" width="6" height="42" transform="rotate(-180 771 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086_8" x="771" y="1213" width="6" height="43" transform="rotate(-180 771 1213)" fill="white" stroke="#1D2056"/>
 </g>
 <g id="stair_9">
-<rect id="Rectangle 240653086_9" x="765" y="1212" width="6" height="42" transform="rotate(-180 765 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086_9" x="765" y="1213" width="6" height="43" transform="rotate(-180 765 1213)" fill="white" stroke="#1D2056"/>
 </g>
 <g id="stair_10">
-<rect id="Rectangle 240653086_10" x="759" y="1212" width="6" height="42" transform="rotate(-180 759 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086_10" x="759" y="1213" width="6" height="43" transform="rotate(-180 759 1213)" fill="white" stroke="#1D2056"/>
 </g>
 <g id="stair_11">
-<rect id="Rectangle 240653086_11" x="753" y="1212" width="6" height="42" transform="rotate(-180 753 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086_11" x="753" y="1213" width="6" height="43" transform="rotate(-180 753 1213)" fill="white" stroke="#1D2056"/>
 </g>
 <g id="stair_12">
-<rect id="Rectangle 240653086_12" x="747" y="1212" width="6" height="42" transform="rotate(-180 747 1212)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653086_12" x="747" y="1213" width="6" height="43" transform="rotate(-180 747 1213)" fill="white" stroke="#1D2056"/>
 </g>
 </g>
 <g id="Frame 2087332202">
@@ -249,11 +249,11 @@
 <rect id="Rectangle 240653106_3" width="1" height="0.5" transform="matrix(1.31134e-07 -1 -1 -1.31134e-07 960 398.5)" fill="#1D2056"/>
 </g>
 <g id="door_4">
-<path id="Intersect_7" d="M920 336.5L936 336.5C936 327.663 928.837 320.5 920 320.5L920 336.5Z" fill="white"/>
-<path id="Intersect_8" d="M920 336.5L920 320.5C928.837 320.5 936 327.663 936 336.5" stroke="#1D2056"/>
-<rect id="Rectangle 240653104_4" width="15" height="0.5" transform="matrix(-1 8.74228e-08 8.74228e-08 1 935.5 336.5)" fill="white"/>
-<rect id="Rectangle 240653105_4" width="1" height="0.5" transform="matrix(-1 8.74228e-08 8.74228e-08 1 936.5 336.5)" fill="#1D2056"/>
-<rect id="Rectangle 240653106_4" width="1" height="0.5" transform="matrix(-1 8.74228e-08 8.74228e-08 1 920.5 336.5)" fill="#1D2056"/>
+<path id="Intersect_7" d="M920 337L936 337C936 328.163 928.837 321 920 321L920 337Z" fill="white"/>
+<path id="Intersect_8" d="M920 337L920 321C928.837 321 936 328.163 936 337" stroke="#1D2056"/>
+<rect id="Rectangle 240653104_4" width="15" height="0.5" transform="matrix(-1 8.74228e-08 8.74228e-08 1 935.5 337)" fill="white"/>
+<rect id="Rectangle 240653105_4" width="1" height="0.5" transform="matrix(-1 8.74228e-08 8.74228e-08 1 936.5 337)" fill="#1D2056"/>
+<rect id="Rectangle 240653106_4" width="1" height="0.5" transform="matrix(-1 8.74228e-08 8.74228e-08 1 920.5 337)" fill="#1D2056"/>
 </g>
 <g id="door_5">
 <path id="Intersect_9" d="M960 656L960 640C968.837 640 976 647.163 976 656L960 656Z" fill="white"/>

@@ -61,6 +61,7 @@ export function useDevFloorOverlay(mapRef: RefObject<NaverMapViewRef | null>) {
           image: { httpUri: `${getDevServerUrl()}${overlay.path}` },
           region: overlay.region,
           anchors: overlay.anchors,
+          icons: overlay.icons ?? [],
         };
       });
       return next;

@@ -39,8 +39,8 @@
 <rect x="1116" y="195" width="212" height="253" stroke="#1D2056"/>
 </g>
 <g id="room_5">
-<rect x="903" y="195" width="213" height="197" fill="#EBEBF5"/>
-<rect x="903" y="195" width="213" height="197" stroke="#1D2056"/>
+<rect x="903" y="195" width="213" height="197.5" fill="#EBEBF5"/>
+<rect x="903" y="195" width="213" height="197.5" stroke="#1D2056"/>
 </g>
 <g id="room_6">
 <rect x="776" y="392.5" width="63.5" height="107" fill="#EBEBF5"/>

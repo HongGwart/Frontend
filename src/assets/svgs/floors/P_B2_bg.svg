@@ -90,8 +90,8 @@
 </g>
 </g>
 <g id="room_18">
-<rect x="1432" y="626" width="56" height="49" fill="#F5F7FA"/>
-<rect x="1432" y="626" width="56" height="49" stroke="#1D2056"/>
+<rect x="1433" y="626" width="55" height="49" fill="#F5F7FA"/>
+<rect x="1433" y="626" width="55" height="49" stroke="#1D2056"/>
 </g>
 <g id="room_19">
 <rect x="1466" y="570" width="22" height="56" fill="#F5F7FA"/>
@@ -189,6 +189,8 @@
 <rect id="Rectangle 240653086_28" x="1347" y="562" width="6" height="36" transform="rotate(90 1347 562)" fill="white" stroke="#1D2056"/>
 </g>
 </g>
+<rect id="Rectangle 240653387" x="472.5" y="673.5" width="1" height="1" fill="white"/>
+<rect id="Rectangle 240653388" x="1431.5" y="673.5" width="1" height="1" fill="white"/>
 </g>
 <defs>
 <clipPath id="clip0_1131_35690">

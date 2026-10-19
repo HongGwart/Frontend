@@ -6,9 +6,16 @@
  * OpenAPI spec version: v1
  */
 
+/**
+ * 경로가 지나는 시설별 간선 수
+ */
 export interface FeaturesDto {
+  /** 계단(STAIR) 간선 수 */
   stairs?: number;
+  /** 엘리베이터(ELEVATOR) 간선 수 */
   elevators?: number;
+  /** 출입문(DOOR) 간선 수. 건물 출입 횟수와 같지 않다. */
   doors?: number;
+  /** 횡단보도 표시(properties.crosswalk = true)가 있는 간선 수 */
   crosswalks?: number;
 }

@@ -374,30 +374,8 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     room: '흡연 구역',
     description: '지정 흡연 구역',
   },
-  // H동 중앙도서관도 "열람실 1/2" 외에 검색 더미에 나오는 "314호"를 실제 마커로 채워둔다.
-  // 314호는 열람실이 아니라 강의실이라 category를 classroom으로 둔다.
-  {
-    id: 'c14',
-    latitude: 37.5514,
-    longitude: 126.9251,
-    category: 'classroom',
-    buildingCode: 'H동',
-    buildingName: '중앙도서관',
-    room: '314호',
-    description: '지정 좌석제 강의실',
-  },
-  {
-    id: 'c15',
-    latitude: 37.5496,
-    longitude: 126.926,
-    category: 'classroom',
-    buildingCode: 'I동',
-    buildingName: '과학관',
-    room: '305호',
-    description: '자연과학대학 전공 강의실',
-  },
   // 시연용: 시연 경로(R동 카페나무 → C동 816호)에 나오는 R동·C동과 T동의 건물 상세 편의시설 칸이 비지 않게 채운 더미.
-  // 좌표는 각 동 마커 근처에 살짝씩 흩어 놓았다. 검색의 "R동 카페나무"·"C동 816호"도 이 마커의 시설 카드로 열린다.
+  // 좌표는 각 동 마커 근처에 살짝씩 흩어 놓았다. 검색의 "R동 카페나무"도 이 마커의 시설 카드로 열린다(호실인 "C동 816호"는 C동 위의 호실 카드로 열린다).
   {
     id: 'c16',
     latitude: 37.5526642,
@@ -438,16 +416,6 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     buildingName: '홍문관',
     room: 'PC실',
     description: '자유 이용 컴퓨터실',
-  },
-  {
-    id: 'c20',
-    latitude: 37.5492588,
-    longitude: 126.9259893,
-    category: 'classroom',
-    buildingCode: 'C동',
-    buildingName: '인문사회관',
-    room: '816호',
-    description: '8층 전공 강의실',
   },
   {
     id: 'c21',
@@ -509,15 +477,5 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     room: '카페',
     description: '1층 교내 카페',
     images: DUMMY_FACILITY_IMAGES,
-  },
-  {
-    id: 'c27',
-    latitude: 37.5500214,
-    longitude: 126.924514,
-    category: 'classroom',
-    buildingCode: 'T동',
-    buildingName: '제4공학관',
-    room: '503호',
-    description: '컴퓨터공학 전공 강의실',
   },
 ];

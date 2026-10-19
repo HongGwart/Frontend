@@ -6,9 +6,16 @@
  * OpenAPI spec version: v1
  */
 
+/**
+ * 경로 전체를 감싸는 위경도 영역
+ */
 export interface BoundDto {
+  /** 최소 위도 */
   minLat?: number;
+  /** 최소 경도 */
   minLng?: number;
+  /** 최대 위도 */
   maxLat?: number;
+  /** 최대 경도 */
   maxLng?: number;
 }

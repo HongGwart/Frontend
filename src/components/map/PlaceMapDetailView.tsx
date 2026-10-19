@@ -9,7 +9,7 @@ import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { Toast } from '@components/common/Toast';
 import { CategoryKey } from '@constant/categoryChips';
-import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
+import { CAMPUS_EXTENT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 
 interface Props {
   /** 지도 첫 카메라 중심 = 장소 좌표 */
@@ -69,9 +69,12 @@ export function PlaceMapDetailView({
         <NaverMapView
           // 서비스에서 현재 위치를 제공하지 않으므로 현위치 버튼(위치 권한 요청 경로)을 끈다.
           isShowLocationButton={false}
+          // 안드로이드 네이버 지도는 +/- 줌 버튼을 기본으로 띄운다(디자인에 없음). 핀치 줌으로 충분하다.
+          isShowZoomControls={false}
           style={StyleSheet.absoluteFill}
           initialCamera={{ latitude, longitude, zoom: 17 }}
           minZoom={MAP_MIN_ZOOM}
+          extent={CAMPUS_EXTENT}
           maxZoom={MAP_MAX_ZOOM}
         >
           {marker}

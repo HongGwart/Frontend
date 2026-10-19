@@ -10,6 +10,7 @@ import EtcIcon from '@assets/svgs/icons/etc.svg';
 import { DUMMY_FACILITY_IMAGES } from './dummyFacilityInfo';
 import { FacilityCategoryId } from '@navigation/types';
 import { FavoritePlace } from './dummyMypage';
+import { everyDay } from '@utils/operatingHours';
 
 // 편의시설 카테고리(FacilityScreen)에서 카테고리를 탭했을 때 보여줄 장소 목록.
 // 실제 API 연동 전까지 쓰는 더미 데이터. FavoritePlace와 같은 모양을 그대로 쓴다
@@ -24,9 +25,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '중앙도서관',
       locationDetail: '지하 1층',
       icon: RestaurantIcon,
-      isOpen: true,
-      statusText: '운영 중',
-      hours: '11:00 - 14:00',
+      operatingHours: everyDay('11:00', '14:00'),
     },
     {
       id: 'restaurant-2',
@@ -35,9 +34,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '홍문관',
       locationDetail: '2층',
       icon: RestaurantIcon,
-      isOpen: false,
-      statusText: '운영 종료',
-      hours: '11:30 - 13:30',
+      operatingHours: everyDay('11:30', '13:30'),
     },
   ],
   cafe: [
@@ -48,9 +45,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '홍문관',
       locationDetail: '로비층',
       photo: DUMMY_FACILITY_IMAGES[0],
-      isOpen: true,
-      statusText: '운영 중',
-      hours: '08:00 - 22:00',
+      operatingHours: everyDay('08:00', '22:00'),
     },
     {
       id: 'cafe-2',
@@ -59,9 +54,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '인문사회관',
       locationDetail: '1층',
       photo: DUMMY_FACILITY_IMAGES[0],
-      isOpen: true,
-      statusText: '운영 중',
-      hours: '08:00 - 22:00',
+      operatingHours: everyDay('08:00', '22:00'),
     },
     {
       id: 'cafe-3',
@@ -70,9 +63,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '중앙도서관',
       locationDetail: '3층',
       photo: DUMMY_FACILITY_IMAGES[1],
-      isOpen: false,
-      statusText: '운영 종료',
-      hours: '10:00 - 19:00',
+      operatingHours: everyDay('10:00', '19:00'),
     },
     {
       id: 'cafe-4',
@@ -81,9 +72,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '와우관',
       locationDetail: '4층',
       icon: CafeIcon,
-      isOpen: false,
-      statusText: '운영 종료',
-      hours: '08:30 - 19:00',
+      operatingHours: everyDay('08:30', '19:00'),
     },
   ],
   store: [
@@ -94,9 +83,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '인문사회관',
       locationDetail: '1층',
       icon: StoreIcon,
-      isOpen: true,
-      statusText: '운영 중',
-      hours: '00:00 - 24:00',
+      operatingHours: { kind: 'always' },
     },
   ],
   readingRoom: [
@@ -107,9 +94,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '중앙도서관',
       locationDetail: '2층',
       icon: BookIcon,
-      isOpen: true,
-      statusText: '운영 중',
-      hours: '06:00 - 24:00',
+      operatingHours: everyDay('06:00', '24:00'),
     },
     {
       id: 'readingRoom-2',
@@ -118,9 +103,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '중앙도서관',
       locationDetail: '3층',
       icon: BookIcon,
-      isOpen: true,
-      statusText: '운영 중',
-      hours: '06:00 - 24:00',
+      operatingHours: everyDay('06:00', '24:00'),
     },
   ],
   pc: [
@@ -131,9 +114,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '조형관',
       locationDetail: '2층',
       icon: PcIcon,
-      isOpen: true,
-      statusText: '운영 중',
-      hours: '09:00 - 22:00',
+      operatingHours: everyDay('09:00', '22:00'),
     },
   ],
   printer: [
@@ -144,9 +125,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '중앙도서관',
       locationDetail: '1층',
       icon: PrinterIcon,
-      isOpen: true,
-      statusText: '운영 중',
-      hours: '09:00 - 21:00',
+      operatingHours: everyDay('09:00', '21:00'),
     },
   ],
   bookReturn: [
@@ -157,9 +136,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '중앙도서관',
       locationDetail: '정문 앞',
       icon: BookReturnIcon,
-      isOpen: true,
-      statusText: '운영 중',
-      hours: '00:00 - 24:00',
+      operatingHours: { kind: 'always' },
     },
   ],
   smokingArea: [
@@ -170,9 +147,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '조형관',
       locationDetail: '건물 뒤편',
       icon: SmokeIcon,
-      isOpen: true,
-      statusText: '운영 중',
-      hours: '00:00 - 24:00',
+      operatingHours: { kind: 'always' },
     },
   ],
   etc: [
@@ -183,9 +158,7 @@ export const DUMMY_FACILITY_CATEGORY_PLACES: Record<FacilityCategoryId, Favorite
       buildingName: '홍문관',
       locationDetail: '3층',
       icon: EtcIcon,
-      isOpen: true,
-      statusText: '운영 중',
-      hours: '00:00 - 24:00',
+      operatingHours: { kind: 'always' },
     },
   ],
 };

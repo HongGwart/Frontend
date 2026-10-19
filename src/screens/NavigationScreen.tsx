@@ -30,7 +30,7 @@ import {
   DUMMY_ROUTE_RESULTS,
   DUMMY_ELEVATOR_WARNING_MESSAGE,
 } from '@constant/dummyRouteResults';
-import { MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
+import { CAMPUS_EXTENT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
 import { regionToFit } from '@utils/routePath';
 import { useRouteSearch } from '@api/route/useRouteSearch';
@@ -273,6 +273,8 @@ export default function NavigationScreen() {
           <NaverMapView
             // 서비스에서 현재 위치를 제공하지 않으므로 현위치 버튼(위치 권한 요청 경로)을 끈다.
             isShowLocationButton={false}
+            // 안드로이드 네이버 지도는 +/- 줌 버튼을 기본으로 띄운다(디자인에 없음). 핀치 줌으로 충분하다.
+            isShowZoomControls={false}
             ref={mapRef}
             style={StyleSheet.absoluteFill}
             initialCamera={routeMap.camera}
@@ -287,6 +289,7 @@ export default function NavigationScreen() {
               bottom: isSheetCollapsed ? DETAIL_SHEET_PEEK_HEIGHT + insets.bottom : detailSheetHeight,
             }}
             minZoom={MAP_MIN_ZOOM}
+            extent={CAMPUS_EXTENT}
             maxZoom={MAP_MAX_ZOOM}
             // 카드를 펼친 경로 보기는 경로 전체가 보이는 줌으로 고정 — 핀치/더블탭 줌을 막고, 카드를 끌어내려
             // 지도를 전체로 펼쳤을 때만 확대/축소를 풀어준다.

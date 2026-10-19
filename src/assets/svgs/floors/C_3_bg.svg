@@ -33,12 +33,12 @@
 <rect x="511" y="636" width="106" height="80" stroke="#1D2056"/>
 </g>
 <g id="room_5">
-<rect x="247" y="268" width="184" height="256" fill="#EBEBF5"/>
-<rect x="247" y="268" width="184" height="256" stroke="#1D2056"/>
+<rect x="247" y="268" width="184.5" height="256" fill="#EBEBF5"/>
+<rect x="247" y="268" width="184.5" height="256" stroke="#1D2056"/>
 </g>
 <g id="room_6">
-<rect x="247" y="524" width="184" height="192" fill="#EBEBF5"/>
-<rect x="247" y="524" width="184" height="192" stroke="#1D2056"/>
+<rect x="247" y="524" width="184.5" height="192" fill="#EBEBF5"/>
+<rect x="247" y="524" width="184.5" height="192" stroke="#1D2056"/>
 </g>
 <g id="room_7">
 <rect x="511" y="716" width="256" height="144" fill="#EBEBF5"/>
@@ -69,8 +69,8 @@
 <rect x="511" y="1764" width="256" height="128" stroke="#1D2056"/>
 </g>
 <g id="room_14">
-<rect x="511" y="1892" width="256" height="344" fill="#EBEBF5"/>
-<rect x="511" y="1892" width="256" height="344" stroke="#1D2056"/>
+<rect x="511" y="1892" width="256" height="344.5" fill="#EBEBF5"/>
+<rect x="511" y="1892" width="256" height="344.5" stroke="#1D2056"/>
 </g>
 <g id="room_15">
 <rect x="431" y="2340" width="136" height="128" fill="#EBEBF5"/>

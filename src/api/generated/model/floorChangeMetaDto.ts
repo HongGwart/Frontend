@@ -5,11 +5,20 @@
  * 교내 지도 검색·길찾기 및 관리자 편집 API. 관리자 API 실행 시 Authorize에 관리자 API 키를 입력하세요.
  * OpenAPI spec version: v1
  */
+import type { FloorChangeMetaDtoTransport } from './floorChangeMetaDtoTransport';
 
+/**
+ * 층 이동 정보
+ */
 export interface FloorChangeMetaDto {
+  /** 출발 층 표기. 공용 구간의 계단·엘리베이터처럼 건물 층을 비교할 수 없으면 null이다. */
   fromFloor?: string;
+  /** 도착 층 표기. 공용 구간의 계단·엘리베이터처럼 건물 층을 비교할 수 없으면 null이다. */
   toFloor?: string;
+  /** 출발 층 순서값. 층을 비교할 수 없으면 0이다. */
   fromFloorOrder?: number;
+  /** 도착 층 순서값. 층을 비교할 수 없으면 0이다. */
   toFloorOrder?: number;
-  transport?: string;
+  /** 이동 수단 */
+  transport?: FloorChangeMetaDtoTransport;
 }

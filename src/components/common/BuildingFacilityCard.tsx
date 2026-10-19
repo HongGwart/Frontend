@@ -16,8 +16,9 @@ interface Props {
   /** photo가 없을 때 옅은 배경 위에 보여줄 카테고리 아이콘. */
   icon: React.FC<SvgProps>;
   title: string;
-  isOpen: boolean;
-  statusText: string;
+  /** 운영 상태(지금 시각 기준). 운영 시간을 모르는 시설이면 넘기지 않고, 그 줄을 숨긴다 */
+  isOpen?: boolean;
+  statusText?: string;
   isFavorite?: boolean;
   onToggleFavorite?: (id: string) => void;
   onPress?: () => void;
@@ -33,7 +34,7 @@ export const BuildingFacilityCard = React.memo(function BuildingFacilityCard({
   photo,
   icon: Icon,
   title,
-  isOpen,
+  isOpen = false,
   statusText,
   isFavorite = false,
   onToggleFavorite,
@@ -57,10 +58,12 @@ export const BuildingFacilityCard = React.memo(function BuildingFacilityCard({
           <TitleText numberOfLines={1}>{title}</TitleText>
           <FavoriteToggle isFavorite={isFavorite} onPress={() => onToggleFavorite?.(id)} />
         </TitleRow>
-        <StatusRow>
-          <StatusDot isOpen={isOpen} />
-          <StatusText>{statusText}</StatusText>
-        </StatusRow>
+        {statusText && (
+          <StatusRow>
+            <StatusDot isOpen={isOpen} />
+            <StatusText>{statusText}</StatusText>
+          </StatusRow>
+        )}
       </Card>
     </Container>
   );

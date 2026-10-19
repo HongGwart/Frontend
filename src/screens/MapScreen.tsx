@@ -12,7 +12,7 @@ import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
+import { CAMPUS_EXTENT, MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { SearchBar } from '@components/common/SearchBar';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
@@ -22,6 +22,7 @@ import { DismissibleBottomSheet, DismissibleBottomSheetRef } from '@components/c
 import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
 import { DevFloorOverlayLayer, DevFloorOverlayPanel, useDevFloorOverlay } from '@components/map/DevFloorOverlayPicker';
 import { DevRouteNodeLayer, DevRouteNodePanel, useDevRouteNodes } from '@components/map/DevRouteNodePicker';
+import { DevBuildingMaskLayer, DevBuildingMaskPanel, useDevBuildingMasks } from '@components/map/DevBuildingMaskPicker';
 import { TEST_ROUTE_DEPARTURE_LABEL, TEST_ROUTE_DESTINATION_LABEL } from '@constant/testIndoorRoute';
 import { FocusableCategoryMarker, FocusableDongMarker } from '@components/map/FocusableMarkers';
 import { CategoryKey } from '@constant/categoryChips';
@@ -32,12 +33,7 @@ import {
   DummyMapMarker,
   DummyCategoryMarker,
 } from '@constant/dummyMapMarkers';
-import {
-  DUMMY_FACILITY_COUNTS,
-  DUMMY_FACILITY_IMAGES,
-  DUMMY_MAIN_ENTRANCE,
-  DUMMY_OPERATING_HOURS,
-} from '@constant/dummyFacilityInfo';
+import { DUMMY_FACILITY_IMAGES } from '@constant/dummyFacilityInfo';
 import { DUMMY_FACILITY_LIST_ITEMS } from '@constant/dummyFacilityListItems';
 import {
   favoriteFromCategoryMarker,
@@ -46,6 +42,9 @@ import {
   favoriteFromListItem,
 } from '@constant/favoriteInputs';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
+import { useBuildingDetail } from '@api/building/useBuildingDetail';
+import { useOperatingStatus } from '@hooks/useOperatingStatus';
+import { getFacilityHours } from '@constant/facilityHours';
 import { FocusFacilityParam, MainTabParamList, RootStackParamList } from '@navigation/types';
 
 interface Props {
@@ -96,6 +95,18 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   // 추후 지도 데이터가 준비되면 여기 selectedKey를 그대로 넘기면 된다.
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
+  // 건물 카드 정보(설명·사진·운영 시간·주 출입구) — 확인된 건물 정보 + 서버 장소 상세의 출입구.
+  const dongDetail = useBuildingDetail(selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined);
+  // 시설 카드(카테고리 마커·목록·다른 화면에서 넘어온 시설)의 운영 상태 — 시설 운영 시간을 지금 시각으로 계산.
+  const facilityStatus = useOperatingStatus(
+    selectedFacility?.type === 'category'
+      ? getFacilityHours(selectedFacility.marker.buildingCode, selectedFacility.marker.room)
+      : selectedFacility?.type === 'item'
+        ? getFacilityHours(selectedFacility.item.building, selectedFacility.item.room ?? selectedFacility.item.place)
+        : selectedFacility?.type === 'external'
+          ? getFacilityHours(selectedFacility.facility.buildingCode, selectedFacility.facility.facilityName)
+          : undefined,
+  );
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
   const mapViewRef = useRef<NaverMapViewRef>(null);
   const insets = useSafeAreaInsets();
@@ -110,7 +121,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         },
       }),
   });
-  const devModeActive = floorOverlay.active || routeNodes.active;
+  const buildingMasks = useDevBuildingMasks(mapViewRef);
+  const devModeActive = floorOverlay.active || routeNodes.active || buildingMasks.active;
 
   // 지금 포커싱된(눌러서 카드가 열리는) 마커의 id — 이 마커만 강조(active) + 네임택으로 남기고 나머지는 숨긴다.
   // 카드(selectedFacility)와 따로 들고 있는 이유: 마커를 누르면 마커 모양은 그 즉시 바뀌고, 무거운 카드는
@@ -401,6 +413,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
       <NaverMapView
         // 서비스에서 현재 위치를 제공하지 않으므로 현위치 버튼(위치 권한 요청 경로)을 끈다.
         isShowLocationButton={false}
+        // 안드로이드 네이버 지도는 +/- 줌 버튼을 기본으로 띄운다(디자인에 없음). 핀치 줌으로 충분하다.
+        isShowZoomControls={false}
         ref={mapViewRef}
         style={StyleSheet.absoluteFill}
         initialCamera={{
@@ -409,13 +423,21 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
           zoom: INITIAL_ZOOM,
         }}
         minZoom={MAP_MIN_ZOOM}
+        extent={CAMPUS_EXTENT}
         maxZoom={MAP_MAX_ZOOM}
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
         onTapMap={
-          routeNodes.active ? routeNodes.handleTap : floorOverlay.active ? undefined : closeFacilitySheet
+          buildingMasks.active
+            ? buildingMasks.handleTap
+            : routeNodes.active
+              ? routeNodes.handleTap
+              : floorOverlay.active
+                ? undefined
+                : closeFacilitySheet
         }
       >
         <DevFloorOverlayLayer picker={floorOverlay} />
+        <DevBuildingMaskLayer picker={buildingMasks} />
         <DevRouteNodeLayer
           picker={routeNodes}
           floorAnchors={floorOverlay.anchors}
@@ -511,18 +533,18 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               variant="outside"
               buildingCode={selectedFacility.marker.label ?? ''}
               buildingName={selectedFacility.marker.buildingName}
-              description={selectedFacility.marker.description}
+              description={dongDetail.description}
               isFavorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
               onToggleFavorite={() =>
                 toggleFavorite(favoriteFromDongMarker(selectedFacility.marker), selectedFacility.marker.buildingName)
               }
-              images={selectedFacility.marker.images}
+              images={dongDetail.images}
               {...routeButtonProps(
                 toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
               )}
-              facilityCounts={DUMMY_FACILITY_COUNTS}
-              mainEntrance={DUMMY_MAIN_ENTRANCE}
-              operatingHours={DUMMY_OPERATING_HOURS}
+              facilityCounts={dongDetail.facilityCounts}
+              mainEntrance={dongDetail.mainEntrance}
+              operatingHours={dongDetail.operatingHours}
               onViewInsidePress={() => {
                 closeCardWhenCovered();
                 onOpenBuildingIndoor?.({
@@ -551,7 +573,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   selectedFacility.marker.room,
                 ),
               )}
-              operatingHours={DUMMY_OPERATING_HOURS}
+              operatingHours={facilityStatus}
               onViewInsidePress={() =>
                 openBuildingIndoorOf(selectedFacility.marker.buildingCode, selectedFacility.marker.buildingName)
               }
@@ -589,7 +611,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   selectedFacility.facility.facilityName,
                 ),
               )}
-              operatingHours={DUMMY_OPERATING_HOURS}
+              operatingHours={facilityStatus}
               onViewInsidePress={() =>
                 openBuildingIndoorOf(selectedFacility.facility.buildingCode, selectedFacility.facility.buildingName)
               }
@@ -611,7 +633,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               {...routeButtonProps(
                 toRoutePlaceLabel(selectedFacility.item.building, selectedFacility.item.place, selectedFacility.item.room),
               )}
-              operatingHours={DUMMY_OPERATING_HOURS}
+              operatingHours={facilityStatus}
               onViewInsidePress={() => openBuildingIndoorOf(selectedFacility.item.building, selectedFacility.item.place)}
             />
           )}
@@ -634,6 +656,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         <>
           <DevFloorOverlayPanel picker={floorOverlay} topInset={insets.top} />
           <DevRouteNodePanel picker={routeNodes} topInset={insets.top} floorAnchors={floorOverlay.anchors} />
+          <DevBuildingMaskPanel picker={buildingMasks} topInset={insets.top} />
         </>
       )}
     </View>

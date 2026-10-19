@@ -720,7 +720,7 @@
       "id": "map_stairs_5",
       "type": "stairs",
       "center": [
-        594,
+        594.5,
         518
       ],
       "size": 32

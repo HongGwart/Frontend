@@ -317,11 +317,14 @@ function labelSplitPieces(rooms) {
  * 첫 화면 맞춤(IndoorMapView fitToContainer)에 쓸 도면 영역. Hitbox에는 강의실만 있어서 방 좌표만으로
  * 잡으면 화장실·계단처럼 가장자리에 있던 공간이 잘려 나간다. 대신 Visual 레이어의 외곽선을 쓴다 —
  * Figma는 바깥쪽 stroke가 있는 도형마다 그 도형을 감싸는 <mask x y width height>를 같이 export하므로,
- * 그 사각형들과 방 도형을 합친 바운딩 박스를 도면 영역으로 본다. mask가 없으면 null(앱이 방 좌표로 계산).
+ * 그 사각형들과 방 도형을 합친 바운딩 박스를 도면 영역으로 본다.
+ * 외곽이 사각형이면 Figma가 mask 대신 stroke를 단 <path id="Union..."> 하나로 export하기도 해서, 그런
+ * path의 꼭짓점(+ stroke 두께 절반)도 같이 넣는다. 둘 다 없으면 null(앱이 방 좌표로 계산).
  */
 function computeContentBounds(visualInner, rooms) {
   if (!visualInner) return null;
   const maskRegex = /<mask\b[^>]*\bx="([-\d.]+)" y="([-\d.]+)" width="([\d.]+)" height="([\d.]+)"/g;
+  const outlineRegex = /<path\b[^>]*\bid="Union[^"]*"[^>]*>/g;
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
@@ -338,6 +341,24 @@ function computeContentBounds(visualInner, rooms) {
     const [x, y, width, height] = m.slice(1).map(Number);
     include(x, y);
     include(x + width, y + height);
+    masks += 1;
+  }
+  while ((m = outlineRegex.exec(visualInner)) !== null) {
+    const d = m[0].match(/\bd="([^"]*)"/)?.[1];
+    const stroke = Number(m[0].match(/\bstroke-width="([\d.]+)"/)?.[1] ?? 0);
+    // 직선(M/L/H/V/Z, 절대좌표)으로만 된 외곽만 쓴다. 곡선·상대좌표는 꼭짓점만으로 영역을 알 수 없다.
+    if (!d || !stroke || /[^MLHVZ\d\s.,-]/.test(d)) continue;
+    let x = 0;
+    let y = 0;
+    for (const [, cmd, args] of d.matchAll(/([MLHVZ])([^MLHVZ]*)/g)) {
+      const nums = args.trim().split(/[\s,]+/).filter(Boolean).map(Number);
+      if (cmd === 'H') x = nums[nums.length - 1];
+      else if (cmd === 'V') y = nums[nums.length - 1];
+      else if (cmd !== 'Z') [x, y] = nums.slice(-2);
+      if (cmd === 'Z') continue;
+      include(x - stroke / 2, y - stroke / 2);
+      include(x + stroke / 2, y + stroke / 2);
+    }
     masks += 1;
   }
   if (masks === 0) return null;
