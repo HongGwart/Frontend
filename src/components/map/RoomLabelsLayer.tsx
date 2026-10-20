@@ -77,7 +77,7 @@ interface Props {
   rotation: SharedValue<number>;
   /** 고정 폰트 크기. 확대/축소해도 이 값은 안 바뀐다 */
   fontSize?: number;
-  /** 하이라이팅된 방들의 id. 같은 라벨을 공유하는 방이 여러 개면 전부 넘겨서 다 같이
+  /** 하이라이팅된 방들의 id. 같은 장소 UUID를 공유하는 조각이 여러 개면 전부 넘겨서 다 같이
    *  흰색으로 바뀌게 한다 (진한 배경 위라 검정 글자는 안 보임) */
   selectedRoomIds?: string[];
 }
@@ -93,14 +93,11 @@ export function RoomLabelsLayer({
 }: Props) {
   if (rooms.length === 0) return null;
 
-  // 하나의 강의실이 도면상 여러 조각으로 나뉜 경우(같은 label을 공유) 텍스트는
-  // 한 번만 그린다 — 안 그러면 조각 개수만큼 같은 번호가 겹쳐 보인다.
-  // 선택(클릭) 자체는 label이 같은 모든 조각에 걸리므로(IndoorMapView의 그룹핑 로직)
-  // 텍스트를 하나로 줄여도 "함께 클릭되는" 동작에는 영향이 없다.
+  // 번호가 같아도 별실일 수 있으므로 각 도형을 표시한다. 동일 장소로 검증된 조각만 합친다.
   const seenLabels = new Set<string>();
   const labeledRooms = rooms.filter((room) => {
     if (room.label === '') return false;
-    const key = room.label ?? room.id;
+    const key = room.placeId ? `place:${room.placeId}` : `shape:${room.id}`;
     if (seenLabels.has(key)) return false;
     seenLabels.add(key);
     return true;

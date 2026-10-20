@@ -37,6 +37,8 @@ interface Props {
   variant: 'outside' | 'inside' | 'room' | 'facility';
   buildingCode: string;
   buildingName: string;
+  /** 서버의 장소 표시명. 분리된 동명 호실의 구분명을 유지한다. */
+  displayName?: string;
   /** room에서만 쓰인다 (예: "502호") */
   roomNumber?: string;
   /** facility에서만 쓰인다. 제목으로 쓰이는 편의시설 이름 (예: "카페나무") */
@@ -57,6 +59,8 @@ interface Props {
   mainEntrance?: string;
   /** 없으면(확인된 운영 시간이 없는 곳) 운영 시간 줄을 빼고 그린다 */
   operatingHours?: OperatingHoursInfo;
+  /** 서버의 운영시간 원문. 실시간 영업 여부로 변환하지 않는다. */
+  operatingHoursText?: string;
   /** outside/facility에서만 쓰인다 */
   onViewInsidePress?: () => void;
   /**
@@ -101,6 +105,7 @@ export function FacilityInfoCard({
   variant,
   buildingCode,
   buildingName,
+  displayName,
   roomNumber,
   facilityName,
   locationDetail,
@@ -113,6 +118,7 @@ export function FacilityInfoCard({
   facilityCounts,
   mainEntrance,
   operatingHours,
+  operatingHoursText,
   onViewInsidePress,
   ctaLabel = '건물 내부 보기',
   ctaIcon,
@@ -168,6 +174,8 @@ export function FacilityInfoCard({
               </FacilityTitleBlock>
               {operatingHours && <OperatingHoursRow operatingHours={operatingHours} compact={compact} />}
             </FacilityHeaderGroup>
+            {description && <DescriptionText>{description}</DescriptionText>}
+            {operatingHoursText && <DescriptionText>운영 시간 {operatingHoursText}</DescriptionText>}
             {actionButtons}
           </FacilitySection>
         ) : (
@@ -175,13 +183,16 @@ export function FacilityInfoCard({
             <Header>
               <TitleRow>
                 <TitleGroup>
-                  <BuildingCodeText>{buildingCode}</BuildingCodeText>
-                  <BuildingNameText>{buildingName}</BuildingNameText>
-                  {isRoom && roomNumber && <BuildingCodeText>{roomNumber}</BuildingCodeText>}
+                  {displayName ? <BuildingCodeText>{displayName}</BuildingCodeText> : (<>
+                    <BuildingCodeText>{buildingCode}</BuildingCodeText>
+                    <BuildingNameText>{buildingName}</BuildingNameText>
+                    {isRoom && roomNumber && <BuildingCodeText>{roomNumber}</BuildingCodeText>}
+                  </>)}
                 </TitleGroup>
                 <FavoriteToggle isFavorite={isFavorite} onPress={onToggleFavorite} />
               </TitleRow>
-              <DescriptionText numberOfLines={1}>{description}</DescriptionText>
+              {description && <DescriptionText numberOfLines={2}>{description}</DescriptionText>}
+              {isRoom && operatingHoursText && <DescriptionText>운영 시간 {operatingHoursText}</DescriptionText>}
               {/* Header 자체 gap(4px)에 2px를 더해서 room에서만 설명-운영시간 간격을 6px로 맞춘다 */}
               {isRoom && operatingHours && (
                 <RoomOperatingHoursSpacer>
@@ -224,6 +235,7 @@ export function FacilityInfoCard({
             )}
 
             <InfoList>
+              {operatingHoursText && <InfoRow><InfoLabelText>운영 시간</InfoLabelText><InfoValueText>{operatingHoursText}</InfoValueText></InfoRow>}
               {mainEntrance && (
                 <InfoRow>
                   <InfoLabelText>주 출입구</InfoLabelText>
@@ -299,6 +311,10 @@ function SubButton({
     <SubButtonContainer
       variant={variant}
       onPress={onPress}
+      disabled={!onPress}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !onPress }}
+      style={{ opacity: onPress ? 1 : 0.45 }}
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}
       pressed={isPressed}

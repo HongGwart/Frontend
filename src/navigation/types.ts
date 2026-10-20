@@ -1,10 +1,19 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
+import type { RouteView } from '@api/route/toRouteView';
+import type { IndoorRoomContext } from '@api/search/indoorRoomCandidates';
+
+export interface IndoorBuildingContext {
+  buildingCode: string;
+  buildingName: string;
+}
 
 /**
  * 마이페이지/즐겨찾기 목록에서 시설을 탭했을 때 map 탭으로 넘겨줄 시설 정보.
  * map 탭이 이 값을 받으면 해당 시설의 정보 바텀시트(FacilityInfoCard)를 열어준다.
  */
 export interface FocusFacilityParam {
+  nodeId?: number;
+  placeId?: string | null;
   id: string;
   buildingCode: string;
   buildingName: string;
@@ -25,6 +34,8 @@ export interface RouteLocationSelection {
   /** 서버 검색 결과에서 골랐으면 그 노드 id(GET /api/route의 출발/도착). 앱 더미 장소면 없다. */
   departureNodeId?: number;
   destinationNodeId?: number;
+  departurePlaceId?: string | null;
+  destinationPlaceId?: string | null;
 }
 
 // 하단 탭 4개. 길찾기는 탭이 아니라 루트 스택에 푸시되는 화면이다(RootStackParamList.Navigation) —
@@ -61,18 +72,35 @@ export type RootStackParamList = {
     buildingName: string;
     description: string;
     fromCardHeight?: number;
+    /** 길찾기에서 도면을 다시 열었을 때 반대쪽 장소와 기존 화면을 유지한다. */
+    routeSelection?: RouteLocationSelection;
+    returnToNavigation?: boolean;
   };
   // 길찾기 화면. 탭이 아니라 루트 스택에 푸시되는 화면이라, 네이티브 스와이프 백 제스처로
   // 뒤로 밀면 진짜로 살아있는 이전 화면(map 탭 등)이 실시간으로 비친다.
-  Navigation: { routeSelection?: RouteLocationSelection } | undefined;
+  Navigation: { routeSelection?: RouteLocationSelection; indoorBuilding?: IndoorBuildingContext } | undefined;
   // 길찾기 화면의 출발지/도착지 입력창을 누르면 뜨는 검색 화면. target으로 지금 고르는 중인
   // 입력창을 구분하고, 나머지 한쪽 값(departureLabel/destinationLabel)은 이미 골라둔 값을
   // 그대로 들고 있다가 결과와 함께 돌려보내기 위해 같이 받아온다.
-  RouteLocationSearch: { target: 'departure' | 'destination' } & RouteLocationSelection;
+  RouteLocationSearch: {
+    target: 'departure' | 'destination';
+    indoorRoom?: IndoorRoomContext;
+    indoorBuilding?: IndoorBuildingContext;
+    /** false는 도면에서 처음 길찾기를 시작한 경우. 후보 화면을 길찾기로 교체한다. */
+    returnToNavigation?: boolean;
+  } & RouteLocationSelection;
   // 길찾기 경로 보기의 "경로 안내 시작"을 누르면 뜨는 길 안내 화면. 출발/도착 노드가 있으면 서버 경로
   // (useRouteSearch 캐시)에서 routeId로 경로를 찾고, 없으면 더미/테스트 경로를 쓴다. 경로의 요약값과
   // destinationLabel은 도착했을 때 상단 카드("…에 도착했어요")에 쓴다.
-  RouteGuidance: { routeId: string; destinationLabel: string; fromNodeId?: number; toNodeId?: number };
+  RouteGuidance: {
+    routeId: string;
+    destinationLabel: string;
+    fromNodeId?: number;
+    toNodeId?: number;
+    fromPlaceId?: string | null;
+    toPlaceId?: string | null;
+    routeView?: RouteView;
+  };
 };
 
 // 편의시설 카테고리 그리드(FacilityScreen)의 카테고리 id. 여기서 export해서

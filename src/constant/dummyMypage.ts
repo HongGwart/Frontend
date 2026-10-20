@@ -18,6 +18,8 @@ export const DUMMY_DEFAULT_DEPARTURE = {
 };
 
 export interface FavoritePlace {
+  nodeId?: number;
+  placeId?: string | null;
   id: string;
   /** 편의시설명. 있으면 시설 카드, 없으면 건물 카드로 렌더된다. */
   name?: string;
@@ -87,6 +89,8 @@ export function favoritePlaceToFocusParam(place: FavoritePlace): FocusFacilityPa
     buildingName: place.buildingName,
     facilityName: place.name ?? `${place.buildingCode} ${place.buildingName}`,
     placeName: place.name,
+    nodeId: place.nodeId,
+    placeId: place.placeId,
   };
 }
 

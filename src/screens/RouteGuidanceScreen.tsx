@@ -47,6 +47,7 @@ import { useFloorGeoAnchors } from '@api/floorPlan/useFloorGeoAnchors';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
 import { animateValue } from '@utils/animateValue';
 import { useRouteSearch } from '@api/route/useRouteSearch';
+import { USE_MOCK_API } from '@api/config';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 import { getErrorMessage } from '@api/errors';
 import Header from '@components/layout/Header';
@@ -327,13 +328,20 @@ export default function RouteGuidanceScreen() {
   const { params } = useRoute<RouteProp<RootStackParamList, 'RouteGuidance'>>();
   const insets = useSafeAreaInsets();
   const isApiRoute = isApiRouteId(params.routeId);
-  const routeSearch = useRouteSearch({ fromNodeId: params.fromNodeId, toNodeId: params.toNodeId });
+  const routeSearch = useRouteSearch({
+    fromNodeId: params.fromNodeId, toNodeId: params.toNodeId,
+    fromPlaceId: params.fromPlaceId, toPlaceId: params.toPlaceId,
+  }, isApiRoute && !params.routeView);
   const findApiRoute = (): GuidanceRoute | null => {
     const view = routeSearch.routes.find(item => item.result.id === params.routeId);
     return view ? { route: view.result, routeMap: view.map } : null;
   };
   const [guidanceRoute, setGuidanceRoute] = useState<GuidanceRoute | null>(() =>
-    isApiRoute ? findApiRoute() : getLocalGuidanceRoute(params.routeId),
+    isApiRoute
+      ? params.routeView
+        ? { route: params.routeView.result, routeMap: params.routeView.map }
+        : findApiRoute()
+      : USE_MOCK_API ? getLocalGuidanceRoute(params.routeId) : null,
   );
   const apiRoute = guidanceRoute ? null : findApiRoute();
   useEffect(() => {
@@ -344,7 +352,9 @@ export default function RouteGuidanceScreen() {
 
   // 서버 경로를 기다리는 중이거나 못 불러왔을 때. 노드 id가 없으면 다시 불러올 수도 없다.
   const failed = !routeSearch.enabled || routeSearch.notFound || !!routeSearch.error || (!routeSearch.isLoading && !apiRoute);
-  const message = !failed
+  const message = routeSearch.samePlace
+    ? '출발지와 도착지가 같은 장소예요\n0m · 0초'
+    : !failed
     ? '경로를 불러오고 있어요'
     : routeSearch.error
       ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')

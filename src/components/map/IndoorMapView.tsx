@@ -185,8 +185,7 @@ export function IndoorMapView({
     (room: RoomShape | null) => {
       // 빈 공간을 탭하면 room이 null로 들어와서 무조건 선택 해제.
       // 이미 선택된 방을 다시 탭하면 토글 해제, 다른 방을 탭하면 그 방으로 교체.
-      // 같은 라벨(room.label ?? room.id)을 공유하는 방이 여러 개 있으면(하나의 강의실이
-      // 도면상 두 조각으로 나뉜 경우 등) 전부 같이 선택해서 한 번에 하이라이트한다.
+      // 같은 번호의 별실은 서로 다른 장소일 수 있다. 검증된 장소 ID가 같은 조각만 묶는다.
       const prev = selectedRoomIdsRef.current;
       const wasSelected = room && prev.includes(room.id);
       if (!room || wasSelected) {
@@ -194,9 +193,8 @@ export function IndoorMapView({
         setSelectedRoomIds([]);
         return;
       }
-      const targetLabel = room.label ?? room.id;
       const group = selectableRooms
-        .filter((r) => (r.label ?? r.id) === targetLabel)
+        .filter((r) => r.id === room.id || (!!room.placeId && r.placeId === room.placeId))
         .map((r) => r.id);
       onRoomSelectRef.current?.(room);
       setSelectedRoomIds(group);

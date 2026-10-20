@@ -27,6 +27,8 @@ export const favoriteFromCategoryMarker = (marker: DummyCategoryMarker): Favorit
 
 /** 겹친 마커 리스트 시트의 항목 */
 export const favoriteFromListItem = (item: FacilityListSheetItem): FavoriteInput => ({
+  nodeId: item.nodeId,
+  placeId: item.placeId,
   buildingCode: item.building,
   buildingName: item.place,
   name: item.room,
@@ -34,6 +36,8 @@ export const favoriteFromListItem = (item: FacilityListSheetItem): FavoriteInput
 
 /** 마이페이지/즐겨찾기 목록에서 지도로 넘어온 시설 */
 export const favoriteFromFocusParam = (facility: FocusFacilityParam): FavoriteInput => ({
+  nodeId: facility.nodeId,
+  placeId: facility.placeId,
   buildingCode: facility.buildingCode,
   buildingName: facility.buildingName,
   name: facility.placeName,

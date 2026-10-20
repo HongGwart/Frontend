@@ -21,13 +21,13 @@ export function useRouteButtonProps(onBeforeNavigate?: () => void) {
   const navigation = useNavigation();
 
   return useCallback(
-    (label: string, nodeId?: number) => {
+    (label: string, nodeId?: number, placeId?: string | null) => {
       const goToRoute = (target: 'departure' | 'destination') => {
         onBeforeNavigate?.();
         const routeSelection =
           target === 'departure'
-            ? { departureLabel: label, departureNodeId: nodeId }
-            : { destinationLabel: label, destinationNodeId: nodeId };
+            ? { departureLabel: label, departureNodeId: nodeId, departurePlaceId: placeId }
+            : { destinationLabel: label, destinationNodeId: nodeId, destinationPlaceId: placeId };
         navigation.dispatch(StackActions.push('Navigation', { routeSelection }));
       };
       return {

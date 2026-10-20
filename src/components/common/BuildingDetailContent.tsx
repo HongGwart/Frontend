@@ -16,6 +16,7 @@ import { getOperatingStatus } from '@utils/operatingHours';
 import { favoriteFromCategoryMarker } from '@constant/favoriteInputs';
 import { useFavorites } from '@hooks/useFavorites';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
+import { USE_MOCK_API } from '@api/config';
 
 // "2026-10-13" → "2026년 10월"
 const formatAsOf = (date: string) => `${date.slice(0, 4)}년 ${Number(date.slice(5, 7))}월`;
@@ -73,7 +74,7 @@ export function BuildingDetailBody({
     [buildingCode],
   );
   const facilities = useMemo(
-    () => DUMMY_CATEGORY_MARKERS.filter(marker => marker.buildingCode === buildingCode),
+    () => USE_MOCK_API ? DUMMY_CATEGORY_MARKERS.filter(marker => marker.buildingCode === buildingCode) : [],
     [buildingCode],
   );
   // 설명·사진·운영 시간(지금 시각 기준)·주 출입구(서버 장소 상세). 확인 안 된 항목은 그 줄이 빠진다.
@@ -122,6 +123,7 @@ export function BuildingDetailBody({
           )}
           {detail.description && <DescriptionText>{detail.description}</DescriptionText>}
           <InfoList>
+            {detail.operatingHoursText && <InfoRow><InfoLabelText>운영 시간</InfoLabelText><InfoValueText>{detail.operatingHoursText}</InfoValueText></InfoRow>}
             {detail.mainEntrance && (
               <InfoRow>
                 <InfoLabelText>주 출입구</InfoLabelText>

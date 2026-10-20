@@ -1,3 +1,4 @@
+import { USE_MOCK_API } from '@api/config';
 import BuildingIcon from '@assets/svgs/icons/building.svg';
 import type { StoredFavorite } from '@hooks/useFavorites';
 import { toPlaceKey } from '@utils/placeKey';
@@ -32,16 +33,18 @@ const PLACE_CATALOG = new Map<string, FavoritePlace>(
  * 쓰고, 없으면 카테고리 아이콘(건물이면 건물 아이콘)과 건물·시설 운영 시간으로 채운다. id는 장소 키다.
  */
 export function toFavoritePlace(favorite: StoredFavorite): FavoritePlace {
-  const known = PLACE_CATALOG.get(favorite.placeKey);
-  if (known) return { ...known, id: favorite.placeKey };
+  const known = USE_MOCK_API || (!favorite.nodeId && !favorite.placeId) ? PLACE_CATALOG.get(favorite.placeKey) : undefined;
+  if (known) return { ...known, id: favorite.placeKey, nodeId: favorite.nodeId, placeId: favorite.placeId };
   const icon = favorite.category ? SEARCH_ITEM_ICONS[favorite.category].icon : BuildingIcon;
   return {
     id: favorite.placeKey,
+    nodeId: favorite.nodeId,
+    placeId: favorite.placeId,
     name: favorite.name,
     buildingCode: favorite.buildingCode,
     buildingName: favorite.buildingName,
     icon,
     // 건물이면 건물 운영 시간, 시설이면 시설 운영 시간(둘 다 지금 시각으로 상태를 계산한다)
-    operatingHours: favorite.name ? getFacilityHours(favorite.buildingCode, favorite.name) : getBuildingDetail(favorite.buildingCode).hours,
+    operatingHours: USE_MOCK_API ? (favorite.name ? getFacilityHours(favorite.buildingCode, favorite.name) : getBuildingDetail(favorite.buildingCode).hours) : undefined,
   };
 }

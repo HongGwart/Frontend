@@ -31,7 +31,7 @@ export default function Header({ title, subtitle, onBackPress, transparent = fal
       )}
       {/* 제목(flex: 1)이 헤더 폭 전체를 덮어서, 버튼을 먼저 그리면 제목이 위에 겹쳐 터치를
           가로챈다. 버튼을 마지막에 그리고 z-index도 올려 항상 제목 위에서 눌리게 한다. */}
-      <BackButton onPress={onBackPress} hitSlop={8}>
+      <BackButton onPress={onBackPress} hitSlop={8} accessibilityRole="button" accessibilityLabel="뒤로">
         <ChevronLeftIcon width={24} height={24} />
       </BackButton>
     </Container>

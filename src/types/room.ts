@@ -6,8 +6,10 @@ export interface RoomShape {
    * 성별 아이콘이 박혀있어서 텍스트 라벨이 필요 없는 방은 빈 문자열("")로 명시해서 숨긴다.
    */
   label?: string;
-  /** placeIdMapping.ts로 나중에 채워지는 값. 매핑 전이면 null */
-  placeId: number | null;
+  /** 도형과의 대응을 검증한 서버 장소 UUID. 연결 전이면 null이며 경로 선택 시 검색 후보를 확인한다. */
+  placeId: string | null;
+  /** 검증된 서버 노드 매핑이 있을 때만 설정한다. SVG id를 재사용하지 않는다. */
+  nodeId?: number;
   /** 원본 SVG 좌표계 기준 4개 모서리 [x, y] */
   points: [number, number][];
   /** react-native-svg <Path d={...}>에 바로 넣을 수 있는 문자열 */

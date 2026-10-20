@@ -1,10 +1,11 @@
-/**
- * 장소 고유 키. 같은 장소라도 화면마다 더미 id가 달라서(지도 마커 "dong-C", 검색 결과 "s1", 즐겨찾기 "fav-1"),
- * 즐겨찾기/최근 검색어처럼 여러 화면이 같이 보는 로컬 저장 데이터는 이 키로 장소를 식별한다.
- * 건물 자체는 "C동", 건물 안 시설/호실은 "C동/816호"처럼 동 코드 + 세부 이름으로 만든다.
- * 실제 장소 API가 붙으면 서버의 장소 id로 바꾼다.
- */
-export function toPlaceKey(buildingCode: string, detail?: string): string {
+/** UUID와 물리 노드 식별자는 이름·도면 ID와 분리한다. 이름 키는 기존 저장값/목 데이터에만 사용한다. */
+export function toPlaceKey(
+  buildingCode: string,
+  detail?: string,
+  identity?: { placeId?: string | null; nodeId?: number | null },
+): string {
+  if (identity?.placeId) return `place:${identity.placeId}`;
+  if (identity?.nodeId != null) return `node:${identity.nodeId}`;
   const building = buildingCode.trim();
   const rest = detail?.trim();
   return rest ? `${building}/${rest}` : building;

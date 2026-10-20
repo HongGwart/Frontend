@@ -19,12 +19,26 @@ interface Props {
 export function GuidanceStepButtons({ onPrev, onNext, prevDisabled = false, nextDisabled = false }: Props) {
   return (
     <Container>
-      <ArrowButton side="left" onPress={onPrev} disabled={prevDisabled} hitSlop={4}>
+      <ArrowButton
+        side="left"
+        onPress={onPrev}
+        disabled={prevDisabled}
+        hitSlop={4}
+        accessibilityRole="button"
+        accessibilityLabel="이전 안내"
+      >
         <ArrowIconWrapper disabled={prevDisabled} style={{ transform: [{ rotate: '180deg' }] }}>
           <RightArrowIcon width={24} height={24} />
         </ArrowIconWrapper>
       </ArrowButton>
-      <ArrowButton side="right" onPress={onNext} disabled={nextDisabled} hitSlop={4}>
+      <ArrowButton
+        side="right"
+        onPress={onNext}
+        disabled={nextDisabled}
+        hitSlop={4}
+        accessibilityRole="button"
+        accessibilityLabel="다음 안내"
+      >
         <ArrowIconWrapper disabled={nextDisabled}>
           <RightArrowIcon width={24} height={24} />
         </ArrowIconWrapper>

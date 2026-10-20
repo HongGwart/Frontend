@@ -18,6 +18,7 @@ export interface FavoriteInput {
   longitude?: number;
   /** 서버 장소면 노드 id — 즐겨찾기를 길찾기 출발/도착으로 고를 때 실제 경로 탐색에 쓴다 */
   nodeId?: number;
+  placeId?: string | null;
 }
 
 /**
@@ -31,10 +32,10 @@ export interface StoredFavorite extends FavoriteInput {
 }
 
 /** 즐겨찾기 여부를 물을 때 넘기는 값 — 장소 키 문자열이나, 키를 만들 수 있는 동 코드 + 이름 */
-export type FavoriteTarget = string | Pick<FavoriteInput, 'buildingCode' | 'name'>;
+export type FavoriteTarget = string | Pick<FavoriteInput, 'buildingCode' | 'name' | 'nodeId' | 'placeId'>;
 
 export const favoriteKeyOf = (target: FavoriteTarget) =>
-  typeof target === 'string' ? target : toPlaceKey(target.buildingCode, target.name);
+  typeof target === 'string' ? target : toPlaceKey(target.buildingCode, target.name, target);
 
 interface FavoritesContextValue {
   /** 최근 추가 순 */
@@ -48,12 +49,18 @@ interface FavoritesContextValue {
   toggleFavorite: (input: FavoriteInput) => boolean;
 }
 
+function matchesFavorite(saved: StoredFavorite, target: FavoriteTarget) {
+  if (saved.placeKey === favoriteKeyOf(target)) return true;
+  return typeof target !== 'string' && (!saved.placeId || !target.placeId)
+    && saved.nodeId !== undefined && saved.nodeId === target.nodeId;
+}
+
 const FavoritesContext = createContext<FavoritesContextValue | null>(null);
 
 /**
  * 즐겨찾기를 앱 전역에서 하나로 들고 기기 로컬(AsyncStorage)에 저장한다. 지도·검색·마이페이지·길찾기가
  * 모두 이 상태를 보고 바꾸므로, 어디서 바꿔도 모든 화면에 같이 반영되고 앱을 다시 켜도 유지된다.
- * 장소는 placeKey(동 코드 + 시설/호실 이름)로 식별한다 — 화면마다 더미 id가 달라서.
+ * 서버 장소는 UUID, 미매핑 노드는 숫자 ID로 식별한다. 이름만 있는 기존 저장값은 그대로 보존한다.
  */
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const [favorites, setFavorites] = useState<StoredFavorite[]>([]);
@@ -64,7 +71,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
       // 불러오기 전에 바뀐 게 있으면(거의 없지만) 그쪽을 우선하고, 저장된 것 중 겹치지 않는 것만 뒤에 붙인다.
       setFavorites(prev => {
         const keys = new Set(prev.map(item => item.placeKey));
-        return [...prev, ...saved.filter(item => !keys.has(item.placeKey))];
+        return [...prev, ...saved.map(item => ({ ...item, placeKey: favoriteKeyOf(item) })).filter(item => !keys.has(item.placeKey))];
       });
       setHydrated(true);
     });
@@ -75,31 +82,28 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     if (hydrated) setJSON(STORAGE_KEYS.favorites, favorites);
   }, [favorites, hydrated]);
 
-  const favoriteKeys = useMemo(() => new Set(favorites.map(item => item.placeKey)), [favorites]);
-
-  const isFavorite = useCallback((target: FavoriteTarget) => favoriteKeys.has(favoriteKeyOf(target)), [favoriteKeys]);
+  const isFavorite = useCallback((target: FavoriteTarget) => favorites.some(item => matchesFavorite(item, target)), [favorites]);
 
   const addFavorite = useCallback((input: FavoriteInput) => {
     const placeKey = favoriteKeyOf(input);
     setFavorites(prev => [
       { ...input, placeKey, createdAt: new Date().toISOString() },
-      ...prev.filter(item => item.placeKey !== placeKey),
+      ...prev.filter(item => !matchesFavorite(item, input)),
     ]);
   }, []);
 
   const removeFavorite = useCallback((target: FavoriteTarget) => {
-    const placeKey = favoriteKeyOf(target);
-    setFavorites(prev => prev.filter(item => item.placeKey !== placeKey));
+    setFavorites(prev => prev.filter(item => !matchesFavorite(item, target)));
   }, []);
 
   const toggleFavorite = useCallback(
     (input: FavoriteInput) => {
-      const next = !favoriteKeys.has(favoriteKeyOf(input));
+      const next = !isFavorite(input);
       if (next) addFavorite(input);
       else removeFavorite(input);
       return next;
     },
-    [favoriteKeys, addFavorite, removeFavorite],
+    [isFavorite, addFavorite, removeFavorite],
   );
 
   const value = useMemo<FavoritesContextValue>(

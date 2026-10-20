@@ -26,6 +26,7 @@ interface IconSpec {
 // SearchListItem 왼쪽 아바타에 쓰는 카테고리별 아이콘 프리셋. 카테고리 칩(CATEGORY_CHIPS)과
 // 달리 "강의실"/"건물 자체"처럼 검색 결과에만 등장하는 항목도 포함한다.
 export const SEARCH_ITEM_ICONS = {
+  place: { icon: BuildingIcon, iconWidth: 15, iconHeight: 16, avatarVariant: 'default' },
   readingRoom: { icon: BookIcon, iconWidth: 14, iconHeight: 16, avatarVariant: 'default' },
   classroom: { icon: ClassroomIcon, iconWidth: 18, iconHeight: 20, avatarVariant: 'default' },
   building: { icon: BuildingIcon, iconWidth: 15, iconHeight: 16, avatarVariant: 'brand' },
@@ -44,6 +45,11 @@ export interface SearchResultItem {
   id: string;
   /** 서버 검색 결과면 노드 id(GET /api/nodes/{nodeId}, 길찾기 출발/도착에 쓴다). 앱 더미 항목엔 없다. */
   nodeId?: number;
+  placeId?: string | null;
+  placeKind?: string | null;
+  entranceCount?: number | null;
+  serverCategory?: string | null;
+  displayName?: string;
   building: string;
   place: string;
   /** 특정 호실 등 세부 정보. 건물/장소 자체가 검색 결과인 경우엔 비운다(예: "학생회관"). */

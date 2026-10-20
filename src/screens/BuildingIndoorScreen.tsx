@@ -13,10 +13,13 @@ import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { CollapsibleBottomSheet, CollapsibleBottomSheetRef } from '@components/common/CollapsibleBottomSheet';
 import { FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
+import { useNodeDetail } from '@api/node/useNodeDetail';
+import type { RoomShape } from '@appTypes/room';
+import { USE_MOCK_API } from '@api/config';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
 import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
 import { RootStackParamList } from '@navigation/types';
-import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
+import { toRoutePlaceLabel } from '@hooks/useRouteButtonProps';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 
 // 층 전환 시 슬라이드 이동 거리(px). 위층으로 가면 아래에서, 아래층으로 가면 위에서 들어온다.
@@ -54,13 +57,15 @@ export default function BuildingIndoorScreen() {
   );
   // 건물명은 넘겨받은 값(params)을 그대로 쓰지 않고 동 코드로 지금 데이터에서 다시 찾는다. params는 이 화면을
   // 연 순간의 복사본이라, 넘기는 쪽이 빈 이름을 넘겼거나 데이터가 바뀐 뒤면 헤더에 이름이 안 뜨거나 옛 이름이 뜬다.
-  const buildingName = marker?.buildingName || params.buildingName;
+  const buildingName = buildingDetail.name || marker?.buildingName || params.buildingName;
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태. 건물 카드는 건물 자체를, 호실 카드는 그 호실을 즐겨찾기한다.
   const { isFavorite, toggleFavorite } = useFavorites();
   const buildingFavorite: FavoriteInput = {
     buildingCode: params.buildingCode,
     buildingName,
     category: 'building',
+    nodeId: buildingDetail.nodeId,
+    placeId: buildingDetail.placeId,
     latitude: marker?.latitude,
     longitude: marker?.longitude,
   };
@@ -73,7 +78,16 @@ export default function BuildingIndoorScreen() {
   const floorAssets = useMemo(() => (floorId ? FLOOR_MAPS[floorId]() : null), [floorId]);
 
   // 탭한 강의실 라벨(예: "212"). 층을 바꾸면 이전 층의 선택은 의미가 없으니 비운다.
-  const [selectedRoomLabel, setSelectedRoomLabel] = useState<string | null>(null);
+  const [selectedRoom, setSelectedRoom] = useState<RoomShape | null>(null);
+  const selectedRoomLabel = selectedRoom ? selectedRoom.label ?? selectedRoom.id : null;
+  const roomDetail = useNodeDetail(selectedRoom?.nodeId, selectedRoom?.placeId);
+  const roomFavorite: FavoriteInput = {
+    ...buildingFavorite,
+    name: roomDetail?.displayName || (selectedRoomLabel ? `${selectedRoomLabel}호` : undefined),
+    category: 'classroom',
+    nodeId: selectedRoom?.nodeId,
+    placeId: roomDetail?.placeId ?? selectedRoom?.placeId,
+  };
 
   // 직전 층 번호를 기억해뒀다가, 층이 바뀔 때 위/아래 어느 방향에서 들어올지 정한다.
   const floorNum = floors.find(floor => floor.floorId === floorId)?.floorNum ?? 0;
@@ -131,12 +145,41 @@ export default function BuildingIndoorScreen() {
   const [mapAreaHeight, setMapAreaHeight] = useState(0);
 
   // 출발/도착을 누르면 길찾기 탭으로 가서 해당 입력창을 채운다(강의실을 골랐으면 호수까지).
-  const routeButtonProps = useRouteButtonProps();
   const placeLabel = toRoutePlaceLabel(
     params.buildingCode,
     buildingName,
     selectedRoomLabel && `${selectedRoomLabel}호`,
   );
+  const selectEndpoint = (target: 'departure' | 'destination', nodeId?: number, placeId?: string | null) => {
+    const indoorBuilding = { buildingCode: params.buildingCode, buildingName };
+    const routeSelection = {
+      ...params.routeSelection,
+      ...(target === 'departure'
+        ? { departureLabel: placeLabel, departureNodeId: nodeId, departurePlaceId: placeId }
+        : { destinationLabel: placeLabel, destinationNodeId: nodeId, destinationPlaceId: placeId }),
+    };
+    if (params.returnToNavigation) navigation.popTo('Navigation', { routeSelection, indoorBuilding });
+    else navigation.push('Navigation', { routeSelection, indoorBuilding });
+  };
+  const selectRoomEndpoint = (target: 'departure' | 'destination') => {
+    if (!selectedRoom || !floorId || !selectedRoomLabel) return;
+    const indoorBuilding = { buildingCode: params.buildingCode, buildingName };
+    if (!USE_MOCK_API && !selectedRoom.nodeId && !selectedRoom.placeId) {
+      navigation.push('RouteLocationSearch', {
+        ...params.routeSelection,
+        target,
+        indoorBuilding,
+        indoorRoom: {
+          buildingCode: params.buildingCode,
+          floor: floorId.slice(floorId.lastIndexOf('_') + 1),
+          roomLabel: selectedRoomLabel,
+        },
+        returnToNavigation: params.returnToNavigation ?? false,
+      });
+      return;
+    }
+    selectEndpoint(target, selectedRoom.nodeId, selectedRoom.placeId);
+  };
 
   return (
     <Container>
@@ -159,7 +202,7 @@ export default function BuildingIndoorScreen() {
                 renderBackground={layerSize => <floorAssets.Background {...layerSize} />}
                 renderForeground={layerSize => <floorAssets.Doors {...layerSize} />}
                 onRoomSelect={room => {
-                  setSelectedRoomLabel(room ? room.label ?? room.id : null);
+                  setSelectedRoom(room);
                   // 카드를 내려 둔 상태에서 강의실을 탭하면 카드를 부드럽게 올려 그 강의실 정보를 보여준다.
                   if (room) cardSheetRef.current?.expand();
                 }}
@@ -172,7 +215,7 @@ export default function BuildingIndoorScreen() {
                 onSelect={id => {
                   if (id === floorId) return;
                   setFloorId(id);
-                  setSelectedRoomLabel(null);
+                  setSelectedRoom(null);
                   // 층을 옮기면 새 층 평면도를 넓게 보도록 카드를 그래버만 남기고 접는다.
                   cardSheetRef.current?.collapse();
                 }}
@@ -215,14 +258,17 @@ export default function BuildingIndoorScreen() {
               buildingCode={params.buildingCode}
               buildingName={buildingName}
               roomNumber={`${selectedRoomLabel}호`}
-              description={params.description}
-              isFavorite={isFavorite({ buildingCode: params.buildingCode, name: `${selectedRoomLabel}호` })}
+              displayName={roomDetail?.displayName}
+              description={USE_MOCK_API ? params.description : roomDetail?.introduction ?? undefined}
+              isFavorite={isFavorite(roomFavorite)}
               onToggleFavorite={() =>
-                toggleFavorite({ ...buildingFavorite, name: `${selectedRoomLabel}호`, category: 'classroom' })
+                toggleFavorite(roomFavorite)
               }
-              {...routeButtonProps(placeLabel)}
+              onDeparturePress={() => selectRoomEndpoint('departure')}
+              onArrivalPress={() => selectRoomEndpoint('destination')}
               // 강의실에는 따로 운영 시간이 없어 그 건물의 운영 시간을 쓴다.
               operatingHours={buildingDetail.operatingHours}
+              operatingHoursText={roomDetail?.kind === 'ROOM' ? buildingDetail.operatingHoursText : roomDetail?.operatingHoursText ?? undefined}
             />
           ) : (
             <FacilityInfoCard
@@ -231,13 +277,15 @@ export default function BuildingIndoorScreen() {
               hideShadow
               buildingCode={params.buildingCode}
               buildingName={buildingName}
-              description={params.description}
+              description={buildingDetail.description}
               isFavorite={isFavorite(buildingFavorite)}
               onToggleFavorite={() => toggleFavorite(buildingFavorite)}
-              {...routeButtonProps(placeLabel)}
+              onDeparturePress={() => selectEndpoint('departure', buildingDetail.nodeId, buildingDetail.placeId)}
+              onArrivalPress={() => selectEndpoint('destination', buildingDetail.nodeId, buildingDetail.placeId)}
               images={buildingDetail.images}
               facilityCounts={buildingDetail.facilityCounts}
               mainEntrance={buildingDetail.mainEntrance}
+              operatingHoursText={buildingDetail.operatingHoursText}
               operatingHours={buildingDetail.operatingHours}
             />
           )}

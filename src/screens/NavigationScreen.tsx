@@ -34,6 +34,7 @@ import { CAMPUS_EXTENT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
 import { regionToFit } from '@utils/routePath';
 import { useRouteSearch } from '@api/route/useRouteSearch';
+import { USE_MOCK_API } from '@api/config';
 import { getErrorMessage } from '@api/errors';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 
@@ -59,6 +60,9 @@ export default function NavigationScreen() {
   // 서버 검색 결과에서 고른 출발/도착의 노드 id. 둘 다 있으면 실제 경로 탐색 API를 쓴다.
   const [departureNodeId, setDepartureNodeId] = useState<number | undefined>();
   const [destinationNodeId, setDestinationNodeId] = useState<number | undefined>();
+  const [departurePlaceId, setDeparturePlaceId] = useState<string | null>();
+  const [destinationPlaceId, setDestinationPlaceId] = useState<string | null>();
+  const [searchRevision, setSearchRevision] = useState(0);
   // 경로 옵션은 라디오처럼 한 번에 하나만 고를 수 있다. 같은 칩을 다시 누르면 선택 해제.
   const [selectedOption, setSelectedOption] = useState<RouteOptionKey | null>(null);
 
@@ -69,13 +73,17 @@ export default function NavigationScreen() {
   useEffect(() => {
     const selection = params?.routeSelection;
     if (!selection) return;
+    // 같은 출발/도착을 다시 선택해도 새 탐색으로 취급해 시간표 지표를 갱신한다.
+    setSearchRevision(value => value + 1);
     if (selection.departureLabel !== undefined) {
       setDeparture(selection.departureLabel);
       setDepartureNodeId(selection.departureNodeId);
+      setDeparturePlaceId(selection.departurePlaceId);
     }
     if (selection.destinationLabel !== undefined) {
       setDestination(selection.destinationLabel);
       setDestinationNodeId(selection.destinationNodeId);
+      setDestinationPlaceId(selection.destinationPlaceId);
     }
     navigation.setParams({ routeSelection: undefined });
   }, [params?.routeSelection, navigation]);
@@ -85,6 +93,8 @@ export default function NavigationScreen() {
     setDestination(departure);
     setDepartureNodeId(destinationNodeId);
     setDestinationNodeId(departureNodeId);
+    setDeparturePlaceId(destinationPlaceId);
+    setDestinationPlaceId(departurePlaceId);
   };
 
   const toggleOption = (key: RouteOptionKey) => {
@@ -94,11 +104,15 @@ export default function NavigationScreen() {
   // 출발/도착지가 둘 다 채워지면 빈 상태 대신 경로 목록을 보여준다.
   const hasRoute = departure.length > 0 && destination.length > 0;
   // 둘 다 서버 검색 결과로 골랐으면 서버 경로(GET /api/route)를 쓴다.
-  const routeSearch = useRouteSearch({ fromNodeId: departureNodeId, toNodeId: destinationNodeId });
+  const routeSearch = useRouteSearch({
+    fromNodeId: departureNodeId, toNodeId: destinationNodeId,
+    fromPlaceId: departurePlaceId, toPlaceId: destinationPlaceId,
+  }, true, searchRevision);
   // 서버 경로를 못 쓰면(앱 더미 장소를 골랐을 때) — 출발/도착이 실내 길찾기 테스트 쌍(R동 카페나무 → C동
   // 816호)이고 노드를 다 찍어뒀으면 그 경로 하나만, 아니면 더미 경로를 보여준다.
   const allRouteResults = useMemo(() => {
     if (routeSearch.enabled) return routeSearch.routes.map(view => view.result);
+    if (!USE_MOCK_API) return [];
     const testRoute = isTestRoutePair(departure, destination) ? buildTestRoute() : null;
     return testRoute ? [testRoute.result] : DUMMY_ROUTE_RESULTS;
   }, [routeSearch.enabled, routeSearch.routes, departure, destination]);
@@ -108,7 +122,11 @@ export default function NavigationScreen() {
     [allRouteResults, selectedOption],
   );
   // 경로 목록 대신 띄울 안내 — 찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
-  const routeStatusText = routeSearch.isLoading
+  const routeStatusText = routeSearch.samePlace
+    ? '출발지와 도착지가 같은 장소예요\n0m · 0초'
+    : !USE_MOCK_API && !routeSearch.enabled
+      ? '검색에서 출발지와 도착지를 다시 선택해 주세요'
+      : routeSearch.isLoading
     ? '경로를 찾고 있어요'
     : routeSearch.notFound
       ? '두 장소를 잇는 경로를 찾지 못했어요'
@@ -200,11 +218,15 @@ export default function NavigationScreen() {
               destinationLabel: destination,
               departureNodeId,
               destinationNodeId,
+              departurePlaceId,
+              destinationPlaceId,
+              indoorBuilding: params?.indoorBuilding,
             })
           }
           onClear={() => {
             setDeparture('');
             setDepartureNodeId(undefined);
+            setDeparturePlaceId(undefined);
           }}
           disabled={disabled}
           rightSlot={
@@ -215,6 +237,7 @@ export default function NavigationScreen() {
                   `${DUMMY_DEFAULT_DEPARTURE.buildingCode} ${DUMMY_DEFAULT_DEPARTURE.buildingName} ${DUMMY_DEFAULT_DEPARTURE.roomNumber}`,
                 );
                 setDepartureNodeId(undefined);
+                setDeparturePlaceId(undefined);
               }}
               hitSlop={8}
             >
@@ -233,11 +256,15 @@ export default function NavigationScreen() {
               destinationLabel: destination,
               departureNodeId,
               destinationNodeId,
+              departurePlaceId,
+              destinationPlaceId,
+              indoorBuilding: params?.indoorBuilding,
             })
           }
           onClear={() => {
             setDestination('');
             setDestinationNodeId(undefined);
+            setDestinationPlaceId(undefined);
           }}
           disabled={disabled}
         />
@@ -381,6 +408,9 @@ export default function NavigationScreen() {
                     destinationLabel: destination,
                     fromNodeId: departureNodeId,
                     toNodeId: destinationNodeId,
+                    fromPlaceId: departurePlaceId,
+                    toPlaceId: destinationPlaceId,
+                    routeView: routeSearch.routes.find(view => view.result.id === selectedRoute.id),
                   })
                 }
               />
@@ -433,7 +463,7 @@ export default function NavigationScreen() {
           </ScrollView>
           {hasElevatorWarning && (
             <ToastWrapper bottomInset={insets.bottom}>
-              <Toast text={DUMMY_ELEVATOR_WARNING_MESSAGE} variant="warning" />
+              <Toast text={USE_MOCK_API ? DUMMY_ELEVATOR_WARNING_MESSAGE : '시간표상 혼잡 시간대에 엘리베이터를 이용해 대기가 생길 수 있어요.'} variant="warning" />
             </ToastWrapper>
           )}
         </ResultsArea>

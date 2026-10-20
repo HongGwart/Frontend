@@ -15,6 +15,8 @@ import { PhotoSource } from '@appTypes/photo';
 const MAX_HEIGHT = Dimensions.get('window').height * 0.7;
 
 export interface FacilityListSheetItem {
+  nodeId?: number;
+  placeId?: string | null;
   id: string;
   icon: React.FC<SvgProps>;
   iconWidth?: number;

@@ -42,10 +42,14 @@ import {
   favoriteFromListItem,
 } from '@constant/favoriteInputs';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
+import { USE_MOCK_API } from '@api/config';
+import { usePlaceInfos } from '@api/generated/honggwart';
+import { useNodeDetail } from '@api/node/useNodeDetail';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
 import { useOperatingStatus } from '@hooks/useOperatingStatus';
 import { getFacilityHours } from '@constant/facilityHours';
 import { FocusFacilityParam, MainTabParamList, RootStackParamList } from '@navigation/types';
+import { SEARCH_ITEM_ICONS } from '@constant/dummySearchData';
 
 interface Props {
   onSearchPress?: () => void;
@@ -74,7 +78,7 @@ type SelectedFacility =
 // 그 동 안의 시설(카테고리 마커) 중 일부만 즐겨찾기됐을 수도 있어서 둘을 같이 들고 있는다.
 interface FavoriteMapEntry {
   dongMarker: DummyMapMarker;
-  facilityItems: DummyCategoryMarker[];
+  facilityItems: FacilityListSheetItem[];
 }
 
 const TOAST_DURATION_MS = 2000;
@@ -97,6 +101,15 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
   // 건물 카드 정보(설명·사진·운영 시간·주 출입구) — 확인된 건물 정보 + 서버 장소 상세의 출입구.
   const dongDetail = useBuildingDetail(selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined);
+  const selectedIdentity = selectedFacility?.type === 'external' ? selectedFacility.facility
+    : selectedFacility?.type === 'item' ? selectedFacility.item : undefined;
+  const selectedDetail = useNodeDetail(selectedIdentity?.nodeId, selectedIdentity?.placeId);
+  const listNodeIds = selectedFacility?.type === 'list'
+    ? [...new Set(selectedFacility.items.flatMap(item => item.nodeId === undefined ? [] : [item.nodeId]))].slice(0, 100)
+    : [];
+  const { data: listPlaceInfos } = usePlaceInfos({ nodeIds: listNodeIds }, {
+    query: { enabled: !USE_MOCK_API && listNodeIds.length > 0, staleTime: 60_000, meta: { silent: true } },
+  });
   // 시설 카드(카테고리 마커·목록·다른 화면에서 넘어온 시설)의 운영 상태 — 시설 운영 시간을 지금 시각으로 계산.
   const facilityStatus = useOperatingStatus(
     selectedFacility?.type === 'category'
@@ -172,7 +185,13 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
 
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(FavoritesProvider). 마커/리스트 항목은 favoriteFrom*로
   // 저장 형태로 바꿔서 묻는다 — 같은 장소면 검색/마이페이지/길찾기와 같은 장소 키가 나온다.
-  const { isFavorite, toggleFavorite: toggleFavoritePlace } = useFavorites();
+  const { favorites, isFavorite, toggleFavorite: toggleFavoritePlace } = useFavorites();
+  const favoriteForDong = useCallback((marker: DummyMapMarker): FavoriteInput => {
+    const existing = favorites.find(item => item.category === 'building' && item.buildingCode === marker.label);
+    if (existing) return existing;
+    const active = selectedFacility?.type === 'dong' && selectedFacility.marker.id === marker.id;
+    return { ...favoriteFromDongMarker(marker), nodeId: active ? dongDetail.nodeId : undefined, placeId: active ? dongDetail.placeId : undefined };
+  }, [favorites, selectedFacility, dongDetail.nodeId, dongDetail.placeId]);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -208,28 +227,12 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     }
   }, [openFacilityCard]);
 
-  // 카테고리 마커를 리스트 시트 항목 형태로 바꾼다. "즐겨찾기" 칩에서 같은 동에 즐겨찾기가
-  // 여러 개 묶였을 때, 그 묶음을 FacilityListSheet에 그대로 넘기기 위해 쓴다.
-  const toFacilityListItem = useCallback(
-    (marker: DummyCategoryMarker): FacilityListSheetItem => ({
-      id: marker.id,
-      ...CATEGORY_MARKER_ICONS[marker.category],
-      building: marker.buildingCode,
-      place: marker.buildingName,
-      room: marker.room,
-      description: marker.description,
-      isFavorite: isFavorite(favoriteFromCategoryMarker(marker)),
-      images: marker.images,
-    }),
-    [isFavorite],
-  );
-
   const openFavoriteClusterSheet = useCallback(
-    (group: DummyCategoryMarker[], markerId: string) => {
+    (group: FacilityListSheetItem[], markerId: string) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      openFacilityCard(markerId, { type: 'list', items: group.map(toFacilityListItem), markerId });
+      openFacilityCard(markerId, { type: 'list', items: group, markerId });
     },
-    [toFacilityListItem, openFacilityCard],
+    [openFacilityCard],
   );
 
   const openFavoriteDongSheet = useCallback((entry: FavoriteMapEntry) => {
@@ -344,23 +347,33 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
 
     const entryByLabel = new Map<string, FavoriteMapEntry>();
     DUMMY_MAP_MARKERS.forEach(dongMarker => {
-      if (isFavorite(favoriteFromDongMarker(dongMarker))) {
+      if (isFavorite(favoriteForDong(dongMarker))) {
         entryByLabel.set(dongMarker.label ?? dongMarker.id, { dongMarker, facilityItems: [] });
       }
     });
-    DUMMY_CATEGORY_MARKERS.forEach(marker => {
-      if (!isFavorite(favoriteFromCategoryMarker(marker))) return;
-      let entry = entryByLabel.get(marker.buildingCode);
+    favorites.forEach(favorite => {
+      if (favorite.category === 'building' && !favorite.name) return;
+      let entry = entryByLabel.get(favorite.buildingCode);
       if (!entry) {
-        const dongMarker = DUMMY_MAP_MARKERS.find(dong => dong.label === marker.buildingCode);
-        if (!dongMarker) return; // 매칭되는 동 마커가 없으면(더미 데이터 누락 등) 표시할 자리가 없어 건너뜀
+        const dongMarker = DUMMY_MAP_MARKERS.find(dong => dong.label === favorite.buildingCode);
+        if (!dongMarker) return;
         entry = { dongMarker, facilityItems: [] };
-        entryByLabel.set(marker.buildingCode, entry);
+        entryByLabel.set(favorite.buildingCode, entry);
       }
-      entry.facilityItems.push(marker);
+      entry.facilityItems.push({
+        id: favorite.placeKey,
+        nodeId: favorite.nodeId,
+        placeId: favorite.placeId,
+        ...SEARCH_ITEM_ICONS[favorite.category ?? 'place'],
+        building: favorite.buildingCode,
+        place: favorite.buildingName,
+        room: favorite.name,
+        description: '',
+        isFavorite: true,
+      });
     });
     return Array.from(entryByLabel.values());
-  }, [selectedKey, isFavorite]);
+  }, [selectedKey, isFavorite, favoriteForDong, favorites]);
 
   // 동 마커. 네임택(R동, T동 …)은 지금 카드가 열려 있는(포커싱된) 마커에만 붙이고 나머지는 핀만 그린다 —
   // 네임택이 전부 떠 있으면 서로 겹치고 지도를 가려서. 포커싱이 바뀌면 그 마커만 다시 그려진다.
@@ -371,7 +384,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         latitude: marker.latitude,
         longitude: marker.longitude,
         label: marker.label,
-        favorite: isFavorite(favoriteFromDongMarker(marker)),
+        favorite: isFavorite(favoriteForDong(marker)),
         focused: selectedMarkerId === marker.id,
         scale: MAP_MARKER_SCALE,
         onPress: () => openDongMarkerSheet(marker),
@@ -381,14 +394,14 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         latitude: entry.dongMarker.latitude,
         longitude: entry.dongMarker.longitude,
         label: entry.dongMarker.label,
-        favorite: isFavorite(favoriteFromDongMarker(entry.dongMarker)),
+        favorite: isFavorite(favoriteForDong(entry.dongMarker)),
         count: entry.facilityItems.length || undefined,
         focused: selectedMarkerId === entry.dongMarker.id,
         scale: MAP_MARKER_SCALE,
         onPress: () => openFavoriteDongSheet(entry),
       })),
     ],
-    [dongMarkers, favoriteEntries, isFavorite, selectedMarkerId, openDongMarkerSheet, openFavoriteDongSheet],
+    [dongMarkers, favoriteEntries, isFavorite, favoriteForDong, selectedMarkerId, openDongMarkerSheet, openFavoriteDongSheet],
   );
 
   // 마이페이지/즐겨찾기 목록에서 시설을 탭하고 넘어오면, 그 시설 정보 바텀시트를 연다.
@@ -534,23 +547,26 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               buildingCode={selectedFacility.marker.label ?? ''}
               buildingName={selectedFacility.marker.buildingName}
               description={dongDetail.description}
-              isFavorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
+              isFavorite={isFavorite(favoriteForDong(selectedFacility.marker))}
               onToggleFavorite={() =>
-                toggleFavorite(favoriteFromDongMarker(selectedFacility.marker), selectedFacility.marker.buildingName)
+                toggleFavorite(favoriteForDong(selectedFacility.marker), selectedFacility.marker.buildingName)
               }
               images={dongDetail.images}
               {...routeButtonProps(
                 toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
+                dongDetail.nodeId,
+                dongDetail.placeId,
               )}
               facilityCounts={dongDetail.facilityCounts}
               mainEntrance={dongDetail.mainEntrance}
               operatingHours={dongDetail.operatingHours}
+              operatingHoursText={dongDetail.operatingHoursText}
               onViewInsidePress={() => {
                 closeCardWhenCovered();
                 onOpenBuildingIndoor?.({
                   buildingCode: selectedFacility.marker.label ?? '',
                   buildingName: selectedFacility.marker.buildingName,
-                  description: selectedFacility.marker.description,
+                  description: dongDetail.description ?? '',
                   fromCardHeight: cardHeight,
                 });
               }}
@@ -573,7 +589,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   selectedFacility.marker.room,
                 ),
               )}
-              operatingHours={facilityStatus}
+              operatingHours={USE_MOCK_API ? facilityStatus : undefined}
               onViewInsidePress={() =>
                 openBuildingIndoorOf(selectedFacility.marker.buildingCode, selectedFacility.marker.buildingName)
               }
@@ -582,6 +598,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
             <FacilityListSheet
               items={selectedFacility.items.map(item => ({
                 ...item,
+                description: item.nodeId === undefined ? item.description
+                  : listPlaceInfos?.missingNodeIds?.includes(item.nodeId) ? '장소 정보를 찾을 수 없어요'
+                  : listPlaceInfos?.items?.find(info => info.nodeId === item.nodeId)?.introduction ?? '',
                 isFavorite: isFavorite(favoriteFromListItem(item)),
               }))}
               onSelectItem={item =>
@@ -593,9 +612,12 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
           ) : selectedFacility.type === 'external' ? (
             <FacilityInfoCard
               variant="facility"
-              buildingCode={selectedFacility.facility.buildingCode}
-              buildingName={selectedFacility.facility.buildingName}
-              facilityName={selectedFacility.facility.facilityName}
+              buildingCode={selectedDetail?.buildingCode ?? selectedFacility.facility.buildingCode}
+              buildingName={selectedDetail?.buildingName ?? selectedFacility.facility.buildingName}
+              facilityName={selectedDetail?.displayName || selectedFacility.facility.facilityName}
+              description={selectedDetail?.introduction ?? undefined}
+              locationDetail={selectedDetail?.floorText}
+              operatingHoursText={selectedDetail?.operatingHoursText ?? undefined}
               isFavorite={isFavorite(favoriteFromFocusParam(selectedFacility.facility))}
               onToggleFavorite={() =>
                 toggleFavorite(
@@ -603,15 +625,17 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   selectedFacility.facility.facilityName,
                 )
               }
-              images={DUMMY_FACILITY_IMAGES}
+              images={USE_MOCK_API ? DUMMY_FACILITY_IMAGES : undefined}
               {...routeButtonProps(
                 toRoutePlaceLabel(
                   selectedFacility.facility.buildingCode,
                   selectedFacility.facility.buildingName,
                   selectedFacility.facility.facilityName,
                 ),
+                selectedFacility.facility.nodeId,
+                selectedDetail?.placeId ?? selectedFacility.facility.placeId,
               )}
-              operatingHours={facilityStatus}
+              operatingHours={USE_MOCK_API ? facilityStatus : undefined}
               onViewInsidePress={() =>
                 openBuildingIndoorOf(selectedFacility.facility.buildingCode, selectedFacility.facility.buildingName)
               }
@@ -621,7 +645,10 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               variant="facility"
               buildingCode={selectedFacility.item.building}
               buildingName={selectedFacility.item.place}
-              facilityName={selectedFacility.item.room ?? selectedFacility.item.place}
+              facilityName={selectedDetail?.displayName || selectedFacility.item.room || selectedFacility.item.place}
+              description={selectedDetail?.introduction ?? undefined}
+              locationDetail={selectedDetail?.floorText}
+              operatingHoursText={selectedDetail?.operatingHoursText ?? undefined}
               isFavorite={isFavorite(favoriteFromListItem(selectedFacility.item))}
               onToggleFavorite={() =>
                 toggleFavorite(
@@ -632,8 +659,10 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               images={selectedFacility.item.images}
               {...routeButtonProps(
                 toRoutePlaceLabel(selectedFacility.item.building, selectedFacility.item.place, selectedFacility.item.room),
+                selectedFacility.item.nodeId,
+                selectedDetail?.placeId ?? selectedFacility.item.placeId,
               )}
-              operatingHours={facilityStatus}
+              operatingHours={USE_MOCK_API ? facilityStatus : undefined}
               onViewInsidePress={() => openBuildingIndoorOf(selectedFacility.item.building, selectedFacility.item.place)}
             />
           )}

@@ -7,7 +7,7 @@ import { toPlaceKey } from '@utils/placeKey';
 // 최근 검색어는 이 개수까지만 남기고, 넘치면 오래된 것부터 버린다.
 const MAX_RECENT_SEARCHES = 20;
 
-const keyOf = (item: SearchResultItem) => toPlaceKey(item.building, item.room);
+const keyOf = (item: SearchResultItem) => toPlaceKey(item.building, item.room, item);
 
 /** 같은 장소는 하나만(앞쪽 = 더 최근 것을 남김) 두고 최대 개수로 자른다. */
 function dedupe(items: RecentSearchItem[]) {

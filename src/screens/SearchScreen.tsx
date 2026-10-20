@@ -12,7 +12,7 @@ import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { CAMPUS_EXTENT, MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
-import { findRoomFloor } from '@constant/floorMaps';
+import { findRoomFloor, FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
 import { useFloorGeoAnchors } from '@api/floorPlan/useFloorGeoAnchors';
 import { createFloorToGeo, getContentBounds } from '@utils/floorGeoTransform';
@@ -26,10 +26,12 @@ import {
   DismissibleBottomSheetRef,
 } from '@components/common/DismissibleBottomSheet';
 import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
+import Header from '@components/layout/Header';
 import NavigationBar from '@components/layout/NavigationBar';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { useVoiceSearch } from '@hooks/useVoiceSearch';
+import { USE_MOCK_API } from '@api/config';
 import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
 import { useNodeDetail } from '@api/node/useNodeDetail';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
@@ -107,12 +109,12 @@ export default function SearchScreen() {
     addRecentSearch(item);
     setSelectedItem(item);
     const facility = findFacilityForSearchItem(item);
-    if (facility) setSelectedFacility(facility);
+    setSelectedFacility(facility);
   };
 
   const trimmedValue = value.trim();
-  // 서버 검색(자동완성 API) + 아직 서버에 없는 앱 더미 장소. 실패하면 더미 결과로 대신한다.
-  const { results: searchResults } = useSearchSuggestions(value);
+  // 라이브 검색에는 서버 결과만 사용한다.
+  const { results: searchResults, isLoading: isSearchLoading, isError: isSearchError } = useSearchSuggestions(value);
 
   // 검색어가 없으면 최근 검색어를, 있으면 검색 결과를 보여준다.
   const isSearching = trimmedValue.length > 0;
@@ -124,7 +126,7 @@ export default function SearchScreen() {
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
   // 카드를 연 검색 결과. 서버 장소(nodeId)면 장소 상세(층·호실·출입구)를 불러와 카드에 채운다.
   const [selectedItem, setSelectedItem] = useState<SearchResultItem | null>(null);
-  const nodeDetail = useNodeDetail(selectedItem?.nodeId);
+  const nodeDetail = useNodeDetail(selectedItem?.nodeId, selectedItem?.placeId);
   const closeFacilityCard = useCallback(() => {
     setSelectedFacility(null);
     setSelectedItem(null);
@@ -132,7 +134,7 @@ export default function SearchScreen() {
   // "R5 강의실 끝 여자화장실"처럼 이름에 동 코드가 없는 서버 장소는 검색 결과만으로 건물을 몰라서 카드를 못
   // 띄운다. 장소 상세의 소속 건물(parent)이 오면 그 건물 마커 위치에 카드를 띄운다.
   useEffect(() => {
-    if (selectedFacility || !selectedItem?.nodeId || !nodeDetail?.buildingCode) return;
+    if (selectedFacility || !selectedItem || !nodeDetail?.buildingCode) return;
     const marker = DUMMY_MAP_MARKERS.find(m => m.label === nodeDetail.buildingCode);
     if (marker) setSelectedFacility({ type: 'dong', marker });
   }, [selectedFacility, selectedItem, nodeDetail]);
@@ -157,13 +159,26 @@ export default function SearchScreen() {
       : undefined,
   );
 
-  // 호실을 골랐으면 그 호실이 있는 층 평면도를 지도에 깔고 호실을 칠한다. 층은 서버 장소 상세에 있으면 그 층을
-  // 먼저 보고, 없으면(앱 더미 장소) 건물의 평면도들에서 같은 번호의 방을 찾는다.
+  // 서버 장소는 도형의 검증된 식별자 매핑만 사용한다. 같은 호수의 분리실을 이름으로 합치지 않는다.
   const searchedRoom = useMemo(() => {
     if (!selectedItem || selectedItem.category === 'building' || nodeDetail?.isBuilding) return null;
     const buildingCode = nodeDetail?.buildingCode ?? selectedItem.building;
     const roomNumber = nodeDetail?.roomNumber ?? selectedItem.room;
-    if (!buildingCode || !roomNumber) return null;
+    if (!buildingCode) return null;
+    if (!USE_MOCK_API) {
+      const placeId = nodeDetail?.placeId ?? selectedItem.placeId;
+      const floorIds = nodeDetail?.floorId ? [nodeDetail.floorId] : getBuildingFloors(buildingCode).map(floor => floor.floorId);
+      for (const floorId of floorIds) {
+        const data = FLOOR_MAPS[floorId]?.().data;
+        if (!data) continue;
+        const rooms = data.rooms.filter(room => placeId
+          ? room.placeId === placeId
+          : selectedItem.nodeId !== undefined && room.nodeId === selectedItem.nodeId);
+        if (rooms.length) return { floorId, data, rooms };
+      }
+      return null;
+    }
+    if (!roomNumber) return null;
     return findRoomFloor(buildingCode, roomNumber, nodeDetail?.floorId);
   }, [selectedItem, nodeDetail]);
   const searchedRoomAnchors = useFloorGeoAnchors(searchedRoom?.floorId);
@@ -223,33 +238,37 @@ export default function SearchScreen() {
   // 서버 검색으로 고른 호실/시설 카드. 호실 번호가 있으면 강의실 카드(room), 화장실처럼 번호가 없으면
   // 시설 카드(facility)로 보여주고, 위치(층)는 장소 상세에서 채운다. 지도 위치·건물 정보는 소속 동 마커 것을 쓴다.
   const renderPlaceCard = (marker: DummyMapMarker, item: SearchResultItem) => {
-    const buildingCode = marker.label ?? '';
-    const roomNumber = item.room ?? nodeDetail?.roomNumber;
-    const name = roomNumber ?? nodeDetail?.displayName ?? item.place;
+    const buildingCode = nodeDetail?.buildingCode ?? marker.label ?? '';
+    const buildingName = nodeDetail?.buildingName ?? marker.buildingName;
+    const roomNumber = nodeDetail?.roomNumber ?? item.room;
+    const name = nodeDetail?.displayName || item.displayName || roomNumber || item.place;
     const favorite = {
       buildingCode,
-      buildingName: marker.buildingName,
+      buildingName,
       name,
       category: item.category,
       latitude: marker.latitude,
       longitude: marker.longitude,
       nodeId: item.nodeId,
+      placeId: nodeDetail?.placeId ?? item.placeId,
     };
     const common = {
       buildingCode,
-      buildingName: marker.buildingName,
+      buildingName,
+      displayName: nodeDetail?.displayName,
       isFavorite: isFavorite(favorite),
       onToggleFavorite: () => toggleFavorite(favorite),
-      ...routeButtonProps(toRoutePlaceLabel(buildingCode, marker.buildingName, name), item.nodeId),
+      ...(nodeDetail?.status === 'ARCHIVED' ? {} : routeButtonProps(name, item.nodeId, nodeDetail?.placeId ?? item.placeId)),
       // 호실·시설에는 따로 운영 시간이 없어 그 건물의 운영 시간을 쓴다.
-      operatingHours: dongDetail.operatingHours,
+      operatingHours: USE_MOCK_API ? dongDetail.operatingHours : undefined,
+      operatingHoursText: nodeDetail?.kind === 'ROOM' ? dongDetail.operatingHoursText : nodeDetail?.operatingHoursText ?? undefined,
     };
-    if (roomNumber) {
+    if (nodeDetail?.kind === 'ROOM' || (USE_MOCK_API && roomNumber)) {
       return (
         <FacilityInfoCard
           variant="room"
           roomNumber={roomNumber}
-          description={nodeDetail?.floorText ?? marker.description}
+          description={USE_MOCK_API ? marker.description : nodeDetail?.introduction ?? undefined}
           {...common}
         />
       );
@@ -259,7 +278,8 @@ export default function SearchScreen() {
         variant="facility"
         facilityName={name}
         locationDetail={nodeDetail?.floorText}
-        images={marker.images}
+        description={nodeDetail?.introduction ?? undefined}
+        images={USE_MOCK_API ? marker.images : undefined}
         {...common}
         onViewInsidePress={() => {
           closeCardWhenCovered();
@@ -273,6 +293,28 @@ export default function SearchScreen() {
       />
     );
   };
+
+  // 소속 건물 또는 표시 좌표가 미확정인 서버 장소도 상세·길찾기를 사용할 수 있다.
+  if (selectedItem && !selectedFacility) {
+    const favorite = {
+      buildingCode: nodeDetail?.buildingCode ?? '',
+      buildingName: nodeDetail?.buildingName ?? '',
+      name: nodeDetail?.displayName || selectedItem.place,
+      nodeId: selectedItem.nodeId,
+      placeId: nodeDetail?.placeId ?? selectedItem.placeId,
+      category: selectedItem.category,
+    };
+    return (
+      <SafeAreaView style={styles.container}>
+        <Header title="장소 정보" onBackPress={closeFacilityCard} />
+        <FacilityInfoCard variant="facility" buildingCode={favorite.buildingCode} buildingName={favorite.buildingName}
+          facilityName={favorite.name} locationDetail={nodeDetail?.floorText}
+          description={nodeDetail?.introduction ?? undefined} operatingHoursText={nodeDetail?.operatingHoursText ?? undefined}
+          isFavorite={isFavorite(favorite)} onToggleFavorite={() => toggleFavorite(favorite)} hideCta
+          {...(nodeDetail?.status === 'ARCHIVED' ? {} : routeButtonProps(favorite.name, favorite.nodeId, favorite.placeId))} />
+      </SafeAreaView>
+    );
+  }
 
   if (selectedFacility) {
     // MapScreen과 동일하게, 지도는 상태바 아래까지 풀블리드로 채우고 검색창/칩만
@@ -311,7 +353,7 @@ export default function SearchScreen() {
               longitude={selectedFacility.marker.longitude}
               label={selectedFacility.marker.label}
               active
-              favorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
+              favorite={isFavorite({ ...favoriteFromDongMarker(selectedFacility.marker), nodeId: buildingNodeId ?? dongDetail.nodeId, placeId: selectedItem?.placeId ?? dongDetail.placeId })}
             />
           )}
           {selectedFacility.type === 'category' && (
@@ -371,19 +413,21 @@ export default function SearchScreen() {
                 buildingCode={selectedFacility.marker.label ?? ''}
                 buildingName={selectedFacility.marker.buildingName}
                 description={dongDetail.description}
-                isFavorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
+                isFavorite={isFavorite({ ...favoriteFromDongMarker(selectedFacility.marker), nodeId: buildingNodeId ?? dongDetail.nodeId, placeId: selectedItem?.placeId ?? dongDetail.placeId })}
                 onToggleFavorite={() =>
-                  toggleFavorite({ ...favoriteFromDongMarker(selectedFacility.marker), nodeId: buildingNodeId })
+                  toggleFavorite({ ...favoriteFromDongMarker(selectedFacility.marker), nodeId: buildingNodeId ?? dongDetail.nodeId, placeId: selectedItem?.placeId ?? dongDetail.placeId })
                 }
                 images={dongDetail.images}
                 {...routeButtonProps(
                   toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
-                  buildingNodeId,
+                  buildingNodeId ?? dongDetail.nodeId,
+                  selectedItem?.placeId ?? dongDetail.placeId,
                 )}
                 facilityCounts={dongDetail.facilityCounts}
                 // 서버 건물이면 장소 상세의 출입구 목록을, 아니면(또는 불러오기 전) 건물 코드로 찾은 값을 보여준다.
                 mainEntrance={(buildingNodeId !== undefined && nodeDetail?.mainEntrance) || dongDetail.mainEntrance}
                 operatingHours={dongDetail.operatingHours}
+                operatingHoursText={dongDetail.operatingHoursText}
                 onViewInsidePress={() => {
                   closeCardWhenCovered();
                   navigation.navigate('BuildingIndoor', {
@@ -410,7 +454,7 @@ export default function SearchScreen() {
                     selectedFacility.marker.room,
                   ),
                 )}
-                operatingHours={facilityStatus}
+                operatingHours={USE_MOCK_API ? facilityStatus : undefined}
                 // 시설이 있는 건물(동)의 내부 지도로 간다(지도 화면의 시설 카드와 같음).
                 onViewInsidePress={() => {
                   const { buildingCode, buildingName } = selectedFacility.marker;
@@ -473,7 +517,7 @@ export default function SearchScreen() {
                       building={item.building}
                       place={item.place}
                       room={item.room}
-                      isFavorite={isFavorite({ buildingCode: item.building, name: item.room })}
+                      isFavorite={isFavorite({ buildingCode: item.building, name: item.room, nodeId: item.nodeId, placeId: item.placeId })}
                       onPress={() => openSearchItem(item)}
                       showDivider={index !== searchResults.length - 1}
                       {...SEARCH_ITEM_ICONS[item.category]}
@@ -484,8 +528,8 @@ export default function SearchScreen() {
                     <EmptyIconCircle>
                       <SearchIcon width={28} height={28} color={theme.semantic.text.tertiary} />
                     </EmptyIconCircle>
-                    <EmptyTitleText>검색 결과가 없어요</EmptyTitleText>
-                    <EmptySubtitleText>다른 검색어로 다시 시도해 보세요</EmptySubtitleText>
+                    <EmptyTitleText>{isSearchLoading ? '검색 중이에요' : isSearchError ? '검색 결과를 불러오지 못했어요' : '검색 결과가 없어요'}</EmptyTitleText>
+                    <EmptySubtitleText>{isSearchLoading ? '잠시만 기다려 주세요' : '다른 검색어로 다시 시도해 보세요'}</EmptySubtitleText>
                   </EmptyResultView>
                 )
               ) : (
@@ -495,7 +539,7 @@ export default function SearchScreen() {
                     building={item.building}
                     place={item.place}
                     room={item.room}
-                    isFavorite={isFavorite({ buildingCode: item.building, name: item.room })}
+                    isFavorite={isFavorite({ buildingCode: item.building, name: item.room, nodeId: item.nodeId, placeId: item.placeId })}
                     history
                     date={formatSearchedDate(item.searchedAt)}
                     showDivider={index !== recentSearches.length - 1}
