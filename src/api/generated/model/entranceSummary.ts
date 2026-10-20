@@ -10,4 +10,14 @@ export interface EntranceSummary {
   nodeId?: number;
   name?: string;
   isPrimary?: boolean;
+  /** @nullable */
+  role?: string | null;
+  /** @nullable */
+  lat?: number | null;
+  /** @nullable */
+  lng?: number | null;
+  /** @nullable */
+  floor?: string | null;
+  /** @nullable */
+  floorOrder?: number | null;
 }

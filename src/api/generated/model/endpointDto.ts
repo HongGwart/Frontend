@@ -7,21 +7,38 @@
  */
 
 /**
- * 출발·도착 지점. name·lat·lng는 usedNodeId가 아니라 요청한 nodeId 기준이다.
+ * 출발·도착 지점. 장소 표시 정보와 실제 선택한 접근 노드를 구분한다.
  */
 export interface EndpointDto {
-  /** 요청한 노드 ID(fromNodeId 또는 toNodeId) */
-  nodeId?: number;
+  /**
+     * 요청한 노드 ID. 장소 ID로 요청한 경우 null
+     * @nullable
+     */
+  nodeId?: number | null;
+  /**
+     * 해석한 장소 ID. 장소에 매핑되지 않은 노드는 null
+     * @nullable
+     */
+  placeId?: string | null;
   /** nodeId 노드의 표시명. display_name이 없으면 name이다. */
   name?: string;
-  /** nodeId 노드의 위도 */
-  lat?: number;
-  /** nodeId 노드의 경도 */
-  lng?: number;
-  /** 경로가 실제로 출발·도착한 노드 ID. nodeId가 SYMBOLIC(건물 등)이면 그 자손 중 하나이고, 아니면 nodeId와 같다. */
+  /**
+     * 표시 지점의 위도. 검수한 표시 좌표가 없으면 null
+     * @nullable
+     */
+  lat?: number | null;
+  /**
+     * 표시 지점의 경도. 검수한 표시 좌표가 없으면 null
+     * @nullable
+     */
+  lng?: number | null;
+  /** 경로가 실제로 출발·도착한 접근 노드 ID. 장소에 매핑된 POI도 요청 nodeId와 다를 수 있다. */
   usedNodeId?: number;
-  /** usedNodeId가 출입구(ENTRANCE)일 때 그 이름(예: 정문). 출입구가 아니면 null이다. */
-  entranceName?: string;
-  /** nodeId가 출입구(ENTRANCE) 자손을 2개 이상 가지면 true */
+  /**
+     * 선택한 장소 접근점의 이름. 장소 미등록 일반 노드는 null이다.
+     * @nullable
+     */
+  entranceName?: string | null;
+  /** 선택한 장소의 명시적 접근점이 2개 이상이면 true */
   multiEntrance?: boolean;
 }

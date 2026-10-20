@@ -7,6 +7,13 @@
  */
 
 export interface FacilitySummary {
-  category?: string;
-  onCampus?: boolean;
+  /** @nullable */
+  facilityId: number | null;
+  category: string;
+  onCampus: boolean;
+  /**
+     * 시설 자체 운영시간 원문. 건물 시간을 상속하지 않습니다.
+     * @nullable
+     */
+  operatingHoursText: string | null;
 }

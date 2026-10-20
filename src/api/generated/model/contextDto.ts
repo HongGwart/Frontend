@@ -12,12 +12,21 @@
 export interface ContextDto {
   /** step 첫 구간이 실내인지 여부 */
   indoor?: boolean;
-  /** 평면도를 보여 줄 건물 노드 ID. step 첫 구간이 한 건물 안의 실내 구간일 때만 값이 있고, 그 밖에는 null이다. */
-  buildingNodeId?: number;
-  /** buildingNodeId 건물의 이름. buildingNodeId가 null이면 null이다. */
-  buildingName?: string;
-  /** 평면도 층 표기. step 시작 노드의 층이며, FLOOR_CHANGE는 도착 층이다. 공용 구간(공용 경로 레이어에 속하거나, 출입구와 실외 노드처럼 양 끝 노드의 소속 건물이 다른 구간)에서는 null이다. 실외 구간의 값은 평면도 키가 아닌 참고값이다. */
-  floor?: string;
+  /**
+     * 평면도를 보여 줄 건물 노드 ID. step 첫 구간이 한 건물 안의 실내 구간일 때만 값이 있고, 그 밖에는 null이다.
+     * @nullable
+     */
+  buildingNodeId?: number | null;
+  /**
+     * buildingNodeId 건물의 이름. buildingNodeId가 null이면 null이다.
+     * @nullable
+     */
+  buildingName?: string | null;
+  /**
+     * 평면도 층 표기. step 시작 노드의 층이며, FLOOR_CHANGE는 도착 층이다. 공용 구간(공용 경로 레이어에 속하거나, 출입구와 실외 노드처럼 양 끝 노드의 소속 건물이 다른 구간)에서는 null이다. 실외 구간의 값은 평면도 키가 아닌 참고값이다.
+     * @nullable
+     */
+  floor?: string | null;
   /** floor의 순서값. floor가 null이면 0이며, 이때 0은 실제 층을 뜻하지 않는다. */
   floorOrder?: number;
 }

@@ -10,6 +10,7 @@ import type { Point } from './point';
 export interface Response {
   layerId?: number;
   revision?: number;
-  imageId?: string;
+  /** @nullable */
+  imageId?: string | null;
   points?: Point[];
 }

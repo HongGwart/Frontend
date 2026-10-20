@@ -7,7 +7,7 @@
  */
 
 /**
- * 안내 종류
+ * 안내 종류. WALK는 출발 후·층 이동 후·안내 지점 사이의 보행 구간이다.
  */
 export type StepDtoType = typeof StepDtoType[keyof typeof StepDtoType];
 
@@ -19,5 +19,6 @@ export const StepDtoType = {
   ENTER_BUILDING: 'ENTER_BUILDING',
   EXIT_BUILDING: 'EXIT_BUILDING',
   FLOOR_CHANGE: 'FLOOR_CHANGE',
+  WALK: 'WALK',
   ARRIVE: 'ARRIVE',
 } as const;

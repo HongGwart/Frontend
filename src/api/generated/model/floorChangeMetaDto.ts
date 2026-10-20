@@ -11,14 +11,22 @@ import type { FloorChangeMetaDtoTransport } from './floorChangeMetaDtoTransport'
  * 층 이동 정보
  */
 export interface FloorChangeMetaDto {
-  /** 출발 층 표기. 공용 구간의 계단·엘리베이터처럼 건물 층을 비교할 수 없으면 null이다. */
-  fromFloor?: string;
-  /** 도착 층 표기. 공용 구간의 계단·엘리베이터처럼 건물 층을 비교할 수 없으면 null이다. */
-  toFloor?: string;
+  /**
+     * 출발 층 표기. 공용 구간의 계단·엘리베이터처럼 건물 층을 비교할 수 없으면 null이다.
+     * @nullable
+     */
+  fromFloor?: string | null;
+  /**
+     * 도착 층 표기. 공용 구간의 계단·엘리베이터처럼 건물 층을 비교할 수 없으면 null이다.
+     * @nullable
+     */
+  toFloor?: string | null;
   /** 출발 층 순서값. 층을 비교할 수 없으면 0이다. */
   fromFloorOrder?: number;
   /** 도착 층 순서값. 층을 비교할 수 없으면 0이다. */
   toFloorOrder?: number;
   /** 이동 수단 */
   transport?: FloorChangeMetaDtoTransport;
+  /** 이 엘리베이터에 도착할 예상 시각의 혼잡 여부. ELEVATOR에만 제공하고 STAIR에서는 생략한다. 시간대와 누적 시간 기준은 summary.elevatorCongested와 같다. */
+  congested?: boolean;
 }

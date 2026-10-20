@@ -14,8 +14,11 @@ export interface PolylinePointDto {
   lat?: number;
   /** 경도 */
   lng?: number;
-  /** 층 표기(예: "1", "B1", "L"). 공용 경로(SHARED_PATHS) 레이어의 노드는 null이다. */
-  floor?: string;
+  /**
+     * 층 표기(예: "1", "B1", "L"). 공용 경로(SHARED_PATHS) 레이어의 노드는 null이다.
+     * @nullable
+     */
+  floor?: string | null;
   /** 층의 위아래 순서를 나타내는 정수. floor가 null이면 0이며, 이때 0은 실제 층이나 높이를 뜻하지 않는다. */
   floorOrder?: number;
   /** 이 점에서 다음 점까지 이어지는 구간이 실내인지 여부. 마지막 점은 직전 값을 그대로 쓴다. */

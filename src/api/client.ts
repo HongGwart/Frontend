@@ -12,6 +12,14 @@ export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  // 배치 조회는 nodeIds=1,2 형식이다. Axios 기본 nodeIds[]=1 형식을 사용하지 않는다.
+  paramsSerializer: params => {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) query.set(key, Array.isArray(value) ? value.join(',') : String(value));
+    }
+    return query.toString();
+  },
   // 캠퍼스 지하·건물 안처럼 신호가 약한 곳을 고려해 10초
   timeout: 10_000,
 });

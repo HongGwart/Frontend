@@ -6,17 +6,21 @@
  * OpenAPI spec version: v1
  */
 import type { EntranceSummary } from './entranceSummary';
-import type { FacilitySummary } from './facilitySummary';
+import type { NodeFacilitySummary } from './nodeFacilitySummary';
 import type { ParentSummary } from './parentSummary';
 
 export interface NodeDetailResponse {
   nodeId?: number;
   nodeType?: string;
   displayName?: string;
-  floor?: string;
+  /** @nullable */
+  floor?: string | null;
   floorOrder?: number;
-  roomNumber?: string;
-  parent?: ParentSummary;
+  /** @nullable */
+  roomNumber?: string | null;
+  parent?: ParentSummary | null;
   entrances?: EntranceSummary[];
-  facility?: FacilitySummary;
+  facility?: NodeFacilitySummary | null;
+  /** @nullable */
+  placeId?: string | null;
 }

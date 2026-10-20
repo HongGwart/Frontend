@@ -23,8 +23,15 @@ import type {
 import type {
   AutocompleteParams,
   AutocompleteResponse,
+  Batch,
+  BuildingInfoResponse,
+  Detail,
   ErrorResponse,
   NodeDetailResponse,
+  PlaceBatchParams,
+  PlaceInfoBatchResponse,
+  PlaceInfoResponse,
+  PlaceInfosParams,
   Response,
   RouteParams,
   RouteResponse
@@ -54,7 +61,8 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 /**
- * @summary 노드 이름 자동완성
+ * 장소 기능 활성화 시 장소당 한 항목을 반환합니다. nodeId는 장소의 고정 대표 기존 ID이며, placeId·placeKind·entranceCount가 추가됩니다. 미매핑 검색 대상은 기존 nodeId와 null 장소 필드로 유지하며, limit는 장소와 미매핑 노드를 합친 최종 항목 수에 적용됩니다.
+ * @summary 장소 이름 자동완성
  */
 export const autocomplete = (
     params: AutocompleteParams,
@@ -126,7 +134,7 @@ export function useAutocomplete<TData = Awaited<ReturnType<typeof autocomplete>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary 노드 이름 자동완성
+ * @summary 장소 이름 자동완성
  */
 
 export function useAutocomplete<TData = Awaited<ReturnType<typeof autocomplete>>, TError = ErrorType<ErrorResponse>>(
@@ -148,11 +156,11 @@ export function useAutocomplete<TData = Awaited<ReturnType<typeof autocomplete>>
 
 
 /**
- * mode를 생략하면 세 모드의 경로 후보를 반환합니다. 일부 모드만 경로가 있으면 200, 모든 모드에서 경로가 없으면 404입니다.
- * @summary 출발·도착 노드 간 경로 조회
+ * 각 끝점은 nodeId 또는 placeId 중 정확히 하나를 지정합니다. 같은 장소는 거리·시간 0과 빈 routes 배열로 성공합니다. 다른 장소는 mode 생략 시 세 모드 후보를 반환하며 모든 모드에서 경로가 없으면 404입니다. 장소 ID는 장소 기능 활성화 후 사용할 수 있습니다.
+ * @summary 출발·도착 장소 또는 노드 간 경로 조회
  */
 export const route = (
-    params: RouteParams,
+    params?: RouteParams,
  options?: SecondParameter<typeof apiRequest>,signal?: AbortSignal
 ) => {
 
@@ -174,7 +182,7 @@ export const getRouteQueryKey = (params?: RouteParams,) => {
     }
 
 
-export const getRouteQueryOptions = <TData = Awaited<ReturnType<typeof route>>, TError = ErrorType<ErrorResponse>>(params: RouteParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof route>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+export const getRouteQueryOptions = <TData = Awaited<ReturnType<typeof route>>, TError = ErrorType<ErrorResponse>>(params?: RouteParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof route>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -197,7 +205,7 @@ export type RouteQueryError = ErrorType<ErrorResponse>
 
 
 export function useRoute<TData = Awaited<ReturnType<typeof route>>, TError = ErrorType<ErrorResponse>>(
- params: RouteParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof route>>, TError, TData>> & Pick<
+ params: undefined |  RouteParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof route>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof route>>,
           TError,
@@ -207,7 +215,7 @@ export function useRoute<TData = Awaited<ReturnType<typeof route>>, TError = Err
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useRoute<TData = Awaited<ReturnType<typeof route>>, TError = ErrorType<ErrorResponse>>(
- params: RouteParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof route>>, TError, TData>> & Pick<
+ params?: RouteParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof route>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof route>>,
           TError,
@@ -217,15 +225,15 @@ export function useRoute<TData = Awaited<ReturnType<typeof route>>, TError = Err
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useRoute<TData = Awaited<ReturnType<typeof route>>, TError = ErrorType<ErrorResponse>>(
- params: RouteParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof route>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ params?: RouteParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof route>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary 출발·도착 노드 간 경로 조회
+ * @summary 출발·도착 장소 또는 노드 간 경로 조회
  */
 
 export function useRoute<TData = Awaited<ReturnType<typeof route>>, TError = ErrorType<ErrorResponse>>(
- params: RouteParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof route>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ params?: RouteParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof route>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -243,6 +251,291 @@ export function useRoute<TData = Awaited<ReturnType<typeof route>>, TError = Err
 
 
 /**
+ * 쉼표로 구분한 UUID 최대 100개. 최초 순서 유지, 중복 제거, 없는 ID는 missingPlaceIds.
+ * @summary 장소 일괄 조회
+ */
+export const placeBatch = (
+    params: PlaceBatchParams,
+ options?: SecondParameter<typeof apiRequest>,signal?: AbortSignal
+) => {
+
+
+      return apiRequest<Batch>(
+      {url: `/api/places`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getPlaceBatchQueryKey = (params?: PlaceBatchParams,) => {
+    return [
+    `/api/places`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getPlaceBatchQueryOptions = <TData = Awaited<ReturnType<typeof placeBatch>>, TError = ErrorType<unknown>>(params: PlaceBatchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeBatch>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPlaceBatchQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof placeBatch>>> = ({ signal }) => placeBatch(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof placeBatch>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlaceBatchQueryResult = NonNullable<Awaited<ReturnType<typeof placeBatch>>>
+export type PlaceBatchQueryError = ErrorType<unknown>
+
+
+export function usePlaceBatch<TData = Awaited<ReturnType<typeof placeBatch>>, TError = ErrorType<unknown>>(
+ params: PlaceBatchParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeBatch>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof placeBatch>>,
+          TError,
+          Awaited<ReturnType<typeof placeBatch>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlaceBatch<TData = Awaited<ReturnType<typeof placeBatch>>, TError = ErrorType<unknown>>(
+ params: PlaceBatchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeBatch>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof placeBatch>>,
+          TError,
+          Awaited<ReturnType<typeof placeBatch>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlaceBatch<TData = Awaited<ReturnType<typeof placeBatch>>, TError = ErrorType<unknown>>(
+ params: PlaceBatchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeBatch>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 장소 일괄 조회
+ */
+
+export function usePlaceBatch<TData = Awaited<ReturnType<typeof placeBatch>>, TError = ErrorType<unknown>>(
+ params: PlaceBatchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeBatch>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPlaceBatchQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+/**
+ * 논리적 장소 ID로 조회합니다. 건물 앵커는 출입구 목록에 포함하지 않습니다.
+ * @summary 장소와 전체 출입구 조회
+ */
+export const placeDetail = (
+    placeId: string,
+ options?: SecondParameter<typeof apiRequest>,signal?: AbortSignal
+) => {
+
+
+      return apiRequest<Detail>(
+      {url: `/api/places/${placeId}`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getPlaceDetailQueryKey = (placeId: string,) => {
+    return [
+    `/api/places/${placeId}`
+    ] as const;
+    }
+
+
+export const getPlaceDetailQueryOptions = <TData = Awaited<ReturnType<typeof placeDetail>>, TError = ErrorType<unknown>>(placeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeDetail>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPlaceDetailQueryKey(placeId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof placeDetail>>> = ({ signal }) => placeDetail(placeId, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: placeId !== null && placeId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof placeDetail>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlaceDetailQueryResult = NonNullable<Awaited<ReturnType<typeof placeDetail>>>
+export type PlaceDetailQueryError = ErrorType<unknown>
+
+
+export function usePlaceDetail<TData = Awaited<ReturnType<typeof placeDetail>>, TError = ErrorType<unknown>>(
+ placeId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeDetail>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof placeDetail>>,
+          TError,
+          Awaited<ReturnType<typeof placeDetail>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlaceDetail<TData = Awaited<ReturnType<typeof placeDetail>>, TError = ErrorType<unknown>>(
+ placeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeDetail>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof placeDetail>>,
+          TError,
+          Awaited<ReturnType<typeof placeDetail>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlaceDetail<TData = Awaited<ReturnType<typeof placeDetail>>, TError = ErrorType<unknown>>(
+ placeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeDetail>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 장소와 전체 출입구 조회
+ */
+
+export function usePlaceDetail<TData = Awaited<ReturnType<typeof placeDetail>>, TError = ErrorType<unknown>>(
+ placeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeDetail>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPlaceDetailQueryOptions(placeId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+/**
+ * 겹친 마커/즐겨찾기 목록용. 입력은 최대 100개이며 중복 제거 후 최초 순서를 유지합니다. 없는 ID는 missingNodeIds로 반환합니다.
+ * @summary 여러 장소의 소개 일괄 조회
+ */
+export const placeInfos = (
+    params: PlaceInfosParams,
+ options?: SecondParameter<typeof apiRequest>,signal?: AbortSignal
+) => {
+
+
+      return apiRequest<PlaceInfoBatchResponse>(
+      {url: `/api/place-infos`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getPlaceInfosQueryKey = (params?: PlaceInfosParams,) => {
+    return [
+    `/api/place-infos`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getPlaceInfosQueryOptions = <TData = Awaited<ReturnType<typeof placeInfos>>, TError = ErrorType<ErrorResponse>>(params: PlaceInfosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeInfos>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPlaceInfosQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof placeInfos>>> = ({ signal }) => placeInfos(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof placeInfos>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PlaceInfosQueryResult = NonNullable<Awaited<ReturnType<typeof placeInfos>>>
+export type PlaceInfosQueryError = ErrorType<ErrorResponse>
+
+
+export function usePlaceInfos<TData = Awaited<ReturnType<typeof placeInfos>>, TError = ErrorType<ErrorResponse>>(
+ params: PlaceInfosParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeInfos>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof placeInfos>>,
+          TError,
+          Awaited<ReturnType<typeof placeInfos>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlaceInfos<TData = Awaited<ReturnType<typeof placeInfos>>, TError = ErrorType<ErrorResponse>>(
+ params: PlaceInfosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeInfos>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof placeInfos>>,
+          TError,
+          Awaited<ReturnType<typeof placeInfos>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePlaceInfos<TData = Awaited<ReturnType<typeof placeInfos>>, TError = ErrorType<ErrorResponse>>(
+ params: PlaceInfosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeInfos>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 여러 장소의 소개 일괄 조회
+ */
+
+export function usePlaceInfos<TData = Awaited<ReturnType<typeof placeInfos>>, TError = ErrorType<ErrorResponse>>(
+ params: PlaceInfosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof placeInfos>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPlaceInfosQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+/**
+ * nodeId와 nodeType은 요청한 물리 노드의 값을 유지합니다. 장소 기능 활성화 시 placeId와 같은 장소의 모든 명시적 접근점을 entrances에 반환합니다.
  * @summary 노드 상세 조회
  */
 export const node = (
@@ -323,6 +616,100 @@ export function useNode<TData = Awaited<ReturnType<typeof node>>, TError = Error
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getNodeQueryOptions(nodeId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+/**
+ * 건물/일반 호실/시설의 소개를 서버에서 선택합니다. 기존 노드 상세 및 길찾기 API와 같은 nodeId를 사용합니다.
+ * @summary 선택한 장소의 소개 조회
+ */
+export const nodePlaceInfo = (
+    nodeId: string,
+ options?: SecondParameter<typeof apiRequest>,signal?: AbortSignal
+) => {
+
+
+      return apiRequest<PlaceInfoResponse>(
+      {url: `/api/nodes/${nodeId}/place-info`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getNodePlaceInfoQueryKey = (nodeId: string,) => {
+    return [
+    `/api/nodes/${nodeId}/place-info`
+    ] as const;
+    }
+
+
+export const getNodePlaceInfoQueryOptions = <TData = Awaited<ReturnType<typeof nodePlaceInfo>>, TError = ErrorType<ErrorResponse>>(nodeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof nodePlaceInfo>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getNodePlaceInfoQueryKey(nodeId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof nodePlaceInfo>>> = ({ signal }) => nodePlaceInfo(nodeId, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: nodeId !== null && nodeId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof nodePlaceInfo>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type NodePlaceInfoQueryResult = NonNullable<Awaited<ReturnType<typeof nodePlaceInfo>>>
+export type NodePlaceInfoQueryError = ErrorType<ErrorResponse>
+
+
+export function useNodePlaceInfo<TData = Awaited<ReturnType<typeof nodePlaceInfo>>, TError = ErrorType<ErrorResponse>>(
+ nodeId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof nodePlaceInfo>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof nodePlaceInfo>>,
+          TError,
+          Awaited<ReturnType<typeof nodePlaceInfo>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNodePlaceInfo<TData = Awaited<ReturnType<typeof nodePlaceInfo>>, TError = ErrorType<ErrorResponse>>(
+ nodeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof nodePlaceInfo>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof nodePlaceInfo>>,
+          TError,
+          Awaited<ReturnType<typeof nodePlaceInfo>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useNodePlaceInfo<TData = Awaited<ReturnType<typeof nodePlaceInfo>>, TError = ErrorType<ErrorResponse>>(
+ nodeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof nodePlaceInfo>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 선택한 장소의 소개 조회
+ */
+
+export function useNodePlaceInfo<TData = Awaited<ReturnType<typeof nodePlaceInfo>>, TError = ErrorType<ErrorResponse>>(
+ nodeId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof nodePlaceInfo>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getNodePlaceInfoQueryOptions(nodeId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -417,6 +804,100 @@ export function useFloorPlanCorners<TData = Awaited<ReturnType<typeof floorPlanC
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getFloorPlanCornersQueryOptions(layerId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+/**
+ * 건물 공식명, 소개, 주출입구와 운영시간 원문을 반환합니다. T와 T동을 같은 코드로 처리합니다.
+ * @summary 건물 정보 조회
+ */
+export const building = (
+    buildingCode: string,
+ options?: SecondParameter<typeof apiRequest>,signal?: AbortSignal
+) => {
+
+
+      return apiRequest<BuildingInfoResponse>(
+      {url: `/api/buildings/${buildingCode}`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getBuildingQueryKey = (buildingCode: string,) => {
+    return [
+    `/api/buildings/${buildingCode}`
+    ] as const;
+    }
+
+
+export const getBuildingQueryOptions = <TData = Awaited<ReturnType<typeof building>>, TError = ErrorType<ErrorResponse>>(buildingCode: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof building>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBuildingQueryKey(buildingCode);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof building>>> = ({ signal }) => building(buildingCode, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: buildingCode !== null && buildingCode !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof building>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type BuildingQueryResult = NonNullable<Awaited<ReturnType<typeof building>>>
+export type BuildingQueryError = ErrorType<ErrorResponse>
+
+
+export function useBuilding<TData = Awaited<ReturnType<typeof building>>, TError = ErrorType<ErrorResponse>>(
+ buildingCode: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof building>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof building>>,
+          TError,
+          Awaited<ReturnType<typeof building>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuilding<TData = Awaited<ReturnType<typeof building>>, TError = ErrorType<ErrorResponse>>(
+ buildingCode: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof building>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof building>>,
+          TError,
+          Awaited<ReturnType<typeof building>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuilding<TData = Awaited<ReturnType<typeof building>>, TError = ErrorType<ErrorResponse>>(
+ buildingCode: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof building>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 건물 정보 조회
+ */
+
+export function useBuilding<TData = Awaited<ReturnType<typeof building>>, TError = ErrorType<ErrorResponse>>(
+ buildingCode: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof building>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBuildingQueryOptions(buildingCode,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
