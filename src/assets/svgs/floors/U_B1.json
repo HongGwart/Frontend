@@ -11,7 +11,7 @@
   "rooms": [
     {
       "id": "B102",
-      "placeId": null,
+      "placeId": "d2976166-f23b-4881-a59a-ca7db0bd26c3",
       "points": [
         [
           695,
@@ -57,7 +57,7 @@
     },
     {
       "id": "B101",
-      "placeId": null,
+      "placeId": "c3ab64cb-c1bb-4f96-a1bf-d38a3ae04e50",
       "points": [
         [
           1171,

@@ -11,7 +11,7 @@
   "rooms": [
     {
       "id": "305",
-      "placeId": null,
+      "placeId": "c4e75539-9bc7-4272-846b-a77f38ef0a4d",
       "points": [
         [
           663,
@@ -57,7 +57,7 @@
     },
     {
       "id": "303",
-      "placeId": null,
+      "placeId": "00cc77bb-4fe0-4c34-834a-b3f9ace453be",
       "points": [
         [
           886,
@@ -80,7 +80,7 @@
     },
     {
       "id": "302",
-      "placeId": null,
+      "placeId": "4f62d262-55a1-4ff9-8a3a-8671a7b51761",
       "points": [
         [
           886,
@@ -126,7 +126,7 @@
     },
     {
       "id": "301-2",
-      "placeId": null,
+      "placeId": "4ddb553d-7bad-4c6c-acf6-a10facb33d4c",
       "points": [
         [
           885,
@@ -157,7 +157,7 @@
     },
     {
       "id": "304",
-      "placeId": null,
+      "placeId": "fd7ec839-235e-4558-b181-0d7866fd6121",
       "points": [
         [
           886,

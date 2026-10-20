@@ -1,0 +1,94 @@
+appId: com.honggwart
+name: Deployed C5 floor-plan UUID endpoints and route guidance
+---
+# Run against https://dev-api.honggwart.com with EXPO_PUBLIC_USE_MOCK=false.
+# Start on the campus map. This flow requires the verified C_5.json placeId
+# mappings for 501 and 510; it must not use the disposable localhost fixtures.
+- assertVisible: "캠퍼스맵"
+- tapOn: "강의실 또는 시설을 검색하세요"
+- inputText: "C동"
+- extendedWaitUntil:
+    visible: "C동"
+    timeout: 15000
+- tapOn: "C동"
+- extendedWaitUntil:
+    visible: "건물 내부 보기"
+    timeout: 15000
+- tapOn: "건물 내부 보기"
+- extendedWaitUntil:
+    visible: "5"
+    timeout: 15000
+- tapOn: "5"
+- extendedWaitUntil:
+    visible: "501"
+    timeout: 15000
+
+# Tap the actual floor-plan polygon at its visible room label.
+# A mapped room must go directly to Navigation without candidate selection.
+- tapOn: "501"
+- extendedWaitUntil:
+    visible: ".*501호.*"
+    timeout: 15000
+- takeScreenshot: deployed-c5-room501
+- tapOn: "출발"
+- extendedWaitUntil:
+    visible: "길찾기"
+    timeout: 15000
+- assertNotVisible: "출발할 호실 선택"
+- assertVisible: "C동.*501호"
+- assertVisible: "도착지를 입력하세요"
+- takeScreenshot: deployed-c5-direct-departure
+
+# Reopen the floor plan from the other endpoint and preserve the 501 UUID.
+- tapOn: "도착지를 입력하세요"
+- tapOn: "C동 도면에서 선택"
+- extendedWaitUntil:
+    visible: "5"
+    timeout: 15000
+- tapOn: "5"
+- extendedWaitUntil:
+    visible: "510"
+    timeout: 15000
+- tapOn: "510"
+- extendedWaitUntil:
+    visible: ".*510호.*"
+    timeout: 15000
+- takeScreenshot: deployed-c5-room510
+- tapOn: "도착"
+- extendedWaitUntil:
+    visible: "길찾기"
+    timeout: 15000
+- assertNotVisible: "도착할 호실 선택"
+- assertVisible: "C동.*501호"
+- assertVisible: "C동.*510호"
+
+# The deployed 501 -> 510 response is 84.6427407 m (rounded to 85 m).
+# 510 has two entrances; the real route service chooses the usable entrance.
+- extendedWaitUntil:
+    visible: ".*85m.*걷기.*"
+    timeout: 20000
+- assertNotVisible: "검색에서 출발지와 도착지를 다시 선택해 주세요"
+- takeScreenshot: deployed-c5-route-options
+- tapOn:
+    text: ".*85m.*걷기.*"
+    index: 0
+- extendedWaitUntil:
+    visible: "경로 안내 시작"
+    timeout: 15000
+- takeScreenshot: deployed-c5-route-detail
+- tapOn: "경로 안내 시작"
+- extendedWaitUntil:
+    visible: "다음 안내"
+    timeout: 15000
+- repeat:
+    while:
+      visible: "다음 안내"
+    commands:
+      - tapOn: "다음 안내"
+      - waitForAnimationToEnd
+- assertVisible: ".*도착했어요.*"
+- assertVisible: ".*510호.*"
+- assertVisible: "안내 종료"
+- takeScreenshot: deployed-c5-arrived
+- tapOn: "안내 종료"
+- assertVisible: "캠퍼스맵"

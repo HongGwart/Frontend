@@ -81,12 +81,14 @@ API 테스트와 달리 이 흐름은 실제 네이티브 화면을 탭하고 �
 도면 flow와 예외 flow는 앞선 flow가 종료한 캠퍼스맵에서 이어서 실행한다. 최초 온보딩은 실제
 5페이지를 넘겨 완료하며, 테스트가 영구 저장소의 값을 직접 덮어쓰지 않는다.
 
-`indoor-room-routing.yaml`은 건물 내부 도면의 실제 101·102·501 호실 도형을 탭한다.
-후보가 없는 102호, 후보 선택 취소 후 도면 복귀, 101호 출발 선택, 도면에서 5층으로 이동,
-501호 본실·별실 후보 명시 선택, 양쪽 끝점 유지와 경로 안내 도착을 검증한다.
+`indoor-room-routing.yaml`은 건물 내부 도면의 실제 T1 101·011 호실 도형을 탭한다.
+후보가 없는 011호, 후보 선택 취소 후 도면 복귀, 101호 출발 선택을 검증한다.
+도착지는 일반 검색에서 T501 본실·별실을 구분해 선택하고, 양쪽 끝점 유지와
+경로 안내 도착을 검증한다. 배포 UUID가 들어간 T5 도형은 격리 DB의 다른 UUID와
+호환되지 않으므로 직접 도형 목적지 선택은 아래 배포 서버 flow에서 검증한다.
 호실의 ID를 테스트에서 주입하거나 자동으로 선택하지 않는다.
 
-## 2026-10-21 실행 기록
+## 2026-10-21 매핑 전 실행 기록
 
 - 환경: iPhone 18 Pro 시뮬레이터, iOS 27.0, Xcode 27.1.
 - 실행 패키지: Expo 57.0.30, expo-build-properties 57.0.22.
@@ -112,3 +114,35 @@ API 테스트와 달리 이 흐름은 실제 네이티브 화면을 탭하고 �
 기존 SVG 호실의 `placeId`가 null이고 `nodeId`도 없는 경우에는 해당 건물·층의 서버 후보를
 사용자가 선택한다. 이를 도형의 영구 매핑으로 저장하지 않는다. 서버에 호실 데이터가 없거나
 소속·층을 확인할 수 없는 경우에는 후보 없음 안내와 검색어 수정 기능을 제공한다.
+
+## 배포 서버의 확정 도형 매핑
+
+실제 배포 UUID 반영 범위와 보류 목록은 [floor-place-mapping.md](floor-place-mapping.md)를
+참고한다. `deployed-indoor-mapping.yaml`은 C동 5층 501호 도형 → 출발 → 도착지 입력 →
+C동 도면 → 5층 510호 도형 → 도착 → 경로 안내를 검사한다.
+양쪽 버튼은 후보 선택 화면을 거치지 않아야 하며 501호 출발지가 유지되어야 한다.
+
+```sh
+EXPO_PUBLIC_API_URL=https://dev-api.honggwart.com EXPO_PUBLIC_USE_MOCK=false \
+  REACT_NATIVE_PACKAGER_HOSTNAME=127.0.0.1 npx expo start --dev-client --clear
+maestro --device <시뮬레이터UUID> test .maestro/deployed-indoor-mapping.yaml \
+  --test-output-dir /tmp/honggwart-deployed-indoor-results
+```
+
+시작 화면은 온보딩을 완료한 캠퍼스맵이다. 경로 응답의 실제 거리 84.64m는 화면에서
+85m로 표시된다. 배포 데이터가 바뀌면 서버 경로와 지도 매핑을 먼저 재검증해야 한다.
+
+### 2026-10-21 매핑 후 검증
+
+- 배포 서버를 다시 GET으로 수집해 모든 저장 UUID를 대조했다. 1,612개 매핑이 일치했고
+  `--check`의 변경 필요 파일 수는 0이었다.
+- 매핑·SVG 재생성 회귀 테스트 19개와 TypeScript 검사 통과.
+- iPhone 18 Pro / iOS 27에서 UI 도구로 실제 화면을 직접 조작했다.
+  캠퍼스 지도 C동 마커 → 건물 내부 보기 → 5층 501호 → 출발 → 도착지 입력 →
+  C동 도면 → 5층 510호 → 도착 → 85m 경로 → 안내 시작 → 도착 → 안내 종료를 통과했다.
+  출발·도착 후보 화면이 나오지 않고 501호 출발지가 유지되는 것을 확인했다.
+- 증거: 작업 공간의 `artifacts/deployed-indoor-mapping-2026-10-21`.
+  `02-direct-departure.txt`, `04-direct-endpoints-route.txt`, `06-arrived.txt`와
+  호실·출발·경로·도착 스크린샷을 저장했다.
+- 이번 배포 E2E는 UI 도구로 직접 수행했다. 새 Maestro flow와 수정된 격리 DB용
+  `indoor-room-routing.yaml`은 정적 검증했으며, 이 변경 이후 Maestro로 재실행한 기록은 아니다.

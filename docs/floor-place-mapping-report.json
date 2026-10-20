@@ -1,0 +1,2116 @@
+{
+  "source": {
+    "baseUrl": "https://dev-api.honggwart.com",
+    "fetchedAt": "2026-10-20T18:04:24.831Z",
+    "baselineFingerprint": "54da90d278ceeac2f4fdff44408e6cb806fc7f99f1c196b3a0fa587f66de9b83",
+    "catalogSha256": "954791001ea8ddcec3ce71e5880a21ca43db8df6dd049ac61f031544a150d010"
+  },
+  "totals": {
+    "floors": 155,
+    "rooms": 1888,
+    "mapped": 1612,
+    "unresolved": 276,
+    "uniquePlaces": 1596
+  },
+  "reasons": {
+    "server_room_not_found": 240,
+    "server_mapping_needs_review": 21,
+    "server_place_unmapped": 12,
+    "cross_floor_membership": 3
+  },
+  "buildings": {
+    "A": {
+      "rooms": 23,
+      "mapped": 20,
+      "unresolved": 3
+    },
+    "B": {
+      "rooms": 21,
+      "mapped": 20,
+      "unresolved": 1
+    },
+    "C": {
+      "rooms": 276,
+      "mapped": 256,
+      "unresolved": 20
+    },
+    "D": {
+      "rooms": 48,
+      "mapped": 0,
+      "unresolved": 48
+    },
+    "E": {
+      "rooms": 67,
+      "mapped": 64,
+      "unresolved": 3
+    },
+    "F": {
+      "rooms": 59,
+      "mapped": 43,
+      "unresolved": 16
+    },
+    "G": {
+      "rooms": 104,
+      "mapped": 90,
+      "unresolved": 14
+    },
+    "H": {
+      "rooms": 75,
+      "mapped": 38,
+      "unresolved": 37
+    },
+    "I": {
+      "rooms": 65,
+      "mapped": 60,
+      "unresolved": 5
+    },
+    "K": {
+      "rooms": 148,
+      "mapped": 145,
+      "unresolved": 3
+    },
+    "L": {
+      "rooms": 55,
+      "mapped": 34,
+      "unresolved": 21
+    },
+    "MH": {
+      "rooms": 144,
+      "mapped": 122,
+      "unresolved": 22
+    },
+    "P": {
+      "rooms": 152,
+      "mapped": 151,
+      "unresolved": 1
+    },
+    "Q": {
+      "rooms": 83,
+      "mapped": 56,
+      "unresolved": 27
+    },
+    "R": {
+      "rooms": 334,
+      "mapped": 302,
+      "unresolved": 32
+    },
+    "S": {
+      "rooms": 3,
+      "mapped": 0,
+      "unresolved": 3
+    },
+    "T": {
+      "rooms": 135,
+      "mapped": 125,
+      "unresolved": 10
+    },
+    "U": {
+      "rooms": 35,
+      "mapped": 30,
+      "unresolved": 5
+    },
+    "Z1": {
+      "rooms": 19,
+      "mapped": 18,
+      "unresolved": 1
+    },
+    "Z2": {
+      "rooms": 42,
+      "mapped": 38,
+      "unresolved": 4
+    }
+  },
+  "unresolved": [
+    {
+      "floorId": "A_1",
+      "id": "102-2",
+      "label": "102-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "A_2",
+      "id": "210",
+      "label": "210",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "A_2",
+      "id": "202-2",
+      "label": "202-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "B_4",
+      "id": "403",
+      "label": "403",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_2",
+      "id": "212",
+      "label": "212",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_2",
+      "id": "205",
+      "label": "205",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_3",
+      "id": "301",
+      "label": "301",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "0ff9ee43-ea47-4685-ade3-47e70babf416",
+        "1a90cbee-d2f1-42c3-90a2-867f40fc0a20"
+      ]
+    },
+    {
+      "floorId": "C_3",
+      "id": "304",
+      "label": "304",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_3",
+      "id": "317",
+      "label": "317",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_4",
+      "id": "410",
+      "label": "410",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_4",
+      "id": "407-2",
+      "label": "407-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_4",
+      "id": "409-2",
+      "label": "409-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_4",
+      "id": "415",
+      "label": "415",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_6",
+      "id": "643",
+      "label": "643",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_6",
+      "id": "623",
+      "label": "623",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "3c975960-096b-455c-af32-8e38ab331db4",
+        "50de351f-a067-4d63-a982-cb9e493422d9"
+      ]
+    },
+    {
+      "floorId": "C_6",
+      "id": "620",
+      "label": "620",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "0b5889d6-1469-4326-96ed-5d8590eff16e",
+        "e8008661-6752-4458-b970-1f0636e1c050"
+      ]
+    },
+    {
+      "floorId": "C_6",
+      "id": "613",
+      "label": "613",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_6",
+      "id": "615",
+      "label": "615",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_6",
+      "id": "620_2",
+      "label": "620",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "0b5889d6-1469-4326-96ed-5d8590eff16e",
+        "e8008661-6752-4458-b970-1f0636e1c050"
+      ]
+    },
+    {
+      "floorId": "C_7",
+      "id": "778",
+      "label": "778",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_8",
+      "id": "825",
+      "label": "825",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_8",
+      "id": "815",
+      "label": "815",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_8",
+      "id": "811",
+      "label": "811",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "C_9",
+      "id": "910",
+      "label": "910",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B1",
+      "id": "0105-2",
+      "label": "0105-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B1",
+      "id": "0105-1",
+      "label": "0105-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B1",
+      "id": "0104-2",
+      "label": "0104-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B1",
+      "id": "0104-1",
+      "label": "0104-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B1",
+      "id": "0103-2",
+      "label": "0103-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B1",
+      "id": "0103-1",
+      "label": "0103-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B1",
+      "id": "0102-2",
+      "label": "0102-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B1",
+      "id": "0102-1",
+      "label": "0102-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B1",
+      "id": "0101",
+      "label": "0101",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B2",
+      "id": "0205",
+      "label": "0205",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B2",
+      "id": "0204-2",
+      "label": "0204-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B2",
+      "id": "0204-1",
+      "label": "0204-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B2",
+      "id": "0203-4",
+      "label": "0203-4",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B2",
+      "id": "0203-3",
+      "label": "0203-3",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B2",
+      "id": "0203-2",
+      "label": "0203-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B2",
+      "id": "0203-1",
+      "label": "0203-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B2",
+      "id": "0201",
+      "label": "0201",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B2",
+      "id": "0206-2",
+      "label": "0206-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B2",
+      "id": "0206-1",
+      "label": "0206-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B3",
+      "id": "0308",
+      "label": "0308",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B3",
+      "id": "0307-2",
+      "label": "0307-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B3",
+      "id": "0307-1",
+      "label": "0307-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B3",
+      "id": "0309",
+      "label": "0309",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B3",
+      "id": "0306-2",
+      "label": "0306-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B3",
+      "id": "0306-1",
+      "label": "0306-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B3",
+      "id": "0305-2",
+      "label": "0305-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B3",
+      "id": "0305-1",
+      "label": "0305-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B3",
+      "id": "0304",
+      "label": "0304",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B3",
+      "id": "0303",
+      "label": "0303",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B3",
+      "id": "0301",
+      "label": "0301",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0412",
+      "label": "0412",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0411",
+      "label": "0411",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0414",
+      "label": "0414",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0410",
+      "label": "0410",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0409",
+      "label": "0409",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0413",
+      "label": "0413",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0408",
+      "label": "0408",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0407",
+      "label": "0407",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0406",
+      "label": "0406",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0405",
+      "label": "0405",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0404",
+      "label": "0404",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0401",
+      "label": "0401",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0402",
+      "label": "0402",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B4",
+      "id": "0403",
+      "label": "0403",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B5",
+      "id": "0503",
+      "label": "0503",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B5",
+      "id": "0504",
+      "label": "0504",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B5",
+      "id": "0502",
+      "label": "0502",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "D_B5",
+      "id": "0501",
+      "label": "0501",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "E_3",
+      "id": "303-1",
+      "label": "303-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "E_3",
+      "id": "301-1",
+      "label": "301-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "E_4",
+      "id": "406-1",
+      "label": "406-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_3",
+      "id": "304",
+      "label": "304",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_3",
+      "id": "303",
+      "label": "303",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_3",
+      "id": "303-1",
+      "label": "303-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_3",
+      "id": "302-2",
+      "label": "302-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_4",
+      "id": "407",
+      "label": "407",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_4",
+      "id": "403-2",
+      "label": "403-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_4",
+      "id": "403-2_2",
+      "label": "403-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_4",
+      "id": "405",
+      "label": "405",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_4",
+      "id": "404",
+      "label": "404",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_4",
+      "id": "402-2",
+      "label": "402-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_5",
+      "id": "504-1",
+      "label": "504-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_5",
+      "id": "504-2",
+      "label": "504-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_5",
+      "id": "502-2",
+      "label": "502-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_6",
+      "id": "602-2",
+      "label": "602-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_6",
+      "id": "602-1",
+      "label": "602-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "F_7",
+      "id": "706",
+      "label": "706",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_3",
+      "id": "323-08",
+      "label": "323-08",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_4",
+      "id": "106",
+      "label": "106",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_4",
+      "id": "105",
+      "label": "105",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_4",
+      "id": "103",
+      "label": "103",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_4",
+      "id": "102",
+      "label": "102",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_4",
+      "id": "101-1",
+      "label": "101-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_4",
+      "id": "101-2",
+      "label": "101-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_4",
+      "id": "101-3",
+      "label": "101-3",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_4",
+      "id": "101-4",
+      "label": "101-4",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_4",
+      "id": "101",
+      "label": "101",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_B1",
+      "id": "열람실(Green)",
+      "label": "열람실(Green)",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_B1",
+      "id": "계단열람실",
+      "label": "계단열람실",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_B1",
+      "id": "열람실(Blue)",
+      "label": "열람실(Blue)",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "G_B1",
+      "id": "B101",
+      "label": "B101",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "408",
+      "label": "408",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "407",
+      "label": "407",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "406",
+      "label": "406",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "405",
+      "label": "405",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "414",
+      "label": "414",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "413",
+      "label": "413",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "415",
+      "label": "415",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "417",
+      "label": "417",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "416",
+      "label": "416",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "429",
+      "label": "429",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "430",
+      "label": "430",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "431",
+      "label": "431",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "432",
+      "label": "432",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "428",
+      "label": "428",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "427",
+      "label": "427",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "426",
+      "label": "426",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "425",
+      "label": "425",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "433",
+      "label": "433",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "401",
+      "label": "401",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "402",
+      "label": "402",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "403",
+      "label": "403",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "404",
+      "label": "404",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "412",
+      "label": "412",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "409",
+      "label": "409",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "411",
+      "label": "411",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "418",
+      "label": "418",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "419",
+      "label": "419",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "420",
+      "label": "420",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "421",
+      "label": "421",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "106",
+      "label": "106",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "105",
+      "label": "105",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_1",
+      "id": "410",
+      "label": "410",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_2",
+      "id": "제1열람실",
+      "label": "제1열람실",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_2",
+      "id": "206",
+      "label": "206",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_2",
+      "id": "204",
+      "label": "204",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_3",
+      "id": "311",
+      "label": "311",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "H_4",
+      "id": "H401",
+      "label": "H401",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "6e8597ce-35e8-44f7-a979-4973a8892bb0"
+      ]
+    },
+    {
+      "floorId": "I_1",
+      "id": "104-2",
+      "label": "104-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "I_1",
+      "id": "110",
+      "label": "110",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "I_2",
+      "id": "210",
+      "label": "210",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "I_3",
+      "id": "308",
+      "label": "308",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "I_4",
+      "id": "407",
+      "label": "407",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "41c5bf80-ac30-46a1-9593-803ac8121968",
+        "cbae19ab-db44-47be-9ccd-c3096689d849"
+      ]
+    },
+    {
+      "floorId": "K_4",
+      "id": "419-2",
+      "label": "419-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "K_B1",
+      "id": "014-3",
+      "label": "014-3",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "K_B1",
+      "id": "024",
+      "label": "024",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "5d6b80de-9426-466b-a2a4-04addb16fb89",
+        "f26d4dd3-a44b-4c1b-a46d-a12df2df68bb"
+      ]
+    },
+    {
+      "floorId": "L_1",
+      "id": "201",
+      "label": "201",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_1",
+      "id": "205",
+      "label": "205",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_1",
+      "id": "204",
+      "label": "204",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_1",
+      "id": "2002",
+      "label": "2002",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_1",
+      "id": "203",
+      "label": "203",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_2",
+      "id": "205",
+      "label": "205",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_2",
+      "id": "204",
+      "label": "204",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_2",
+      "id": "2002",
+      "label": "2002",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_2",
+      "id": "203",
+      "label": "203",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_3",
+      "id": "계단 세미나실",
+      "label": "계단 세미나실",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_4",
+      "id": "401-1",
+      "label": "401-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_4",
+      "id": "J002",
+      "label": "J002",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_5",
+      "id": "J001-2",
+      "label": "J001-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_5",
+      "id": "J001-1",
+      "label": "J001-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_5",
+      "id": "J001",
+      "label": "J001",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_6",
+      "id": "J101",
+      "label": "J101",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_7",
+      "id": "J201",
+      "label": "J201",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_8",
+      "id": "J301",
+      "label": "J301",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_9",
+      "id": "801",
+      "label": "801",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_9",
+      "id": "803",
+      "label": "803",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "L_9",
+      "id": "802",
+      "label": "802",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_1",
+      "id": "104",
+      "label": "104",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_1",
+      "id": "105",
+      "label": "105",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_1",
+      "id": "103",
+      "label": "103",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_1",
+      "id": "102",
+      "label": "102",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_14",
+      "id": "1405",
+      "label": "1405",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "0e081c63-0c9f-4c8b-bda8-88e06e434140",
+        "fe500244-0943-4b2b-8886-e9c329e676b2"
+      ]
+    },
+    {
+      "floorId": "MH_14",
+      "id": "1404",
+      "label": "1404",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_3",
+      "id": "303",
+      "label": "303",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_3",
+      "id": "302",
+      "label": "302",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_3",
+      "id": "307",
+      "label": "307",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_3",
+      "id": "306",
+      "label": "306",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_3",
+      "id": "305",
+      "label": "305",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_5",
+      "id": "507",
+      "label": "507",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_5",
+      "id": "506",
+      "label": "506",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_6",
+      "id": "610",
+      "label": "610",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_6",
+      "id": "609",
+      "label": "609",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_7",
+      "id": "710",
+      "label": "710",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_7",
+      "id": "708",
+      "label": "708",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_7",
+      "id": "709",
+      "label": "709",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_7",
+      "id": "704",
+      "label": "704",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_7",
+      "id": "705",
+      "label": "705",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_7",
+      "id": "706",
+      "label": "706",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "MH_7",
+      "id": "703",
+      "label": "703",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "P_B2",
+      "id": "B202",
+      "label": "B202",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_1",
+      "id": "Hall",
+      "label": "Hall",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_1",
+      "id": "109-2",
+      "label": "109-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_1",
+      "id": "109-1",
+      "label": "109-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_10",
+      "id": "1006",
+      "label": "1006",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_10",
+      "id": "1002",
+      "label": "1002",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_2",
+      "id": "210",
+      "label": "210",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "302",
+      "label": "302",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "301-1",
+      "label": "301-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "301-4",
+      "label": "301-4",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "301-2",
+      "label": "301-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "301-3",
+      "label": "301-3",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "308-1",
+      "label": "308-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "308-2",
+      "label": "308-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "308-3",
+      "label": "308-3",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "303",
+      "label": "303",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "303-1",
+      "label": "303-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "302-1",
+      "label": "302-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_3",
+      "id": "302-2",
+      "label": "302-2",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_5",
+      "id": "502",
+      "label": "502",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_6",
+      "id": "국제회의장",
+      "label": "국제회의장",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_8",
+      "id": "806",
+      "label": "806",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_9",
+      "id": "905",
+      "label": "905",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_9",
+      "id": "901-4",
+      "label": "901-4",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_9",
+      "id": "901-7",
+      "label": "901-7",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_9",
+      "id": "901-6",
+      "label": "901-6",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_9",
+      "id": "901-5",
+      "label": "901-5",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Q_9",
+      "id": "907",
+      "label": "907",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_1",
+      "id": "105-7",
+      "label": "105-7",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_1",
+      "id": "101",
+      "label": "101",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_11",
+      "id": "1109",
+      "label": "1109",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "0aff924d-33e2-4040-99cb-ab58858d5d3f",
+        "c2240e47-ea62-45d9-8b04-4a1ce770c440"
+      ]
+    },
+    {
+      "floorId": "R_14",
+      "id": "1403",
+      "label": "1403",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_14",
+      "id": "1402",
+      "label": "1402",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "61d67540-1fdb-463a-813f-43e2054e1d66",
+        "d8addc8a-cafe-45a0-b3e7-13872755797c"
+      ]
+    },
+    {
+      "floorId": "R_2",
+      "id": "204-1",
+      "label": "204-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_3",
+      "id": "301",
+      "label": "301",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_3",
+      "id": "305",
+      "label": "305",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_4",
+      "id": "419",
+      "label": "419",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_4",
+      "id": "410",
+      "label": "410",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "2553fcb7-01b2-46e0-802d-4d337139613e",
+        "68278828-602c-4064-af8c-79a96e674e55"
+      ]
+    },
+    {
+      "floorId": "R_5",
+      "id": "508",
+      "label": "508",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_5",
+      "id": "509",
+      "label": "509",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "5623aa5b-0a80-4d3e-bc3c-4cb46f036d50",
+        "b876484d-53b1-4fd3-b716-a9d0d29b3b4b"
+      ]
+    },
+    {
+      "floorId": "R_8",
+      "id": "818",
+      "label": "818",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_8",
+      "id": "816",
+      "label": "816",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_8",
+      "id": "815",
+      "label": "815",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_8",
+      "id": "809-2",
+      "label": "809-2",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "70e2182b-e74c-468a-95d3-c40eca79e6bd",
+        "75082117-d11d-4b87-a2e7-1855bc345dce"
+      ]
+    },
+    {
+      "floorId": "R_8",
+      "id": "809-1",
+      "label": "809-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_8",
+      "id": "817",
+      "label": "817",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_9",
+      "id": "907",
+      "label": "907",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "12b3c744-9e8e-4997-a33b-87e230c78a96",
+        "92355e6e-4900-49c1-9901-e6071abda7ef"
+      ]
+    },
+    {
+      "floorId": "R_9",
+      "id": "907_2",
+      "label": "907",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "12b3c744-9e8e-4997-a33b-87e230c78a96",
+        "92355e6e-4900-49c1-9901-e6071abda7ef"
+      ]
+    },
+    {
+      "floorId": "R_B2",
+      "id": "B204",
+      "label": "B204",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_B2",
+      "id": "B205",
+      "label": "B205",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_B2",
+      "id": "B205_2",
+      "label": "B205",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_B2",
+      "id": "B202",
+      "label": "B202",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_B2",
+      "id": "B203",
+      "label": "B203",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "85d1bd07-ed31-4d08-9c11-c12749b6bf3b",
+        "8d47bca3-aec1-4986-b889-251825da1fb3"
+      ]
+    },
+    {
+      "floorId": "R_B3",
+      "id": "306",
+      "label": "306",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_B3",
+      "id": "B308",
+      "label": "B308",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_B3",
+      "id": "B302",
+      "label": "B302",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_B4",
+      "id": "B410",
+      "label": "B410",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_B4",
+      "id": "B409",
+      "label": "B409",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_B4",
+      "id": "B407",
+      "label": "B407",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "R_B4",
+      "id": "B406",
+      "label": "B406",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "S_1",
+      "id": "무대",
+      "label": "무대",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "S_1",
+      "id": "창고",
+      "label": "창고",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "S_1",
+      "id": "강당",
+      "label": "강당",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "T_1",
+      "id": "101",
+      "label": "101",
+      "reason": "cross_floor_membership",
+      "candidatePlaceIds": [
+        "2c8f4123-a63e-4a91-925d-3213ac4400f5"
+      ]
+    },
+    {
+      "floorId": "T_1",
+      "id": "011",
+      "label": "011",
+      "reason": "cross_floor_membership",
+      "candidatePlaceIds": [
+        "415ab36b-49dc-446f-ac2e-887b4edd1e25"
+      ]
+    },
+    {
+      "floorId": "T_10",
+      "id": "1004",
+      "label": "1004",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "T_2",
+      "id": "212",
+      "label": "212",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "1a5dc0f6-dffc-45a0-8c84-0972ec621185",
+        "bdec2c49-9711-45c2-bcfd-420287f003b4"
+      ]
+    },
+    {
+      "floorId": "T_2",
+      "id": "212_2",
+      "label": "212",
+      "reason": "server_mapping_needs_review",
+      "candidatePlaceIds": [
+        "1a5dc0f6-dffc-45a0-8c84-0972ec621185",
+        "bdec2c49-9711-45c2-bcfd-420287f003b4"
+      ]
+    },
+    {
+      "floorId": "T_3",
+      "id": "303",
+      "label": "303",
+      "reason": "server_place_unmapped",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "T_6",
+      "id": "멀티미디어실",
+      "label": "멀티미디어실",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "T_B1",
+      "id": "011",
+      "label": "011",
+      "reason": "cross_floor_membership",
+      "candidatePlaceIds": [
+        "415ab36b-49dc-446f-ac2e-887b4edd1e25"
+      ]
+    },
+    {
+      "floorId": "T_B1",
+      "id": "015",
+      "label": "015",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "T_B1",
+      "id": "018-1",
+      "label": "018-1",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "U_1",
+      "id": "103",
+      "label": "103",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "U_6",
+      "id": "602",
+      "label": "602",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "U_B1",
+      "id": "B105",
+      "label": "B105",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "U_B2",
+      "id": "B201",
+      "label": "B201",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "U_B2",
+      "id": "B205",
+      "label": "B205",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Z1_1",
+      "id": "계단강의실",
+      "label": "계단강의실",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Z2_1",
+      "id": "109",
+      "label": "109",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Z2_1",
+      "id": "106",
+      "label": "106",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Z2_1",
+      "id": "101",
+      "label": "101",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    },
+    {
+      "floorId": "Z2_2",
+      "id": "206",
+      "label": "206",
+      "reason": "server_room_not_found",
+      "candidatePlaceIds": []
+    }
+  ]
+}

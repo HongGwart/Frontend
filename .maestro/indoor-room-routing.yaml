@@ -1,5 +1,5 @@
 appId: com.honggwart
-name: Real backend indoor room endpoints and candidate selection
+name: Real backend unmapped indoor departure and destination search
 ---
 # Start on the campus map with the disposable backend from docs/api-e2e.md.
 - assertVisible: "캠퍼스맵"
@@ -20,11 +20,12 @@ name: Real backend indoor room endpoints and candidate selection
     timeout: 15000
 
 # These taps hit the actual floor-plan polygons through their visible labels.
+# T1 101 and 011 remain unmapped in the reviewed floor-plan data.
 # A room with no server candidate must never inherit a previous room's identity.
 - tapOn: "101"
 - assertVisible: "101호"
-- tapOn: "102"
-- assertVisible: "102호"
+- tapOn: "011"
+- assertVisible: "011호"
 - tapOn: "출발"
 - assertVisible: "출발할 호실 선택"
 - extendedWaitUntil:
@@ -33,7 +34,7 @@ name: Real backend indoor room endpoints and candidate selection
 - assertNotVisible: "T동 101호,.*"
 - takeScreenshot: room-without-candidates
 - tapOn: "뒤로"
-- assertVisible: "102호"
+- assertVisible: "011호"
 
 # Even a single candidate needs the user's explicit choice; cancel preserves the map.
 - tapOn: "101"
@@ -54,29 +55,19 @@ name: Real backend indoor room endpoints and candidate selection
 - assertVisible: "길찾기"
 - assertVisible: "T동 101호"
 
-# Choose the other endpoint from the floor plan while keeping the departure UUID.
+# T5 polygons now contain deployed UUIDs, which do not belong to this isolated
+# backend. Select its T501 fixture through normal search and preserve departure.
+# Direct mapped destination taps are covered by deployed-indoor-mapping.yaml.
 - tapOn: "도착지를 입력하세요"
-- tapOn: "T동 도면에서 선택"
+- assertVisible: "도착지 검색"
+- inputText: "T501"
 - extendedWaitUntil:
-    visible: "101"
+    visible: "T동 501호"
     timeout: 15000
-- tapOn: "5"
-- extendedWaitUntil:
-    visible: "501"
-    timeout: 15000
-- tapOn: "501"
-- assertVisible: "501호"
-- takeScreenshot: selected-room501
-- tapOn: "도착"
-- assertVisible: "도착할 호실 선택"
-- extendedWaitUntil:
-    visible: "T동 501호,.*"
-    timeout: 15000
-- assertVisible: "T동 501호 별실,.*"
-- assertNotVisible: "공학관 501호"
+- assertVisible: "T동 501호 별실"
 - assertNotVisible: "경로 안내 시작"
-- takeScreenshot: ambiguous-room-candidates
-- tapOn: "T동 501호,.*"
+- takeScreenshot: distinct-destination-search-results
+- tapOn: "T동 501호"
 - extendedWaitUntil:
     visible: ".*실내.*100%.*"
     timeout: 15000

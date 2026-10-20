@@ -15,8 +15,9 @@
  *   - fill이 전혀 없으면 Figma가 export 시 도형을 통째로 생략하니, 아주 옅은 fill-opacity를 넣는다.
  *   - export 시 "Include id attribute"를 켠다.
  *
- * 출력 JSON이 이미 있으면 거기서 손으로 넣어둔 `labelAnchor`를 같은 방에 이어받고, 예전엔
- * 있었는데 Hitbox에 없는 방 목록을 경고로 알려준다(Figma 누락 확인용).
+ * 출력 JSON이 이미 있으면 거기서 손으로 넣어둔 `labelAnchor`를 같은 방에 이어받는다.
+ * 서버 placeId/nodeId는 층·원본 도형 id·표시 라벨·points가 모두 같을 때만 보존한다.
+ * 바뀌거나 사라진 도형의 매핑은 보존하지 않고 경고한다(Figma 변경 후 재검증용).
  *
  * 사용법:
  *   node svgToRoomShapes.js <입력.svg> [출력.json] [--allow-empty]
@@ -372,28 +373,95 @@ function computeContentBounds(visualInner, rooms) {
 /** 지하층 번호는 Figma 레이어에 "B"가 붙기도 하고(B404) 안 붙기도 해서(404), 기존 JSON과 맞출 때 무시한다. */
 const withoutBasementPrefix = (id) => id.replace(/^B(?=\d)/, '');
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const hasServerIdentity = (room) => room.placeId != null || room.nodeId != null;
+const samePoints = (a, b) =>
+  Array.isArray(a) && Array.isArray(b) && a.length >= 3 && a.length === b.length &&
+  a.every((point, i) => Array.isArray(point) && Array.isArray(b[i]) &&
+    point.length === 2 && b[i].length === 2 &&
+    point.every((value, j) => Number.isFinite(value) && value === b[i][j]));
+
+/**
+ * 서버 식별자는 생성 전 raw id로만 대응시킨다. 아래의 B 접두 호환이나 같은 label을 통한
+ * 도형 묶음은 장소 동일성의 근거가 아니므로 이 검증에 사용하지 않는다.
+ */
+function carryOverServerIdentities(rooms, previousData, floorId) {
+  const previousRooms = previousData.rooms ?? [];
+  const mappedRooms = previousRooms.filter(hasServerIdentity);
+  if (mappedRooms.length === 0) return;
+  if (previousData.floorId !== floorId) {
+    console.warn(`[경고] 층 식별자가 달라 서버 매핑 ${mappedRooms.length}개를 보존하지 않음: ` +
+      `${previousData.floorId ?? '(없음)'} → ${floorId}`);
+    return;
+  }
+
+  const previousById = new Map();
+  const generatedCounts = new Map();
+  for (const previous of previousRooms) {
+    const matches = previousById.get(previous.id) ?? [];
+    matches.push(previous);
+    previousById.set(previous.id, matches);
+  }
+  for (const room of rooms) generatedCounts.set(room.id, (generatedCounts.get(room.id) ?? 0) + 1);
+
+  let preserved = 0;
+  for (const room of rooms) {
+    const matches = previousById.get(room.id) ?? [];
+    if (!matches.some(hasServerIdentity)) continue;
+    const previous = matches[0];
+    let reason;
+    if (matches.length !== 1 || generatedCounts.get(room.id) !== 1) reason = '도형 id 중복';
+    else if ((previous.label ?? previous.id) !== (room.label ?? room.id)) reason = '표시 라벨 변경';
+    else if (!samePoints(previous.points, room.points)) reason = '도형 points 변경';
+    else if (previous.placeId != null &&
+      (typeof previous.placeId !== 'string' || !UUID_PATTERN.test(previous.placeId))) reason = '잘못된 장소 UUID';
+    else if (previous.nodeId != null &&
+      (!Number.isSafeInteger(previous.nodeId) || previous.nodeId <= 0)) reason = '잘못된 노드 ID';
+
+    if (reason) {
+      console.warn(`[경고] "${room.id}" 서버 매핑을 보존하지 않음: ${reason} — 다시 검증하세요.`);
+      continue;
+    }
+    if (previous.placeId != null) room.placeId = previous.placeId;
+    if (previous.nodeId != null) room.nodeId = previous.nodeId;
+    preserved += 1;
+  }
+  for (const previous of mappedRooms) {
+    if (!generatedCounts.has(previous.id)) {
+      console.warn(`[경고] "${previous.id}" 서버 매핑을 보존하지 않음: 원본 도형 id가 없거나 변경됨 — 다시 검증하세요.`);
+    }
+  }
+  if (preserved > 0) console.log(`✓ 검증 조건이 같은 서버 매핑 ${preserved}개 이어받음`);
+}
+
 /**
  * 기존 JSON에서 이어받을 값을 반영하고, 예전엔 있었는데 Hitbox에 없는 방을 알려준다.
  * - labelAnchor: 수동 보정값이라 같은 방이면 그대로 이어받는다.
  * - id: "B" 접두만 다르면 예전 표시 번호(B404 등)를 유지한다.
+ * - placeId/nodeId: 위의 엄격한 비교를 통과한 원본 도형에만 이어받는다.
  * 예전 JSON의 수동 label은 이어받지 않는다 — Figma Hitbox 이름을 바로잡으면서 만든 보정이라
  * 새 Hitbox 이름이 기준이다.
  */
-function carryOverFromPrevious(rooms, outputPath) {
+function carryOverFromPrevious(rooms, outputPath, floorId) {
   if (!fs.existsSync(outputPath)) return;
-  let previousRooms;
+  let previousData;
   try {
-    previousRooms = JSON.parse(fs.readFileSync(outputPath, 'utf8')).rooms ?? [];
+    previousData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
   } catch {
     console.warn(`[경고] 기존 ${outputPath}를 읽지 못해 이어받기를 건너뜀`);
     return;
   }
+  // 기존 호환 로직이 room.id를 바꾸기 전에 raw SVG 식별자로 검사한다.
+  carryOverServerIdentities(rooms, previousData, floorId);
+  const previousRooms = previousData.rooms ?? [];
+  const previousByRawId = new Map(previousRooms.map((r) => [r.id, r]));
   const previousByKey = new Map(previousRooms.map((r) => [withoutBasementPrefix(r.id), r]));
   const matchedKeys = new Set();
   let anchors = 0;
   for (const room of rooms) {
     const key = withoutBasementPrefix(room.id);
-    const previous = previousByKey.get(key);
+    // 501과 B501이 함께 있으면 호환 키 충돌보다 원본 id의 일치를 우선한다.
+    const previous = previousByRawId.get(room.id) ?? previousByKey.get(key);
     if (!previous) continue;
     matchedKeys.add(key);
     if (previous.id !== room.id) {
@@ -456,7 +524,7 @@ function main() {
   }
 
   labelSplitPieces(rooms);
-  carryOverFromPrevious(rooms, outputPath);
+  carryOverFromPrevious(rooms, outputPath, path.basename(inputPath, path.extname(inputPath)));
 
   const contentBounds = computeContentBounds(extractGroupInner(svgText, 'Visual'), rooms);
   if (!contentBounds) {

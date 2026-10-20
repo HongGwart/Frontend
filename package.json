@@ -51,7 +51,8 @@
     "ios": "expo run:ios",
     "api:gen": "orval",
     "typecheck": "tsc --noEmit",
-    "test:api": "node scripts/test-api-contract.cjs"
+    "test:api": "node scripts/test-api-contract.cjs",
+    "test:floors": "node --test tests/floor-place-mapping.test.cjs tests/floor-regeneration.test.cjs"
   },
   "private": true
 }

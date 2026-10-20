@@ -11,7 +11,7 @@
   "rooms": [
     {
       "id": "116",
-      "placeId": null,
+      "placeId": "43a4aa1f-4a98-47af-904c-10b0a00412f2",
       "points": [
         [
           105,
@@ -34,7 +34,7 @@
     },
     {
       "id": "115",
-      "placeId": null,
+      "placeId": "208ded49-a72c-4fc2-86b7-1032b109a983",
       "points": [
         [
           277,
@@ -57,7 +57,7 @@
     },
     {
       "id": "117",
-      "placeId": null,
+      "placeId": "6e5f8a27-fe9b-443f-b578-93940678fb54",
       "points": [
         [
           534,
@@ -80,7 +80,7 @@
     },
     {
       "id": "114",
-      "placeId": null,
+      "placeId": "8a601899-9026-4712-b6c4-04ec010af899",
       "points": [
         [
           614,
@@ -103,7 +103,7 @@
     },
     {
       "id": "113",
-      "placeId": null,
+      "placeId": "7c966d79-e61a-4335-9b20-7c5af1b01f59",
       "points": [
         [
           697.682,
@@ -126,7 +126,7 @@
     },
     {
       "id": "112",
-      "placeId": null,
+      "placeId": "6aa96f87-9412-420e-bb27-ff36f568125e",
       "points": [
         [
           757.5,
@@ -149,7 +149,7 @@
     },
     {
       "id": "111",
-      "placeId": null,
+      "placeId": "5c64f832-bc2e-4919-b343-67c12c8ad1ff",
       "points": [
         [
           813,
@@ -172,7 +172,7 @@
     },
     {
       "id": "110",
-      "placeId": null,
+      "placeId": "a66f5977-b77d-4d05-a319-e385e26f3600",
       "points": [
         [
           868.602,
@@ -195,7 +195,7 @@
     },
     {
       "id": "109",
-      "placeId": null,
+      "placeId": "3d176a1e-7226-4228-86cd-556ee7fc3350",
       "points": [
         [
           924,
@@ -218,7 +218,7 @@
     },
     {
       "id": "108",
-      "placeId": null,
+      "placeId": "6631035d-c2e2-4b66-878c-a93151b29960",
       "points": [
         [
           979,
@@ -241,7 +241,7 @@
     },
     {
       "id": "107",
-      "placeId": null,
+      "placeId": "c78dd680-d92b-4f59-89c8-c8e6cd9c30c6",
       "points": [
         [
           1033.45,
@@ -264,7 +264,7 @@
     },
     {
       "id": "106",
-      "placeId": null,
+      "placeId": "3971a593-1c50-419d-b455-7c58bec225c8",
       "points": [
         [
           1116.39,
@@ -287,7 +287,7 @@
     },
     {
       "id": "105",
-      "placeId": null,
+      "placeId": "7b43dfcd-1bd9-4d5e-9a10-c1278ea9e16c",
       "points": [
         [
           1199,
@@ -310,7 +310,7 @@
     },
     {
       "id": "104",
-      "placeId": null,
+      "placeId": "5e7971ce-4190-49d4-80d7-4e6a2c9ed645",
       "points": [
         [
           1358.1,
@@ -333,7 +333,7 @@
     },
     {
       "id": "103",
-      "placeId": null,
+      "placeId": "690c3a8d-7227-4926-ae38-bed4d33a0cde",
       "points": [
         [
           1529,
@@ -356,7 +356,7 @@
     },
     {
       "id": "102",
-      "placeId": null,
+      "placeId": "df4eedc2-8d2b-4267-9a31-708f5121fcdb",
       "points": [
         [
           1700,
@@ -379,7 +379,7 @@
     },
     {
       "id": "101",
-      "placeId": null,
+      "placeId": "e94aef71-1481-4958-8b2a-81536a932b6d",
       "points": [
         [
           1958.85,
@@ -402,7 +402,7 @@
     },
     {
       "id": "126",
-      "placeId": null,
+      "placeId": "ad0449b1-0f29-478d-a51a-655c3cae3bcd",
       "points": [
         [
           1820.3,
@@ -425,7 +425,7 @@
     },
     {
       "id": "125",
-      "placeId": null,
+      "placeId": "9ce8d61c-4548-452e-9865-666ad9da9f38",
       "points": [
         [
           1694.89,
@@ -448,7 +448,7 @@
     },
     {
       "id": "124",
-      "placeId": null,
+      "placeId": "3360b550-255d-4fb1-a344-eaa945b72dab",
       "points": [
         [
           1444.07,
@@ -471,7 +471,7 @@
     },
     {
       "id": "123",
-      "placeId": null,
+      "placeId": "1f2fa213-8242-4396-9666-68f9cd4cbe25",
       "points": [
         [
           1358,
@@ -494,7 +494,7 @@
     },
     {
       "id": "120-2",
-      "placeId": null,
+      "placeId": "bda0e358-61d4-4e8d-a7ac-63faf837ea84",
       "points": [
         [
           979,
@@ -517,7 +517,7 @@
     },
     {
       "id": "120-1",
-      "placeId": null,
+      "placeId": "fd89be75-aa35-4fce-bfa2-0e72c79a4ab7",
       "points": [
         [
           864.557,
@@ -540,7 +540,7 @@
     },
     {
       "id": "119",
-      "placeId": null,
+      "placeId": "ce318773-6ae3-4bf2-abd7-dd877d0b2161",
       "points": [
         [
           784.659,
@@ -563,7 +563,7 @@
     },
     {
       "id": "118",
-      "placeId": null,
+      "placeId": "a143aede-50dd-4e76-825d-e750efea212c",
       "points": [
         [
           695.659,

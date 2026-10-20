@@ -11,7 +11,7 @@
   "rooms": [
     {
       "id": "1209",
-      "placeId": null,
+      "placeId": "b7a330fb-6da2-4d38-8293-e179e65ab3e4",
       "points": [
         [
           207,
@@ -34,7 +34,7 @@
     },
     {
       "id": "1208",
-      "placeId": null,
+      "placeId": "63fa6adf-2540-437c-8397-1b9c387278a3",
       "points": [
         [
           207,
@@ -57,7 +57,7 @@
     },
     {
       "id": "1207",
-      "placeId": null,
+      "placeId": "649ebf27-39ed-4e2b-81e1-cd5a356f51b7",
       "points": [
         [
           207,
@@ -80,7 +80,7 @@
     },
     {
       "id": "1205",
-      "placeId": null,
+      "placeId": "717771b2-d5a3-45e6-9cd1-fc099de59bb6",
       "points": [
         [
           299,
@@ -103,7 +103,7 @@
     },
     {
       "id": "1204",
-      "placeId": null,
+      "placeId": "6ef38a91-6003-4c49-9c19-ebe2c1aaa0b0",
       "points": [
         [
           451,
@@ -126,7 +126,7 @@
     },
     {
       "id": "1203",
-      "placeId": null,
+      "placeId": "0949ae3c-42ea-4b40-b35a-260cb9b92fd4",
       "points": [
         [
           516,
@@ -149,7 +149,7 @@
     },
     {
       "id": "1202",
-      "placeId": null,
+      "placeId": "0688bdee-572f-4f65-9bd5-a31e7a5c5c4f",
       "points": [
         [
           590,
@@ -172,7 +172,7 @@
     },
     {
       "id": "1201",
-      "placeId": null,
+      "placeId": "8a6a6615-9e99-474f-9998-caa8c78b5f22",
       "points": [
         [
           655,
@@ -195,7 +195,7 @@
     },
     {
       "id": "1206",
-      "placeId": null,
+      "placeId": "ef9277f7-9b97-4862-962f-dfdca1d20cb0",
       "points": [
         [
           738,
@@ -218,7 +218,7 @@
     },
     {
       "id": "1210",
-      "placeId": null,
+      "placeId": "199e7bd7-9247-448b-975e-282141c65ce0",
       "points": [
         [
           738,

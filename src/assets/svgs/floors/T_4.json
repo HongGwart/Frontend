@@ -11,7 +11,7 @@
   "rooms": [
     {
       "id": "402",
-      "placeId": null,
+      "placeId": "b5a4d3f8-3425-4fe7-8462-fe17fd4322b6",
       "points": [
         [
           483,
@@ -42,7 +42,7 @@
     },
     {
       "id": "401",
-      "placeId": null,
+      "placeId": "8d2c41b1-9dab-49db-b722-17d723690a1d",
       "points": [
         [
           1729,
