@@ -1,0 +1,74 @@
+appId: com.honggwart
+name: Real backend same place and legacy node cases
+---
+# Run after api-alignment.yaml, which finishes on the campus map.
+- assertVisible: "캠퍼스맵"
+- tapOn: "길찾기"
+- tapOn: "출발지를 입력하세요"
+- inputText: "T501"
+- extendedWaitUntil:
+    visible: "T동 501호"
+    timeout: 15000
+- tapOn: "T동 501호"
+- tapOn: "도착지를 입력하세요"
+- inputText: "T501"
+- extendedWaitUntil:
+    visible: "T동 501호"
+    timeout: 15000
+- tapOn: "T동 501호"
+- extendedWaitUntil:
+    visible: ".*출발지와 도착지가 같은 장소예요.*"
+    timeout: 15000
+- assertVisible: ".*0m · 0초.*"
+- assertNotVisible: "경로 안내 시작"
+- takeScreenshot: same-place
+
+# Return to the map before the unmapped-node case.
+- tapOn: "뒤로"
+- extendedWaitUntil:
+    visible: "캠퍼스맵"
+    timeout: 30000
+- tapOn: "강의실 또는 시설을 검색하세요"
+- inputText: "미매핑"
+- extendedWaitUntil:
+    visible: "미매핑 E2E 안내소"
+    timeout: 15000
+- tapOn: "미매핑 E2E 안내소"
+- extendedWaitUntil:
+    visible: "장소 정보"
+    timeout: 10000
+- assertVisible: "미매핑 E2E 안내소"
+- assertVisible: "출발"
+- assertVisible: "도착"
+- takeScreenshot: unmapped-node-detail
+- tapOn: "출발"
+- tapOn: "도착지를 입력하세요"
+- inputText: "T501"
+- extendedWaitUntil:
+    visible: "T동 501호"
+    timeout: 15000
+- tapOn: "T동 501호"
+- extendedWaitUntil:
+    visible: ".*걷기.*"
+    timeout: 15000
+- takeScreenshot: mixed-node-place-route
+
+# A facility with MISSING introduction remains usable without invented copy.
+- tapOn: "뒤로"
+- extendedWaitUntil:
+    visible: "장소 정보"
+    timeout: 10000
+- tapOn: "뒤로"
+- eraseText
+- inputText: "빈소개카페"
+- extendedWaitUntil:
+    visible: "T동 빈소개카페"
+    timeout: 15000
+- tapOn: "T동 빈소개카페"
+- extendedWaitUntil:
+    visible: "출발"
+    timeout: 10000
+- assertVisible: ".*빈소개카페.*"
+- assertVisible: "도착"
+- assertNotVisible: "E2E 서버에서 받은 제4공학관 소개입니다."
+- takeScreenshot: missing-introduction

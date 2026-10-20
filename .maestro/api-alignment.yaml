@@ -1,0 +1,75 @@
+appId: com.honggwart
+name: Real backend place search and route guidance
+---
+- openLink: "com.honggwart://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- tapOn:
+    text: "열기"
+    optional: true
+- tapOn:
+    text: "Continue"
+    optional: true
+- tapOn:
+    text: "Close"
+    optional: true
+- extendedWaitUntil:
+    visible: "입학하기|캠퍼스맵"
+    timeout: 120000
+- runFlow:
+    when:
+      visible: "입학하기"
+    commands:
+      - repeat:
+          times: 4
+          commands:
+            - swipe:
+                direction: LEFT
+            - waitForAnimationToEnd
+      - tapOn: "입학하기"
+- extendedWaitUntil:
+    visible: "캠퍼스맵"
+    timeout: 30000
+- tapOn: "강의실 또는 시설을 검색하세요"
+- inputText: "T101"
+- extendedWaitUntil:
+    visible: "T동 101호"
+    timeout: 15000
+- tapOn: "T동 101호"
+- extendedWaitUntil:
+    visible: "출발"
+    timeout: 10000
+- takeScreenshot: place-detail
+- tapOn: "출발"
+- tapOn: "도착지를 입력하세요"
+- inputText: "T501"
+- extendedWaitUntil:
+    visible: "T동 501호"
+    timeout: 15000
+- tapOn:
+    text: "T동 501호"
+- extendedWaitUntil:
+    visible: ".*실내.*100%.*"
+    timeout: 15000
+- assertVisible: ".*엘리베이터.*1회.*"
+- takeScreenshot: route-options
+- tapOn:
+    text: ".*걷기.*"
+    index: 0
+- extendedWaitUntil:
+    visible: "경로 안내 시작"
+    timeout: 15000
+- takeScreenshot: route-detail
+- tapOn: "경로 안내 시작"
+- extendedWaitUntil:
+    visible: "다음 안내"
+    timeout: 15000
+- repeat:
+    while:
+      visible: "다음 안내"
+    commands:
+      - tapOn: "다음 안내"
+      - waitForAnimationToEnd
+- assertVisible: ".*도착했어요.*"
+- assertVisible: "안내 종료"
+- takeScreenshot: arrived
+- tapOn: "안내 종료"
+- assertVisible: "캠퍼스맵"

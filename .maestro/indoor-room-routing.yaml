@@ -1,0 +1,106 @@
+appId: com.honggwart
+name: Real backend indoor room endpoints and candidate selection
+---
+# Start on the campus map with the disposable backend from docs/api-e2e.md.
+- assertVisible: "캠퍼스맵"
+- tapOn: "강의실 또는 시설을 검색하세요"
+- inputText: "T동"
+- extendedWaitUntil:
+    visible: "T동"
+    timeout: 15000
+- tapOn:
+    text: "T동"
+    index: 0
+- extendedWaitUntil:
+    visible: "건물 내부 보기"
+    timeout: 15000
+- tapOn: "건물 내부 보기"
+- extendedWaitUntil:
+    visible: "101"
+    timeout: 15000
+
+# These taps hit the actual floor-plan polygons through their visible labels.
+# A room with no server candidate must never inherit a previous room's identity.
+- tapOn: "101"
+- assertVisible: "101호"
+- tapOn: "102"
+- assertVisible: "102호"
+- tapOn: "출발"
+- assertVisible: "출발할 호실 선택"
+- extendedWaitUntil:
+    visible: "이 층에서 일치하는 장소를 찾지 못했어요.*"
+    timeout: 15000
+- assertNotVisible: "T동 101호,.*"
+- takeScreenshot: room-without-candidates
+- tapOn: "뒤로"
+- assertVisible: "102호"
+
+# Even a single candidate needs the user's explicit choice; cancel preserves the map.
+- tapOn: "101"
+- tapOn: "출발"
+- extendedWaitUntil:
+    visible: "T동 101호,.*"
+    timeout: 15000
+- assertVisible: "출발할 호실 선택"
+- assertNotVisible: "공학관 101호"
+- takeScreenshot: departure-candidate
+- tapOn: "뒤로"
+- assertVisible: "101호"
+- tapOn: "출발"
+- extendedWaitUntil:
+    visible: "T동 101호,.*"
+    timeout: 15000
+- tapOn: "T동 101호,.*"
+- assertVisible: "길찾기"
+- assertVisible: "T동 101호"
+
+# Choose the other endpoint from the floor plan while keeping the departure UUID.
+- tapOn: "도착지를 입력하세요"
+- tapOn: "T동 도면에서 선택"
+- extendedWaitUntil:
+    visible: "101"
+    timeout: 15000
+- tapOn: "5"
+- extendedWaitUntil:
+    visible: "501"
+    timeout: 15000
+- tapOn: "501"
+- assertVisible: "501호"
+- takeScreenshot: selected-room501
+- tapOn: "도착"
+- assertVisible: "도착할 호실 선택"
+- extendedWaitUntil:
+    visible: "T동 501호,.*"
+    timeout: 15000
+- assertVisible: "T동 501호 별실,.*"
+- assertNotVisible: "공학관 501호"
+- assertNotVisible: "경로 안내 시작"
+- takeScreenshot: ambiguous-room-candidates
+- tapOn: "T동 501호,.*"
+- extendedWaitUntil:
+    visible: ".*실내.*100%.*"
+    timeout: 15000
+- assertVisible: "T동 101호"
+- assertVisible: "T동 501호"
+- assertVisible: ".*엘리베이터.*1회.*"
+- takeScreenshot: indoor-endpoints-route
+- tapOn:
+    text: ".*걷기.*"
+    index: 0
+- extendedWaitUntil:
+    visible: "경로 안내 시작"
+    timeout: 15000
+- tapOn: "경로 안내 시작"
+- extendedWaitUntil:
+    visible: "다음 안내"
+    timeout: 15000
+- repeat:
+    while:
+      visible: "다음 안내"
+    commands:
+      - tapOn: "다음 안내"
+      - waitForAnimationToEnd
+- assertVisible: ".*도착했어요.*"
+- takeScreenshot: indoor-route-arrived
+- tapOn: "안내 종료"
+- assertVisible: "캠퍼스맵"
