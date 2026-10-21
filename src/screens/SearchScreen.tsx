@@ -182,16 +182,11 @@ export default function SearchScreen() {
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const insets = useSafeAreaInsets();
 
-  // 시설 카드를 위로 슬라이드하면 그 건물의 상세보기로 넘어간다. MapScreen과 동일한
-  // 인터랙션 — 애니메이션 묶음은 훅으로 공유하고, buildingCode를 뽑아내는 부분만 이
-  // 화면의 SelectedFacility 모양(dong/category 둘뿐)에 맞춰 여기 남겨둔다.
+  // 건물 카드를 위로 슬라이드하면 그 건물의 상세보기로 넘어간다. MapScreen과 동일한
+  // 인터랙션 — 애니메이션 묶음은 훅으로 공유하고, buildingCode를 뽑아내는 부분만 여기 남겨둔다.
+  // 시설(category) 카드는 건물 상세가 그 시설의 정보가 아니라서 올려도 열지 않는다.
   const swipeUpBuildingCode = useMemo(
-    () =>
-      selectedFacility
-        ? selectedFacility.type === 'dong'
-          ? (selectedFacility.marker.label ?? null)
-          : selectedFacility.marker.buildingCode
-        : null,
+    () => (selectedFacility?.type === 'dong' ? (selectedFacility.marker.label ?? null) : null),
     [selectedFacility],
   );
 

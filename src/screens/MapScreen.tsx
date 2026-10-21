@@ -233,19 +233,16 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     if (selectedFacility) bottomSheetRef.current?.close();
   }, [selectedFacility]);
 
-  // 시설 카드를 위로 슬라이드하면 그 건물의 상세보기(BuildingDetailScreen)로 넘어간다.
-  // 'list'(겹친 마커 묶음)는 특정 건물 하나를 가리키지 않아서 지원하지 않는다.
+  // 건물 카드를 위로 슬라이드하면 그 건물의 상세보기(BuildingDetailScreen)로 넘어간다. 시설 카드(카테고리 마커·
+  // 겹친 마커 목록·다른 화면에서 넘어온 시설)는 건물 상세가 그 시설의 정보가 아니라서 올려도 열지 않는다.
+  // 즐겨찾기에서 넘어온 건물(placeName 없음)은 건물 카드라 연다.
   const swipeUpBuildingCode = useMemo(() => {
     if (!selectedFacility) return null;
     switch (selectedFacility.type) {
       case 'dong':
         return selectedFacility.marker.label ?? null;
-      case 'category':
-        return selectedFacility.marker.buildingCode;
-      case 'item':
-        return selectedFacility.item.building;
       case 'external':
-        return selectedFacility.facility.buildingCode;
+        return selectedFacility.facility.placeName ? null : selectedFacility.facility.buildingCode;
       default:
         return null;
     }
