@@ -10,4 +10,9 @@ export interface EntranceSummary {
   nodeId?: number;
   name?: string;
   isPrimary?: boolean;
+  role?: string;
+  lat?: number;
+  lng?: number;
+  floor?: string;
+  floorOrder?: number;
 }

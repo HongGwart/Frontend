@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { StackActions, useNavigation } from '@react-navigation/native';
+import type { RoutePlace } from '@api/node/usePlaceNodeId';
 
 /** 출발/도착 입력창에 넣을 장소 이름. 빈 값은 빼고 공백으로 잇는다 (예: "T동 제4공학관 212호"). */
 export function toRoutePlaceLabel(...parts: (string | null | undefined | false)[]) {
@@ -14,6 +15,9 @@ export function toRoutePlaceLabel(...parts: (string | null | undefined | false)[
  * 호출 지점이 탭 안(지도 탭)이든 스택 위 화면(건물 내부 지도, 검색)이든 상관없이 이 액션을 처리할
  * 수 있는 가장 가까운 스택 내비게이터(루트 스택)까지 자동으로 bubble돼서 항상 같은 방식으로 동작한다.
  *
+ * nodeId를 모르는 카드(지도 마커·건물 내부 지도 등)는 place(동 코드 + 호실)를 넘기면 길찾기 화면이 그걸로 서버
+ * 노드를 찾는다(usePlaceNodeId). 서버에 없는 장소면 길찾기 화면이 "경로를 찾을 수 없는 장소" 안내를 띄운다.
+ *
  * @param onBeforeNavigate 이동 직전에 할 일(예: 지도 탭의 시설 카드는 Modal이라 다른 탭 위에도
  *   떠 있으니 먼저 닫는다).
  */
@@ -21,13 +25,13 @@ export function useRouteButtonProps(onBeforeNavigate?: () => void) {
   const navigation = useNavigation();
 
   return useCallback(
-    (label: string, nodeId?: number) => {
+    (label: string, nodeId?: number, place?: RoutePlace) => {
       const goToRoute = (target: 'departure' | 'destination') => {
         onBeforeNavigate?.();
         const routeSelection =
           target === 'departure'
-            ? { departureLabel: label, departureNodeId: nodeId }
-            : { destinationLabel: label, destinationNodeId: nodeId };
+            ? { departureLabel: label, departureNodeId: nodeId, departurePlace: place }
+            : { destinationLabel: label, destinationNodeId: nodeId, destinationPlace: place };
         navigation.dispatch(StackActions.push('Navigation', { routeSelection }));
       };
       return {

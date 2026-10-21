@@ -9,12 +9,20 @@ import type { RouteMode } from './routeMode';
 
 export type RouteParams = {
 /**
- * 출발 노드 ID
+ * 출발 노드 ID. fromPlaceId와 동시에 지정할 수 없습니다.
  */
-fromNodeId: number;
+fromNodeId?: number;
 /**
- * 도착 노드 ID
+ * 도착 노드 ID. toPlaceId와 동시에 지정할 수 없습니다.
  */
-toNodeId: number;
+toNodeId?: number;
+/**
+ * 출발 장소 ID
+ */
+fromPlaceId?: string;
+/**
+ * 도착 장소 ID
+ */
+toPlaceId?: string;
 mode?: RouteMode;
 };

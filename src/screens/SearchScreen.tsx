@@ -3,10 +3,9 @@ import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import styled, { useTheme } from 'styled-components/native';
+import styled from 'styled-components/native';
 import Animated from 'react-native-reanimated';
 import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
-import SearchIcon from '@assets/svgs/icons/search.svg';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
@@ -19,6 +18,7 @@ import { createFloorToGeo, getContentBounds } from '@utils/floorGeoTransform';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
 import { SearchListItem } from '@components/common/SearchListItem';
+import { SearchEmptyResult } from '@components/common/SearchEmptyResult';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import {
@@ -33,8 +33,6 @@ import { useVoiceSearch } from '@hooks/useVoiceSearch';
 import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
 import { useNodeDetail } from '@api/node/useNodeDetail';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
-import { useOperatingStatus } from '@hooks/useOperatingStatus';
-import { getFacilityHours } from '@constant/facilityHours';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import {
@@ -88,7 +86,6 @@ function findFacilityForSearchItem(item: SearchResultItem): SelectedFacility | n
 // react-navigation 스택 화면으로 등록되기 전까지는 App.tsx가 이 값을 들고 있었는데,
 // 다른 화면에서 쓰지 않아서 스택 전환으로 옮기며 그냥 이 화면 로컬 상태로 내렸다.
 export default function SearchScreen() {
-  const theme = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [value, setValue] = useState('');
   // 마이크 버튼 -> 듣기 시작 -> 인식된 텍스트로 검색창 내용을 그대로 갱신(중간 결과 포함).
@@ -112,7 +109,11 @@ export default function SearchScreen() {
 
   const trimmedValue = value.trim();
   // 서버 검색(자동완성 API) + 아직 서버에 없는 앱 더미 장소. 실패하면 더미 결과로 대신한다.
-  const { results: searchResults } = useSearchSuggestions(value);
+  const {
+    results: searchResults,
+    isSearching: isFetchingResults,
+    isError: searchFailed,
+  } = useSearchSuggestions(value);
 
   // 검색어가 없으면 최근 검색어를, 있으면 검색 결과를 보여준다.
   const isSearching = trimmedValue.length > 0;
@@ -150,12 +151,6 @@ export default function SearchScreen() {
   const buildingNodeId = selectedItem?.category === 'building' ? selectedItem.nodeId : undefined;
   // 건물 카드 정보(설명·사진·운영 시간·주 출입구) — 확인된 건물 정보 + 서버 장소 상세의 출입구.
   const dongDetail = useBuildingDetail(selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined);
-  // 카테고리(시설) 카드의 운영 상태 — 시설 운영 시간을 지금 시각으로 계산.
-  const facilityStatus = useOperatingStatus(
-    selectedFacility?.type === 'category'
-      ? getFacilityHours(selectedFacility.marker.buildingCode, selectedFacility.marker.room)
-      : undefined,
-  );
 
   // 호실을 골랐으면 그 호실이 있는 층 평면도를 지도에 깔고 호실을 칠한다. 층은 서버 장소 상세에 있으면 그 층을
   // 먼저 보고, 없으면(앱 더미 장소) 건물의 평면도들에서 같은 번호의 방을 찾는다.
@@ -191,16 +186,11 @@ export default function SearchScreen() {
   const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
   const insets = useSafeAreaInsets();
 
-  // 시설 카드를 위로 슬라이드하면 그 건물의 상세보기로 넘어간다. MapScreen과 동일한
-  // 인터랙션 — 애니메이션 묶음은 훅으로 공유하고, buildingCode를 뽑아내는 부분만 이
-  // 화면의 SelectedFacility 모양(dong/category 둘뿐)에 맞춰 여기 남겨둔다.
+  // 건물 카드를 위로 슬라이드하면 그 건물의 상세보기로 넘어간다. MapScreen과 동일한
+  // 인터랙션 — 애니메이션 묶음은 훅으로 공유하고, buildingCode를 뽑아내는 부분만 여기 남겨둔다.
+  // 시설(category) 카드는 건물 상세가 그 시설의 정보가 아니라서 올려도 열지 않는다.
   const swipeUpBuildingCode = useMemo(
-    () =>
-      selectedFacility
-        ? selectedFacility.type === 'dong'
-          ? (selectedFacility.marker.label ?? null)
-          : selectedFacility.marker.buildingCode
-        : null,
+    () => (selectedFacility?.type === 'dong' ? (selectedFacility.marker.label ?? null) : null),
     [selectedFacility],
   );
 
@@ -259,7 +249,6 @@ export default function SearchScreen() {
         variant="facility"
         facilityName={name}
         locationDetail={nodeDetail?.floorText}
-        images={marker.images}
         {...common}
         onViewInsidePress={() => {
           closeCardWhenCovered();
@@ -379,10 +368,10 @@ export default function SearchScreen() {
                 {...routeButtonProps(
                   toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
                   buildingNodeId,
+                  { buildingCode: selectedFacility.marker.label ?? '' },
                 )}
                 facilityCounts={dongDetail.facilityCounts}
-                // 서버 건물이면 장소 상세의 출입구 목록을, 아니면(또는 불러오기 전) 건물 코드로 찾은 값을 보여준다.
-                mainEntrance={(buildingNodeId !== undefined && nodeDetail?.mainEntrance) || dongDetail.mainEntrance}
+                mainEntrance={dongDetail.mainEntrance}
                 operatingHours={dongDetail.operatingHours}
                 onViewInsidePress={() => {
                   closeCardWhenCovered();
@@ -403,14 +392,16 @@ export default function SearchScreen() {
                 isFavorite={isFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
                 onToggleFavorite={() => toggleFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
                 images={selectedFacility.marker.images}
+                placeholderIcon={CATEGORY_MARKER_ICONS[selectedFacility.marker.category].icon}
                 {...routeButtonProps(
                   toRoutePlaceLabel(
                     selectedFacility.marker.buildingCode,
                     selectedFacility.marker.buildingName,
                     selectedFacility.marker.room,
                   ),
+                  undefined,
+                  { buildingCode: selectedFacility.marker.buildingCode, room: selectedFacility.marker.room },
                 )}
-                operatingHours={facilityStatus}
                 // 시설이 있는 건물(동)의 내부 지도로 간다(지도 화면의 시설 카드와 같음).
                 onViewInsidePress={() => {
                   const { buildingCode, buildingName } = selectedFacility.marker;
@@ -479,14 +470,8 @@ export default function SearchScreen() {
                       {...SEARCH_ITEM_ICONS[item.category]}
                     />
                   ))
-                ) : (
-                  <EmptyResultView>
-                    <EmptyIconCircle>
-                      <SearchIcon width={28} height={28} color={theme.semantic.text.tertiary} />
-                    </EmptyIconCircle>
-                    <EmptyTitleText>검색 결과가 없어요</EmptyTitleText>
-                    <EmptySubtitleText>다른 검색어로 다시 시도해 보세요</EmptySubtitleText>
-                  </EmptyResultView>
+                ) : isFetchingResults || searchFailed ? null : (
+                  <SearchEmptyResult />
                 )
               ) : (
                 recentSearches.map((item, index) => (
@@ -532,7 +517,7 @@ const styles = StyleSheet.create({
   searchHeaderWrapper: { marginTop: 8 },
   content: { flex: 1, marginTop: 16 },
   scrollView: { flex: 1 },
-  // 검색 결과가 없을 때 EmptyResultView를 검색창 아래 여백의 정중앙에 오도록
+  // 검색 결과가 없을 때 SearchEmptyResult를 검색창 아래 여백의 정중앙에 오도록
   // 스크롤 콘텐츠 자체가 (위 scrollView의 flex:1로 확보된) 남은 공간을 다 채우게 한다.
   scrollContent: { flexGrow: 1 },
   mapTopOverlay: {
@@ -557,39 +542,6 @@ const RecentSearchesTitle = styled.Text`
   color: ${({ theme }) => theme.semantic.text.secondary};
 `;
 
-// 검색어에 해당하는 결과가 하나도 없을 때 보여주는 빈 상태 화면.
-const EmptyResultView = styled.View`
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 24px 40px 96px;
-`;
-
-const EmptyIconCircle = styled.View`
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 100px;
-  background-color: ${({ theme }) => theme.semantic.background.fill};
-`;
-
-const EmptyTitleText = styled.Text`
-  font-family: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontFamily};
-  font-size: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.bodyNormal.semiBold.lineHeight}px;
-  letter-spacing: ${({ theme }) => theme.typography.bodyNormal.semiBold.letterSpacing}px;
-  color: ${({ theme }) => theme.semantic.text.primary};
-`;
-
-const EmptySubtitleText = styled.Text`
-  font-family: ${({ theme }) => theme.typography.labelNormal.medium.fontFamily};
-  font-size: ${({ theme }) => theme.typography.labelNormal.medium.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.labelNormal.medium.lineHeight}px;
-  letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
-  color: ${({ theme }) => theme.semantic.text.tertiary};
-`;
 
 const ListeningRow = styled.View`
   flex-direction: row;

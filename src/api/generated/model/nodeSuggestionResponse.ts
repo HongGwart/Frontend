@@ -11,4 +11,13 @@ export interface NodeSuggestionResponse {
   displayName?: string;
   nodeType?: string;
   category?: string;
+  /** @nullable */
+  placeId?: string | null;
+  /** @nullable */
+  placeKind?: string | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  entranceCount?: number | null;
 }

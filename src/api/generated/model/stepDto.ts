@@ -14,7 +14,7 @@ import type { StepDtoType } from './stepDtoType';
  * 안내 step 하나
  */
 export interface StepDto {
-  /** 안내 종류 */
+  /** 안내 종류. WALK는 출발 후·층 이동 후·안내 지점 사이의 보행 구간이다. */
   type?: StepDtoType;
   /** 사용자에게 보여 줄 안내 문구 */
   instruction?: string;
@@ -24,11 +24,11 @@ export interface StepDto {
   lng?: number;
   /** step 첫 구간(ARRIVE는 마지막 구간)의 진행 방위(도). 정북이 0이고 시계 방향으로 증가하는 [0, 360) 값이며 소수점 첫째 자리까지 반올림한다. 기준 구간이 계단·엘리베이터이거나 출발지와 도착지가 같으면 null이다. */
   bearing?: number;
-  /** 이 step이 덮는 구간의 거리(m) */
+  /** 구간의 보행 거리(m). 엘리베이터는 제외하며 계단은 포함한다. 지점 이벤트도 항상 0이다. */
   distanceMeters?: number;
-  /** 이 step이 덮는 구간의 예상 보행 시간(초) */
+  /** 구간의 예상 시간(초). 평지 보행은 거리/1.2, 계단은 상승·하강 모두 층당 16초, 엘리베이터는 연속 탑승마다 대기 30초 + 문 개폐 5초×2 + 층당 4초이다. 층을 비교할 수 없거나 계단의 층 순서값이 같으면 이동 부분은 weight/1.2다. 반올림하며 지점 이벤트는 항상 0이다. */
   durationSeconds?: number;
-  /** 이 step이 덮는 polyline 인덱스 [start, end]. end는 다음 step의 start와 같다. 같은 지점에서 step이 연달아 나오면 앞 step은 [i, i]이고 거리는 0이다. */
+  /** 이 step이 덮는 polyline 인덱스 [start, end]. end는 다음 step의 start와 같다. FLOOR_CHANGE는 층 이동만 포함하며 전후 보행은 WALK다. 지점 이벤트는 항상 [i, i]이고 거리·시간이 0이다. DEPART는 [0, 0]이다. */
   polylineRange?: number[];
   /** 이 step 동안 표시할 지도 정보 */
   context?: ContextDto;

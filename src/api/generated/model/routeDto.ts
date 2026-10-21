@@ -25,6 +25,6 @@ export interface RouteDto {
   to?: EndpointDto;
   /** 지도에 그릴 경로 좌표열. 경로가 지나는 노드를 순서대로 모두 담는다. */
   polyline?: PolylinePointDto[];
-  /** 안내 step 목록. 출발·회전·건물 출입·층 이동·도착처럼 안내가 필요한 지점만 담으며, step들의 polylineRange가 polyline 전체를 빈틈없이 나눈다. */
+  /** 출발·도착·회전·건물 출입은 거리 0인 지점 이벤트, WALK·FLOOR_CHANGE는 실제 이동 구간이다. step들의 polylineRange가 polyline 전체를 빈틈없이 나눈다. */
   steps?: StepDto[];
 }

@@ -33,7 +33,6 @@ import {
   DummyMapMarker,
   DummyCategoryMarker,
 } from '@constant/dummyMapMarkers';
-import { DUMMY_FACILITY_IMAGES } from '@constant/dummyFacilityInfo';
 import { DUMMY_FACILITY_LIST_ITEMS } from '@constant/dummyFacilityListItems';
 import {
   favoriteFromCategoryMarker,
@@ -43,8 +42,6 @@ import {
 } from '@constant/favoriteInputs';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
-import { useOperatingStatus } from '@hooks/useOperatingStatus';
-import { getFacilityHours } from '@constant/facilityHours';
 import { FocusFacilityParam, MainTabParamList, RootStackParamList } from '@navigation/types';
 
 interface Props {
@@ -97,16 +94,6 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
   // 건물 카드 정보(설명·사진·운영 시간·주 출입구) — 확인된 건물 정보 + 서버 장소 상세의 출입구.
   const dongDetail = useBuildingDetail(selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined);
-  // 시설 카드(카테고리 마커·목록·다른 화면에서 넘어온 시설)의 운영 상태 — 시설 운영 시간을 지금 시각으로 계산.
-  const facilityStatus = useOperatingStatus(
-    selectedFacility?.type === 'category'
-      ? getFacilityHours(selectedFacility.marker.buildingCode, selectedFacility.marker.room)
-      : selectedFacility?.type === 'item'
-        ? getFacilityHours(selectedFacility.item.building, selectedFacility.item.room ?? selectedFacility.item.place)
-        : selectedFacility?.type === 'external'
-          ? getFacilityHours(selectedFacility.facility.buildingCode, selectedFacility.facility.facilityName)
-          : undefined,
-  );
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
   const mapViewRef = useRef<NaverMapViewRef>(null);
   const insets = useSafeAreaInsets();
@@ -246,19 +233,16 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     if (selectedFacility) bottomSheetRef.current?.close();
   }, [selectedFacility]);
 
-  // 시설 카드를 위로 슬라이드하면 그 건물의 상세보기(BuildingDetailScreen)로 넘어간다.
-  // 'list'(겹친 마커 묶음)는 특정 건물 하나를 가리키지 않아서 지원하지 않는다.
+  // 건물 카드를 위로 슬라이드하면 그 건물의 상세보기(BuildingDetailScreen)로 넘어간다. 시설 카드(카테고리 마커·
+  // 겹친 마커 목록·다른 화면에서 넘어온 시설)는 건물 상세가 그 시설의 정보가 아니라서 올려도 열지 않는다.
+  // 즐겨찾기에서 넘어온 건물(placeName 없음)은 건물 카드라 연다.
   const swipeUpBuildingCode = useMemo(() => {
     if (!selectedFacility) return null;
     switch (selectedFacility.type) {
       case 'dong':
         return selectedFacility.marker.label ?? null;
-      case 'category':
-        return selectedFacility.marker.buildingCode;
-      case 'item':
-        return selectedFacility.item.building;
       case 'external':
-        return selectedFacility.facility.buildingCode;
+        return selectedFacility.facility.placeName ? null : selectedFacility.facility.buildingCode;
       default:
         return null;
     }
@@ -541,6 +525,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               images={dongDetail.images}
               {...routeButtonProps(
                 toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
+                undefined,
+                { buildingCode: selectedFacility.marker.label ?? '' },
               )}
               facilityCounts={dongDetail.facilityCounts}
               mainEntrance={dongDetail.mainEntrance}
@@ -566,14 +552,16 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 toggleFavorite(favoriteFromCategoryMarker(selectedFacility.marker), selectedFacility.marker.room)
               }
               images={selectedFacility.marker.images}
+              placeholderIcon={CATEGORY_MARKER_ICONS[selectedFacility.marker.category].icon}
               {...routeButtonProps(
                 toRoutePlaceLabel(
                   selectedFacility.marker.buildingCode,
                   selectedFacility.marker.buildingName,
                   selectedFacility.marker.room,
                 ),
+                undefined,
+                { buildingCode: selectedFacility.marker.buildingCode, room: selectedFacility.marker.room },
               )}
-              operatingHours={facilityStatus}
               onViewInsidePress={() =>
                 openBuildingIndoorOf(selectedFacility.marker.buildingCode, selectedFacility.marker.buildingName)
               }
@@ -603,15 +591,15 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   selectedFacility.facility.facilityName,
                 )
               }
-              images={DUMMY_FACILITY_IMAGES}
               {...routeButtonProps(
                 toRoutePlaceLabel(
                   selectedFacility.facility.buildingCode,
                   selectedFacility.facility.buildingName,
                   selectedFacility.facility.facilityName,
                 ),
+                undefined,
+                { buildingCode: selectedFacility.facility.buildingCode, room: selectedFacility.facility.placeName },
               )}
-              operatingHours={facilityStatus}
               onViewInsidePress={() =>
                 openBuildingIndoorOf(selectedFacility.facility.buildingCode, selectedFacility.facility.buildingName)
               }
@@ -630,10 +618,12 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 )
               }
               images={selectedFacility.item.images}
+              placeholderIcon={selectedFacility.item.icon}
               {...routeButtonProps(
                 toRoutePlaceLabel(selectedFacility.item.building, selectedFacility.item.place, selectedFacility.item.room),
+                undefined,
+                { buildingCode: selectedFacility.item.building, room: selectedFacility.item.room },
               )}
-              operatingHours={facilityStatus}
               onViewInsidePress={() => openBuildingIndoorOf(selectedFacility.item.building, selectedFacility.item.place)}
             />
           )}

@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useNode } from '@api/generated/honggwart';
 import type { NodeDetailResponse } from '@api/generated/model';
-import { USE_MOCK_API } from '@api/config';
 import { floorLabel, toFloorId } from '@api/route/toRouteView';
 
 // 출입구가 많은 건물(R동은 7곳)은 카드 한 줄에 다 안 들어가서 이만큼만 보여주고 "외 n곳"으로 줄인다.
@@ -57,7 +56,7 @@ function toNodeDetailView(detail: NodeDetailResponse): NodeDetailView {
  * 않는다. 실패하면 카드는 더미/검색 결과 값으로 그대로 뜨니 전역 토스트도 띄우지 않는다.
  */
 export function useNodeDetail(nodeId: number | undefined) {
-  const enabled = !USE_MOCK_API && nodeId !== undefined;
+  const enabled = nodeId !== undefined;
   const { data } = useNode(nodeId ?? 0, { query: { enabled, meta: { silent: true } } });
   return useMemo(() => (enabled && data ? toNodeDetailView(data) : undefined), [enabled, data]);
 }

@@ -61,6 +61,27 @@ function mergeFloorChanges(steps: StepDto[]): StepDto[] {
   }, []);
 }
 
+/**
+ * 서버는 출발·회전·건물 출입 같은 안내 지점을 거리 0인 step으로, 그 사이 걷기를 WALK step으로 따로 준다
+ * (DEPART [0,0] → WALK [0,8] → ARRIVE). 경로 카드·길 안내에서 "출발합니다"와 그 뒤 걷기가 두 줄로 갈리지 않게,
+ * 안내 지점 바로 뒤의 WALK는 그 지점에 합친다(문구·위치는 안내 지점, 거리·시간·구간은 WALK).
+ * 층 이동 뒤처럼 앞에 안내 지점이 없는 WALK는 그대로 둔다.
+ */
+function foldWalks(steps: StepDto[]): StepDto[] {
+  return steps.reduce<StepDto[]>((folded, step) => {
+    const prev = folded[folded.length - 1];
+    const prevIsPoint = !!prev && prev.type !== 'WALK' && prev.type !== 'FLOOR_CHANGE' && !prev.distanceMeters;
+    if (step.type !== 'WALK' || !prevIsPoint) return [...folded, step];
+    folded[folded.length - 1] = {
+      ...prev,
+      distanceMeters: step.distanceMeters,
+      durationSeconds: step.durationSeconds,
+      polylineRange: [prev.polylineRange?.[0] ?? 0, step.polylineRange?.[1] ?? 0],
+    };
+    return folded;
+  }, []);
+}
+
 function moveTypeOf(step: StepDto): GuidanceMoveType {
   if (step.type === 'FLOOR_CHANGE') return step.meta?.transport === 'ELEVATOR' ? 'elevator' : 'stairs';
   if (/ENTER|EXIT|ENTRANCE/.test(step.type ?? '')) return 'entrance';
@@ -96,7 +117,7 @@ export function toRouteView(route: RouteDto): RouteView | null {
   const progressAt = (index: number) => pathMeters(path.slice(0, Math.min(index, path.length - 1) + 1)) / totalMeters;
 
   // 도착(ARRIVE)은 길 안내 화면이 마지막 "다음"에서 직접 보여주니 구간에서 뺀다.
-  const steps = mergeFloorChanges(route.steps ?? []).filter(step => step.type !== 'ARRIVE');
+  const steps = mergeFloorChanges(foldWalks(route.steps ?? [])).filter(step => step.type !== 'ARRIVE');
 
   const routeSteps: RouteStep[] = steps.map((step, index) => {
     const next = steps[index + 1];
@@ -127,8 +148,10 @@ export function toRouteView(route: RouteDto): RouteView | null {
 
   const guidance: GuidanceStep[] = steps.map((step, index) => {
     const meters = Math.round(step.distanceMeters ?? 0);
-    const walkText =
-      meters >= MIN_WALK_TEXT_METERS ? `\n${nextTargetLabel(steps[index + 1], destination)}까지 ${meters}m 이동` : '';
+    // 다음이 층 이동이거나 마지막 구간일 때만 "○○까지"를 붙인다. 회전 사이 걷기에 도착지를 붙이면 남은 거리처럼 읽힌다.
+    const next = steps[index + 1];
+    const target = !next || next.type === 'FLOOR_CHANGE' ? `${nextTargetLabel(next, destination)}까지 ` : '';
+    const walkText = meters >= MIN_WALK_TEXT_METERS ? `\n${target}${meters}m 이동` : '';
     // 층 이동 구간의 context는 도착 층이라, 타고 내린 층의 평면도를 깐다.
     const floorId = step.context?.indoor ? toFloorId(step.context.buildingName, step.context.floor) : undefined;
     return {
@@ -175,6 +198,7 @@ export function toRouteView(route: RouteDto): RouteView | null {
     indoorPercent: Math.round((indoorMeters / totalMeters) * 100),
     stairsCount: countRides('STAIRS'),
     elevatorCount: countRides('ELEVATOR'),
+    // elevatorWarning(엘리베이터 혼잡 경고)은 서버 응답에 혼잡 정보가 아직 없어서 채우지 않는다. 생기면 여기서 채운다.
     steps: routeSteps,
   };
 

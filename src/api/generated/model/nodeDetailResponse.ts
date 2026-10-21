@@ -19,4 +19,6 @@ export interface NodeDetailResponse {
   parent?: ParentSummary;
   entrances?: EntranceSummary[];
   facility?: FacilitySummary;
+  /** @nullable */
+  placeId?: string | null;
 }

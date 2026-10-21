@@ -1,7 +1,6 @@
 import { PhotoSource } from '@appTypes/photo';
 import { FacilityCountItem } from '@components/common/FacilityInfoCard';
-import { everyDay, OperatingHours } from '@utils/operatingHours';
-import { DUMMY_FACILITY_COUNTS } from './dummyFacilityInfo';
+import { OperatingHours } from '@utils/operatingHours';
 
 /**
  * 건물 상세·건물 카드에 보여줄 건물 정보. 나중에 서버 API(건물 상세)도 이 모양으로 받는다(useBuildingDetail이
@@ -29,14 +28,7 @@ export const BUILDING_DETAILS_AS_OF: string | null = null;
 /** 건물 코드("R동") → 확인된 건물 정보 */
 export const BUILDING_DETAILS: Record<string, BuildingDetail> = {};
 
-// TODO: 실제 정보를 채우기 전까지 모든 건물에 같은 예시 값을 보여준다(이전 더미와 같은 내용). 실제 데이터를 넣으면
-// 이 예시와 아래 폴백을 지워서, 확인 안 된 건물은 운영 시간·편의시설 개수 줄이 빠지게 한다.
-const SAMPLE_DETAIL: BuildingDetail = {
-  hours: everyDay('08:00', '22:00'),
-  hoursNote: '연중무휴',
-  facilityCounts: DUMMY_FACILITY_COUNTS,
-};
-
-export function getBuildingDetail(buildingCode: string): BuildingDetail {
-  return BUILDING_DETAILS[buildingCode] ?? SAMPLE_DETAIL;
+/** 팀이 확인한 건물 정보. 없으면 undefined(화면에서 그 줄들이 빠진다) */
+export function getBuildingDetail(buildingCode: string): BuildingDetail | undefined {
+  return BUILDING_DETAILS[buildingCode];
 }

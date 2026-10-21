@@ -51,7 +51,8 @@ export const BuildingFacilityCard = React.memo(function BuildingFacilityCard({
           </PhotoSlot>
         ) : (
           <IconSlot>
-            <Icon width={72} height={72} color={theme.blue[300]} />
+            {/* 아이콘 원본이 정사각이 아니면(식당 16×20 등) 늘어나지 않게 비율을 유지한다(FavoritePlaceCard와 같다). */}
+            <Icon width={72} height={72} color={theme.blue[300]} preserveAspectRatio="xMidYMid meet" />
           </IconSlot>
         )}
         <TitleRow>

@@ -2,7 +2,6 @@ import { PhotoSource } from '@appTypes/photo';
 import { everyDay, OperatingHours } from '@utils/operatingHours';
 import { toPlaceKey } from '@utils/placeKey';
 import type { FavoriteInput } from '@hooks/useFavorites';
-import { DUMMY_FACILITY_IMAGES } from './dummyFacilityInfo';
 
 // 주변상권(HongdaeScreen) 카테고리 칩. Figma "All / 식당 / 술집".
 export type HongdaeCategory = 'restaurant' | 'bar';
@@ -46,7 +45,6 @@ export const HONGDAE_PLACES: HongdaePlace[] = [
     latitude: 37.5512,
     longitude: 126.9236,
     hours: everyDay('08:00', '22:00'),
-    photos: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'hongdae-2',
@@ -58,7 +56,6 @@ export const HONGDAE_PLACES: HongdaePlace[] = [
     latitude: 37.5539,
     longitude: 126.9221,
     hours: everyDay('08:00', '22:00'),
-    photos: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'hongdae-3',
@@ -70,7 +67,6 @@ export const HONGDAE_PLACES: HongdaePlace[] = [
     latitude: 37.5528,
     longitude: 126.9268,
     hours: everyDay('08:00', '19:00'),
-    photos: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'hongdae-4',
@@ -82,7 +78,6 @@ export const HONGDAE_PLACES: HongdaePlace[] = [
     latitude: 37.5546,
     longitude: 126.9245,
     hours: everyDay('08:30', '19:00'),
-    photos: DUMMY_FACILITY_IMAGES,
   },
 ];
 

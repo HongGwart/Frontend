@@ -1,4 +1,5 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
+import type { RoutePlace } from '@api/node/usePlaceNodeId';
 
 /**
  * 마이페이지/즐겨찾기 목록에서 시설을 탭했을 때 map 탭으로 넘겨줄 시설 정보.
@@ -25,6 +26,9 @@ export interface RouteLocationSelection {
   /** 서버 검색 결과에서 골랐으면 그 노드 id(GET /api/route의 출발/도착). 앱 더미 장소면 없다. */
   departureNodeId?: number;
   destinationNodeId?: number;
+  /** nodeId를 모를 때 길찾기 화면이 서버 노드를 찾을 장소(동 코드 + 호실). 지도 마커·건물 내부 지도·즐겨찾기에서 온다 */
+  departurePlace?: RoutePlace;
+  destinationPlace?: RoutePlace;
 }
 
 // 하단 탭 4개. 길찾기는 탭이 아니라 루트 스택에 푸시되는 화면이다(RootStackParamList.Navigation) —
@@ -69,8 +73,8 @@ export type RootStackParamList = {
   // 입력창을 구분하고, 나머지 한쪽 값(departureLabel/destinationLabel)은 이미 골라둔 값을
   // 그대로 들고 있다가 결과와 함께 돌려보내기 위해 같이 받아온다.
   RouteLocationSearch: { target: 'departure' | 'destination' } & RouteLocationSelection;
-  // 길찾기 경로 보기의 "경로 안내 시작"을 누르면 뜨는 길 안내 화면. 출발/도착 노드가 있으면 서버 경로
-  // (useRouteSearch 캐시)에서 routeId로 경로를 찾고, 없으면 더미/테스트 경로를 쓴다. 경로의 요약값과
+  // 길찾기 경로 보기의 "경로 안내 시작"을 누르면 뜨는 길 안내 화면. 출발/도착 노드로 서버 경로
+  // (useRouteSearch 캐시)에서 routeId로 경로를 찾는다. 경로의 요약값과
   // destinationLabel은 도착했을 때 상단 카드("…에 도착했어요")에 쓴다.
   RouteGuidance: { routeId: string; destinationLabel: string; fromNodeId?: number; toNodeId?: number };
 };

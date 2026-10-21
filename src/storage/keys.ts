@@ -6,6 +6,7 @@ export const STORAGE_KEYS = {
   onboardingCompleted: '@honggwart/onboarding-completed:v1',
   favorites: '@honggwart/favorites:v1',
   recentSearches: '@honggwart/recent-searches:v1',
+  defaultDeparture: '@honggwart/default-departure:v1',
 } as const;
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
