@@ -17,7 +17,7 @@ export interface RouteSearchParams {
 export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
   const enabled = fromNodeId !== undefined && toNodeId !== undefined;
 
-  const { data, error, isError, isFetching } = useRouteQuery(
+  const { data, error, isError, isFetching, isStale, refetch } = useRouteQuery(
     { fromNodeId: fromNodeId ?? 0, toNodeId: toNodeId ?? 0 },
     {
       query: {
@@ -51,5 +51,12 @@ export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
     notFound,
     /** 경로 없음 외의 실패(네트워크·서버 오류). 화면이 문구를 띄운다. */
     error: apiError && !notFound ? apiError : undefined,
+    /**
+     * 캐시가 1분이 지났으면 다시 불러온다. 다른 화면에 갔다가 돌아오면 화면이 새로 마운트되지 않아(포커스만 바뀜)
+     * 자동으로 다시 불러오지 않아서, 화면 포커스 때 부른다. 이미 불러오는 중이면 겹쳐 요청하지 않는다.
+     */
+    refetchIfStale: () => {
+      if (enabled && isStale && !isFetching) refetch();
+    },
   };
 }
