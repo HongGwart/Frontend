@@ -231,7 +231,12 @@ export default function NavigationScreen() {
                 }
                 setDeparture(departureLabelOf(defaultDeparture));
                 setDepartureNodeId(defaultDeparture.nodeId);
-                setDeparturePlace(undefined);
+                // nodeId 없이 저장된 기본 출발지는 동 코드 + 호실로 서버 노드를 찾는다(장소 검색 화면과 같은 규칙).
+                setDeparturePlace(
+                  defaultDeparture.nodeId === undefined
+                    ? { buildingCode: defaultDeparture.building, room: defaultDeparture.room }
+                    : undefined,
+                );
               }}
               hitSlop={8}
             >

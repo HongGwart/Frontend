@@ -108,14 +108,20 @@ export const everyDay = (open: string, close: string): OperatingHours => {
   };
 };
 
+/** 시 0~23, 분 0~59. allow24면 닫는 시간 "24:00"도 허용한다. */
+const isValidTime = (hour: number, minute: number, allow24 = false) =>
+  (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) || (allow24 && hour === 24 && minute === 0);
+
 /**
  * 서버 운영시간 원문("05:00 - 23:00")을 매일 같은 시간으로 읽는다. "00:00 - 24:00"은 24시간 운영.
- * 형식이 다르면(요일별 문구 등) 추정하지 않고 undefined — 화면은 운영 시간 줄을 뺀다.
+ * 형식이 다르거나(요일별 문구 등) 시각 범위를 벗어나면(오타 등) 추정하지 않고 undefined — 화면은 운영 시간 줄을 뺀다.
  */
 export function parseOperatingHoursText(text: string | null | undefined): OperatingHours | undefined {
   const match = text?.trim().match(/^(\d{1,2}):(\d{2})\s*[-–~]\s*(\d{1,2}):(\d{2})$/);
   if (!match) return undefined;
-  const [, oh, om, ch, cm] = match;
-  if (Number(oh) === 0 && om === '00' && ch === '24' && cm === '00') return { kind: 'always' };
-  return everyDay(`${oh.padStart(2, '0')}:${om}`, `${ch.padStart(2, '0')}:${cm}`);
+  const [openHour, openMinute, closeHour, closeMinute] = match.slice(1).map(Number);
+  if (!isValidTime(openHour, openMinute) || !isValidTime(closeHour, closeMinute, true)) return undefined;
+  if (openHour === 0 && openMinute === 0 && closeHour === 24 && closeMinute === 0) return { kind: 'always' };
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return everyDay(`${pad(openHour)}:${pad(openMinute)}`, `${pad(closeHour)}:${pad(closeMinute)}`);
 }
