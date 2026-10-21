@@ -11,9 +11,6 @@ import { OperatingHoursRow } from './FacilityInfoCard';
 import { BuildingFacilityCard } from './BuildingFacilityCard';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import { DUMMY_MAP_MARKERS, DUMMY_CATEGORY_MARKERS } from '@constant/dummyMapMarkers';
-import { getFacilityHours } from '@constant/facilityHours';
-import { useNow } from '@hooks/useNow';
-import { getOperatingStatus } from '@utils/operatingHours';
 import { favoriteFromCategoryMarker } from '@constant/favoriteInputs';
 import { useFavorites } from '@hooks/useFavorites';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
@@ -79,8 +76,6 @@ export function BuildingDetailBody({
   );
   // 설명·사진·운영 시간(지금 시각 기준)·주 출입구(서버 장소 상세). 확인 안 된 항목은 그 줄이 빠진다.
   const detail = useBuildingDetail(buildingCode);
-  // 편의시설 칸의 운영 상태도 지금 시각으로 계산한다(1분마다 갱신).
-  const now = useNow();
 
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(지도/마이페이지와 같은 상태).
   const { isFavorite, toggleFavorite: toggleFavoritePlace } = useFavorites();
@@ -160,8 +155,6 @@ export function BuildingDetailBody({
                 <FacilityRow key={rowIndex}>
                   {row.map(marker => {
                     const favorite = isFavorite(favoriteFromCategoryMarker(marker));
-                    const hours = getFacilityHours(marker.buildingCode, marker.room);
-                    const status = hours ? getOperatingStatus(hours, now) : undefined;
                     return (
                       <BuildingFacilityCard
                         key={marker.id}
@@ -169,8 +162,6 @@ export function BuildingDetailBody({
                         photo={marker.images?.[0]}
                         icon={CATEGORY_MARKER_ICONS[marker.category].icon}
                         title={marker.room}
-                        isOpen={status?.isOpen}
-                        statusText={status?.statusText}
                         isFavorite={favorite}
                         onToggleFavorite={toggleFavorite}
                       />

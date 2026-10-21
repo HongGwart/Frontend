@@ -34,15 +34,11 @@ import { Button } from '@components/common/Button';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapStartPointMarker } from '@components/map/NaverMapStartPointMarker';
 import { NaverMapUserPointMarker } from '@components/map/NaverMapUserPointMarker';
-import {
-  DUMMY_ROUTE_RESULTS,
-  GuidanceMoveType,
-  RouteResult,
-} from '@constant/dummyRouteResults';
+import { GuidanceMoveType, RouteResult } from '@constant/dummyRouteResults';
 import { CAMPUS_EXTENT, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
 import { LatLng, regionToFit, slicePath, splitPathAt } from '@utils/routePath';
-import { buildTestRoute, getRouteMapData, RouteMapData } from '@constant/testIndoorRoute';
+import { RouteMapData } from '@constant/testIndoorRoute';
 import { useFloorGeoAnchors } from '@api/floorPlan/useFloorGeoAnchors';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
 import { animateValue } from '@utils/animateValue';
@@ -304,37 +300,21 @@ interface GuidanceRoute {
   routeMap: RouteMapData;
 }
 
-/** 서버 경로(useRouteSearch의 경로 id는 "api-{mode}")인지 */
-const isApiRouteId = (routeId: string) => routeId.startsWith('api-');
-
-/** 앱 안의 실내 테스트 경로/더미 경로 — 서버 경로가 아닐 때만 쓴다. */
-function getLocalGuidanceRoute(routeId: string): GuidanceRoute {
-  const testRoute = buildTestRoute();
-  const routes = testRoute ? [testRoute.result, ...DUMMY_ROUTE_RESULTS] : DUMMY_ROUTE_RESULTS;
-  return {
-    route: routes.find(result => result.id === routeId) ?? DUMMY_ROUTE_RESULTS[0],
-    routeMap: getRouteMapData(routeId),
-  };
-}
-
 /**
  * 길 안내에 쓸 경로를 정한 뒤 안내 화면을 그린다. 서버 경로는 경로 선택 화면이 불러둔 캐시에서 꺼내고, 캐시에 없으면
- * (캐시가 비워졌거나 화면이 복원된 경우) 다시 불러올 때까지 기다린다 — 더미 경로로 바꿔치기하지 않는다. 안내 도중
+ * (캐시가 비워졌거나 화면이 복원된 경우) 다시 불러올 때까지 기다린다. 안내 도중
  * 경로가 바뀌면 구간 순서가 어긋나니 처음 정한 경로로 고정한다.
  */
 export default function RouteGuidanceScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'RouteGuidance'>>();
   const insets = useSafeAreaInsets();
-  const isApiRoute = isApiRouteId(params.routeId);
   const routeSearch = useRouteSearch({ fromNodeId: params.fromNodeId, toNodeId: params.toNodeId });
   const findApiRoute = (): GuidanceRoute | null => {
     const view = routeSearch.routes.find(item => item.result.id === params.routeId);
     return view ? { route: view.result, routeMap: view.map } : null;
   };
-  const [guidanceRoute, setGuidanceRoute] = useState<GuidanceRoute | null>(() =>
-    isApiRoute ? findApiRoute() : getLocalGuidanceRoute(params.routeId),
-  );
+  const [guidanceRoute, setGuidanceRoute] = useState<GuidanceRoute | null>(() => findApiRoute());
   const apiRoute = guidanceRoute ? null : findApiRoute();
   useEffect(() => {
     if (apiRoute) setGuidanceRoute(apiRoute);

@@ -1,16 +1,11 @@
 import BuildingIcon from '@assets/svgs/icons/building.svg';
-import { USE_MOCK_API } from '@api/config';
 import type { StoredFavorite } from '@hooks/useFavorites';
 import { toPlaceKey } from '@utils/placeKey';
-import { DUMMY_FACILITY_CATEGORY_PLACES } from './dummyFacilityCategoryPlaces';
-import { getBuildingDetail } from './buildingDetails';
-import { getFacilityHours } from './facilityHours';
-import { DUMMY_FAVORITE_PLACES, FavoritePlace } from './dummyMypage';
+import { FavoritePlace } from './dummyMypage';
 import { SEARCH_ITEM_ICONS } from './dummySearchData';
 import { HONGDAE_PLACES } from './hongdaePlaces';
 
-// 즐겨찾기 카드(FavoritePlaceCard)에 그릴 사진/운영시간을 찾아올 장소 데이터. 실제 장소 API가 붙기 전까지는
-// Figma 즐겨찾기 더미와 편의시설 카테고리 더미를 장소 키로 모아 쓴다.
+// 즐겨찾기 카드(FavoritePlaceCard)에 그릴 사진/운영시간을 찾아올 장소 데이터. 지금은 주변상권 장소만 있다.
 // 주변상권 장소도 같은 카드 모양으로 바꿔 넣는다(동 코드 자리에 주소, 건물명 자리에 동 — hongdaeFavoriteInput과 같다).
 const HONGDAE_CARD_PLACES: FavoritePlace[] = HONGDAE_PLACES.map(place => ({
   id: place.id,
@@ -22,19 +17,13 @@ const HONGDAE_CARD_PLACES: FavoritePlace[] = HONGDAE_PLACES.map(place => ({
   operatingHours: place.hours,
 }));
 
-// Figma 즐겨찾기·편의시설 카테고리 더미는 목 모드에서만 쓴다 — 실제 모드에서 같은 이름의 장소를 즐겨찾기하면
-// 더미 운영 시간이 카드에 보이기 때문.
-const DUMMY_CARD_PLACES = USE_MOCK_API
-  ? [...DUMMY_FAVORITE_PLACES, ...Object.values(DUMMY_FACILITY_CATEGORY_PLACES).flat()]
-  : [];
-
 const PLACE_CATALOG = new Map<string, FavoritePlace>(
-  [...DUMMY_CARD_PLACES, ...HONGDAE_CARD_PLACES].map(place => [toPlaceKey(place.buildingCode, place.name), place]),
+  HONGDAE_CARD_PLACES.map(place => [toPlaceKey(place.buildingCode, place.name), place]),
 );
 
 /**
  * 저장된 즐겨찾기(참조만 있음)를 카드에 그릴 FavoritePlace로 바꾼다. 장소 데이터에 있으면 그 사진·운영시간을
- * 쓰고, 없으면 카테고리 아이콘(건물이면 건물 아이콘)과 건물·시설 운영 시간으로 채운다. id는 장소 키다.
+ * 쓰고, 없으면 카테고리 아이콘(건물이면 건물 아이콘)만 채운다(확인된 운영 시간이 없어 운영 줄은 빠진다). id는 장소 키다.
  */
 export function toFavoritePlace(favorite: StoredFavorite): FavoritePlace {
   const known = PLACE_CATALOG.get(favorite.placeKey);
@@ -46,12 +35,5 @@ export function toFavoritePlace(favorite: StoredFavorite): FavoritePlace {
     buildingCode: favorite.buildingCode,
     buildingName: favorite.buildingName,
     icon,
-    // 건물이면 건물 운영 시간, 시설이면 시설 운영 시간(둘 다 지금 시각으로 상태를 계산한다). 앱 예시 운영 시간이라
-    // 목 모드에서만 채우고, 실제 모드에서는 운영 줄을 뺀다(서버 운영 시간은 건물 상세·카드에서 보인다).
-    operatingHours: !USE_MOCK_API
-      ? undefined
-      : favorite.name
-        ? getFacilityHours(favorite.buildingCode, favorite.name)
-        : getBuildingDetail(favorite.buildingCode).hours,
   };
 }

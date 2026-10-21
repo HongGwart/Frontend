@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useRoute as useRouteQuery } from '@api/generated/honggwart';
-import { USE_MOCK_API } from '@api/config';
 import { toApiError } from '@api/errors';
 import { RouteView, toRouteView } from './toRouteView';
 
@@ -12,11 +11,11 @@ export interface RouteSearchParams {
 /**
  * 출발/도착 노드 사이 경로를 찾는다(GET /api/route). mode를 빼고 한 번 불러서 세 모드(최단/실내 위주/계단
  * 회피) 경로를 같이 받는다 — 경로 선택 화면과 길 안내 화면이 같은 캐시를 쓴다.
- * 출발/도착 중 노드가 없는 곳(앱 더미 장소)이 있으면 요청하지 않는다(enabled=false, 화면이 더미 경로를 쓴다).
+ * 출발/도착 중 노드가 없는 곳(서버에 없는 장소)이 있으면 요청하지 않는다(enabled=false, 화면이 안내 문구를 띄운다).
  * 실패는 토스트 대신 notFound(404 ROUTE_NOT_FOUND)/error로 돌려줘서 화면이 목록 자리에 안내한다.
  */
 export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
-  const enabled = !USE_MOCK_API && fromNodeId !== undefined && toNodeId !== undefined;
+  const enabled = fromNodeId !== undefined && toNodeId !== undefined;
 
   const { data, error, isError, isFetching } = useRouteQuery(
     { fromNodeId: fromNodeId ?? 0, toNodeId: toNodeId ?? 0 },

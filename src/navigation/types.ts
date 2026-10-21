@@ -73,8 +73,8 @@ export type RootStackParamList = {
   // 입력창을 구분하고, 나머지 한쪽 값(departureLabel/destinationLabel)은 이미 골라둔 값을
   // 그대로 들고 있다가 결과와 함께 돌려보내기 위해 같이 받아온다.
   RouteLocationSearch: { target: 'departure' | 'destination' } & RouteLocationSelection;
-  // 길찾기 경로 보기의 "경로 안내 시작"을 누르면 뜨는 길 안내 화면. 출발/도착 노드가 있으면 서버 경로
-  // (useRouteSearch 캐시)에서 routeId로 경로를 찾고, 없으면 더미/테스트 경로를 쓴다. 경로의 요약값과
+  // 길찾기 경로 보기의 "경로 안내 시작"을 누르면 뜨는 길 안내 화면. 출발/도착 노드로 서버 경로
+  // (useRouteSearch 캐시)에서 routeId로 경로를 찾는다. 경로의 요약값과
   // destinationLabel은 도착했을 때 상단 카드("…에 도착했어요")에 쓴다.
   RouteGuidance: { routeId: string; destinationLabel: string; fromNodeId?: number; toNodeId?: number };
 };

@@ -17,7 +17,6 @@ import { RouteInputField } from '@components/navigation/RouteInputField';
 import { RouteOptionChip } from '@components/navigation/RouteOptionChip';
 import { RouteResultCard } from '@components/navigation/RouteResultCard';
 import { RouteStepRow } from '@components/navigation/RouteStepRow';
-import { Toast } from '@components/common/Toast';
 import { Button } from '@components/common/Button';
 import { CollapsibleBottomSheet } from '@components/common/CollapsibleBottomSheet';
 import Header from '@components/layout/Header';
@@ -25,16 +24,10 @@ import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapStartPointMarker } from '@components/map/NaverMapStartPointMarker';
 import { ROUTE_OPTIONS, RouteOptionKey } from '@constant/routeOptions';
 import { departureLabelOf, useDefaultDeparture } from '@hooks/useDefaultDeparture';
-import { buildTestRoute, getRouteMapData, isTestRoutePair } from '@constant/testIndoorRoute';
-import {
-  DUMMY_ROUTE_RESULTS,
-  DUMMY_ELEVATOR_WARNING_MESSAGE,
-} from '@constant/dummyRouteResults';
 import { CAMPUS_EXTENT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
 import { regionToFit } from '@utils/routePath';
 import { useRouteSearch } from '@api/route/useRouteSearch';
-import { USE_MOCK_API } from '@api/config';
 import { RoutePlace, usePlaceNodeId } from '@api/node/usePlaceNodeId';
 import { getErrorMessage } from '@api/errors';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
@@ -112,14 +105,8 @@ export default function NavigationScreen() {
   const isLookingUpPlace = departureLookup.isLoading || destinationLookup.isLoading;
   const placeLookupFailed = departureLookup.isError || destinationLookup.isError;
   const routeSearch = useRouteSearch({ fromNodeId, toNodeId });
-  // 서버 경로를 못 쓰면(출발/도착 중 서버에 없는 장소가 있을 때) 경로를 보여주지 않고 안내만 띄운다. 목 모드에서만
-  // 실내 길찾기 테스트 쌍(R동 카페나무 → C동 816호)이면 그 경로 하나를, 아니면 더미 경로를 보여준다.
-  const allRouteResults = useMemo(() => {
-    if (routeSearch.enabled) return routeSearch.routes.map(view => view.result);
-    if (!USE_MOCK_API) return [];
-    const testRoute = isTestRoutePair(departure, destination) ? buildTestRoute() : null;
-    return testRoute ? [testRoute.result] : DUMMY_ROUTE_RESULTS;
-  }, [routeSearch.enabled, routeSearch.routes, departure, destination]);
+  // 서버 경로만 보여준다. 출발/도착 중 서버에 없는 장소가 있으면 경로 대신 안내 문구를 띄운다(아래 routeStatusText).
+  const allRouteResults = useMemo(() => routeSearch.routes.map(view => view.result), [routeSearch.routes]);
   // 경로 옵션 칩을 고르면 그 옵션 경로만 보여준다.
   const routeResults = useMemo(
     () => (selectedOption ? allRouteResults.filter(route => route.option === selectedOption) : allRouteResults),
@@ -130,7 +117,7 @@ export default function NavigationScreen() {
     ? '경로를 찾고 있어요'
     : placeLookupFailed
       ? '경로를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'
-      : !routeSearch.enabled && !USE_MOCK_API
+      : !routeSearch.enabled
         ? '서버에 등록되지 않은 장소라 경로를 찾을 수 없어요'
         : routeSearch.isLoading
           ? '경로를 찾고 있어요'
@@ -143,7 +130,6 @@ export default function NavigationScreen() {
                 : routeResults.length === 0
                   ? '이 옵션으로 갈 수 있는 경로가 없어요'
                   : null;
-  const hasElevatorWarning = useMemo(() => routeResults.some(route => route.elevatorWarning), [routeResults]);
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
@@ -155,10 +141,10 @@ export default function NavigationScreen() {
   useBlockScreenCapture('routeView', selectedRoute !== null);
 
   // 경로선/출발·도착 핀/경로 보기 카메라 — 선택한 경로 기준.
-  const routeMap = useMemo(() => {
-    const apiView = routeSearch.routes.find(view => view.result.id === selectedRouteId);
-    return apiView ? apiView.map : getRouteMapData(selectedRouteId);
-  }, [routeSearch.routes, selectedRouteId]);
+  const routeMap = useMemo(
+    () => routeSearch.routes.find(view => view.result.id === selectedRouteId)?.map ?? null,
+    [routeSearch.routes, selectedRouteId],
+  );
 
   // 경로 보기 카드를 끌어내리면(Figma "길 찾기_전체 경로" 762:4620) 지도를 전체로 펼치고
   // 상단에 헤더 + 출발/도착 입력을 띄운다. 지도 카메라 패딩을 맞추려고 시트/상단 패널 높이를 잰다.
@@ -170,10 +156,9 @@ export default function NavigationScreen() {
     setIsSheetCollapsed(false);
   }, [selectedRouteId]);
 
-  // 경로선 꺾이는 점 + 출발·도착 핀이 전부 "헤더 밑~카드 위" 사이에 들어오게 카메라를 맞춘다. 좌표는
-  // 지금은 더미/테스트 경로지만, 백엔드가 넘겨주는 경로 좌표를 routeMap.path에 넣으면 그대로 맞춰진다.
+  // 경로선 꺾이는 점 + 출발·도착 핀이 전부 "헤더 밑~카드 위" 사이에 들어오게 카메라를 맞춘다.
   const fitRegion = useMemo(
-    () => regionToFit([...routeMap.path, routeMap.start, routeMap.end]),
+    () => (routeMap ? regionToFit([...routeMap.path, routeMap.start, routeMap.end]) : undefined),
     [routeMap],
   );
 
@@ -280,7 +265,7 @@ export default function NavigationScreen() {
     </InputSection>
   );
 
-  if (selectedRoute) {
+  if (selectedRoute && routeMap) {
     return (
       <DetailContainer>
         <MapArea>
@@ -453,7 +438,7 @@ export default function NavigationScreen() {
       ) : hasRoute ? (
         <ResultsArea>
           <ScrollView
-            contentContainerStyle={{ paddingBottom: hasElevatorWarning ? insets.bottom + 76 : insets.bottom + 16 }}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
             showsVerticalScrollIndicator={false}
           >
             {routeResults.map((result, index) => (
@@ -466,11 +451,6 @@ export default function NavigationScreen() {
               />
             ))}
           </ScrollView>
-          {hasElevatorWarning && (
-            <ToastWrapper bottomInset={insets.bottom}>
-              <Toast text={DUMMY_ELEVATOR_WARNING_MESSAGE} variant="warning" />
-            </ToastWrapper>
-          )}
         </ResultsArea>
       ) : (
         <EmptyState>
@@ -680,12 +660,6 @@ const ResultsArea = styled.View`
   flex: 1;
 `;
 
-const ToastWrapper = styled.View<{ bottomInset: number }>`
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  bottom: ${({ bottomInset }) => bottomInset + 16}px;
-`;
 
 const EmptyState = styled.View`
   flex: 1;
