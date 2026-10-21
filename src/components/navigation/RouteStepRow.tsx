@@ -3,6 +3,7 @@ import styled, { useTheme } from 'styled-components/native';
 import WalkIcon from '@assets/svgs/icons/walk.svg';
 import ElevatorIcon from '@assets/svgs/icons/elevator.svg';
 import { RouteStep } from '@appTypes/routeView';
+import { ElevatorCongestionIcon } from './ElevatorCongestionIcon';
 
 interface Props {
   step: RouteStep;
@@ -12,7 +13,8 @@ interface Props {
 
 /**
  * 경로 상세(지도) 화면의 이동 구간 한 줄. Figma "path_move"(733:3133 등).
- * 도보/엘리베이터 아이콘 + "라벨 / A → B" + 거리·소요시간으로 구성된다.
+ * 도보/엘리베이터 아이콘 + "라벨 / A → B" + 거리·소요시간으로 구성된다. 혼잡 예상 엘리베이터 구간은 라벨 옆에
+ * 경로 카드(RouteResultCard)와 같은 경고 아이콘을 붙인다.
  */
 export function RouteStepRow({ step, showDivider = true }: Props) {
   const theme = useTheme();
@@ -22,7 +24,10 @@ export function RouteStepRow({ step, showDivider = true }: Props) {
     <Container showDivider={showDivider}>
       <Icon width={32} height={32} color={theme.semantic.main} />
       <Content>
-        <StepLabelText>{step.label}</StepLabelText>
+        <LabelRow>
+          <StepLabelText>{step.label}</StepLabelText>
+          {step.congested && <ElevatorCongestionIcon />}
+        </LabelRow>
         <RouteText numberOfLines={1}>
           {step.from} <ArrowText>→</ArrowText> {step.to}
         </RouteText>
@@ -33,6 +38,12 @@ export function RouteStepRow({ step, showDivider = true }: Props) {
     </Container>
   );
 }
+
+const LabelRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+`;
 
 const Container = styled.View<{ showDivider: boolean }>`
   flex-direction: row;

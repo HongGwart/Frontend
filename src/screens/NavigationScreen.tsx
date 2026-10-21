@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NaverMapView, NaverMapPolylineOverlay, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
@@ -105,6 +105,11 @@ export default function NavigationScreen() {
   const isLookingUpPlace = departureLookup.isLoading || destinationLookup.isLoading;
   const placeLookupFailed = departureLookup.isError || destinationLookup.isError;
   const routeSearch = useRouteSearch({ fromNodeId, toNodeId });
+  // 장소 검색·길 안내 화면에서 돌아오면(이 화면은 스택에 남아 포커스만 바뀐다) 1분 지난 경로를 다시 불러와
+  // 엘리베이터 혼잡 예상을 새로 계산한다. 길 안내 화면은 처음 정한 경로를 고정해 두므로 영향이 없다.
+  const refetchIfStaleRef = useRef(routeSearch.refetchIfStale);
+  refetchIfStaleRef.current = routeSearch.refetchIfStale;
+  useFocusEffect(useCallback(() => refetchIfStaleRef.current(), []));
   // 서버 경로만 보여준다. 출발/도착 중 서버에 없는 장소가 있으면 경로 대신 안내 문구를 띄운다(아래 routeStatusText).
   const allRouteResults = useMemo(() => routeSearch.routes.map(view => view.result), [routeSearch.routes]);
   // 경로 옵션 칩을 고르면 그 옵션 경로만 보여준다.
@@ -378,12 +383,14 @@ export default function NavigationScreen() {
                     </DurationRow>
                     <SummaryText>{selectedRoute.distanceMeters}m · 걷기</SummaryText>
                   </DurationBlock>
-                  <IndoorRow>
-                    <IndoorIcon width={20} height={20} color={theme.semantic.icon.secondary} />
-                    <IndoorText>
-                      실내 <IndoorValueText>{selectedRoute.indoorPercent}%</IndoorValueText>
-                    </IndoorText>
-                  </IndoorRow>
+                  {selectedRoute.indoorPercent !== undefined && (
+                    <IndoorRow>
+                      <IndoorIcon width={20} height={20} color={theme.semantic.icon.secondary} />
+                      <IndoorText>
+                        실내 <IndoorValueText>{selectedRoute.indoorPercent}%</IndoorValueText>
+                      </IndoorText>
+                    </IndoorRow>
+                  )}
                 </DetailTopRow>
 
                 {selectedRoute.steps.map((step, index) => (

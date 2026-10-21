@@ -58,7 +58,7 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 /**
- * 장소 기능 활성화 시 장소당 한 항목을 반환합니다. nodeId는 장소의 고정 대표 기존 ID이며, placeId·placeKind·entranceCount가 추가됩니다. limit는 장소 수에 적용됩니다.
+ * 장소 기능 활성화 시 장소당 한 항목을 반환합니다. nodeId는 장소의 고정 대표 기존 ID이며, placeId·placeKind·entranceCount가 추가됩니다. 미매핑 검색 대상은 기존 nodeId와 null 장소 필드로 유지하며, limit는 장소와 미매핑 노드를 합친 최종 항목 수에 적용됩니다.
  * @summary 장소 이름 자동완성
  */
 export const autocomplete = (

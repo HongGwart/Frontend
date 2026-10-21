@@ -18,6 +18,14 @@ export interface SummaryDto {
   durationSeconds?: number;
   /** 층 이동 안내 횟수(FLOOR_CHANGE step 수). 1층에서 5층까지 계단으로 한 번에 오르면 1이다. */
   floorChanges?: number;
+  /**
+     * 전체 보행 거리 중 실내 간선의 보행 거리 비율(%). 계단은 포함하고 엘리베이터는 제외한다. 반올림한 정수이며 보행 거리가 0이면 0이다.
+     * @minimum 0
+     * @maximum 100
+     */
+  indoorPercent?: number;
+  /** 실제 경로의 엘리베이터 탑승 중 하나라도 도착 예상 시각이 혼잡 시간대이면 true. Asia/Seoul 월~금 08:50~09:00부터 17:50~18:00까지 매 정각 전 10분(시작 포함·정각 제외)이다. 요청 시각에 이전 보행·계단·엘리베이터의 대기·탑승 시간을 누적하며, 현재 탑승 대기는 제외한다. 실시간 정보가 아니며 탐색 비용과 예상 이동시간에는 반영하지 않는다. */
+  elevatorCongested?: boolean;
   /** polyline 전체를 감싸는 영역. 지도 초기 줌·중심 맞춤에 쓴다. */
   bound?: BoundDto;
   /** 경로가 지나는 시설별 간선 수 */

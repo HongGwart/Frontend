@@ -11,6 +11,8 @@ export interface RouteStep {
   to: string;
   distanceMeters: number;
   durationMinutes: number;
+  /** 엘리베이터 구간의 혼잡 예상(서버 meta.congested) — 구간 목록에 경고 아이콘을 붙인다 */
+  congested?: boolean;
 }
 
 export interface RouteResult {
@@ -18,13 +20,14 @@ export interface RouteResult {
   option: RouteOptionKey;
   durationMinutes: number;
   distanceMeters: number;
-  indoorPercent: number;
+  /** 실내 보행 비율(%) — 서버 summary.indoorPercent. 값이 없는 응답(구버전 서버)이면 0%로 단정하지 않고 표시를 뺀다 */
+  indoorPercent?: number;
   stairsCount?: number;
   elevatorCount?: number;
   /**
-   * 엘리베이터 혼잡 등으로 대기가 생길 수 있다는 경고가 붙는지. 경로 카드(RouteResultCard)가 엘리베이터 횟수 옆에
-   * 경고 아이콘으로 보여준다(Figma 디자인). 지금 서버 경로 응답엔 혼잡 정보가 없어서 채우는 곳이 없다 —
-   * 서버가 혼잡 정보를 주면 toRouteView에서 채운다.
+   * 엘리베이터 혼잡으로 대기가 생길 수 있다는 경고가 붙는지 — 서버 summary.elevatorCongested. 실시간이 아니라
+   * 평일 정각 직전 10분을 혼잡으로 보는 시간표 기준 예상이다. 경로 카드(RouteResultCard)가 엘리베이터 횟수 옆에
+   * 경고 아이콘으로 보여준다.
    */
   elevatorWarning?: boolean;
   steps: RouteStep[];

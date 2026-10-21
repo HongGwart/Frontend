@@ -98,6 +98,9 @@ export default function SearchScreen() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const openSearchItem = (item: SearchResultItem) => {
     addRecentSearch(item);
+    // 검색창에 친 글자("R") 대신 고른 장소 이름을 넣는다. 서버 표시 이름과 같은 형식("R동 313호", "R동",
+    // 동 코드가 없는 장소는 "R5 강의실 끝 여자화장실")이라 카드를 닫으면 그 장소가 다시 검색 결과로 보인다.
+    setValue(item.building ? [item.building, item.room].filter(Boolean).join(' ') : item.place);
     setSelectedItem(item);
     const facility = findFacilityForSearchItem(item);
     if (facility) setSelectedFacility(facility);

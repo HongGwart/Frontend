@@ -21,4 +21,6 @@ export interface FloorChangeMetaDto {
   toFloorOrder?: number;
   /** 이동 수단 */
   transport?: FloorChangeMetaDtoTransport;
+  /** 이 엘리베이터에 도착할 예상 시각의 혼잡 여부. ELEVATOR에만 제공하고 STAIR에서는 생략한다. 시간대와 누적 시간 기준은 summary.elevatorCongested와 같다. */
+  congested?: boolean;
 }
