@@ -20,7 +20,11 @@ export interface RouteResult {
   indoorPercent: number;
   stairsCount?: number;
   elevatorCount?: number;
-  /** 엘리베이터 혼잡 등으로 대기가 생길 수 있다는 경고가 붙는지 */
+  /**
+   * 엘리베이터 혼잡 등으로 대기가 생길 수 있다는 경고가 붙는지. 경로 카드(RouteResultCard)가 엘리베이터 횟수 옆에
+   * 경고 아이콘으로 보여준다(Figma 디자인). 지금 서버 경로 응답엔 혼잡 정보가 없어서 채우는 곳이 없다 —
+   * 서버가 혼잡 정보를 주면 toRouteView에서 채운다.
+   */
   elevatorWarning?: boolean;
   steps: RouteStep[];
 }

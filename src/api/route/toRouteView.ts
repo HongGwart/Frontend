@@ -198,6 +198,7 @@ export function toRouteView(route: RouteDto): RouteView | null {
     indoorPercent: Math.round((indoorMeters / totalMeters) * 100),
     stairsCount: countRides('STAIRS'),
     elevatorCount: countRides('ELEVATOR'),
+    // elevatorWarning(엘리베이터 혼잡 경고)은 서버 응답에 혼잡 정보가 아직 없어서 채우지 않는다. 생기면 여기서 채운다.
     steps: routeSteps,
   };
 
