@@ -6,6 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from 'styled-components/native';
 import Header from '@components/layout/Header';
 import { SearchListItem } from '@components/common/SearchListItem';
+import { SearchEmptyResult } from '@components/common/SearchEmptyResult';
 import { DepartureSearchBar } from '@components/mypage/DepartureSearchBar';
 import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
 import { SEARCH_ITEM_ICONS, SearchResultItem } from '@constant/dummySearchData';
@@ -41,7 +42,7 @@ export default function RouteLocationSearchScreen() {
   const keyword = value.trim().toLowerCase();
   // 검색어가 있을 때만 서버 검색 결과를 보여준다(검색어가 없으면 아래 즐겨찾기만). 서버 결과엔 nodeId가 있어서,
   // 출발/도착을 둘 다 서버 결과로 고르면 실제 경로 탐색 API를 쓴다.
-  const { results: searchResults } = useSearchSuggestions(value);
+  const { results: searchResults, isSearching } = useSearchSuggestions(value);
   const results = keyword ? searchResults : [];
 
   // 검색어가 없을 땐 기기에 저장된 즐겨찾기를 맨 위에 먼저 보여줘서 바로 고를 수 있게 한다.
@@ -110,6 +111,7 @@ export default function RouteLocationSearchScreen() {
                 {...SEARCH_ITEM_ICONS[item.category]}
               />
             ))}
+            {!!keyword && !isSearching && results.length === 0 && <SearchEmptyResult />}
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>
@@ -136,5 +138,6 @@ const SearchBarWrapper = styled.View`
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  listContent: { paddingTop: 16 },
+  // flexGrow: 결과가 없을 때 SearchEmptyResult가 남은 공간 정중앙에 오게 한다.
+  listContent: { paddingTop: 16, flexGrow: 1 },
 });

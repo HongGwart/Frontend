@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import styled from 'styled-components/native';
 import Header from '@components/layout/Header';
 import { SearchListItem } from '@components/common/SearchListItem';
+import { SearchEmptyResult } from '@components/common/SearchEmptyResult';
 import { DepartureSearchBar } from '@components/mypage/DepartureSearchBar';
 import { AnimatedToast } from '@components/mypage/AnimatedToast';
 import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
@@ -29,7 +30,7 @@ export default function DepartureSettingScreen() {
   const { departure, setDeparture } = useDefaultDeparture();
 
   // 길찾기 출발지 검색과 같은 서버 검색. 서버 결과엔 nodeId가 있어서 기본 출발지로도 실제 경로 탐색을 쓴다.
-  const { results: searchResults } = useSearchSuggestions(value);
+  const { results: searchResults, isSearching } = useSearchSuggestions(value);
   const results = value.trim() ? searchResults : [];
 
   // 지금 기본 출발지와 같은 장소면 선택 표시. 서버 장소는 nodeId로, 아니면 표시 이름으로 비교한다.
@@ -71,6 +72,7 @@ export default function DepartureSettingScreen() {
                 {...SEARCH_ITEM_ICONS[item.category]}
               />
             ))}
+            {!!value.trim() && !isSearching && results.length === 0 && <SearchEmptyResult />}
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>
@@ -100,6 +102,6 @@ const SearchBarWrapper = styled.View`
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  // 검색창 → 16px → 리스트 (Figma gap-16)
-  listContent: { paddingTop: 16 },
+  // 검색창 → 16px → 리스트 (Figma gap-16). flexGrow: 결과가 없을 때 SearchEmptyResult가 남은 공간 정중앙에 오게 한다.
+  listContent: { paddingTop: 16, flexGrow: 1 },
 });

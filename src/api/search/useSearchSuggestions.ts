@@ -87,5 +87,8 @@ export function useSearchSuggestions(keyword: string) {
     return remote;
   }, [immediate, query, isError, data, isPlaceholderData]);
 
-  return { results, isLoading: enabled && isFetching && !data };
+  // 디바운스 중이거나 지금 검색어의 응답을 기다리는 중 — 이때 결과가 비어 있어도 "검색 결과 없음"을 띄우지 않는다.
+  const isSearching = enabled && (query !== immediate || isFetching);
+
+  return { results, isLoading: enabled && isFetching && !data, isSearching };
 }

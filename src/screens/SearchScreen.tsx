@@ -3,10 +3,9 @@ import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import styled, { useTheme } from 'styled-components/native';
+import styled from 'styled-components/native';
 import Animated from 'react-native-reanimated';
 import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
-import SearchIcon from '@assets/svgs/icons/search.svg';
 import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
 import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
 import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
@@ -19,6 +18,7 @@ import { createFloorToGeo, getContentBounds } from '@utils/floorGeoTransform';
 import { SearchBar } from '@components/common/SearchBar';
 import { SearchPageHeader } from '@components/common/SearchPageHeader';
 import { SearchListItem } from '@components/common/SearchListItem';
+import { SearchEmptyResult } from '@components/common/SearchEmptyResult';
 import { CategoryChipList } from '@components/common/CategoryChipList';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import {
@@ -88,7 +88,6 @@ function findFacilityForSearchItem(item: SearchResultItem): SelectedFacility | n
 // react-navigation 스택 화면으로 등록되기 전까지는 App.tsx가 이 값을 들고 있었는데,
 // 다른 화면에서 쓰지 않아서 스택 전환으로 옮기며 그냥 이 화면 로컬 상태로 내렸다.
 export default function SearchScreen() {
-  const theme = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [value, setValue] = useState('');
   // 마이크 버튼 -> 듣기 시작 -> 인식된 텍스트로 검색창 내용을 그대로 갱신(중간 결과 포함).
@@ -112,7 +111,7 @@ export default function SearchScreen() {
 
   const trimmedValue = value.trim();
   // 서버 검색(자동완성 API) + 아직 서버에 없는 앱 더미 장소. 실패하면 더미 결과로 대신한다.
-  const { results: searchResults } = useSearchSuggestions(value);
+  const { results: searchResults, isSearching: isFetchingResults } = useSearchSuggestions(value);
 
   // 검색어가 없으면 최근 검색어를, 있으면 검색 결과를 보여준다.
   const isSearching = trimmedValue.length > 0;
@@ -478,14 +477,8 @@ export default function SearchScreen() {
                       {...SEARCH_ITEM_ICONS[item.category]}
                     />
                   ))
-                ) : (
-                  <EmptyResultView>
-                    <EmptyIconCircle>
-                      <SearchIcon width={28} height={28} color={theme.semantic.text.tertiary} />
-                    </EmptyIconCircle>
-                    <EmptyTitleText>검색 결과가 없어요</EmptyTitleText>
-                    <EmptySubtitleText>다른 검색어로 다시 시도해 보세요</EmptySubtitleText>
-                  </EmptyResultView>
+                ) : isFetchingResults ? null : (
+                  <SearchEmptyResult />
                 )
               ) : (
                 recentSearches.map((item, index) => (
@@ -531,7 +524,7 @@ const styles = StyleSheet.create({
   searchHeaderWrapper: { marginTop: 8 },
   content: { flex: 1, marginTop: 16 },
   scrollView: { flex: 1 },
-  // 검색 결과가 없을 때 EmptyResultView를 검색창 아래 여백의 정중앙에 오도록
+  // 검색 결과가 없을 때 SearchEmptyResult를 검색창 아래 여백의 정중앙에 오도록
   // 스크롤 콘텐츠 자체가 (위 scrollView의 flex:1로 확보된) 남은 공간을 다 채우게 한다.
   scrollContent: { flexGrow: 1 },
   mapTopOverlay: {
@@ -556,39 +549,6 @@ const RecentSearchesTitle = styled.Text`
   color: ${({ theme }) => theme.semantic.text.secondary};
 `;
 
-// 검색어에 해당하는 결과가 하나도 없을 때 보여주는 빈 상태 화면.
-const EmptyResultView = styled.View`
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 24px 40px 96px;
-`;
-
-const EmptyIconCircle = styled.View`
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 100px;
-  background-color: ${({ theme }) => theme.semantic.background.fill};
-`;
-
-const EmptyTitleText = styled.Text`
-  font-family: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontFamily};
-  font-size: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.bodyNormal.semiBold.lineHeight}px;
-  letter-spacing: ${({ theme }) => theme.typography.bodyNormal.semiBold.letterSpacing}px;
-  color: ${({ theme }) => theme.semantic.text.primary};
-`;
-
-const EmptySubtitleText = styled.Text`
-  font-family: ${({ theme }) => theme.typography.labelNormal.medium.fontFamily};
-  font-size: ${({ theme }) => theme.typography.labelNormal.medium.fontSize}px;
-  line-height: ${({ theme }) => theme.typography.labelNormal.medium.lineHeight}px;
-  letter-spacing: ${({ theme }) => theme.typography.labelNormal.medium.letterSpacing}px;
-  color: ${({ theme }) => theme.semantic.text.tertiary};
-`;
 
 const ListeningRow = styled.View`
   flex-direction: row;
