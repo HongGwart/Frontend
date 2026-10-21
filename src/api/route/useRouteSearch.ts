@@ -37,13 +37,16 @@ export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
   );
 
   const apiError = isError ? toApiError(error) : undefined;
-  const notFound = apiError?.status === 404 || (!!data && routes.length === 0);
+  // 출발지와 도착지가 같은 장소면 서버가 경로 없이(routes: []) 200 SAME_PLACE를 준다 — 경로 없음과 구분한다.
+  const samePlace = data?.status === 'SAME_PLACE';
+  const notFound = apiError?.status === 404 || (!!data && !samePlace && routes.length === 0);
 
   return {
     /** 서버 경로를 쓰는 중인지(출발/도착 둘 다 서버 노드) */
     enabled,
     routes,
     isLoading: enabled && isFetching && !data,
+    samePlace,
     notFound,
     /** 경로 없음 외의 실패(네트워크·서버 오류). 화면이 문구를 띄운다. */
     error: apiError && !notFound ? apiError : undefined,

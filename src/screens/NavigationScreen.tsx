@@ -110,13 +110,15 @@ export default function NavigationScreen() {
   // 경로 목록 대신 띄울 안내 — 찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
   const routeStatusText = routeSearch.isLoading
     ? '경로를 찾고 있어요'
-    : routeSearch.notFound
-      ? '두 장소를 잇는 경로를 찾지 못했어요'
-      : routeSearch.error
-        ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
-        : routeResults.length === 0
-          ? '이 옵션으로 갈 수 있는 경로가 없어요'
-          : null;
+    : routeSearch.samePlace
+      ? '출발지와 도착지가 같은 곳이에요'
+      : routeSearch.notFound
+        ? '두 장소를 잇는 경로를 찾지 못했어요'
+        : routeSearch.error
+          ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
+          : routeResults.length === 0
+            ? '이 옵션으로 갈 수 있는 경로가 없어요'
+            : null;
   const hasElevatorWarning = useMemo(() => routeResults.some(route => route.elevatorWarning), [routeResults]);
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
