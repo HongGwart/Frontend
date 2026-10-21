@@ -1,4 +1,5 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
+import type { RoutePlace } from '@api/node/usePlaceNodeId';
 
 /**
  * 마이페이지/즐겨찾기 목록에서 시설을 탭했을 때 map 탭으로 넘겨줄 시설 정보.
@@ -25,6 +26,9 @@ export interface RouteLocationSelection {
   /** 서버 검색 결과에서 골랐으면 그 노드 id(GET /api/route의 출발/도착). 앱 더미 장소면 없다. */
   departureNodeId?: number;
   destinationNodeId?: number;
+  /** nodeId를 모를 때 길찾기 화면이 서버 노드를 찾을 장소(동 코드 + 호실). 지도 마커·건물 내부 지도·즐겨찾기에서 온다 */
+  departurePlace?: RoutePlace;
+  destinationPlace?: RoutePlace;
 }
 
 // 하단 탭 4개. 길찾기는 탭이 아니라 루트 스택에 푸시되는 화면이다(RootStackParamList.Navigation) —

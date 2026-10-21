@@ -52,6 +52,8 @@ export default function RouteLocationSearchScreen() {
   const handleSelect = (item: SearchResultItem) => {
     Keyboard.dismiss();
     const label = formatLocationLabel(item);
+    // 노드 id가 없는 항목(지도 마커에서 추가한 즐겨찾기 등)은 길찾기 화면이 동 코드 + 호실로 서버 노드를 찾는다.
+    const place = item.nodeId === undefined ? { buildingCode: item.building, room: item.room } : undefined;
     // 방금 고른 쪽만 새 값으로 바꾸고, 나머지 한쪽은 넘어올 때 받아온 값(이미 골라둔 값)을
     // 그대로 들고 돌아가서 길찾기 화면에서 두 값이 서로 덮어쓰지 않게 한다. popTo는 스택에
     // 이미 있는 Navigation 화면 인스턴스로 되돌아가면서 이 params를 merge한다(새로 안 만듦).
@@ -61,6 +63,8 @@ export default function RouteLocationSearchScreen() {
         destinationLabel: params.target === 'destination' ? label : params.destinationLabel,
         departureNodeId: params.target === 'departure' ? item.nodeId : params.departureNodeId,
         destinationNodeId: params.target === 'destination' ? item.nodeId : params.destinationNodeId,
+        departurePlace: params.target === 'departure' ? place : params.departurePlace,
+        destinationPlace: params.target === 'destination' ? place : params.destinationPlace,
       },
     });
   };

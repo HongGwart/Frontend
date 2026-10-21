@@ -35,6 +35,7 @@ import { RootStackParamList } from '@navigation/types';
 import { regionToFit } from '@utils/routePath';
 import { useRouteSearch } from '@api/route/useRouteSearch';
 import { USE_MOCK_API } from '@api/config';
+import { RoutePlace, usePlaceNodeId } from '@api/node/usePlaceNodeId';
 import { getErrorMessage } from '@api/errors';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 
@@ -62,6 +63,9 @@ export default function NavigationScreen() {
   // 서버 검색 결과에서 고른 출발/도착의 노드 id. 둘 다 있으면 실제 경로 탐색 API를 쓴다.
   const [departureNodeId, setDepartureNodeId] = useState<number | undefined>();
   const [destinationNodeId, setDestinationNodeId] = useState<number | undefined>();
+  // 노드 id 없이 넘어온 장소(지도 마커·건물 내부 지도·즐겨찾기)는 동 코드 + 호실로 서버 노드를 찾는다.
+  const [departurePlace, setDeparturePlace] = useState<RoutePlace | undefined>();
+  const [destinationPlace, setDestinationPlace] = useState<RoutePlace | undefined>();
   // 경로 옵션은 라디오처럼 한 번에 하나만 고를 수 있다. 같은 칩을 다시 누르면 선택 해제.
   const [selectedOption, setSelectedOption] = useState<RouteOptionKey | null>(null);
 
@@ -75,10 +79,12 @@ export default function NavigationScreen() {
     if (selection.departureLabel !== undefined) {
       setDeparture(selection.departureLabel);
       setDepartureNodeId(selection.departureNodeId);
+      setDeparturePlace(selection.departurePlace);
     }
     if (selection.destinationLabel !== undefined) {
       setDestination(selection.destinationLabel);
       setDestinationNodeId(selection.destinationNodeId);
+      setDestinationPlace(selection.destinationPlace);
     }
     navigation.setParams({ routeSelection: undefined });
   }, [params?.routeSelection, navigation]);
@@ -88,6 +94,8 @@ export default function NavigationScreen() {
     setDestination(departure);
     setDepartureNodeId(destinationNodeId);
     setDestinationNodeId(departureNodeId);
+    setDeparturePlace(destinationPlace);
+    setDestinationPlace(departurePlace);
   };
 
   const toggleOption = (key: RouteOptionKey) => {
@@ -96,8 +104,14 @@ export default function NavigationScreen() {
 
   // 출발/도착지가 둘 다 채워지면 빈 상태 대신 경로 목록을 보여준다.
   const hasRoute = departure.length > 0 && destination.length > 0;
-  // 둘 다 서버 검색 결과로 골랐으면 서버 경로(GET /api/route)를 쓴다.
-  const routeSearch = useRouteSearch({ fromNodeId: departureNodeId, toNodeId: destinationNodeId });
+  // 노드 id를 모르는 쪽은 장소 이름으로 서버 노드를 찾고, 둘 다 노드가 있으면 서버 경로(GET /api/route)를 쓴다.
+  const departureLookup = usePlaceNodeId(departureNodeId === undefined ? departurePlace : undefined);
+  const destinationLookup = usePlaceNodeId(destinationNodeId === undefined ? destinationPlace : undefined);
+  const fromNodeId = departureNodeId ?? departureLookup.nodeId;
+  const toNodeId = destinationNodeId ?? destinationLookup.nodeId;
+  const isLookingUpPlace = departureLookup.isLoading || destinationLookup.isLoading;
+  const placeLookupFailed = departureLookup.isError || destinationLookup.isError;
+  const routeSearch = useRouteSearch({ fromNodeId, toNodeId });
   // 서버 경로를 못 쓰면(출발/도착 중 서버에 없는 장소가 있을 때) 경로를 보여주지 않고 안내만 띄운다. 목 모드에서만
   // 실내 길찾기 테스트 쌍(R동 카페나무 → C동 816호)이면 그 경로 하나를, 아니면 더미 경로를 보여준다.
   const allRouteResults = useMemo(() => {
@@ -111,21 +125,24 @@ export default function NavigationScreen() {
     () => (selectedOption ? allRouteResults.filter(route => route.option === selectedOption) : allRouteResults),
     [allRouteResults, selectedOption],
   );
-  // 경로 목록 대신 띄울 안내 — 서버에 없는 장소/찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
-  const routeStatusText =
-    !routeSearch.enabled && !USE_MOCK_API
-      ? '서버에 등록되지 않은 장소라 경로를 찾을 수 없어요'
-      : routeSearch.isLoading
-        ? '경로를 찾고 있어요'
-        : routeSearch.samePlace
-          ? '출발지와 도착지가 같은 곳이에요'
-          : routeSearch.notFound
-            ? '두 장소를 잇는 경로를 찾지 못했어요'
-            : routeSearch.error
-              ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
-              : routeResults.length === 0
-                ? '이 옵션으로 갈 수 있는 경로가 없어요'
-                : null;
+  // 경로 목록 대신 띄울 안내 — 장소 찾는 중/장소 찾기 실패/서버에 없는 장소/경로 찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
+  const routeStatusText = isLookingUpPlace
+    ? '경로를 찾고 있어요'
+    : placeLookupFailed
+      ? '경로를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'
+      : !routeSearch.enabled && !USE_MOCK_API
+        ? '서버에 등록되지 않은 장소라 경로를 찾을 수 없어요'
+        : routeSearch.isLoading
+          ? '경로를 찾고 있어요'
+          : routeSearch.samePlace
+            ? '출발지와 도착지가 같은 곳이에요'
+            : routeSearch.notFound
+              ? '두 장소를 잇는 경로를 찾지 못했어요'
+              : routeSearch.error
+                ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
+                : routeResults.length === 0
+                  ? '이 옵션으로 갈 수 있는 경로가 없어요'
+                  : null;
   const hasElevatorWarning = useMemo(() => routeResults.some(route => route.elevatorWarning), [routeResults]);
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
@@ -207,13 +224,16 @@ export default function NavigationScreen() {
               target: 'departure',
               departureLabel: departure,
               destinationLabel: destination,
-              departureNodeId,
-              destinationNodeId,
+              departureNodeId: fromNodeId,
+              destinationNodeId: toNodeId,
+              departurePlace,
+              destinationPlace,
             })
           }
           onClear={() => {
             setDeparture('');
             setDepartureNodeId(undefined);
+            setDeparturePlace(undefined);
           }}
           disabled={disabled}
           rightSlot={
@@ -226,6 +246,7 @@ export default function NavigationScreen() {
                 }
                 setDeparture(departureLabelOf(defaultDeparture));
                 setDepartureNodeId(defaultDeparture.nodeId);
+                setDeparturePlace(undefined);
               }}
               hitSlop={8}
             >
@@ -242,13 +263,16 @@ export default function NavigationScreen() {
               target: 'destination',
               departureLabel: departure,
               destinationLabel: destination,
-              departureNodeId,
-              destinationNodeId,
+              departureNodeId: fromNodeId,
+              destinationNodeId: toNodeId,
+              departurePlace,
+              destinationPlace,
             })
           }
           onClear={() => {
             setDestination('');
             setDestinationNodeId(undefined);
+            setDestinationPlace(undefined);
           }}
           disabled={disabled}
         />
@@ -390,8 +414,8 @@ export default function NavigationScreen() {
                   navigation.navigate('RouteGuidance', {
                     routeId: selectedRoute.id,
                     destinationLabel: destination,
-                    fromNodeId: departureNodeId,
-                    toNodeId: destinationNodeId,
+                    fromNodeId,
+                    toNodeId,
                   })
                 }
               />
