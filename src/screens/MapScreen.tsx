@@ -540,6 +540,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               images={dongDetail.images}
               {...routeButtonProps(
                 toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
+                undefined,
+                { buildingCode: selectedFacility.marker.label ?? '' },
               )}
               facilityCounts={dongDetail.facilityCounts}
               mainEntrance={dongDetail.mainEntrance}
@@ -572,6 +574,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   selectedFacility.marker.buildingName,
                   selectedFacility.marker.room,
                 ),
+                undefined,
+                { buildingCode: selectedFacility.marker.buildingCode, room: selectedFacility.marker.room },
               )}
               operatingHours={facilityStatus}
               onViewInsidePress={() =>
@@ -609,6 +613,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   selectedFacility.facility.buildingName,
                   selectedFacility.facility.facilityName,
                 ),
+                undefined,
+                { buildingCode: selectedFacility.facility.buildingCode, room: selectedFacility.facility.placeName },
               )}
               operatingHours={facilityStatus}
               onViewInsidePress={() =>
@@ -632,6 +638,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               placeholderIcon={selectedFacility.item.icon}
               {...routeButtonProps(
                 toRoutePlaceLabel(selectedFacility.item.building, selectedFacility.item.place, selectedFacility.item.room),
+                undefined,
+                { buildingCode: selectedFacility.item.building, room: selectedFacility.item.room },
               )}
               operatingHours={facilityStatus}
               onViewInsidePress={() => openBuildingIndoorOf(selectedFacility.item.building, selectedFacility.item.place)}

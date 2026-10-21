@@ -106,6 +106,8 @@ export default function FacilityCategoryListScreen() {
             onToggleFavorite={() => togglePlaceFavorite(toFavoriteInput(selectedPlace))}
             {...routeButtonProps(
               toRoutePlaceLabel(selectedPlace.buildingCode, selectedPlace.buildingName, selectedPlace.name),
+              undefined,
+              { buildingCode: selectedPlace.buildingCode, room: selectedPlace.name },
             )}
             placeholderIcon={category?.icon}
             operatingHours={selectedStatus}

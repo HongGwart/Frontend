@@ -132,11 +132,10 @@ export default function BuildingIndoorScreen() {
 
   // 출발/도착을 누르면 길찾기 탭으로 가서 해당 입력창을 채운다(강의실을 골랐으면 호수까지).
   const routeButtonProps = useRouteButtonProps();
-  const placeLabel = toRoutePlaceLabel(
-    params.buildingCode,
-    buildingName,
-    selectedRoomLabel && `${selectedRoomLabel}호`,
-  );
+  const selectedRoom = selectedRoomLabel ? `${selectedRoomLabel}호` : undefined;
+  const placeLabel = toRoutePlaceLabel(params.buildingCode, buildingName, selectedRoom);
+  // 건물 내부 지도는 서버 검색을 거치지 않아 nodeId가 없다 — 동 코드 + 호실로 누를 때 서버 노드를 찾는다.
+  const routePlace = { buildingCode: params.buildingCode, room: selectedRoom };
 
   return (
     <Container>
@@ -220,7 +219,7 @@ export default function BuildingIndoorScreen() {
               onToggleFavorite={() =>
                 toggleFavorite({ ...buildingFavorite, name: `${selectedRoomLabel}호`, category: 'classroom' })
               }
-              {...routeButtonProps(placeLabel)}
+              {...routeButtonProps(placeLabel, undefined, routePlace)}
               // 강의실에는 따로 운영 시간이 없어 그 건물의 운영 시간을 쓴다.
               operatingHours={buildingDetail.operatingHours}
             />
@@ -234,7 +233,7 @@ export default function BuildingIndoorScreen() {
               description={params.description}
               isFavorite={isFavorite(buildingFavorite)}
               onToggleFavorite={() => toggleFavorite(buildingFavorite)}
-              {...routeButtonProps(placeLabel)}
+              {...routeButtonProps(placeLabel, undefined, routePlace)}
               images={buildingDetail.images}
               facilityCounts={buildingDetail.facilityCounts}
               mainEntrance={buildingDetail.mainEntrance}

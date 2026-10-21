@@ -377,6 +377,7 @@ export default function SearchScreen() {
                 {...routeButtonProps(
                   toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
                   buildingNodeId,
+                  { buildingCode: selectedFacility.marker.label ?? '' },
                 )}
                 facilityCounts={dongDetail.facilityCounts}
                 mainEntrance={dongDetail.mainEntrance}
@@ -407,6 +408,8 @@ export default function SearchScreen() {
                     selectedFacility.marker.buildingName,
                     selectedFacility.marker.room,
                   ),
+                  undefined,
+                  { buildingCode: selectedFacility.marker.buildingCode, room: selectedFacility.marker.room },
                 )}
                 operatingHours={facilityStatus}
                 // 시설이 있는 건물(동)의 내부 지도로 간다(지도 화면의 시설 카드와 같음).

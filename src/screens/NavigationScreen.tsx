@@ -34,6 +34,7 @@ import { CAMPUS_EXTENT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
 import { regionToFit } from '@utils/routePath';
 import { useRouteSearch } from '@api/route/useRouteSearch';
+import { USE_MOCK_API } from '@api/config';
 import { getErrorMessage } from '@api/errors';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 
@@ -97,10 +98,11 @@ export default function NavigationScreen() {
   const hasRoute = departure.length > 0 && destination.length > 0;
   // 둘 다 서버 검색 결과로 골랐으면 서버 경로(GET /api/route)를 쓴다.
   const routeSearch = useRouteSearch({ fromNodeId: departureNodeId, toNodeId: destinationNodeId });
-  // 서버 경로를 못 쓰면(앱 더미 장소를 골랐을 때) — 출발/도착이 실내 길찾기 테스트 쌍(R동 카페나무 → C동
-  // 816호)이고 노드를 다 찍어뒀으면 그 경로 하나만, 아니면 더미 경로를 보여준다.
+  // 서버 경로를 못 쓰면(출발/도착 중 서버에 없는 장소가 있을 때) 경로를 보여주지 않고 안내만 띄운다. 목 모드에서만
+  // 실내 길찾기 테스트 쌍(R동 카페나무 → C동 816호)이면 그 경로 하나를, 아니면 더미 경로를 보여준다.
   const allRouteResults = useMemo(() => {
     if (routeSearch.enabled) return routeSearch.routes.map(view => view.result);
+    if (!USE_MOCK_API) return [];
     const testRoute = isTestRoutePair(departure, destination) ? buildTestRoute() : null;
     return testRoute ? [testRoute.result] : DUMMY_ROUTE_RESULTS;
   }, [routeSearch.enabled, routeSearch.routes, departure, destination]);
@@ -109,18 +111,21 @@ export default function NavigationScreen() {
     () => (selectedOption ? allRouteResults.filter(route => route.option === selectedOption) : allRouteResults),
     [allRouteResults, selectedOption],
   );
-  // 경로 목록 대신 띄울 안내 — 찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
-  const routeStatusText = routeSearch.isLoading
-    ? '경로를 찾고 있어요'
-    : routeSearch.samePlace
-      ? '출발지와 도착지가 같은 곳이에요'
-      : routeSearch.notFound
-        ? '두 장소를 잇는 경로를 찾지 못했어요'
-        : routeSearch.error
-          ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
-          : routeResults.length === 0
-            ? '이 옵션으로 갈 수 있는 경로가 없어요'
-            : null;
+  // 경로 목록 대신 띄울 안내 — 서버에 없는 장소/찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
+  const routeStatusText =
+    !routeSearch.enabled && !USE_MOCK_API
+      ? '서버에 등록되지 않은 장소라 경로를 찾을 수 없어요'
+      : routeSearch.isLoading
+        ? '경로를 찾고 있어요'
+        : routeSearch.samePlace
+          ? '출발지와 도착지가 같은 곳이에요'
+          : routeSearch.notFound
+            ? '두 장소를 잇는 경로를 찾지 못했어요'
+            : routeSearch.error
+              ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
+              : routeResults.length === 0
+                ? '이 옵션으로 갈 수 있는 경로가 없어요'
+                : null;
   const hasElevatorWarning = useMemo(() => routeResults.some(route => route.elevatorWarning), [routeResults]);
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
