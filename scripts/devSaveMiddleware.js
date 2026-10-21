@@ -1,10 +1,10 @@
 /**
- * [개발용] Metro 개발 서버에 붙이는 저장 엔드포인트. 앱의 개발용 지도 모드(🏢 평면도 앉히기, 🧭 경로 노드
+ * [개발용] Metro 개발 서버에 붙이는 저장 엔드포인트. 앱의 개발용 지도 모드(🏢 평면도 앉히기, 건물 덮개
  * 찍기)가 찍은 값을 POST /__dev/save 로 보내면 프로젝트 JSON 파일에 바로 써서, 로그를 복사해 붙여넣지
  * 않아도 동 마커 좌표처럼 코드에 남는다(앱을 껐다 켜도 유지). 평면도 기준점이면 renderFloorOverlay.js도
  * 이어서 돌려 PNG까지 새로 굽는다. 저장 대상은 아래 TARGETS에 적힌 파일로만 제한한다.
  *
- * 요청 본문: { target: 'floorGeoAnchors' | 'testRouteNodes' | 'buildingMasks', data: object, render?: string[] }
+ * 요청 본문: { target: 'floorGeoAnchors' | 'buildingMasks', data: object, render?: string[] }
  * 구운 층은 응답의 overlays에 region과 PNG 주소(GET /__dev/floor-overlay/{층}.png)를 담아 돌려준다 — 앱이
  * 새로고침(HMR)을 기다리지 않고 그 주소로 바로 평면도를 띄울 수 있게.
  */
@@ -18,7 +18,6 @@ const OVERLAY_INDEX = 'src/constant/floorOverlayImages.ts';
 
 const TARGETS = {
   floorGeoAnchors: 'src/constant/floorGeoAnchors.json',
-  testRouteNodes: 'src/constant/testRouteNodes.json',
   buildingMasks: 'src/constant/buildingMasks.json',
 };
 

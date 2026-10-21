@@ -13,7 +13,7 @@ import { FLOOR_GEO_ANCHORS } from '@constant/floorGeoAnchors';
 import { FLOOR_PLAN_ANCHORS } from '@constant/floorPlanReferencePoints';
 import { saveDevJson } from '@utils/devSave';
 import { GeoCoord } from '@utils/floorGeoTransform';
-import { DevSaveStatus, DevSaveStatusRow } from './DevRouteNodePicker';
+import { DevSaveStatus, DevSaveStatusRow } from './DevSaveStatusRow';
 import { FloorPlanOverlay } from './FloorPlanOverlay';
 
 /** 덮개를 찍을 수 있는 건물(평면도가 있는 건물)과, 찍을 때 참고로 깔 층(1층, 없으면 가장 낮은 지상층). */

@@ -140,7 +140,7 @@ export function toRouteView(route: RouteDto): RouteView | null {
       const isElevator = step.meta?.transport === 'ELEVATOR';
       return {
         ...base,
-        // RouteStep엔 계단 타입이 없어서 도보 아이콘 + "계단 이동" 라벨로 보여준다(testIndoorRoute와 같다).
+        // RouteStep엔 계단 타입이 없어서 도보 아이콘 + "계단 이동" 라벨로 보여준다.
         type: isElevator ? 'elevator' : 'walk',
         label: isElevator ? '엘리베이터' : '계단 이동',
         congested: isElevator && step.meta?.congested === true,

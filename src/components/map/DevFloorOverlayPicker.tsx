@@ -8,7 +8,7 @@ import { getDevServerUrl, saveDevJson } from '@utils/devSave';
 import { FloorGeoAnchors } from '@utils/floorGeoTransform';
 import { FloorPlanOverlay, getFreshOverlayImage, LiveFloorImage } from './FloorPlanOverlay';
 import { FloorPlanEditor, FloorPlanEditorHandle, FloorPlanPlacement } from './FloorPlanEditor';
-import { DevSaveStatus, DevSaveStatusRow } from './DevRouteNodePicker';
+import { DevSaveStatus, DevSaveStatusRow } from './DevSaveStatusRow';
 
 // 지도에 얹어볼 층. 칩 순서 그대로 보여준다.
 export const OVERLAY_FLOOR_IDS = ['R_L', 'R_1', 'C_1', 'C_8'];
