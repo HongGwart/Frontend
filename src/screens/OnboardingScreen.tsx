@@ -47,6 +47,7 @@ import { FacilityListSheet, FacilityListSheetItem } from '@components/common/Fac
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { RootStackParamList } from '@navigation/types';
 import { markOnboardingCompleted } from '@storage/onboarding';
+import { SHOW_HONGDAE } from '@constant/featureFlags';
 
 // 마커/로고가 같은 자리에 그대로 있고 색만 바뀌는 두 디자인(Figma "스플래시" 669:3768 →
 // "온보딩" 679:1156)이라, 화면을 둘로 나눠 navigation.replace로 뚝 끊어 넘기는 대신
@@ -60,7 +61,8 @@ const CONTENT_FADE_MS = 400;
 
 // Figma 점 인디케이터가 5개라 총 5페이지짜리로 기획된 것으로 보이지만, 디자인이 나온
 // 두 페이지만 우선 구현한다 — 나머지는 디자인이 나오는 대로 Pager 안에 이어 추가.
-const TOTAL_PAGES = 5;
+// 마지막 주변상권 소개 페이지는 주변상권을 숨긴 동안(SHOW_HONGDAE) 뺀다.
+const TOTAL_PAGES = SHOW_HONGDAE ? 5 : 4;
 
 // 길찾기 목업의 칩 3개는 사용자가 직접 누르는 게 아니라, 왼쪽("최단 경로")부터
 // 순서대로 하나씩 자동으로 활성화되는 걸 반복 재생해서 "이런 경로들이 있다"를
@@ -160,17 +162,19 @@ const SEARCH_DEMO_FACILITY_ITEMS: FacilityListSheetItem[] = [
     id: 'onboarding-search-demo-1',
     icon: BuildingIcon,
     emphasized: true,
-    building: 'T동',
-    place: '제1공학관',
-    description: '공과대학 전공 강의실 및 실습실',
+    building: 'H동',
+    place: '중앙도서관',
+    description: '중앙도서관 및 독서공간',
   },
   {
     id: 'onboarding-search-demo-2',
     icon: BookIcon,
     building: 'T동',
-    place: '제1공학관',
-    room: '505호',
-    description: '공과대학 전공 강의실 및 실습실',
+    place: '제4공학관',
+    room: '제2 일반열람실',
+    description: '4층 · 24시간 개방',
+    // Figma 목업은 이 항목에 사진 줄이 있어서 카드가 폰 아래쪽까지 덮는다 — 사진 대신 기본 이미지로 같은 높이를 맞춘다.
+    placeholderIcon: BookIcon,
   },
 ];
 
@@ -230,11 +234,12 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
     id: 'cafe',
     icon: CafeIcon,
     cardProps: {
+      // 학기 중 평일 08:00~21:00
       facilityName: '카페나무',
       buildingCode: 'R동',
       buildingName: '홍문관',
       locationDetail: '로비층',
-      operatingHours: { isOpen: true, statusText: '운영 중', detailText: '22:00에 운영 종료' },
+      operatingHours: { isOpen: true, statusText: '운영 중', detailText: '21:00에 운영 종료' },
       placeholderIcon: CafeIcon,
     },
   },
@@ -242,11 +247,12 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
     id: 'store',
     icon: StoreIcon,
     cardProps: {
-      facilityName: 'GS25 홍대점',
+      // 무인 05:30~23:00
+      facilityName: '바이스마트',
       buildingCode: 'R동',
       buildingName: '홍문관',
-      locationDetail: '지하 1층',
-      operatingHours: { isOpen: true, statusText: '운영 중', detailText: '24시간 운영' },
+      locationDetail: '3층',
+      operatingHours: { isOpen: true, statusText: '운영 중', detailText: '23:00에 운영 종료' },
       placeholderIcon: StoreIcon,
     },
   },
@@ -254,10 +260,11 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
     id: 'restaurant',
     icon: RestaurantIcon,
     cardProps: {
-      facilityName: '학생 식당',
-      buildingCode: 'S동',
-      buildingName: '학생회관',
-      locationDetail: '1층',
+      // 평일 11:40~14:00, 17:00~18:30
+      facilityName: '교직원식당',
+      buildingCode: 'MH동',
+      buildingName: '문헌관',
+      locationDetail: '16층',
       operatingHours: { isOpen: true, statusText: '운영 중', detailText: '14:00에 운영 종료' },
       placeholderIcon: RestaurantIcon,
     },
@@ -266,11 +273,12 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
     id: 'print',
     icon: PrinterIcon,
     cardProps: {
-      facilityName: '프린트룸',
-      buildingCode: 'T동',
-      buildingName: '제1공학관',
-      locationDetail: '2층',
-      operatingHours: { isOpen: true, statusText: '운영 중', detailText: '22:00에 운영 종료' },
+      // 학기 중 평일 09:00~18:30
+      facilityName: '출력센터',
+      buildingCode: 'G동',
+      buildingName: '학생회관',
+      locationDetail: '1층',
+      operatingHours: { isOpen: true, statusText: '운영 중', detailText: '18:30에 운영 종료' },
       placeholderIcon: PrinterIcon,
     },
   },
@@ -278,11 +286,11 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
     id: 'smoke',
     icon: SmokeIcon,
     cardProps: {
-      facilityName: '흡연 구역',
+      // 야외 구역이라 운영 시간이 없다 — 운영 시간 줄을 빼고 보여준다.
+      facilityName: '흡연구역',
       buildingCode: 'G동',
-      buildingName: '신관',
-      locationDetail: '옥상',
-      operatingHours: { isOpen: true, statusText: '운영 중', detailText: '24시간 운영' },
+      buildingName: '학생회관',
+      locationDetail: '앞 광장',
       placeholderIcon: SmokeIcon,
     },
   },
@@ -290,10 +298,11 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
     id: 'book',
     icon: BookIcon,
     cardProps: {
-      facilityName: '제1열람실',
+      // 연중무휴 24시간 개방
+      facilityName: '제2 일반열람실',
       buildingCode: 'T동',
-      buildingName: '제1공학관',
-      locationDetail: '3층',
+      buildingName: '제4공학관',
+      locationDetail: '4층',
       operatingHours: { isOpen: true, statusText: '운영 중', detailText: '24시간 운영' },
       placeholderIcon: BookIcon,
     },
@@ -302,11 +311,12 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
     id: 'pc',
     icon: PcIcon,
     cardProps: {
-      facilityName: 'PC실',
-      buildingCode: 'T동',
+      // 학기 중 평일 09:00~17:00
+      facilityName: '공대 PC실',
+      buildingCode: 'K동',
       buildingName: '제1공학관',
-      locationDetail: '4층',
-      operatingHours: { isOpen: true, statusText: '운영 중', detailText: '22:00에 운영 종료' },
+      locationDetail: '6층',
+      operatingHours: { isOpen: true, statusText: '운영 중', detailText: '17:00에 운영 종료' },
       placeholderIcon: PcIcon,
     },
   },
@@ -745,58 +755,60 @@ export default function OnboardingScreen() {
           <BottomSpacer />
         </Page>
 
-        <Page style={{ width: screenWidth }}>
-          <PhoneMockupTopSpacer />
-          <FadeInContent style={[{ width: '100%', alignItems: 'center' }, contentStyle]}>
-            {(() => {
-              const hongdaeScale = screenWidth / HONGDAE_FLAT_CANVAS_WIDTH;
-              const hongdaeHeight = screenWidth / HONGDAE_FLAT_ASPECT_RATIO;
-              // 다른 온보딩 페이지는 PhoneMockupTopSpacer(240px) 바로 다음에 폰 스크린샷의
-              // 윗변이 온다. 이 배경 PNG는 폰(캔버스 y=216)보다 위쪽 배경 그림까지 포함하고
-              // 있어서, 그만큼 음수 마진으로 Scene 전체를 끌어올려야 폰 세로 위치가 다른
-              // 페이지와 맞는다(마커도 이 Scene 기준 캔버스 절대좌표를 그대로 쓴다).
-              const marginTop = -HONGDAE_FLAT_PHONE_TOP * hongdaeScale;
-              // Scene은 "배경(0) ~ 폰 하단에서 288유닛까지(=phone top + visible height)"만
-              // 레이아웃 높이로 차지하고, 그 아래로 삐져나오는 이미지 나머지(리스트 하단/
-              // 네비게이션바)는 overflow: hidden으로 잘라낸다 — 안 그러면 페이지 전체 높이가
-              // 다른 페이지보다 커져서 캡션이 Pager 세로 뷰포트 밖으로 밀려 안 보이게 된다.
-              const visibleHeight = (HONGDAE_FLAT_PHONE_TOP + HONGDAE_FLAT_VISIBLE_HEIGHT) * hongdaeScale;
-              return (
-                <HongdaeFlatScene style={{ width: screenWidth, height: visibleHeight, marginTop }}>
-                  <HongdaeFlatImage
-                    source={OnboardingHongdaeFlatImage}
-                    resizeMode="contain"
-                    style={{ width: screenWidth, height: hongdaeHeight, top: 0 }}
-                  />
+        {SHOW_HONGDAE && (
+          <Page style={{ width: screenWidth }}>
+            <PhoneMockupTopSpacer />
+            <FadeInContent style={[{ width: '100%', alignItems: 'center' }, contentStyle]}>
+              {(() => {
+                const hongdaeScale = screenWidth / HONGDAE_FLAT_CANVAS_WIDTH;
+                const hongdaeHeight = screenWidth / HONGDAE_FLAT_ASPECT_RATIO;
+                // 다른 온보딩 페이지는 PhoneMockupTopSpacer(240px) 바로 다음에 폰 스크린샷의
+                // 윗변이 온다. 이 배경 PNG는 폰(캔버스 y=216)보다 위쪽 배경 그림까지 포함하고
+                // 있어서, 그만큼 음수 마진으로 Scene 전체를 끌어올려야 폰 세로 위치가 다른
+                // 페이지와 맞는다(마커도 이 Scene 기준 캔버스 절대좌표를 그대로 쓴다).
+                const marginTop = -HONGDAE_FLAT_PHONE_TOP * hongdaeScale;
+                // Scene은 "배경(0) ~ 폰 하단에서 288유닛까지(=phone top + visible height)"만
+                // 레이아웃 높이로 차지하고, 그 아래로 삐져나오는 이미지 나머지(리스트 하단/
+                // 네비게이션바)는 overflow: hidden으로 잘라낸다 — 안 그러면 페이지 전체 높이가
+                // 다른 페이지보다 커져서 캡션이 Pager 세로 뷰포트 밖으로 밀려 안 보이게 된다.
+                const visibleHeight = (HONGDAE_FLAT_PHONE_TOP + HONGDAE_FLAT_VISIBLE_HEIGHT) * hongdaeScale;
+                return (
+                  <HongdaeFlatScene style={{ width: screenWidth, height: visibleHeight, marginTop }}>
+                    <HongdaeFlatImage
+                      source={OnboardingHongdaeFlatImage}
+                      resizeMode="contain"
+                      style={{ width: screenWidth, height: hongdaeHeight, top: 0 }}
+                    />
 
-                  {HONGDAE_MARKER_SHINES.map((marker, index) => {
-                    const visualSize = marker.size * hongdaeScale;
-                    return (
-                      <MarkerShineBox
-                        key={index}
-                        pointerEvents="none"
-                        style={{
-                          left: marker.left * hongdaeScale + (visualSize - MARKER_BASE_SIZE) / 2,
-                          top: marker.top * hongdaeScale + (visualSize - MARKER_BASE_SIZE) / 2,
-                          transform: [{ scale: visualSize / MARKER_BASE_SIZE }],
-                        }}
-                      >
-                        <MarkerGlow index={index}>
-                          <Marker favorite />
-                        </MarkerGlow>
-                      </MarkerShineBox>
-                    );
-                  })}
-                </HongdaeFlatScene>
-              );
-            })()}
+                    {HONGDAE_MARKER_SHINES.map((marker, index) => {
+                      const visualSize = marker.size * hongdaeScale;
+                      return (
+                        <MarkerShineBox
+                          key={index}
+                          pointerEvents="none"
+                          style={{
+                            left: marker.left * hongdaeScale + (visualSize - MARKER_BASE_SIZE) / 2,
+                            top: marker.top * hongdaeScale + (visualSize - MARKER_BASE_SIZE) / 2,
+                            transform: [{ scale: visualSize / MARKER_BASE_SIZE }],
+                          }}
+                        >
+                          <MarkerGlow index={index}>
+                            <Marker favorite />
+                          </MarkerGlow>
+                        </MarkerShineBox>
+                      );
+                    })}
+                  </HongdaeFlatScene>
+                );
+              })()}
 
-            <Caption style={{ marginTop: CAPTION_TO_PHONE_BOTTOM_GAP }}>
-              홍대 맛집도 바로 찾아보세요
-            </Caption>
-          </FadeInContent>
-          <BottomSpacer />
-        </Page>
+              <Caption style={{ marginTop: CAPTION_TO_PHONE_BOTTOM_GAP }}>
+                홍대 맛집도 바로 찾아보세요
+              </Caption>
+            </FadeInContent>
+            <BottomSpacer />
+          </Page>
+        )}
       </Pager>
 
       <FadeInContent style={[{ width: '100%', alignItems: 'center' }, contentStyle]}>

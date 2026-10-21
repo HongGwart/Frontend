@@ -9,6 +9,7 @@ import NavigationIcon from '@assets/svgs/navBarNavigation.svg';
 import FacilityIcon from '@assets/svgs/navBarFacility.svg';
 import HongdaeIcon from '@assets/svgs/navBarHongdae.svg';
 import MypageIcon from '@assets/svgs/navBarMypage.svg';
+import { SHOW_HONGDAE } from '@constant/featureFlags';
 
 export type NavigationTab =
   | 'map'
@@ -23,7 +24,7 @@ interface NavigationBarProps {
   bottomInset?: number;
 }
 
-const TABS: {
+const ALL_TABS: {
   key: NavigationTab;
   label: string;
   Icon: React.FC<SvgProps>;
@@ -54,6 +55,9 @@ const TABS: {
   },
   { key: 'mypage', label: 'MY', Icon: MypageIcon, iconWidth: 20, iconHeight: 19 },
 ];
+
+// 주변상권은 출시 범위에서 잠시 숨김(SHOW_HONGDAE). 탭 칸은 flex: 1이라 나머지 탭이 고르게 넓어진다.
+const TABS = ALL_TABS.filter(tab => SHOW_HONGDAE || tab.key !== 'hongdae');
 
 const Container = styled.View<{ bottomInset: number }>`
   flex-direction: row;

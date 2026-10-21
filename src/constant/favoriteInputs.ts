@@ -2,7 +2,7 @@ import type { FacilityListSheetItem } from '@components/common/FacilityListSheet
 import type { FavoriteInput } from '@hooks/useFavorites';
 import type { FocusFacilityParam } from '@navigation/types';
 import { CampusBuilding } from './campusBuildings';
-import { DummyCategoryMarker } from './dummyCategoryMarkers';
+import type { FacilityMarker } from '@api/facility/facilities';
 
 // 화면마다 모양이 다른 장소 데이터(지도 마커, 겹친 마커 리스트 항목, 라우트 파라미터)를 즐겨찾기 저장 형태로
 // 바꾼다. 같은 장소면 어느 화면에서 만들어도 같은 장소 키(동 코드 + 시설/호실 이름)가 나오게 맞춘다.
@@ -17,7 +17,7 @@ export const favoriteFromDongMarker = (marker: CampusBuilding): FavoriteInput =>
 });
 
 /** 카테고리(편의시설) 마커 */
-export const favoriteFromCategoryMarker = (marker: DummyCategoryMarker): FavoriteInput => ({
+export const favoriteFromCategoryMarker = (marker: FacilityMarker): FavoriteInput => ({
   buildingCode: marker.buildingCode,
   buildingName: marker.buildingName,
   name: marker.room,

@@ -36,7 +36,7 @@ import { useBuildingDetail } from '@api/building/useBuildingDetail';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import { CAMPUS_BUILDINGS, CampusBuilding } from '@constant/campusBuildings';
-import { DUMMY_CATEGORY_MARKERS, DummyCategoryMarker } from '@constant/dummyCategoryMarkers';
+import { FacilityMarker, useFacilityMarkers, useFacilityOperatingStatus } from '@api/facility/facilities';
 import {
   SEARCH_ITEM_ICONS,
   SearchResultItem,
@@ -52,7 +52,7 @@ import { AnimatedToast } from '@components/mypage/AnimatedToast';
 // 탭한 것과 같은 방식으로 시설 정보 바텀시트를 채운다.
 type SelectedFacility =
   | { type: 'dong'; marker: CampusBuilding }
-  | { type: 'category'; marker: DummyCategoryMarker };
+  | { type: 'category'; marker: FacilityMarker };
 
 // 검색 결과 항목(건물/호실)에 대응하는 지도 더미 마커를 찾는다.
 // 지도/검색 더미 데이터가 각각 따로 채워져 있어 건물 코드나 호실명이 정확히
@@ -65,12 +65,12 @@ const noop = () => {};
 // 검색한 호실로 카메라를 옮길 때의 줌(평면도와 호실 번호가 보일 만큼).
 const SEARCHED_ROOM_ZOOM = 19;
 
-function findFacilityForSearchItem(item: SearchResultItem): SelectedFacility | null {
+function findFacilityForSearchItem(item: SearchResultItem, facilityMarkers: FacilityMarker[]): SelectedFacility | null {
   if (item.category === 'building') {
     const marker = CAMPUS_BUILDINGS.find(m => m.label === item.building);
     return marker ? { type: 'dong', marker } : null;
   }
-  const categoryMarker = DUMMY_CATEGORY_MARKERS.find(
+  const categoryMarker = facilityMarkers.find(
     m => m.buildingCode === item.building && m.room === item.room,
   );
   if (categoryMarker) return { type: 'category', marker: categoryMarker };
@@ -96,13 +96,15 @@ export default function SearchScreen() {
   const { recentSearches, addRecentSearch, removeRecentSearch } = useRecentSearches();
   // 즐겨찾기 별은 기기 로컬에 저장된 앱 전역 상태로 표시한다(지도/마이페이지와 같은 상태).
   const { isFavorite, toggleFavorite } = useFavorites();
+  // 편의시설 마커(서버 시설 목록 API 전까지는 빈 목록) — 검색 결과가 편의시설이면 그 마커 카드로 연다.
+  const facilityMarkers = useFacilityMarkers();
   const openSearchItem = (item: SearchResultItem) => {
     addRecentSearch(item);
     // 검색창에 친 글자("R") 대신 고른 장소 이름을 넣는다. 서버 표시 이름과 같은 형식("R동 313호", "R동",
     // 동 코드가 없는 장소는 "R5 강의실 끝 여자화장실")이라 카드를 닫으면 그 장소가 다시 검색 결과로 보인다.
     setValue(item.building ? [item.building, item.room].filter(Boolean).join(' ') : item.place);
     setSelectedItem(item);
-    const facility = findFacilityForSearchItem(item);
+    const facility = findFacilityForSearchItem(item, facilityMarkers);
     if (facility) setSelectedFacility(facility);
   };
 
@@ -125,6 +127,15 @@ export default function SearchScreen() {
   // 카드를 연 검색 결과. 서버 장소(nodeId)면 장소 상세(층·호실·출입구)를 불러와 카드에 채운다.
   const [selectedItem, setSelectedItem] = useState<SearchResultItem | null>(null);
   const nodeDetail = useNodeDetail(selectedItem?.nodeId);
+  // 시설 카드의 운영 상태 — 서버 장소 소개(place-info)의 시설 자체 운영 시간. 시설 데이터가 없으면 undefined라
+  // 카드는 건물 운영 시간을 쓰거나 그 줄을 뺀다.
+  const facilityStatus = useFacilityOperatingStatus(
+    selectedFacility?.type === 'category'
+      ? selectedFacility.marker.nodeId
+      : selectedItem && selectedItem.category !== 'building'
+        ? selectedItem.nodeId
+        : undefined,
+  );
   const closeFacilityCard = useCallback(() => {
     setSelectedFacility(null);
     setSelectedItem(null);
@@ -230,8 +241,8 @@ export default function SearchScreen() {
       isFavorite: isFavorite(favorite),
       onToggleFavorite: () => toggleFavorite(favorite),
       ...routeButtonProps(toRoutePlaceLabel(buildingCode, marker.buildingName, name), item.nodeId),
-      // 호실·시설에는 따로 운영 시간이 없어 그 건물의 운영 시간을 쓴다.
-      operatingHours: dongDetail.operatingHours,
+      // 시설 자체 운영 시간(place-info)이 있으면 그걸, 없으면(호실 등) 그 건물의 운영 시간을 쓴다.
+      operatingHours: facilityStatus ?? dongDetail.operatingHours,
     };
     if (roomNumber) {
       return (
@@ -392,6 +403,7 @@ export default function SearchScreen() {
                 onToggleFavorite={() => toggleFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
                 images={selectedFacility.marker.images}
                 placeholderIcon={CATEGORY_MARKER_ICONS[selectedFacility.marker.category].icon}
+                operatingHours={facilityStatus}
                 {...routeButtonProps(
                   toRoutePlaceLabel(
                     selectedFacility.marker.buildingCode,

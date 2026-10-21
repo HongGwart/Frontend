@@ -11,7 +11,7 @@ import { OperatingHoursRow } from './FacilityInfoCard';
 import { BuildingFacilityCard } from './BuildingFacilityCard';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
-import { DUMMY_CATEGORY_MARKERS } from '@constant/dummyCategoryMarkers';
+import { useFacilityMarkers } from '@api/facility/facilities';
 import { favoriteFromCategoryMarker } from '@constant/favoriteInputs';
 import { useFavorites } from '@hooks/useFavorites';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
@@ -71,9 +71,11 @@ export function BuildingDetailBody({
     () => CAMPUS_BUILDINGS.find(marker => marker.label === buildingCode),
     [buildingCode],
   );
+  // 이 건물의 편의시설. 서버 시설 목록 API 전까지는 비어 있어서 편의시설 칸이 빠진다.
+  const facilityMarkers = useFacilityMarkers();
   const facilities = useMemo(
-    () => DUMMY_CATEGORY_MARKERS.filter(marker => marker.buildingCode === buildingCode),
-    [buildingCode],
+    () => facilityMarkers.filter(marker => marker.buildingCode === buildingCode),
+    [facilityMarkers, buildingCode],
   );
   // 설명·사진·운영 시간(지금 시각 기준)·주 출입구(서버 장소 상세). 확인 안 된 항목은 그 줄이 빠진다.
   const detail = useBuildingDetail(buildingCode);
@@ -84,8 +86,10 @@ export function BuildingDetailBody({
   // BuildingFacilityCard의 React.memo가 실제로 효과를 본다. 최신 토글 함수는 ref로 읽는다.
   const toggleRef = useRef(toggleFavoritePlace);
   toggleRef.current = toggleFavoritePlace;
+  const facilitiesRef = useRef(facilities);
+  facilitiesRef.current = facilities;
   const toggleFavorite = useCallback((id: string) => {
-    const marker = DUMMY_CATEGORY_MARKERS.find(item => item.id === id);
+    const marker = facilitiesRef.current.find(item => item.id === id);
     if (marker) toggleRef.current(favoriteFromCategoryMarker(marker));
   }, []);
 

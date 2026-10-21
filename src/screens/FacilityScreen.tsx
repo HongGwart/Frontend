@@ -15,7 +15,8 @@ export default function FacilityScreen() {
 
   return (
     <Container>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      {/* 카테고리 9개가 한 화면에 다 들어가서 스크롤(바운스)되지 않게 고정한다. */}
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} scrollEnabled={false}>
         <Description>교내 편의시설을 카테고리별로 찾아보세요</Description>
         <FacilityCategoryGrid
           categories={FACILITY_CATEGORIES}

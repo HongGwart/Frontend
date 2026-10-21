@@ -2,6 +2,8 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { SearchItemCategory } from '@constant/dummySearchData';
 import { getJSON, setJSON } from '@storage/jsonStorage';
 import { STORAGE_KEYS } from '@storage/keys';
+import { SHOW_HONGDAE } from '@constant/featureFlags';
+import { findHongdaePlaceByKey } from '@constant/hongdaePlaces';
 import { toPlaceKey } from '@utils/placeKey';
 
 /** 즐겨찾기로 저장할 장소 정보. 건물 자체면 name을 비운다. */
@@ -102,9 +104,15 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     [favoriteKeys, addFavorite, removeFavorite],
   );
 
+  // 주변상권을 숨긴 동안(SHOW_HONGDAE)은 저장된 주변상권 즐겨찾기를 목록에서 뺀다. 저장값은 그대로 둬서 다시 켜면 보인다.
+  const visibleFavorites = useMemo(
+    () => (SHOW_HONGDAE ? favorites : favorites.filter(favorite => !findHongdaePlaceByKey(favorite.placeKey))),
+    [favorites],
+  );
+
   const value = useMemo<FavoritesContextValue>(
-    () => ({ favorites, hydrated, isFavorite, addFavorite, removeFavorite, toggleFavorite }),
-    [favorites, hydrated, isFavorite, addFavorite, removeFavorite, toggleFavorite],
+    () => ({ favorites: visibleFavorites, hydrated, isFavorite, addFavorite, removeFavorite, toggleFavorite }),
+    [visibleFavorites, hydrated, isFavorite, addFavorite, removeFavorite, toggleFavorite],
   );
 
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;
