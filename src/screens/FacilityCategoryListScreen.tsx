@@ -11,7 +11,7 @@ import { PlaceMapDetailView } from '@components/map/PlaceMapDetailView';
 import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
-import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
+import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { useCloseOnHardwareBack } from '@hooks/useCloseOnHardwareBack';
 import { useOperatingStatus } from '@hooks/useOperatingStatus';
@@ -72,7 +72,7 @@ export default function FacilityCategoryListScreen() {
   const selectedStatus = useOperatingStatus(selectedPlace?.operatingHours);
 
   if (selectedPlace) {
-    const building = DUMMY_MAP_MARKERS.find(marker => marker.label === selectedPlace.buildingCode);
+    const building = CAMPUS_BUILDINGS.find(marker => marker.label === selectedPlace.buildingCode);
     const { latitude, longitude } = building ?? CAMPUS_CENTER;
     const markerIconKey = MARKER_ICON_BY_CATEGORY[params.categoryId];
     const facilityName = selectedPlace.name ?? selectedPlace.buildingName;

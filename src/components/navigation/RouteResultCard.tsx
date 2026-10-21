@@ -5,7 +5,7 @@ import IndoorIcon from '@assets/svgs/icons/indoor.svg';
 import StairsIcon from '@assets/svgs/icons/stairs.svg';
 import ElevatorIcon from '@assets/svgs/icons/elevator.svg';
 import ToastWarningIcon from '@assets/svgs/icons/toastWarning.svg';
-import { RouteResult } from '@constant/dummyRouteResults';
+import { RouteResult } from '@appTypes/routeView';
 
 interface Props {
   result: RouteResult;

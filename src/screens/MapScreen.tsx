@@ -27,12 +27,8 @@ import { TEST_ROUTE_DEPARTURE_LABEL, TEST_ROUTE_DESTINATION_LABEL } from '@const
 import { FocusableCategoryMarker, FocusableDongMarker } from '@components/map/FocusableMarkers';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
-import {
-  DUMMY_MAP_MARKERS,
-  DUMMY_CATEGORY_MARKERS,
-  DummyMapMarker,
-  DummyCategoryMarker,
-} from '@constant/dummyMapMarkers';
+import { CAMPUS_BUILDINGS, CampusBuilding } from '@constant/campusBuildings';
+import { DUMMY_CATEGORY_MARKERS, DummyCategoryMarker } from '@constant/dummyCategoryMarkers';
 import { DUMMY_FACILITY_LIST_ITEMS } from '@constant/dummyFacilityListItems';
 import {
   favoriteFromCategoryMarker,
@@ -58,7 +54,7 @@ interface Props {
 // 'list'는 숫자 배지가 붙은(군집된) 마커를 탭했을 때의 건물/시설 리스트, 'item'은 그
 // 리스트에서 항목 하나를 골랐을 때 보여줄 상세 카드다.
 type SelectedFacility =
-  | { type: 'dong'; marker: DummyMapMarker }
+  | { type: 'dong'; marker: CampusBuilding }
   | { type: 'category'; marker: DummyCategoryMarker }
   // markerId는 이 리스트를 열게 한 지도 위 군집 마커의 id — 강조 표시(active)에만 쓴다.
   | { type: 'list'; items: FacilityListSheetItem[]; markerId?: string }
@@ -70,7 +66,7 @@ type SelectedFacility =
 // "즐겨찾기" 칩에서 지도에 찍을 동 하나의 정보. 그 동 자체가 즐겨찾기됐을 수도 있고,
 // 그 동 안의 시설(카테고리 마커) 중 일부만 즐겨찾기됐을 수도 있어서 둘을 같이 들고 있는다.
 interface FavoriteMapEntry {
-  dongMarker: DummyMapMarker;
+  dongMarker: CampusBuilding;
   facilityItems: DummyCategoryMarker[];
 }
 
@@ -180,7 +176,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   // 나머지 count 마커들) 기존 단일 카드로 fallback한다. 동(건물) 마커 자체는 위치가 서로
   // 겹칠 일이 없어서 평소엔 항상 단일 카드로 연다("즐겨찾기" 칩에서 동 안 시설이 여러 개
   // 즐겨찾기된 경우는 openFavoriteDongSheet가 별도로 처리한다).
-  const openDongMarkerSheet = useCallback((marker: DummyMapMarker) => {
+  const openDongMarkerSheet = useCallback((marker: CampusBuilding) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     openFacilityCard(marker.id, { type: 'dong', marker });
   }, [openFacilityCard]);
@@ -263,7 +259,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   // 동 마커 데이터에서 가져오고, 비어 있으면 카드에 쓰인 건물명을 쓴다.
   const openBuildingIndoorOf = useCallback(
     (buildingCode: string, fallbackBuildingName: string) => {
-      const dongMarker = DUMMY_MAP_MARKERS.find(marker => marker.label === buildingCode);
+      const dongMarker = CAMPUS_BUILDINGS.find(marker => marker.label === buildingCode);
       closeCardWhenCovered();
       onOpenBuildingIndoor?.({
         buildingCode,
@@ -308,7 +304,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   // 동(건물) 마커는 칩이 하나도 안 켜져 있을 때만 보여준다. 특정 카테고리를 고르면 그
   // 카테고리 마커만 남기고, 동 마커는 화면에서 사라진다. "즐겨찾기" 칩은 아래 favoriteEntries가
   // 동 마커 자리를 대신 맡아서 그린다.
-  const dongMarkers = useMemo(() => (selectedKey === null ? DUMMY_MAP_MARKERS : []), [selectedKey]);
+  const dongMarkers = useMemo(() => (selectedKey === null ? CAMPUS_BUILDINGS : []), [selectedKey]);
 
   // 특정 카테고리 칩(즐겨찾기 제외)을 골랐을 때만 그 카테고리의 마커를 그대로 보여준다.
   const categoryMarkers = useMemo(
@@ -327,7 +323,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     if (selectedKey !== 'favorite') return [];
 
     const entryByLabel = new Map<string, FavoriteMapEntry>();
-    DUMMY_MAP_MARKERS.forEach(dongMarker => {
+    CAMPUS_BUILDINGS.forEach(dongMarker => {
       if (isFavorite(favoriteFromDongMarker(dongMarker))) {
         entryByLabel.set(dongMarker.label ?? dongMarker.id, { dongMarker, facilityItems: [] });
       }
@@ -336,7 +332,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
       if (!isFavorite(favoriteFromCategoryMarker(marker))) return;
       let entry = entryByLabel.get(marker.buildingCode);
       if (!entry) {
-        const dongMarker = DUMMY_MAP_MARKERS.find(dong => dong.label === marker.buildingCode);
+        const dongMarker = CAMPUS_BUILDINGS.find(dong => dong.label === marker.buildingCode);
         if (!dongMarker) return; // 매칭되는 동 마커가 없으면(더미 데이터 누락 등) 표시할 자리가 없어 건너뜀
         entry = { dongMarker, facilityItems: [] };
         entryByLabel.set(marker.buildingCode, entry);

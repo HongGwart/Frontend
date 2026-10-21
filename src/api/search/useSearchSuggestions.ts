@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { keepPreviousData } from '@tanstack/react-query';
 import { useAutocomplete } from '@api/generated/honggwart';
 import type { NodeSuggestionResponse } from '@api/generated/model';
-import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
+import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
 import { SearchItemCategory, SearchResultItem } from '@constant/dummySearchData';
 
 const DEBOUNCE_MS = 250;
@@ -21,7 +21,7 @@ function toSearchResultItem(suggestion: NodeSuggestionResponse): SearchResultIte
   const match = displayName.match(BUILDING_NAME);
   const building = match?.[1] ?? '';
   const room = match?.[2];
-  const place = DUMMY_MAP_MARKERS.find(marker => marker.label === building)?.buildingName ?? '';
+  const place = CAMPUS_BUILDINGS.find(marker => marker.label === building)?.buildingName ?? '';
   const isBuilding = suggestion.nodeType === 'SYMBOLIC' || (match && !room);
   const category: SearchItemCategory = isBuilding ? 'building' : 'classroom';
   return {

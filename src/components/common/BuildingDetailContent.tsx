@@ -10,7 +10,8 @@ import { FacilityImagePair } from './FacilityImagePair';
 import { OperatingHoursRow } from './FacilityInfoCard';
 import { BuildingFacilityCard } from './BuildingFacilityCard';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
-import { DUMMY_MAP_MARKERS, DUMMY_CATEGORY_MARKERS } from '@constant/dummyMapMarkers';
+import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
+import { DUMMY_CATEGORY_MARKERS } from '@constant/dummyCategoryMarkers';
 import { favoriteFromCategoryMarker } from '@constant/favoriteInputs';
 import { useFavorites } from '@hooks/useFavorites';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
@@ -44,7 +45,7 @@ export const BUILDING_DETAIL_HEADER_HEIGHT = HEADER_CONTENT_HEIGHT;
 export function BuildingDetailHeader({ buildingCode, onBack }: { buildingCode: string; onBack?: () => void }) {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  const dongMarker = DUMMY_MAP_MARKERS.find(marker => marker.label === buildingCode);
+  const dongMarker = CAMPUS_BUILDINGS.find(marker => marker.label === buildingCode);
 
   return (
     <View style={{ paddingTop: insets.top, backgroundColor: theme.semantic.background.primary }}>
@@ -67,7 +68,7 @@ export function BuildingDetailBody({
   // 무관한 상태 변화로 리렌더될 때마다 정적 더미 배열을 다시 find/filter/그룹핑하지
   // 않도록 memo화했다.
   const dongMarker = useMemo(
-    () => DUMMY_MAP_MARKERS.find(marker => marker.label === buildingCode),
+    () => CAMPUS_BUILDINGS.find(marker => marker.label === buildingCode),
     [buildingCode],
   );
   const facilities = useMemo(

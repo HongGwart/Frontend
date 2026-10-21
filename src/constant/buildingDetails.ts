@@ -21,7 +21,8 @@ export interface BuildingDetail {
 
 /**
  * 아래 정보를 실제로 확인한 날짜("YYYY-MM-DD"). 건물 상세에 "○월 기준" 안내로 보인다.
- * TODO: 팀이 확인한 실제 정보(docs/data-templates)로 바꾸면서 날짜를 채운다. null이면 안내를 띄우지 않는다.
+ * 소개·주 출입구·운영 시간은 서버 건물 정보에서 받고, 여기엔 서버 범위가 아닌 사진·운영 메모·편의시설 개수만 넣는다.
+ * 값을 넣을 때 확인한 날짜도 같이 채운다. null이면 안내를 띄우지 않는다.
  */
 export const BUILDING_DETAILS_AS_OF: string | null = null;
 

@@ -1,11 +1,12 @@
-# 주변상권·건물 상세 실제 데이터 템플릿
+# 주변상권 실제 데이터 템플릿
 
-앱에 넣을 실제 정보를 정리하는 양식입니다. 정리해 주시면 개발자가 `src/constant/hongdaePlaces.ts`, `src/constant/buildingDetails.ts`에 옮깁니다. 나중에 서버 API가 생기면 같은 형태로 서버에서 받습니다.
+앱에 넣을 실제 정보를 정리하는 양식입니다. 정리해 주시면 개발자가 `src/constant/hongdaePlaces.ts`에 옮깁니다. 나중에 서버 API가 생기면 같은 형태로 서버에서 받습니다.
+
+건물 정보(소개·주 출입구·운영 시간)는 서버 건물 정보 API(`GET /api/buildings/{code}`)에서 받으므로 양식이 없습니다.
 
 | 파일 | 대상 |
 | --- | --- |
 | `hongdae-places.csv` | 주변상권 탭의 가게 (한 줄에 한 곳) |
-| `building-details.csv` | 건물 상세·건물 카드 (한 줄에 한 건물) |
 
 ## 작성 규칙
 

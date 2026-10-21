@@ -2,7 +2,7 @@ import React from 'react';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BuildingDetailContent } from '@components/common/BuildingDetailContent';
-import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
+import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
 import { RootStackParamList } from '@navigation/types';
 
 // 지도 위 시설 정보 카드(FacilityInfoCard)를 위로 슬라이드하면 뜨는 건물 상세보기.
@@ -17,7 +17,7 @@ export default function BuildingDetailScreen() {
 
   // "건물 내부 보기" — 지도 시설 카드의 같은 버튼처럼 건물 내부 지도 화면으로 간다.
   const openIndoor = () => {
-    const marker = DUMMY_MAP_MARKERS.find(item => item.label === params.buildingCode);
+    const marker = CAMPUS_BUILDINGS.find(item => item.label === params.buildingCode);
     navigation.navigate('BuildingIndoor', {
       buildingCode: params.buildingCode,
       buildingName: marker?.buildingName ?? '',
