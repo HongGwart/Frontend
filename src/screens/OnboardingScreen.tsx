@@ -47,6 +47,7 @@ import { FacilityListSheet, FacilityListSheetItem } from '@components/common/Fac
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { RootStackParamList } from '@navigation/types';
 import { markOnboardingCompleted } from '@storage/onboarding';
+import { SHOW_HONGDAE } from '@constant/featureFlags';
 
 // 마커/로고가 같은 자리에 그대로 있고 색만 바뀌는 두 디자인(Figma "스플래시" 669:3768 →
 // "온보딩" 679:1156)이라, 화면을 둘로 나눠 navigation.replace로 뚝 끊어 넘기는 대신
@@ -60,7 +61,8 @@ const CONTENT_FADE_MS = 400;
 
 // Figma 점 인디케이터가 5개라 총 5페이지짜리로 기획된 것으로 보이지만, 디자인이 나온
 // 두 페이지만 우선 구현한다 — 나머지는 디자인이 나오는 대로 Pager 안에 이어 추가.
-const TOTAL_PAGES = 5;
+// 마지막 주변상권 소개 페이지는 주변상권을 숨긴 동안(SHOW_HONGDAE) 뺀다.
+const TOTAL_PAGES = SHOW_HONGDAE ? 5 : 4;
 
 // 길찾기 목업의 칩 3개는 사용자가 직접 누르는 게 아니라, 왼쪽("최단 경로")부터
 // 순서대로 하나씩 자동으로 활성화되는 걸 반복 재생해서 "이런 경로들이 있다"를
@@ -745,58 +747,60 @@ export default function OnboardingScreen() {
           <BottomSpacer />
         </Page>
 
-        <Page style={{ width: screenWidth }}>
-          <PhoneMockupTopSpacer />
-          <FadeInContent style={[{ width: '100%', alignItems: 'center' }, contentStyle]}>
-            {(() => {
-              const hongdaeScale = screenWidth / HONGDAE_FLAT_CANVAS_WIDTH;
-              const hongdaeHeight = screenWidth / HONGDAE_FLAT_ASPECT_RATIO;
-              // 다른 온보딩 페이지는 PhoneMockupTopSpacer(240px) 바로 다음에 폰 스크린샷의
-              // 윗변이 온다. 이 배경 PNG는 폰(캔버스 y=216)보다 위쪽 배경 그림까지 포함하고
-              // 있어서, 그만큼 음수 마진으로 Scene 전체를 끌어올려야 폰 세로 위치가 다른
-              // 페이지와 맞는다(마커도 이 Scene 기준 캔버스 절대좌표를 그대로 쓴다).
-              const marginTop = -HONGDAE_FLAT_PHONE_TOP * hongdaeScale;
-              // Scene은 "배경(0) ~ 폰 하단에서 288유닛까지(=phone top + visible height)"만
-              // 레이아웃 높이로 차지하고, 그 아래로 삐져나오는 이미지 나머지(리스트 하단/
-              // 네비게이션바)는 overflow: hidden으로 잘라낸다 — 안 그러면 페이지 전체 높이가
-              // 다른 페이지보다 커져서 캡션이 Pager 세로 뷰포트 밖으로 밀려 안 보이게 된다.
-              const visibleHeight = (HONGDAE_FLAT_PHONE_TOP + HONGDAE_FLAT_VISIBLE_HEIGHT) * hongdaeScale;
-              return (
-                <HongdaeFlatScene style={{ width: screenWidth, height: visibleHeight, marginTop }}>
-                  <HongdaeFlatImage
-                    source={OnboardingHongdaeFlatImage}
-                    resizeMode="contain"
-                    style={{ width: screenWidth, height: hongdaeHeight, top: 0 }}
-                  />
+        {SHOW_HONGDAE && (
+          <Page style={{ width: screenWidth }}>
+            <PhoneMockupTopSpacer />
+            <FadeInContent style={[{ width: '100%', alignItems: 'center' }, contentStyle]}>
+              {(() => {
+                const hongdaeScale = screenWidth / HONGDAE_FLAT_CANVAS_WIDTH;
+                const hongdaeHeight = screenWidth / HONGDAE_FLAT_ASPECT_RATIO;
+                // 다른 온보딩 페이지는 PhoneMockupTopSpacer(240px) 바로 다음에 폰 스크린샷의
+                // 윗변이 온다. 이 배경 PNG는 폰(캔버스 y=216)보다 위쪽 배경 그림까지 포함하고
+                // 있어서, 그만큼 음수 마진으로 Scene 전체를 끌어올려야 폰 세로 위치가 다른
+                // 페이지와 맞는다(마커도 이 Scene 기준 캔버스 절대좌표를 그대로 쓴다).
+                const marginTop = -HONGDAE_FLAT_PHONE_TOP * hongdaeScale;
+                // Scene은 "배경(0) ~ 폰 하단에서 288유닛까지(=phone top + visible height)"만
+                // 레이아웃 높이로 차지하고, 그 아래로 삐져나오는 이미지 나머지(리스트 하단/
+                // 네비게이션바)는 overflow: hidden으로 잘라낸다 — 안 그러면 페이지 전체 높이가
+                // 다른 페이지보다 커져서 캡션이 Pager 세로 뷰포트 밖으로 밀려 안 보이게 된다.
+                const visibleHeight = (HONGDAE_FLAT_PHONE_TOP + HONGDAE_FLAT_VISIBLE_HEIGHT) * hongdaeScale;
+                return (
+                  <HongdaeFlatScene style={{ width: screenWidth, height: visibleHeight, marginTop }}>
+                    <HongdaeFlatImage
+                      source={OnboardingHongdaeFlatImage}
+                      resizeMode="contain"
+                      style={{ width: screenWidth, height: hongdaeHeight, top: 0 }}
+                    />
 
-                  {HONGDAE_MARKER_SHINES.map((marker, index) => {
-                    const visualSize = marker.size * hongdaeScale;
-                    return (
-                      <MarkerShineBox
-                        key={index}
-                        pointerEvents="none"
-                        style={{
-                          left: marker.left * hongdaeScale + (visualSize - MARKER_BASE_SIZE) / 2,
-                          top: marker.top * hongdaeScale + (visualSize - MARKER_BASE_SIZE) / 2,
-                          transform: [{ scale: visualSize / MARKER_BASE_SIZE }],
-                        }}
-                      >
-                        <MarkerGlow index={index}>
-                          <Marker favorite />
-                        </MarkerGlow>
-                      </MarkerShineBox>
-                    );
-                  })}
-                </HongdaeFlatScene>
-              );
-            })()}
+                    {HONGDAE_MARKER_SHINES.map((marker, index) => {
+                      const visualSize = marker.size * hongdaeScale;
+                      return (
+                        <MarkerShineBox
+                          key={index}
+                          pointerEvents="none"
+                          style={{
+                            left: marker.left * hongdaeScale + (visualSize - MARKER_BASE_SIZE) / 2,
+                            top: marker.top * hongdaeScale + (visualSize - MARKER_BASE_SIZE) / 2,
+                            transform: [{ scale: visualSize / MARKER_BASE_SIZE }],
+                          }}
+                        >
+                          <MarkerGlow index={index}>
+                            <Marker favorite />
+                          </MarkerGlow>
+                        </MarkerShineBox>
+                      );
+                    })}
+                  </HongdaeFlatScene>
+                );
+              })()}
 
-            <Caption style={{ marginTop: CAPTION_TO_PHONE_BOTTOM_GAP }}>
-              홍대 맛집도 바로 찾아보세요
-            </Caption>
-          </FadeInContent>
-          <BottomSpacer />
-        </Page>
+              <Caption style={{ marginTop: CAPTION_TO_PHONE_BOTTOM_GAP }}>
+                홍대 맛집도 바로 찾아보세요
+              </Caption>
+            </FadeInContent>
+            <BottomSpacer />
+          </Page>
+        )}
       </Pager>
 
       <FadeInContent style={[{ width: '100%', alignItems: 'center' }, contentStyle]}>

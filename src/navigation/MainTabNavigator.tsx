@@ -11,6 +11,7 @@ import MapScreen from '@screens/MapScreen';
 import FacilityScreen from '@screens/FacilityScreen';
 import HongdaeScreen from '@screens/HongdaeScreen';
 import MypageScreen from '@screens/MypageScreen';
+import { SHOW_HONGDAE } from '@constant/featureFlags';
 import { MainTabParamList, RootStackParamList } from './types';
 
 /**
@@ -115,7 +116,8 @@ export default function MainTabNavigator() {
     >
       <Tab.Screen name="map" component={MapTabScreen} />
       <Tab.Screen name="facility" component={FacilityScreen} />
-      <Tab.Screen name="hongdae" component={HongdaeScreen} />
+      {/* 주변상권은 출시 범위에서 잠시 숨김(SHOW_HONGDAE) */}
+      {SHOW_HONGDAE && <Tab.Screen name="hongdae" component={HongdaeScreen} />}
       <Tab.Screen name="mypage" component={MypageScreen} />
     </Tab.Navigator>
   );
