@@ -11,6 +11,8 @@ export interface RouteStep {
   to: string;
   distanceMeters: number;
   durationMinutes: number;
+  /** 엘리베이터 구간의 혼잡 예상(서버 meta.congested) — 구간 목록에 경고 아이콘을 붙인다 */
+  congested?: boolean;
 }
 
 export interface RouteResult {

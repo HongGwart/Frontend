@@ -12,6 +12,9 @@ const MODE_TO_OPTION: Record<string, RouteOptionKey> = {
   STAIR_AVOIDANCE: 'avoidStairs',
 };
 
+// 엘리베이터 혼잡 예상(서버 meta.congested) 구간의 길 안내 소요 시간 줄에 붙이는 문구. 실시간이 아니라 시간표 기준 예상이다.
+const CONGESTED_ELEVATOR_TEXT = '엘리베이터가 붐빌 수 있어요';
+
 // 이보다 짧은 걷기는 안내 문구에 거리를 붙이지 않는다(엘리베이터 문 앞 몇 m 등).
 const MIN_WALK_TEXT_METERS = 5;
 
@@ -56,7 +59,13 @@ function mergeFloorChanges(steps: StepDto[]): StepDto[] {
       distanceMeters: (prev.distanceMeters ?? 0) + (step.distanceMeters ?? 0),
       durationSeconds: (prev.durationSeconds ?? 0) + (step.durationSeconds ?? 0),
       polylineRange: [prev.polylineRange?.[0] ?? 0, step.polylineRange?.[1] ?? 0],
-      meta: { ...step.meta, fromFloor: prev.meta?.fromFloor, fromFloorOrder: prev.meta?.fromFloorOrder },
+      meta: {
+        ...step.meta,
+        fromFloor: prev.meta?.fromFloor,
+        fromFloorOrder: prev.meta?.fromFloorOrder,
+        // 이어 탄 엘리베이터는 한 번이라도 혼잡이면 그 구간 전체를 혼잡으로 본다.
+        congested: prev.meta?.congested || step.meta?.congested,
+      },
     };
     return merged;
   }, []);
@@ -134,6 +143,7 @@ export function toRouteView(route: RouteDto): RouteView | null {
         // RouteStep엔 계단 타입이 없어서 도보 아이콘 + "계단 이동" 라벨로 보여준다(testIndoorRoute와 같다).
         type: isElevator ? 'elevator' : 'walk',
         label: isElevator ? '엘리베이터' : '계단 이동',
+        congested: isElevator && step.meta?.congested === true,
         from: [step.context?.buildingName, floorLabel(step.meta?.fromFloor)].filter(Boolean).join(' '),
         to: floorLabel(step.meta?.toFloor),
       };
@@ -155,11 +165,12 @@ export function toRouteView(route: RouteDto): RouteView | null {
     const walkText = meters >= MIN_WALK_TEXT_METERS ? `\n${target}${meters}m 이동` : '';
     // 층 이동 구간의 context는 도착 층이라, 타고 내린 층의 평면도를 깐다.
     const floorId = step.context?.indoor ? toFloorId(step.context.buildingName, step.context.floor) : undefined;
+    const congested = step.type === 'FLOOR_CHANGE' && step.meta?.transport === 'ELEVATOR' && step.meta.congested === true;
     return {
       id: `g-${mode}-${index}`,
       moveType: moveTypeOf(step),
       title: `${step.instruction ?? ''}${walkText}`,
-      durationText: `약 ${minutes(step.durationSeconds)}분 소요`,
+      durationText: `약 ${minutes(step.durationSeconds)}분 소요${congested ? ` · ${CONGESTED_ELEVATOR_TEXT}` : ''}`,
       progress: progressAt(step.polylineRange?.[0] ?? 0),
       ...(floorId ? { floorId } : {}),
     };
