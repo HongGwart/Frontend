@@ -2,8 +2,8 @@ import React from 'react';
 import styled, { useTheme } from 'styled-components/native';
 import WalkIcon from '@assets/svgs/icons/walk.svg';
 import ElevatorIcon from '@assets/svgs/icons/elevator.svg';
-import ToastWarningIcon from '@assets/svgs/icons/toastWarning.svg';
 import { RouteStep } from '@appTypes/routeView';
+import { ElevatorCongestionIcon } from './ElevatorCongestionIcon';
 
 interface Props {
   step: RouteStep;
@@ -26,7 +26,7 @@ export function RouteStepRow({ step, showDivider = true }: Props) {
       <Content>
         <LabelRow>
           <StepLabelText>{step.label}</StepLabelText>
-          {step.congested && <ToastWarningIcon width={16} height={16} color={theme.semantic.warning} />}
+          {step.congested && <ElevatorCongestionIcon />}
         </LabelRow>
         <RouteText numberOfLines={1}>
           {step.from} <ArrowText>→</ArrowText> {step.to}

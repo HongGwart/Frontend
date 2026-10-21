@@ -4,8 +4,8 @@ import styled, { useTheme } from 'styled-components/native';
 import IndoorIcon from '@assets/svgs/icons/indoor.svg';
 import StairsIcon from '@assets/svgs/icons/stairs.svg';
 import ElevatorIcon from '@assets/svgs/icons/elevator.svg';
-import ToastWarningIcon from '@assets/svgs/icons/toastWarning.svg';
 import { RouteResult } from '@appTypes/routeView';
+import { ElevatorCongestionIcon } from './ElevatorCongestionIcon';
 
 interface Props {
   result: RouteResult;
@@ -67,9 +67,7 @@ export function RouteResultCard({ result, optionLabel, showDivider = true, onPre
               <InfoText>
                 엘리베이터 <InfoValueText>{result.elevatorCount}회</InfoValueText>
               </InfoText>
-              {result.elevatorWarning && (
-                <ToastWarningIcon width={16} height={16} color={theme.semantic.warning} />
-              )}
+              {result.elevatorWarning && <ElevatorCongestionIcon />}
             </InfoItem>
           </>
         )}
