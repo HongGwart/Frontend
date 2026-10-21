@@ -18,7 +18,6 @@ import MapToiletFemaleIcon from '@assets/svgs/mapIcon/map_toilet_female.svg';
 import MapToiletMaleIcon from '@assets/svgs/mapIcon/map_toilet_male.svg';
 
 /** 개발 서버가 방금 구워서 httpUri로 바로 띄우는 평면도 (앱에 번들된 PNG가 HMR로 들어오기 전까지 쓴다) */
-export type LiveFloorImage = Omit<FloorOverlayImage, 'image'> & { image: { httpUri: string } };
 
 const ICON_BOX = 22;
 // PNG에서 뺀 엘리베이터/계단/화장실 아이콘 — 도면 PNG에 그려져 있던 것과 같은 그림(내부지도 뷰 아이콘)을 쓴다.
@@ -65,19 +64,16 @@ const sameAnchors = (a: FloorGeoAnchors, b: FloorGeoAnchors) =>
   );
 
 /**
- * 이 층에 지금 기준점으로 구운 평면도 PNG가 있으면 돌려준다 — 번들된 PNG 우선, 없으면 개발 서버가 방금 구운 것.
- * 기준점을 다시 찍었으면 둘 다 낡은 PNG라 안 쓴다.
+ * 이 층에 지금 기준점으로 구운 평면도 PNG가 있으면 돌려준다. 서버 기준점이 바뀌어 PNG를 구울 때와 다르면
+ * 낡은 PNG라 안 쓴다(scripts/renderFloorOverlay.js로 다시 구워야 한다).
  */
 export function getFreshOverlayImage(
   floorId: string,
   anchors: FloorGeoAnchors | undefined,
-  liveImage?: LiveFloorImage,
-): FloorOverlayImage | LiveFloorImage | null {
+): FloorOverlayImage | null {
   if (!anchors) return null;
   const bundled = FLOOR_OVERLAY_IMAGES[floorId];
-  if (bundled && sameAnchors(bundled.anchors, anchors)) return bundled;
-  if (liveImage && sameAnchors(liveImage.anchors, anchors)) return liveImage;
-  return null;
+  return bundled && sameAnchors(bundled.anchors, anchors) ? bundled : null;
 }
 
 // 줌 0에서 지구 둘레(m)가 화면 256pt에 들어간다. 줌이 1 오를 때마다 2배 확대.
@@ -125,9 +121,6 @@ function labelMinZoom(coords: GeoCoord[], center: GeoCoord, label: string) {
 interface Props {
   floorId: string;
   anchors: FloorGeoAnchors | undefined;
-  /** 기준점 네 모서리를 이은 빨간 테두리를 같이 그릴지 (평면도 앉히기 모드에서 위치 비교용) */
-  showAnchorOutline?: boolean;
-  liveImage?: LiveFloorImage;
   /** 강조할 방 id들(같은 번호로 나뉜 조각 전부). 내부지도 뷰에서 방을 고른 것과 같은 모양으로 칠한다 */
   highlightRoomIds?: string[];
   /** 건물 덮개를 깔지 않는다(덮개 찍기 모드: 네이버 건물이 보여야 모서리를 찍을 수 있다) */
@@ -145,12 +138,10 @@ interface Props {
 export function FloorPlanOverlay({
   floorId,
   anchors,
-  showAnchorOutline = false,
-  liveImage,
   highlightRoomIds,
   hideBuildingMask = false,
 }: Props) {
-  const overlayImage = getFreshOverlayImage(floorId, anchors, liveImage);
+  const overlayImage = getFreshOverlayImage(floorId, anchors);
   const hasImage = Boolean(overlayImage);
 
   const floor = useMemo(() => {
@@ -206,20 +197,10 @@ export function FloorPlanOverlay({
       )}
       {overlayImage && (
         <NaverMapGroundOverlay
-          key={`floor-image-${floorId}-${typeof overlayImage.image === 'number' ? 'bundled' : overlayImage.image.httpUri}`}
+          key={`floor-image-${floorId}`}
           image={overlayImage.image}
           region={overlayImage.region}
           zIndex={1}
-        />
-      )}
-      {showAnchorOutline && anchors && (
-        <NaverMapPolygonOverlay
-          coords={anchors}
-          color="rgba(0, 0, 0, 0)"
-          outlineColor="#FF3B30"
-          outlineWidth={2}
-          globalZIndex={FLOOR_SHAPE_GLOBAL_Z}
-          zIndex={2}
         />
       )}
       {shapes?.map(shape => (

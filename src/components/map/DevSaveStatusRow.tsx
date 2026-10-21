@@ -12,7 +12,7 @@ const SAVE_STATUS_TEXT: Record<DevSaveStatus, string> = {
   failed: '저장 실패 — Metro(expo start)를 껐다 켠 뒤 다시 저장을 누르세요',
 };
 
-/** 파일 저장 상태 한 줄 + 실패했을 때 다시 저장 버튼. 🏢 평면도 얹기·건물 덮개 찍기 패널이 같이 쓴다. */
+/** 파일 저장 상태 한 줄 + 실패했을 때 다시 저장 버튼. 건물 덮개 찍기 패널이 쓴다. */
 export function DevSaveStatusRow({ status, onRetry }: { status: DevSaveStatus; onRetry: () => void }) {
   if (status === 'idle') return null;
   return (

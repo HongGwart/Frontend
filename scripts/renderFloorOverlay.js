@@ -4,20 +4,19 @@
  * 남북으로 반듯한 사각형(region)에만 이미지를 펴 붙이기 때문에, 건물이 기운 만큼 도면을 미리
  * 돌려서 투명 배경 PNG로 만들고 그 PNG가 딱 맞는 region을 같이 계산해 둔다.
  *
- *   1. src/constant/floorGeoAnchors.json에서 층의 네 모서리 위경도(DevFloorOverlayPicker로 찍은 값)를 읽고
+ *   1. src/constant/floorPlanAnchors.json에서 층의 네 모서리 위경도(서버 기준 꼭짓점으로 buildFloorPlanAnchors.js가 계산한 값)를 읽고
  *   2. 도면 contentBounds 네 모서리 → 위경도 affine 변환을 최소제곱으로 맞춘 뒤
  *   3. 원본 SVG의 Visual 레이어(벽/방/문/아이콘/방 번호)만 그 변환으로 돌려서 PNG로 렌더링하고
  *   4. src/assets/floorOverlays/{층}.png + src/constant/floorOverlayImages.ts(require/region 목록)를 쓴다.
  *
  * 사용법:
- *   node scripts/renderFloorOverlay.js            # floorGeoAnchors.json에 있는 층 전부
+ *   node scripts/renderFloorOverlay.js            # floorPlanAnchors.json에 있는 층 전부
  *   node scripts/renderFloorOverlay.js R_L C_1    # 지정한 층만 (나머지 기존 PNG는 유지)
- *   node scripts/renderFloorOverlay.js --anchors=src/constant/floorPlanAnchors.json R_L
- *                                                 # 서버 기준점으로 계산한 네 모서리(buildFloorPlanAnchors.js)로 굽기
+ *   node scripts/renderFloorOverlay.js --anchors=<다른 JSON> R_L   # 다른 기준점 파일로 굽기
  *
  * 앱 용량을 줄이려고 PNG는 256색으로 줄여(upng-js) 저장한다. 평면도는 색 수가 적어서 눈으로는 차이가 거의 없다.
  *
- * 기준점은 앱에서 도면을 이동·회전·균일 확대로만 맞춘 것이라 직사각형 그대로여서 affine으로 정확히 맞는다
+ * 기준점은 도면 직사각형을 이동·회전·균일 확대로만 옮긴 네 모서리라 affine으로 정확히 맞는다
  * (로그의 "최대 오차"가 0에 가까워야 정상). 모양이 찌그러지지 않는다.
  */
 
@@ -29,7 +28,7 @@ const { extractTopLevelChildren } = require('./splitVisualLayers');
 
 const ROOT = path.join(__dirname, '..');
 const FLOORS_DIR = path.join(ROOT, 'src/assets/svgs/floors');
-const DEFAULT_ANCHORS_PATH = path.join(ROOT, 'src/constant/floorGeoAnchors.json');
+const DEFAULT_ANCHORS_PATH = path.join(ROOT, 'src/constant/floorPlanAnchors.json');
 const OUT_DIR = path.join(ROOT, 'src/assets/floorOverlays');
 const INDEX_PATH = path.join(ROOT, 'src/constant/floorOverlayImages.ts');
 
@@ -286,7 +285,7 @@ function main() {
   const requested = args.filter(arg => !arg.startsWith('--'));
   const targets = requested.length > 0 ? requested : Object.keys(allAnchors);
   if (targets.length === 0) {
-    console.error('[에러] floorGeoAnchors.json이 비어 있습니다. [FLOOR_ANCHORS] 로그를 먼저 붙여넣으세요.');
+    console.error(`[에러] ${path.relative(ROOT, anchorsPath)}가 비어 있습니다. 먼저 node scripts/buildFloorPlanAnchors.js를 돌리세요.`);
     process.exit(1);
   }
   fs.mkdirSync(OUT_DIR, { recursive: true });

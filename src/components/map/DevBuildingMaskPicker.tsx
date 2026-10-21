@@ -9,7 +9,6 @@ import {
 } from '@mj-studio/react-native-naver-map';
 import { BuildingMasks, getBuildingMasks, setBuildingMasks } from '@constant/buildingMasks';
 import { FLOOR_MAPS, parseFloorId } from '@constant/floorMaps';
-import { FLOOR_GEO_ANCHORS } from '@constant/floorGeoAnchors';
 import { FLOOR_PLAN_ANCHORS } from '@constant/floorPlanReferencePoints';
 import { saveDevJson } from '@utils/devSave';
 import { GeoCoord } from '@utils/floorGeoTransform';
@@ -31,7 +30,7 @@ const BUILDINGS = (() => {
     .sort((a, b) => a.building.localeCompare(b.building));
 })();
 
-const anchorsOf = (floorId: string) => FLOOR_PLAN_ANCHORS[floorId] ?? FLOOR_GEO_ANCHORS[floorId];
+const anchorsOf = (floorId: string) => FLOOR_PLAN_ANCHORS[floorId];
 
 /**
  * [개발용] 건물 덮개 찍기 모드. 건물을 고르면 그 건물 평면도가 깔리고, 네이버 지도에 그려진 그 건물의 모서리를

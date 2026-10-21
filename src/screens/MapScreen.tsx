@@ -20,7 +20,6 @@ import { FacilityListSheet, FacilityListSheetItem } from '@components/common/Fac
 import { Toast } from '@components/common/Toast';
 import { DismissibleBottomSheet, DismissibleBottomSheetRef } from '@components/common/DismissibleBottomSheet';
 import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
-import { DevFloorOverlayLayer, DevFloorOverlayPanel, useDevFloorOverlay } from '@components/map/DevFloorOverlayPicker';
 import { DevBuildingMaskLayer, DevBuildingMaskPanel, useDevBuildingMasks } from '@components/map/DevBuildingMaskPicker';
 import { FocusableCategoryMarker, FocusableDongMarker } from '@components/map/FocusableMarkers';
 import { CategoryKey } from '@constant/categoryChips';
@@ -69,8 +68,8 @@ interface FavoriteMapEntry {
 }
 
 const TOAST_DURATION_MS = 2000;
-// 개발용 지도 도구(🏢 평면도 얹기, 건물 덮개 찍기) 원형 버튼을 메인홈에 보여줄지. 기능 코드는 그대로 두고 버튼만
-// 숨겨 둔다 — 평면도/테스트 경로를 다시 손봐야 할 때 true로 바꾸면 된다(개발 빌드에서만 보인다).
+// 개발용 지도 도구(건물 덮개 찍기) 원형 버튼을 메인홈에 보여줄지. 기능 코드는 그대로 두고 버튼만
+// 숨겨 둔다 — 건물 덮개를 다시 손봐야 할 때 true로 바꾸면 된다(개발 빌드에서만 보인다).
 const SHOW_DEV_MAP_TOOLS = false;
 // 지도 위에서 봤을 때 마커가 다른 요소에 비해 좀 커 보여서, 기본 크기보다 살짝 줄인다.
 const MAP_MARKER_SCALE = 0.85;
@@ -91,9 +90,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
   const mapViewRef = useRef<NaverMapViewRef>(null);
   const insets = useSafeAreaInsets();
-  const floorOverlay = useDevFloorOverlay(mapViewRef);
   const buildingMasks = useDevBuildingMasks(mapViewRef);
-  const devModeActive = floorOverlay.active || buildingMasks.active;
+  const devModeActive = buildingMasks.active;
 
   // 지금 포커싱된(눌러서 카드가 열리는) 마커의 id — 이 마커만 강조(active) + 네임택으로 남기고 나머지는 숨긴다.
   // 카드(selectedFacility)와 따로 들고 있는 이유: 마커를 누르면 마커 모양은 그 즉시 바뀌고, 무거운 카드는
@@ -395,10 +393,9 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         maxZoom={MAP_MAX_ZOOM}
         // 마커가 아닌 지도 바닥을 탭하면 열려있던 시설 정보 바텀시트를 닫는다.
         onTapMap={
-          buildingMasks.active ? buildingMasks.handleTap : floorOverlay.active ? undefined : closeFacilitySheet
+          buildingMasks.active ? buildingMasks.handleTap : closeFacilitySheet
         }
       >
-        <DevFloorOverlayLayer picker={floorOverlay} />
         <DevBuildingMaskLayer picker={buildingMasks} />
         {!devModeActive &&
           dongMarkerItems.map(({ key, ...item }) => (
@@ -617,7 +614,6 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
       )}
       {SHOW_DEV_MAP_TOOLS && (
         <>
-          <DevFloorOverlayPanel picker={floorOverlay} topInset={insets.top} />
           <DevBuildingMaskPanel picker={buildingMasks} topInset={insets.top} />
         </>
       )}
