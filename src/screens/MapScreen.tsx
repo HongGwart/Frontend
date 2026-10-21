@@ -25,8 +25,7 @@ import { FocusableCategoryMarker, FocusableDongMarker } from '@components/map/Fo
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import { CAMPUS_BUILDINGS, CampusBuilding } from '@constant/campusBuildings';
-import { DUMMY_CATEGORY_MARKERS, DummyCategoryMarker } from '@constant/dummyCategoryMarkers';
-import { DUMMY_FACILITY_LIST_ITEMS } from '@constant/dummyFacilityListItems';
+import { FacilityMarker, useFacilityMarkers, useFacilityOperatingStatus } from '@api/facility/facilities';
 import {
   favoriteFromCategoryMarker,
   favoriteFromDongMarker,
@@ -52,7 +51,7 @@ interface Props {
 // 리스트에서 항목 하나를 골랐을 때 보여줄 상세 카드다.
 type SelectedFacility =
   | { type: 'dong'; marker: CampusBuilding }
-  | { type: 'category'; marker: DummyCategoryMarker }
+  | { type: 'category'; marker: FacilityMarker }
   // markerId는 이 리스트를 열게 한 지도 위 군집 마커의 id — 강조 표시(active)에만 쓴다.
   | { type: 'list'; items: FacilityListSheetItem[]; markerId?: string }
   // markerId는 이 항목이 들어있던 리스트를 열게 한 군집 마커의 id — 리스트에서 항목으로 넘어가도 그 마커만 지도에 남긴다.
@@ -64,7 +63,7 @@ type SelectedFacility =
 // 그 동 안의 시설(카테고리 마커) 중 일부만 즐겨찾기됐을 수도 있어서 둘을 같이 들고 있는다.
 interface FavoriteMapEntry {
   dongMarker: CampusBuilding;
-  facilityItems: DummyCategoryMarker[];
+  facilityItems: FacilityMarker[];
 }
 
 const TOAST_DURATION_MS = 2000;
@@ -145,42 +144,45 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const showToast = useCallback((message: string) => {
+    setToastMessage(message);
+    clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
+  }, []);
+
+  // 편의시설 마커. 서버 시설 목록 API 전까지는 비어 있어서 카테고리 칩을 누르면 준비 중 안내를 띄운다.
+  const facilityMarkers = useFacilityMarkers();
+  // 카테고리 마커 카드의 운영 상태 — 서버 장소 소개(place-info)의 시설 운영 시간. 없으면 그 줄이 빠진다.
+  const facilityStatus = useFacilityOperatingStatus(
+    selectedFacility?.type === 'category' ? selectedFacility.marker.nodeId : undefined,
+  );
 
   const toggleFavorite = useCallback(
     (place: FavoriteInput, name: string) => {
       const nextIsFavorite = toggleFavoritePlace(place);
 
-      setToastMessage(`${name}의 즐겨찾기가 ${nextIsFavorite ? '등록' : '해제'}되었습니다.`);
-      clearTimeout(toastTimerRef.current);
-      toastTimerRef.current = setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
+      showToast(`${name}의 즐겨찾기가 ${nextIsFavorite ? '등록' : '해제'}되었습니다.`);
     },
-    [toggleFavoritePlace],
+    [toggleFavoritePlace, showToast],
   );
 
-  // 숫자 배지가 붙은(군집된) 카테고리 마커는 시설 하나의 정보가 아니라 그 자리에 겹친 여러
-  // 시설의 리스트를 보여줘야 한다. 더미 리스트가 있으면 리스트를, 없으면(방금 만든 예시 말고
-  // 나머지 count 마커들) 기존 단일 카드로 fallback한다. 동(건물) 마커 자체는 위치가 서로
-  // 겹칠 일이 없어서 평소엔 항상 단일 카드로 연다("즐겨찾기" 칩에서 동 안 시설이 여러 개
-  // 즐겨찾기된 경우는 openFavoriteDongSheet가 별도로 처리한다).
+  // 마커를 누르면 단일 카드로 연다. 같은 자리에 겹친 시설 목록(숫자 배지)은 실제 좌표 기반 그룹핑(#13)과
+  // 시설 목록 API가 생긴 뒤에 붙인다. "즐겨찾기" 칩에서 동 안 시설이 여러 개 즐겨찾기된 경우는
+  // openFavoriteDongSheet가 목록으로 연다.
   const openDongMarkerSheet = useCallback((marker: CampusBuilding) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     openFacilityCard(marker.id, { type: 'dong', marker });
   }, [openFacilityCard]);
 
-  const openCategoryMarkerSheet = useCallback((marker: DummyCategoryMarker) => {
+  const openCategoryMarkerSheet = useCallback((marker: FacilityMarker) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const listItems = marker.count !== undefined ? DUMMY_FACILITY_LIST_ITEMS[marker.id] : undefined;
-    if (listItems) {
-      openFacilityCard(marker.id, { type: 'list', items: listItems, markerId: marker.id });
-    } else {
-      openFacilityCard(marker.id, { type: 'category', marker });
-    }
+    openFacilityCard(marker.id, { type: 'category', marker });
   }, [openFacilityCard]);
 
   // 카테고리 마커를 리스트 시트 항목 형태로 바꾼다. "즐겨찾기" 칩에서 같은 동에 즐겨찾기가
   // 여러 개 묶였을 때, 그 묶음을 FacilityListSheet에 그대로 넘기기 위해 쓴다.
   const toFacilityListItem = useCallback(
-    (marker: DummyCategoryMarker): FacilityListSheetItem => ({
+    (marker: FacilityMarker): FacilityListSheetItem => ({
       id: marker.id,
       ...CATEGORY_MARKER_ICONS[marker.category],
       building: marker.buildingCode,
@@ -194,7 +196,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
   );
 
   const openFavoriteClusterSheet = useCallback(
-    (group: DummyCategoryMarker[], markerId: string) => {
+    (group: FacilityMarker[], markerId: string) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       openFacilityCard(markerId, { type: 'list', items: group.map(toFacilityListItem), markerId });
     },
@@ -283,8 +285,12 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     (key: CategoryKey | null) => {
       closeFacilitySheet();
       setSelectedKey(key);
+      // 시설 데이터가 아직 없는 카테고리를 고르면 빈 지도 대신 준비 중 안내를 띄운다.
+      if (key && key !== 'favorite' && !facilityMarkers.some(marker => marker.category === key)) {
+        showToast('편의시설 정보를 준비하고 있어요');
+      }
     },
-    [closeFacilitySheet],
+    [closeFacilitySheet, facilityMarkers, showToast],
   );
 
   // 동(건물) 마커는 칩이 하나도 안 켜져 있을 때만 보여준다. 특정 카테고리를 고르면 그
@@ -297,8 +303,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     () =>
       selectedKey === null || selectedKey === 'favorite'
         ? []
-        : DUMMY_CATEGORY_MARKERS.filter(marker => marker.category === selectedKey),
-    [selectedKey],
+        : facilityMarkers.filter(marker => marker.category === selectedKey),
+    [selectedKey, facilityMarkers],
   );
 
   // "즐겨찾기" 칩은 새 마커를 만들지 않고, 실제 그 동(건물) 마커 위치에 그대로 표시한다.
@@ -314,7 +320,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         entryByLabel.set(dongMarker.label ?? dongMarker.id, { dongMarker, facilityItems: [] });
       }
     });
-    DUMMY_CATEGORY_MARKERS.forEach(marker => {
+    facilityMarkers.forEach(marker => {
       if (!isFavorite(favoriteFromCategoryMarker(marker))) return;
       let entry = entryByLabel.get(marker.buildingCode);
       if (!entry) {
@@ -326,7 +332,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
       entry.facilityItems.push(marker);
     });
     return Array.from(entryByLabel.values());
-  }, [selectedKey, isFavorite]);
+  }, [selectedKey, isFavorite, facilityMarkers]);
 
   // 동 마커. 네임택(R동, T동 …)은 지금 카드가 열려 있는(포커싱된) 마커에만 붙이고 나머지는 핀만 그린다 —
   // 네임택이 전부 떠 있으면 서로 겹치고 지도를 가려서. 포커싱이 바뀌면 그 마커만 다시 그려진다.
@@ -532,6 +538,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 undefined,
                 { buildingCode: selectedFacility.marker.buildingCode, room: selectedFacility.marker.room },
               )}
+              operatingHours={facilityStatus}
               onViewInsidePress={() =>
                 openBuildingIndoorOf(selectedFacility.marker.buildingCode, selectedFacility.marker.buildingName)
               }

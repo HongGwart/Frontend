@@ -16,7 +16,7 @@ import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonPro
 import { useCloseOnHardwareBack } from '@hooks/useCloseOnHardwareBack';
 import { useOperatingStatus } from '@hooks/useOperatingStatus';
 import { FACILITY_CATEGORIES } from '@constant/facilityCategories';
-import { DUMMY_FACILITY_CATEGORY_PLACES } from '@constant/dummyFacilityCategoryPlaces';
+import { useFacilityPlaces } from '@api/facility/facilities';
 import { FacilityCategoryId, RootStackParamList } from '@navigation/types';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { FavoritePlace } from '@constant/dummyMypage';
@@ -47,7 +47,8 @@ export default function FacilityCategoryListScreen() {
   const { params } = useRoute<RouteProp<RootStackParamList, 'FacilityCategoryList'>>();
 
   const category = FACILITY_CATEGORIES.find(item => item.id === params.categoryId);
-  const places = DUMMY_FACILITY_CATEGORY_PLACES[params.categoryId];
+  // 서버 시설 목록 API 전까지는 빈 목록이라 아래 "등록된 ○○ 정보가 없어요" 빈 상태가 보인다.
+  const places = useFacilityPlaces(params.categoryId);
 
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(마이페이지/지도/길찾기와 같은 상태).
   const { isFavorite, toggleFavorite: togglePlaceFavorite } = useFavorites();
