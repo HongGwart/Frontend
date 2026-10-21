@@ -8,7 +8,7 @@ import Header from '@components/layout/Header';
 import { SearchListItem } from '@components/common/SearchListItem';
 import { DepartureSearchBar } from '@components/mypage/DepartureSearchBar';
 import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
-import { DUMMY_SEARCH_RESULTS, SEARCH_ITEM_ICONS, SearchResultItem } from '@constant/dummySearchData';
+import { SEARCH_ITEM_ICONS, SearchResultItem } from '@constant/dummySearchData';
 import { RootStackParamList } from '@navigation/types';
 import { StoredFavorite, useFavorites } from '@hooks/useFavorites';
 
@@ -39,10 +39,10 @@ export default function RouteLocationSearchScreen() {
   const [value, setValue] = useState('');
 
   const keyword = value.trim().toLowerCase();
-  // 검색어가 없으면 앱 더미 전체 목록을, 있으면 서버 검색 결과(+ 앱 더미)를 보여준다(길찾기는 최근 검색어 개념이
-  // 없다). 서버 결과엔 nodeId가 있어서, 출발/도착을 둘 다 서버 결과로 고르면 실제 경로 탐색 API를 쓴다.
+  // 검색어가 있을 때만 서버 검색 결과를 보여준다(검색어가 없으면 아래 즐겨찾기만). 서버 결과엔 nodeId가 있어서,
+  // 출발/도착을 둘 다 서버 결과로 고르면 실제 경로 탐색 API를 쓴다.
   const { results: searchResults } = useSearchSuggestions(value);
-  const results = keyword ? searchResults : DUMMY_SEARCH_RESULTS;
+  const results = keyword ? searchResults : [];
 
   // 검색어가 없을 땐 기기에 저장된 즐겨찾기를 맨 위에 먼저 보여줘서 바로 고를 수 있게 한다.
   const { favorites, isFavorite } = useFavorites();
@@ -95,7 +95,7 @@ export default function RouteLocationSearchScreen() {
                     {...SEARCH_ITEM_ICONS[item.category]}
                   />
                 ))}
-                <SectionTitle>전체</SectionTitle>
+                {results.length > 0 && <SectionTitle>전체</SectionTitle>}
               </>
             )}
             {results.map((item, index) => (
