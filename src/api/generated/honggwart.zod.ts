@@ -8,7 +8,7 @@
 import * as zod from 'zod';
 
 /**
- * 장소 기능 활성화 시 장소당 한 항목을 반환합니다. nodeId는 장소의 고정 대표 기존 ID이며, placeId·placeKind·entranceCount가 추가됩니다. limit는 장소 수에 적용됩니다.
+ * 장소 기능 활성화 시 장소당 한 항목을 반환합니다. nodeId는 장소의 고정 대표 기존 ID이며, placeId·placeKind·entranceCount가 추가됩니다. 미매핑 검색 대상은 기존 nodeId와 null 장소 필드로 유지하며, limit는 장소와 미매핑 노드를 합친 최종 항목 수에 적용됩니다.
  * @summary 장소 이름 자동완성
  */
 export const autocompleteQueryLimitMax = 50;
@@ -49,6 +49,11 @@ export const RouteQueryParams = zod.object({
   "mode": zod.enum(['SHORTEST', 'INDOOR_PREFERRED', 'STAIR_AVOIDANCE']).optional()
 })
 
+export const routeResponseRoutesItemSummaryIndoorPercentMin = 0;
+export const routeResponseRoutesItemSummaryIndoorPercentMax = 100;
+
+
+
 export const RouteResponse = zod.object({
   "status": zod.enum(['SAME_PLACE', 'ROUTES_FOUND']).optional().describe('동일 장소 성공 또는 경로 탐색 성공'),
   "summary": zod.object({
@@ -61,6 +66,8 @@ export const RouteResponse = zod.object({
   "distanceMeters": zod.number().optional().describe('총 보행 거리(m). 엘리베이터를 제외한 간선 거리의 합이며 계단은 포함한다. 모드별 배수는 적용하지 않는다.'),
   "durationSeconds": zod.int().optional().describe('예상 이동 시간(초). 평지 보행 거리/1.2 + 계단 층당 16초 + 엘리베이터 탑승별 시간(대기 30초 + 문 개폐 5초×2 + 층당 4초)의 합을 반올림한다. 층을 비교할 수 없는 구간과 층 순서값이 같은 계단은 이동 부분을 weight/1.2로 추정한다. 모드별 배수는 적용하지 않는다.'),
   "floorChanges": zod.int().optional().describe('층 이동 안내 횟수(FLOOR_CHANGE step 수). 1층에서 5층까지 계단으로 한 번에 오르면 1이다.'),
+  "indoorPercent": zod.int().min(routeResponseRoutesItemSummaryIndoorPercentMin).max(routeResponseRoutesItemSummaryIndoorPercentMax).optional().describe('전체 보행 거리 중 실내 간선의 보행 거리 비율(%). 계단은 포함하고 엘리베이터는 제외한다. 반올림한 정수이며 보행 거리가 0이면 0이다.'),
+  "elevatorCongested": zod.boolean().optional().describe('실제 경로의 엘리베이터 탑승 중 하나라도 도착 예상 시각이 혼잡 시간대이면 true. Asia/Seoul 월~금 08:50~09:00부터 17:50~18:00까지 매 정각 전 10분(시작 포함·정각 제외)이다. 요청 시각에 이전 보행·계단·엘리베이터의 대기·탑승 시간을 누적하며, 현재 탑승 대기는 제외한다. 실시간 정보가 아니며 탐색 비용과 예상 이동시간에는 반영하지 않는다.'),
   "bound": zod.object({
   "minLat": zod.number().optional().describe('최소 위도'),
   "minLng": zod.number().optional().describe('최소 경도'),
@@ -122,7 +129,8 @@ export const RouteResponse = zod.object({
   "toFloor": zod.string().optional().describe('도착 층 표기. 공용 구간의 계단·엘리베이터처럼 건물 층을 비교할 수 없으면 null이다.'),
   "fromFloorOrder": zod.int().optional().describe('출발 층 순서값. 층을 비교할 수 없으면 0이다.'),
   "toFloorOrder": zod.int().optional().describe('도착 층 순서값. 층을 비교할 수 없으면 0이다.'),
-  "transport": zod.enum(['STAIR', 'ELEVATOR']).optional().describe('이동 수단')
+  "transport": zod.enum(['STAIR', 'ELEVATOR']).optional().describe('이동 수단'),
+  "congested": zod.boolean().optional().describe('이 엘리베이터에 도착할 예상 시각의 혼잡 여부. ELEVATOR에만 제공하고 STAIR에서는 생략한다. 시간대와 누적 시간 기준은 summary.elevatorCongested와 같다.')
 }).optional().describe('층 이동 정보. FLOOR_CHANGE에만 있고 다른 step에는 필드가 없다.'),
   "road": zod.string().optional().describe('실외는 도로명, 실내는 복도명. 없으면 null이다.'),
   "landmark": zod.object({
