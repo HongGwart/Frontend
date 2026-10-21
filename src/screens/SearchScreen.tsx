@@ -381,8 +381,7 @@ export default function SearchScreen() {
                   buildingNodeId,
                 )}
                 facilityCounts={dongDetail.facilityCounts}
-                // 서버 건물이면 장소 상세의 출입구 목록을, 아니면(또는 불러오기 전) 건물 코드로 찾은 값을 보여준다.
-                mainEntrance={(buildingNodeId !== undefined && nodeDetail?.mainEntrance) || dongDetail.mainEntrance}
+                mainEntrance={dongDetail.mainEntrance}
                 operatingHours={dongDetail.operatingHours}
                 onViewInsidePress={() => {
                   closeCardWhenCovered();

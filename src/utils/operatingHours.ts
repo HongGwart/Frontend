@@ -107,3 +107,15 @@ export const everyDay = (open: string, close: string): OperatingHours => {
     days: { mon: range, tue: range, wed: range, thu: range, fri: range, sat: range, sun: range },
   };
 };
+
+/**
+ * 서버 운영시간 원문("05:00 - 23:00")을 매일 같은 시간으로 읽는다. "00:00 - 24:00"은 24시간 운영.
+ * 형식이 다르면(요일별 문구 등) 추정하지 않고 undefined — 화면은 운영 시간 줄을 뺀다.
+ */
+export function parseOperatingHoursText(text: string | null | undefined): OperatingHours | undefined {
+  const match = text?.trim().match(/^(\d{1,2}):(\d{2})\s*[-–~]\s*(\d{1,2}):(\d{2})$/);
+  if (!match) return undefined;
+  const [, oh, om, ch, cm] = match;
+  if (Number(oh) === 0 && om === '00' && ch === '24' && cm === '00') return { kind: 'always' };
+  return everyDay(`${oh.padStart(2, '0')}:${om}`, `${ch.padStart(2, '0')}:${cm}`);
+}
