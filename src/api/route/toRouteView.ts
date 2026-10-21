@@ -1,7 +1,8 @@
 import type { RouteDto, StepDto } from '@api/generated/model';
-import type { GuidanceMoveType, GuidanceStep, RouteResult, RouteStep } from '@constant/dummyRouteResults';
+import type { GuidanceMoveType, GuidanceStep, RouteResult, RouteStep } from '@appTypes/routeView';
 import type { RouteOptionKey } from '@constant/routeOptions';
-import { FloorPathSegment, pathMeters, RouteMapData, routeCamera } from '@constant/testIndoorRoute';
+import type { FloorPathSegment, RouteMapData } from '@appTypes/routeView';
+import { pathMeters, routeCamera } from '@utils/routePath';
 import type { LatLng } from '@utils/routePath';
 
 /** 서버 경로 모드 → 경로 옵션 칩. 모르는 모드는 최단 경로로 본다. */

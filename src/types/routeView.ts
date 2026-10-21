@@ -1,4 +1,5 @@
-import { RouteOptionKey } from './routeOptions';
+import type { RouteOptionKey } from '@constant/routeOptions';
+import type { LatLng } from '@utils/routePath';
 
 // 길찾기 경로 카드·길 안내 화면 모델 타입. 서버 경로 응답을 toRouteView가 이 모양으로 바꾼다.
 export interface RouteStep {
@@ -42,4 +43,23 @@ export interface GuidanceStep {
   progress: number;
   /** 이 구간을 지나는 동안 있는 층(floorMaps 키, 예: "R_L"). 실외 구간이면 생략 — 길 안내 지도에 그 층 평면도를 깐다. */
   floorId?: string;
+}
+
+/** 경로선 중 한 층에 해당하는 구간 (전체 길이 대비 진행 비율 0~1) */
+export interface FloorPathSegment {
+  floorId: string;
+  from: number;
+  to: number;
+}
+
+/** 경로 보기·길 안내 지도에 그릴 경로선/출발·도착 핀/구간 안내/카메라 */
+export interface RouteMapData {
+  path: LatLng[];
+  start: LatLng & { label: string };
+  end: LatLng & { label: string };
+  guidance: GuidanceStep[];
+  /** 층별 경로 구간. 실내 길 안내에서 지금 층 구간만 그릴 때 쓴다 */
+  floorSegments: FloorPathSegment[];
+  /** 경로 보기 카메라 — 경로 바운딩 박스 중앙, 경로 길이에 맞춘 줌 */
+  camera: LatLng & { zoom: number };
 }

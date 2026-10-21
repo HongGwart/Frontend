@@ -102,3 +102,30 @@ export function regionToFit(points: LatLng[], minSpan = MIN_REGION_SPAN): LatLng
   const east = maxLng + lngSpan * FIT_MARGIN.side;
   return { latitude: south, longitude: west, latitudeDelta: north - south, longitudeDelta: east - west };
 }
+
+// 위도 1도의 길이(m). routePath의 segmentLength가 위도 단위 길이를 돌려준다.
+const METERS_PER_DEGREE = 111320;
+
+/** 경로선 길이(m) */
+export function pathMeters(path: LatLng[]) {
+  return path.slice(1).reduce((sum, point, i) => sum + segmentLength(path[i], point) * METERS_PER_DEGREE, 0);
+}
+
+/**
+ * 경로 보기 카메라 — 경로 바운딩 박스 중앙. R동 → C동처럼 건물을 건너가는 경로는 줌 17로는 한 화면에 안
+ * 들어와서, 경로 길이에 맞춰 줌을 15까지 낮춘다.
+ */
+export function routeCamera(path: LatLng[]) {
+  const lats = path.map(p => p.latitude);
+  const lngs = path.map(p => p.longitude);
+  const southWest = { latitude: Math.min(...lats), longitude: Math.min(...lngs) };
+  const spanMeters = Math.max(
+    segmentLength(southWest, { ...southWest, latitude: Math.max(...lats) }),
+    segmentLength(southWest, { ...southWest, longitude: Math.max(...lngs) }),
+  ) * METERS_PER_DEGREE;
+  return {
+    latitude: (Math.min(...lats) + Math.max(...lats)) / 2,
+    longitude: (Math.min(...lngs) + Math.max(...lngs)) / 2,
+    zoom: Math.min(17, Math.max(15, 17 - Math.log2(Math.max(spanMeters, 1) / 200))),
+  };
+}

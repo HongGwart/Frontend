@@ -2,7 +2,7 @@ import React from 'react';
 import styled, { useTheme } from 'styled-components/native';
 import WalkIcon from '@assets/svgs/icons/walk.svg';
 import ElevatorIcon from '@assets/svgs/icons/elevator.svg';
-import { RouteStep } from '@constant/dummyRouteResults';
+import { RouteStep } from '@appTypes/routeView';
 
 interface Props {
   step: RouteStep;
