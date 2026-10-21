@@ -1,4 +1,5 @@
 import BuildingIcon from '@assets/svgs/icons/building.svg';
+import { USE_MOCK_API } from '@api/config';
 import type { StoredFavorite } from '@hooks/useFavorites';
 import { toPlaceKey } from '@utils/placeKey';
 import { DUMMY_FACILITY_CATEGORY_PLACES } from './dummyFacilityCategoryPlaces';
@@ -21,10 +22,14 @@ const HONGDAE_CARD_PLACES: FavoritePlace[] = HONGDAE_PLACES.map(place => ({
   operatingHours: place.hours,
 }));
 
+// Figma 즐겨찾기·편의시설 카테고리 더미는 목 모드에서만 쓴다 — 실제 모드에서 같은 이름의 장소를 즐겨찾기하면
+// 더미 운영 시간이 카드에 보이기 때문.
+const DUMMY_CARD_PLACES = USE_MOCK_API
+  ? [...DUMMY_FAVORITE_PLACES, ...Object.values(DUMMY_FACILITY_CATEGORY_PLACES).flat()]
+  : [];
+
 const PLACE_CATALOG = new Map<string, FavoritePlace>(
-  [...DUMMY_FAVORITE_PLACES, ...Object.values(DUMMY_FACILITY_CATEGORY_PLACES).flat(), ...HONGDAE_CARD_PLACES].map(
-    place => [toPlaceKey(place.buildingCode, place.name), place],
-  ),
+  [...DUMMY_CARD_PLACES, ...HONGDAE_CARD_PLACES].map(place => [toPlaceKey(place.buildingCode, place.name), place]),
 );
 
 /**
@@ -41,7 +46,12 @@ export function toFavoritePlace(favorite: StoredFavorite): FavoritePlace {
     buildingCode: favorite.buildingCode,
     buildingName: favorite.buildingName,
     icon,
-    // 건물이면 건물 운영 시간, 시설이면 시설 운영 시간(둘 다 지금 시각으로 상태를 계산한다)
-    operatingHours: favorite.name ? getFacilityHours(favorite.buildingCode, favorite.name) : getBuildingDetail(favorite.buildingCode).hours,
+    // 건물이면 건물 운영 시간, 시설이면 시설 운영 시간(둘 다 지금 시각으로 상태를 계산한다). 앱 예시 운영 시간이라
+    // 목 모드에서만 채우고, 실제 모드에서는 운영 줄을 뺀다(서버 운영 시간은 건물 상세·카드에서 보인다).
+    operatingHours: !USE_MOCK_API
+      ? undefined
+      : favorite.name
+        ? getFacilityHours(favorite.buildingCode, favorite.name)
+        : getBuildingDetail(favorite.buildingCode).hours,
   };
 }
