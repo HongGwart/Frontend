@@ -378,12 +378,14 @@ export default function NavigationScreen() {
                     </DurationRow>
                     <SummaryText>{selectedRoute.distanceMeters}m · 걷기</SummaryText>
                   </DurationBlock>
-                  <IndoorRow>
-                    <IndoorIcon width={20} height={20} color={theme.semantic.icon.secondary} />
-                    <IndoorText>
-                      실내 <IndoorValueText>{selectedRoute.indoorPercent}%</IndoorValueText>
-                    </IndoorText>
-                  </IndoorRow>
+                  {selectedRoute.indoorPercent !== undefined && (
+                    <IndoorRow>
+                      <IndoorIcon width={20} height={20} color={theme.semantic.icon.secondary} />
+                      <IndoorText>
+                        실내 <IndoorValueText>{selectedRoute.indoorPercent}%</IndoorValueText>
+                      </IndoorText>
+                    </IndoorRow>
+                  )}
                 </DetailTopRow>
 
                 {selectedRoute.steps.map((step, index) => (

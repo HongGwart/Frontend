@@ -170,13 +170,10 @@ export function toRouteView(route: RouteDto): RouteView | null {
   const buildingAt = (index: number) =>
     steps.find(({ polylineRange: range }) => range && index >= range[0] && index <= range[1])?.context?.buildingName;
   const floorSegments: FloorPathSegment[] = [];
-  let indoorMeters = 0;
   polyline.forEach((point, index) => {
     if (index === 0) return;
-    const segmentMeters = pathMeters([path[index - 1], path[index]]);
     const prevPoint = polyline[index - 1];
     if (!point.indoor || !prevPoint.indoor) return;
-    indoorMeters += segmentMeters;
     const floorId = toFloorId(buildingAt(index), point.floor);
     // 층이 바뀌는 점(엘리베이터)끼리 잇는 선은 어느 층에도 넣지 않는다.
     if (!floorId || prevPoint.floor !== point.floor) return;
@@ -196,10 +193,11 @@ export function toRouteView(route: RouteDto): RouteView | null {
     option: MODE_TO_OPTION[mode] ?? 'shortest',
     durationMinutes: minutes(route.summary?.durationSeconds),
     distanceMeters: Math.round(route.summary?.distanceMeters ?? totalMeters),
-    indoorPercent: Math.round((indoorMeters / totalMeters) * 100),
+    // 실내 비율·엘리베이터 혼잡은 서버 지표를 쓴다. 값이 없는 응답(구버전 서버)이면 undefined라 화면이 표시를 뺀다.
+    indoorPercent: route.summary?.indoorPercent,
     stairsCount: countRides('STAIRS'),
     elevatorCount: countRides('ELEVATOR'),
-    // elevatorWarning(엘리베이터 혼잡 경고)은 서버 응답에 혼잡 정보가 아직 없어서 채우지 않는다. 생기면 여기서 채운다.
+    elevatorWarning: route.summary?.elevatorCongested,
     steps: routeSteps,
   };
 

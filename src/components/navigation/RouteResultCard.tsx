@@ -38,16 +38,18 @@ export function RouteResultCard({ result, optionLabel, showDivider = true, onPre
       </TopRow>
 
       <InfoPill>
-        <InfoItem>
-          <IndoorIcon width={20} height={20} color={theme.semantic.icon.secondary} />
-          <InfoText>
-            실내 <InfoValueText>{result.indoorPercent}%</InfoValueText>
-          </InfoText>
-        </InfoItem>
+        {result.indoorPercent !== undefined && (
+          <InfoItem>
+            <IndoorIcon width={20} height={20} color={theme.semantic.icon.secondary} />
+            <InfoText>
+              실내 <InfoValueText>{result.indoorPercent}%</InfoValueText>
+            </InfoText>
+          </InfoItem>
+        )}
 
         {result.stairsCount !== undefined && (
           <>
-            <Divider />
+            {result.indoorPercent !== undefined && <Divider />}
             <InfoItem>
               <StairsIcon width={20} height={20} color={theme.semantic.icon.secondary} />
               <InfoText>

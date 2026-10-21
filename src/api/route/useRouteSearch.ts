@@ -24,8 +24,10 @@ export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
         enabled,
         // 실패하면 경로 목록 자리에 바로 문구를 띄우니(경로 없음/그 밖의 실패) 전역 토스트는 끈다.
         meta: { silent: true },
-        // 같은 출발/도착은 길 안내 도중 다시 불러오지 않는다(경로가 바뀌면 안내 단계가 어긋난다).
-        staleTime: Infinity,
+        // 엘리베이터 혼잡은 요청 시각 기준 예상이라 무기한 재사용하지 않는다 — 1분이 지나면 길찾기 화면에 다시
+        // 들어오거나 앱으로 돌아올 때 새로 불러온다. 길 안내 화면은 처음 정한 경로를 상태로 고정해 두므로
+        // 안내 도중 다시 불러와도 구간이 바뀌지 않는다(RouteGuidanceScreen).
+        staleTime: 60_000,
       },
     },
   );
