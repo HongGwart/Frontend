@@ -25,6 +25,8 @@ interface Props {
   onToggleFavorite?: () => void;
   /** 이미지 2장. 생략하면 이미지 없이 제목/설명만 있는 리스트 아이템이 된다. */
   images?: [PhotoSource, PhotoSource];
+  /** 사진이 없을 때 사진 자리에 넣을 기본 이미지 아이콘. 넘기면 사진 줄이 기본 이미지로 채워진다(FacilityImagePair). */
+  placeholderIcon?: React.FC<SvgProps>;
   /** 아이템 사이 구분선을 보여줄지 (리스트 마지막 아이템은 보통 false) */
   showDivider?: boolean;
   onPress?: () => void;
@@ -53,6 +55,7 @@ export function FacilityListItem({
   isFavorite = false,
   onToggleFavorite,
   images,
+  placeholderIcon,
   showDivider = true,
   onPress,
   compact = false,
@@ -100,7 +103,14 @@ export function FacilityListItem({
         </TextBlock>
       </TitleSection>
 
-      {images && <FacilityImagePair images={images} compact={compact} height={compact ? 68.477 : 100} />}
+      {(images || placeholderIcon) && (
+        <FacilityImagePair
+          images={images}
+          placeholderIcon={placeholderIcon}
+          compact={compact}
+          height={compact ? 68.477 : 100}
+        />
+      )}
     </Container>
   );
 }

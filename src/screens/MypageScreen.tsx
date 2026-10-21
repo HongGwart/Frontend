@@ -108,7 +108,7 @@ export default function MypageScreen() {
         </ServiceInfoSection>
 
 
-        {/* {__DEV__ && (
+        {__DEV__ && (
           // [개발용] 온보딩 완료 기록을 지우고 온보딩부터 다시 본다(최초 실행 흐름 확인용).
           <Pressable
             onPress={async () => {
@@ -121,7 +121,7 @@ export default function MypageScreen() {
           >
             <DevActionText>[DEV] 온보딩 다시 보기</DevActionText>
           </Pressable>
-        )} */}
+        )}
 
 
       </ScrollView>

@@ -26,6 +26,8 @@ export interface FacilityListSheetItem {
   description: string;
   isFavorite?: boolean;
   images?: [PhotoSource, PhotoSource];
+  /** 사진이 없을 때 사진 자리에 넣을 기본 이미지 아이콘(FacilityListItem) */
+  placeholderIcon?: React.FC<SvgProps>;
 }
 
 interface Props {
@@ -119,6 +121,7 @@ function DefaultFacilityListItem({
       description={item.description}
       isFavorite={item.isFavorite}
       images={item.images}
+      placeholderIcon={item.placeholderIcon}
       showDivider={showDivider}
       onPress={onPress}
       onToggleFavorite={onToggleFavorite}

@@ -173,6 +173,8 @@ const SEARCH_DEMO_FACILITY_ITEMS: FacilityListSheetItem[] = [
     place: '제1공학관',
     room: '505호',
     description: '공과대학 전공 강의실 및 실습실',
+    // Figma 목업은 이 항목에 사진 줄이 있어서 카드가 폰 아래쪽까지 덮는다 — 사진 대신 기본 이미지로 같은 높이를 맞춘다.
+    placeholderIcon: BookIcon,
   },
 ];
 
