@@ -8,7 +8,8 @@
 import * as zod from 'zod';
 
 /**
- * @summary 노드 이름 자동완성
+ * 장소 기능 활성화 시 장소당 한 항목을 반환합니다. nodeId는 장소의 고정 대표 기존 ID이며, placeId·placeKind·entranceCount가 추가됩니다. limit는 장소 수에 적용됩니다.
+ * @summary 장소 이름 자동완성
  */
 export const autocompleteQueryLimitMax = 50;
 
@@ -19,32 +20,46 @@ export const AutocompleteQueryParams = zod.object({
   "limit": zod.string().min(1).max(autocompleteQueryLimitMax).optional().describe('최대 반환 개수 (1~50, 기본값 10)')
 })
 
+export const autocompleteResponseSuggestionsItemEntranceCountMin = 0;
+
+
+
 export const AutocompleteResponse = zod.object({
   "suggestions": zod.array(zod.object({
   "nodeId": zod.int().optional(),
   "displayName": zod.string().optional(),
   "nodeType": zod.string().optional(),
-  "category": zod.string().optional()
+  "category": zod.string().optional(),
+  "placeId": zod.uuid().nullish(),
+  "placeKind": zod.string().nullish(),
+  "entranceCount": zod.int().min(autocompleteResponseSuggestionsItemEntranceCountMin).nullish()
 })).optional()
 })
 
 
 /**
- * mode를 생략하면 세 모드의 경로 후보를 반환합니다. 일부 모드만 경로가 있으면 200, 모든 모드에서 경로가 없으면 404입니다.
- * @summary 출발·도착 노드 간 경로 조회
+ * 각 끝점은 nodeId 또는 placeId 중 정확히 하나를 지정합니다. 같은 장소는 거리·시간 0과 빈 routes 배열로 성공합니다. 다른 장소는 mode 생략 시 세 모드 후보를 반환하며 모든 모드에서 경로가 없으면 404입니다. 장소 ID는 장소 기능 활성화 후 사용할 수 있습니다.
+ * @summary 출발·도착 장소 또는 노드 간 경로 조회
  */
 export const RouteQueryParams = zod.object({
-  "fromNodeId": zod.int().describe('출발 노드 ID'),
-  "toNodeId": zod.int().describe('도착 노드 ID'),
+  "fromNodeId": zod.int().optional().describe('출발 노드 ID. fromPlaceId와 동시에 지정할 수 없습니다.'),
+  "toNodeId": zod.int().optional().describe('도착 노드 ID. toPlaceId와 동시에 지정할 수 없습니다.'),
+  "fromPlaceId": zod.uuid().optional().describe('출발 장소 ID'),
+  "toPlaceId": zod.uuid().optional().describe('도착 장소 ID'),
   "mode": zod.enum(['SHORTEST', 'INDOOR_PREFERRED', 'STAIR_AVOIDANCE']).optional()
 })
 
 export const RouteResponse = zod.object({
+  "status": zod.enum(['SAME_PLACE', 'ROUTES_FOUND']).optional().describe('동일 장소 성공 또는 경로 탐색 성공'),
+  "summary": zod.object({
+  "distanceMeters": zod.number().optional(),
+  "durationSeconds": zod.int().optional()
+}).nullish().describe('SAME_PLACE이면 거리·시간 0, 일반 경로이면 null'),
   "routes": zod.array(zod.object({
   "mode": zod.enum(['SHORTEST', 'INDOOR_PREFERRED', 'STAIR_AVOIDANCE']).optional().describe('이 후보를 만든 라우팅 모드'),
   "summary": zod.object({
-  "distanceMeters": zod.number().optional().describe('총 거리(m). 모드별 가중치를 적용하기 전 간선 거리의 합이다.'),
-  "durationSeconds": zod.int().optional().describe('예상 보행 시간(초). 총 거리를 1.2m/s로 나눠 반올림한다.'),
+  "distanceMeters": zod.number().optional().describe('총 보행 거리(m). 엘리베이터를 제외한 간선 거리의 합이며 계단은 포함한다. 모드별 배수는 적용하지 않는다.'),
+  "durationSeconds": zod.int().optional().describe('예상 이동 시간(초). 평지 보행 거리/1.2 + 계단 층당 16초 + 엘리베이터 탑승별 시간(대기 30초 + 문 개폐 5초×2 + 층당 4초)의 합을 반올림한다. 층을 비교할 수 없는 구간과 층 순서값이 같은 계단은 이동 부분을 weight/1.2로 추정한다. 모드별 배수는 적용하지 않는다.'),
   "floorChanges": zod.int().optional().describe('층 이동 안내 횟수(FLOOR_CHANGE step 수). 1층에서 5층까지 계단으로 한 번에 오르면 1이다.'),
   "bound": zod.object({
   "minLat": zod.number().optional().describe('최소 위도'),
@@ -60,22 +75,24 @@ export const RouteResponse = zod.object({
 }).optional().describe('경로가 지나는 시설별 간선 수')
 }).optional().describe('경로 요약'),
   "from": zod.object({
-  "nodeId": zod.int().optional().describe('요청한 노드 ID(fromNodeId 또는 toNodeId)'),
+  "nodeId": zod.int().nullish().describe('요청한 노드 ID. 장소 ID로 요청한 경우 null'),
+  "placeId": zod.uuid().nullish().describe('해석한 장소 ID. 장소에 매핑되지 않은 노드는 null'),
   "name": zod.string().optional().describe('nodeId 노드의 표시명. display_name이 없으면 name이다.'),
-  "lat": zod.number().optional().describe('nodeId 노드의 위도'),
-  "lng": zod.number().optional().describe('nodeId 노드의 경도'),
-  "usedNodeId": zod.int().optional().describe('경로가 실제로 출발·도착한 노드 ID. nodeId가 SYMBOLIC(건물 등)이면 그 자손 중 하나이고, 아니면 nodeId와 같다.'),
-  "entranceName": zod.string().optional().describe('usedNodeId가 출입구(ENTRANCE)일 때 그 이름(예: 정문). 출입구가 아니면 null이다.'),
-  "multiEntrance": zod.boolean().optional().describe('nodeId가 출입구(ENTRANCE) 자손을 2개 이상 가지면 true')
+  "lat": zod.number().nullish().describe('표시 지점의 위도. 검수한 표시 좌표가 없으면 null'),
+  "lng": zod.number().nullish().describe('표시 지점의 경도. 검수한 표시 좌표가 없으면 null'),
+  "usedNodeId": zod.int().optional().describe('경로가 실제로 출발·도착한 접근 노드 ID. 장소에 매핑된 POI도 요청 nodeId와 다를 수 있다.'),
+  "entranceName": zod.string().optional().describe('선택한 장소 접근점의 이름. 장소 미등록 일반 노드는 null이다.'),
+  "multiEntrance": zod.boolean().optional().describe('선택한 장소의 명시적 접근점이 2개 이상이면 true')
 }).optional().describe('출발 지점'),
   "to": zod.object({
-  "nodeId": zod.int().optional().describe('요청한 노드 ID(fromNodeId 또는 toNodeId)'),
+  "nodeId": zod.int().nullish().describe('요청한 노드 ID. 장소 ID로 요청한 경우 null'),
+  "placeId": zod.uuid().nullish().describe('해석한 장소 ID. 장소에 매핑되지 않은 노드는 null'),
   "name": zod.string().optional().describe('nodeId 노드의 표시명. display_name이 없으면 name이다.'),
-  "lat": zod.number().optional().describe('nodeId 노드의 위도'),
-  "lng": zod.number().optional().describe('nodeId 노드의 경도'),
-  "usedNodeId": zod.int().optional().describe('경로가 실제로 출발·도착한 노드 ID. nodeId가 SYMBOLIC(건물 등)이면 그 자손 중 하나이고, 아니면 nodeId와 같다.'),
-  "entranceName": zod.string().optional().describe('usedNodeId가 출입구(ENTRANCE)일 때 그 이름(예: 정문). 출입구가 아니면 null이다.'),
-  "multiEntrance": zod.boolean().optional().describe('nodeId가 출입구(ENTRANCE) 자손을 2개 이상 가지면 true')
+  "lat": zod.number().nullish().describe('표시 지점의 위도. 검수한 표시 좌표가 없으면 null'),
+  "lng": zod.number().nullish().describe('표시 지점의 경도. 검수한 표시 좌표가 없으면 null'),
+  "usedNodeId": zod.int().optional().describe('경로가 실제로 출발·도착한 접근 노드 ID. 장소에 매핑된 POI도 요청 nodeId와 다를 수 있다.'),
+  "entranceName": zod.string().optional().describe('선택한 장소 접근점의 이름. 장소 미등록 일반 노드는 null이다.'),
+  "multiEntrance": zod.boolean().optional().describe('선택한 장소의 명시적 접근점이 2개 이상이면 true')
 }).optional().describe('도착 지점'),
   "polyline": zod.array(zod.object({
   "lat": zod.number().optional().describe('위도'),
@@ -85,14 +102,14 @@ export const RouteResponse = zod.object({
   "indoor": zod.boolean().optional().describe('이 점에서 다음 점까지 이어지는 구간이 실내인지 여부. 마지막 점은 직전 값을 그대로 쓴다.')
 }).describe('경로 좌표 한 점')).optional().describe('지도에 그릴 경로 좌표열. 경로가 지나는 노드를 순서대로 모두 담는다.'),
   "steps": zod.array(zod.object({
-  "type": zod.enum(['DEPART', 'TURN_LEFT', 'TURN_RIGHT', 'ENTER_BUILDING', 'EXIT_BUILDING', 'FLOOR_CHANGE', 'ARRIVE']).optional().describe('안내 종류'),
+  "type": zod.enum(['DEPART', 'TURN_LEFT', 'TURN_RIGHT', 'ENTER_BUILDING', 'EXIT_BUILDING', 'FLOOR_CHANGE', 'WALK', 'ARRIVE']).optional().describe('안내 종류. WALK는 출발 후·층 이동 후·안내 지점 사이의 보행 구간이다.'),
   "instruction": zod.string().optional().describe('사용자에게 보여 줄 안내 문구'),
   "lat": zod.number().optional().describe('step이 시작하는 지점의 위도. polyline[polylineRange[0]]과 같은 점이다.'),
   "lng": zod.number().optional().describe('step이 시작하는 지점의 경도. polyline[polylineRange[0]]과 같은 점이다.'),
   "bearing": zod.number().optional().describe('step 첫 구간(ARRIVE는 마지막 구간)의 진행 방위(도). 정북이 0이고 시계 방향으로 증가하는 [0, 360) 값이며 소수점 첫째 자리까지 반올림한다. 기준 구간이 계단·엘리베이터이거나 출발지와 도착지가 같으면 null이다.'),
-  "distanceMeters": zod.number().optional().describe('이 step이 덮는 구간의 거리(m)'),
-  "durationSeconds": zod.int().optional().describe('이 step이 덮는 구간의 예상 보행 시간(초)'),
-  "polylineRange": zod.array(zod.int()).optional().describe('이 step이 덮는 polyline 인덱스 [start, end]. end는 다음 step의 start와 같다. 같은 지점에서 step이 연달아 나오면 앞 step은 [i, i]이고 거리는 0이다.'),
+  "distanceMeters": zod.number().optional().describe('구간의 보행 거리(m). 엘리베이터는 제외하며 계단은 포함한다. 지점 이벤트도 항상 0이다.'),
+  "durationSeconds": zod.int().optional().describe('구간의 예상 시간(초). 평지 보행은 거리/1.2, 계단은 상승·하강 모두 층당 16초, 엘리베이터는 연속 탑승마다 대기 30초 + 문 개폐 5초×2 + 층당 4초이다. 층을 비교할 수 없거나 계단의 층 순서값이 같으면 이동 부분은 weight/1.2다. 반올림하며 지점 이벤트는 항상 0이다.'),
+  "polylineRange": zod.array(zod.int()).optional().describe('이 step이 덮는 polyline 인덱스 [start, end]. end는 다음 step의 start와 같다. FLOOR_CHANGE는 층 이동만 포함하며 전후 보행은 WALK다. 지점 이벤트는 항상 [i, i]이고 거리·시간이 0이다. DEPART는 [0, 0]이다.'),
   "context": zod.object({
   "indoor": zod.boolean().optional().describe('step 첫 구간이 실내인지 여부'),
   "buildingNodeId": zod.int().optional().describe('평면도를 보여 줄 건물 노드 ID. step 첫 구간이 한 건물 안의 실내 구간일 때만 값이 있고, 그 밖에는 null이다.'),
@@ -114,12 +131,55 @@ export const RouteResponse = zod.object({
   "lat": zod.number().optional().describe('위도'),
   "lng": zod.number().optional().describe('경도')
 }).optional().describe('step 구간 안이나 바로 옆의 랜드마크. 없으면 null이다.')
-}).describe('안내 step 하나')).optional().describe('안내 step 목록. 출발·회전·건물 출입·층 이동·도착처럼 안내가 필요한 지점만 담으며, step들의 polylineRange가 polyline 전체를 빈틈없이 나눈다.')
+}).describe('안내 step 하나')).optional().describe('출발·도착·회전·건물 출입은 거리 0인 지점 이벤트, WALK·FLOOR_CHANGE는 실제 이동 구간이다. step들의 polylineRange가 polyline 전체를 빈틈없이 나눈다.')
 }).describe('경로 후보 하나')).optional().describe('경로 후보 목록. SHORTEST → INDOOR_PREFERRED → STAIR_AVOIDANCE 순서로 고정된다. 경로가 없는 모드는 빠지고, mode를 지정해도 길이 1의 배열이다.')
 }).describe('길찾기 응답')
 
 
 /**
+ * 겹친 마커/즐겨찾기 목록용. 입력은 최대 100개이며 중복 제거 후 최초 순서를 유지합니다. 없는 ID는 missingNodeIds로 반환합니다.
+ * @summary 여러 장소의 소개 일괄 조회
+ */
+
+export const placesQueryNodeIdsMax = 100;
+
+
+
+export const PlacesQueryParams = zod.object({
+  "nodeIds": zod.array(zod.int().min(1)).min(1).max(placesQueryNodeIdsMax).describe('쉼표로 구분한 양수 노드 ID. 빈 항목은 허용하지 않습니다.')
+})
+
+export const PlacesResponse = zod.object({
+  "items": zod.array(zod.object({
+  "nodeId": zod.int(),
+  "kind": zod.enum(['BUILDING', 'ROOM', 'FACILITY', 'UNKNOWN']),
+  "displayName": zod.string().nullable(),
+  "building": zod.union([zod.object({
+  "nodeId": zod.int(),
+  "code": zod.string(),
+  "name": zod.string()
+}),zod.unknown()]),
+  "floor": zod.string().nullable().describe('B1, L 등 원래 층 코드. 건물은 null.'),
+  "floorOrder": zod.int().nullable(),
+  "roomNumber": zod.string().nullable(),
+  "introduction": zod.string().nullable(),
+  "introductionSource": zod.union([zod.union([zod.literal('BUILDING'),zod.literal('FACILITY'),zod.literal(null)]).nullable(),zod.unknown()]),
+  "introductionSourceNodeId": zod.int().nullable(),
+  "introductionStatus": zod.enum(['AVAILABLE', 'MISSING', 'UNRESOLVED']),
+  "facility": zod.union([zod.object({
+  "facilityId": zod.int().nullable(),
+  "category": zod.string(),
+  "onCampus": zod.boolean(),
+  "operatingHoursText": zod.string().nullable().describe('시설 자체 운영시간 원문. 건물 시간을 상속하지 않습니다.')
+}),zod.unknown()]),
+  "placeId": zod.uuid()
+}).describe('건물은 자체 소개, 일반 호실은 건물 소개, 시설은 자체 소개를 반환합니다. 시설 소개 공란은 건물 소개로 대체하지 않습니다.')),
+  "missingNodeIds": zod.array(zod.int())
+}).describe('중복 ID는 최초 입력 순서로 한 번만 반환합니다. 없는 ID도 최초 입력 순서로 missingNodeIds에 반환합니다.')
+
+
+/**
+ * nodeId와 nodeType은 요청한 물리 노드의 값을 유지합니다. 장소 기능 활성화 시 placeId와 같은 장소의 모든 명시적 접근점을 entrances에 반환합니다.
  * @summary 노드 상세 조회
  */
 export const NodeParams = zod.object({
@@ -140,13 +200,58 @@ export const NodeResponse = zod.object({
   "entrances": zod.array(zod.object({
   "nodeId": zod.int().optional(),
   "name": zod.string().optional(),
-  "isPrimary": zod.boolean().optional()
+  "isPrimary": zod.boolean().optional(),
+  "role": zod.string().optional(),
+  "lat": zod.number().optional(),
+  "lng": zod.number().optional(),
+  "floor": zod.string().optional(),
+  "floorOrder": zod.int().optional()
 })).optional(),
   "facility": zod.object({
-  "category": zod.string().optional(),
-  "onCampus": zod.boolean().optional()
-}).optional()
+  "facilityId": zod.int().nullable(),
+  "category": zod.string(),
+  "onCampus": zod.boolean(),
+  "operatingHoursText": zod.string().nullable().describe('시설 자체 운영시간 원문. 건물 시간을 상속하지 않습니다.')
+}).optional(),
+  "placeId": zod.uuid().nullish()
 })
+
+
+/**
+ * 건물/일반 호실/시설의 소개를 서버에서 선택합니다. 기존 노드 상세 및 길찾기 API와 같은 nodeId를 사용합니다.
+ * @summary 선택한 장소의 소개 조회
+ */
+
+
+
+export const PlaceParams = zod.object({
+  "nodeId": zod.string().min(1)
+})
+
+export const PlaceResponse = zod.object({
+  "nodeId": zod.int(),
+  "kind": zod.enum(['BUILDING', 'ROOM', 'FACILITY', 'UNKNOWN']),
+  "displayName": zod.string().nullable(),
+  "building": zod.union([zod.object({
+  "nodeId": zod.int(),
+  "code": zod.string(),
+  "name": zod.string()
+}),zod.unknown()]),
+  "floor": zod.string().nullable().describe('B1, L 등 원래 층 코드. 건물은 null.'),
+  "floorOrder": zod.int().nullable(),
+  "roomNumber": zod.string().nullable(),
+  "introduction": zod.string().nullable(),
+  "introductionSource": zod.union([zod.union([zod.literal('BUILDING'),zod.literal('FACILITY'),zod.literal(null)]).nullable(),zod.unknown()]),
+  "introductionSourceNodeId": zod.int().nullable(),
+  "introductionStatus": zod.enum(['AVAILABLE', 'MISSING', 'UNRESOLVED']),
+  "facility": zod.union([zod.object({
+  "facilityId": zod.int().nullable(),
+  "category": zod.string(),
+  "onCampus": zod.boolean(),
+  "operatingHoursText": zod.string().nullable().describe('시설 자체 운영시간 원문. 건물 시간을 상속하지 않습니다.')
+}),zod.unknown()]),
+  "placeId": zod.uuid()
+}).describe('건물은 자체 소개, 일반 호실은 건물 소개, 시설은 자체 소개를 반환합니다. 시설 소개 공란은 건물 소개로 대체하지 않습니다.')
 
 
 /**
@@ -174,3 +279,27 @@ export const FloorPlanCornersResponse = zod.object({
   "latitude": zod.number().min(floorPlanCornersResponsePointsItemLatitudeMin).max(floorPlanCornersResponsePointsItemLatitudeMax)
 }).describe('EPSG:4326 경위도. 픽셀 좌표가 아닙니다.')).optional()
 })
+
+
+/**
+ * 건물 공식명, 소개, 주출입구와 운영시간 원문을 반환합니다. T와 T동을 같은 코드로 처리합니다.
+ * @summary 건물 정보 조회
+ */
+export const BuildingParams = zod.object({
+  "buildingCode": zod.string()
+})
+
+export const BuildingResponse = zod.object({
+  "nodeId": zod.int(),
+  "code": zod.string(),
+  "name": zod.string(),
+  "introduction": zod.string().nullable(),
+  "introductionStatus": zod.enum(['AVAILABLE', 'MISSING', 'UNRESOLVED']),
+  "mainEntranceText": zod.string().nullable(),
+  "operatingHoursText": zod.string().nullable(),
+  "facilityCounts": zod.array(zod.object({
+  "category": zod.string(),
+  "count": zod.int()
+})).nullable().describe('목록 완전성이 검증된 경우만 집계. 미확인은 null, 확인된 0개는 [].'),
+  "placeId": zod.uuid()
+}).describe('건물 콘텐츠. 원문 공란은 null이며 영업 여부를 추정하지 않습니다.')

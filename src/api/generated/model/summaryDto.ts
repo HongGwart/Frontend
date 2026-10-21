@@ -12,9 +12,9 @@ import type { FeaturesDto } from './featuresDto';
  * 경로 요약
  */
 export interface SummaryDto {
-  /** 총 거리(m). 모드별 가중치를 적용하기 전 간선 거리의 합이다. */
+  /** 총 보행 거리(m). 엘리베이터를 제외한 간선 거리의 합이며 계단은 포함한다. 모드별 배수는 적용하지 않는다. */
   distanceMeters?: number;
-  /** 예상 보행 시간(초). 총 거리를 1.2m/s로 나눠 반올림한다. */
+  /** 예상 이동 시간(초). 평지 보행 거리/1.2 + 계단 층당 16초 + 엘리베이터 탑승별 시간(대기 30초 + 문 개폐 5초×2 + 층당 4초)의 합을 반올림한다. 층을 비교할 수 없는 구간과 층 순서값이 같은 계단은 이동 부분을 weight/1.2로 추정한다. 모드별 배수는 적용하지 않는다. */
   durationSeconds?: number;
   /** 층 이동 안내 횟수(FLOOR_CHANGE step 수). 1층에서 5층까지 계단으로 한 번에 오르면 1이다. */
   floorChanges?: number;
