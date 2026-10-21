@@ -35,12 +35,8 @@ import { useNodeDetail } from '@api/node/useNodeDetail';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
 import { CategoryKey } from '@constant/categoryChips';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
-import {
-  DUMMY_MAP_MARKERS,
-  DUMMY_CATEGORY_MARKERS,
-  DummyMapMarker,
-  DummyCategoryMarker,
-} from '@constant/dummyMapMarkers';
+import { CAMPUS_BUILDINGS, CampusBuilding } from '@constant/campusBuildings';
+import { DUMMY_CATEGORY_MARKERS, DummyCategoryMarker } from '@constant/dummyCategoryMarkers';
 import {
   SEARCH_ITEM_ICONS,
   SearchResultItem,
@@ -55,7 +51,7 @@ import { AnimatedToast } from '@components/mypage/AnimatedToast';
 // 지도 화면(MapScreen)과 동일한 형태. 검색 뷰 안에서 지도를 띄울 때도 마커를 직접
 // 탭한 것과 같은 방식으로 시설 정보 바텀시트를 채운다.
 type SelectedFacility =
-  | { type: 'dong'; marker: DummyMapMarker }
+  | { type: 'dong'; marker: CampusBuilding }
   | { type: 'category'; marker: DummyCategoryMarker };
 
 // 검색 결과 항목(건물/호실)에 대응하는 지도 더미 마커를 찾는다.
@@ -71,7 +67,7 @@ const SEARCHED_ROOM_ZOOM = 19;
 
 function findFacilityForSearchItem(item: SearchResultItem): SelectedFacility | null {
   if (item.category === 'building') {
-    const marker = DUMMY_MAP_MARKERS.find(m => m.label === item.building);
+    const marker = CAMPUS_BUILDINGS.find(m => m.label === item.building);
     return marker ? { type: 'dong', marker } : null;
   }
   const categoryMarker = DUMMY_CATEGORY_MARKERS.find(
@@ -79,7 +75,7 @@ function findFacilityForSearchItem(item: SearchResultItem): SelectedFacility | n
   );
   if (categoryMarker) return { type: 'category', marker: categoryMarker };
 
-  const dongMarker = DUMMY_MAP_MARKERS.find(m => m.label === item.building);
+  const dongMarker = CAMPUS_BUILDINGS.find(m => m.label === item.building);
   return dongMarker ? { type: 'dong', marker: dongMarker } : null;
 }
 
@@ -134,7 +130,7 @@ export default function SearchScreen() {
   // 띄운다. 장소 상세의 소속 건물(parent)이 오면 그 건물 마커 위치에 카드를 띄운다.
   useEffect(() => {
     if (selectedFacility || !selectedItem?.nodeId || !nodeDetail?.buildingCode) return;
-    const marker = DUMMY_MAP_MARKERS.find(m => m.label === nodeDetail.buildingCode);
+    const marker = CAMPUS_BUILDINGS.find(m => m.label === nodeDetail.buildingCode);
     if (marker) setSelectedFacility({ type: 'dong', marker });
   }, [selectedFacility, selectedItem, nodeDetail]);
   // 동 마커 위에 띄우되 건물이 아니라 그 안의 호실/시설 카드로 보여줄 장소(건물 자체 검색은 제외) — 서버 장소,
@@ -212,7 +208,7 @@ export default function SearchScreen() {
 
   // 서버 검색으로 고른 호실/시설 카드. 호실 번호가 있으면 강의실 카드(room), 화장실처럼 번호가 없으면
   // 시설 카드(facility)로 보여주고, 위치(층)는 장소 상세에서 채운다. 지도 위치·건물 정보는 소속 동 마커 것을 쓴다.
-  const renderPlaceCard = (marker: DummyMapMarker, item: SearchResultItem) => {
+  const renderPlaceCard = (marker: CampusBuilding, item: SearchResultItem) => {
     const buildingCode = marker.label ?? '';
     const roomNumber = item.room ?? nodeDetail?.roomNumber;
     const name = roomNumber ?? nodeDetail?.displayName ?? item.place;
@@ -405,7 +401,7 @@ export default function SearchScreen() {
                 // 시설이 있는 건물(동)의 내부 지도로 간다(지도 화면의 시설 카드와 같음).
                 onViewInsidePress={() => {
                   const { buildingCode, buildingName } = selectedFacility.marker;
-                  const dongMarker = DUMMY_MAP_MARKERS.find(marker => marker.label === buildingCode);
+                  const dongMarker = CAMPUS_BUILDINGS.find(marker => marker.label === buildingCode);
                   closeCardWhenCovered();
                   navigation.navigate('BuildingIndoor', {
                     buildingCode,

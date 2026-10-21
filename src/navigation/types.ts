@@ -54,7 +54,7 @@ export type RootStackParamList = {
   // 편의시설 탭에서 카테고리(식당/카페 등)를 탭했을 때 뜨는 해당 카테고리 장소 목록.
   FacilityCategoryList: { categoryId: FacilityCategoryId };
   // 지도 위 시설 정보 카드를 위로 슬라이드하면 뜨는 건물 상세보기. buildingCode는
-  // DummyMapMarker.label(예: "H동")과 매칭된다.
+  // CampusBuilding.label(예: "H동")과 매칭된다.
   BuildingDetail: { buildingCode: string };
   // 건물 카드의 "건물 내부 보기"를 누르면 뜨는 건물 내부 지도(층별 평면도). buildingCode("T동")로
   // floorMaps.ts의 층 목록을 찾고, 나머지는 하단 건물 정보 카드에 그대로 쓴다.

@@ -9,7 +9,8 @@ Figma: [marker](https://www.figma.com/design/C8sRNwDxZGRUQuewY6yeSd/홍그와트
 - `src/components/map/NaverMapMarker.tsx` — `Marker`를 `NaverMapMarkerOverlay`의
   ["Custom React View" 이미지 타입](https://github.com/mj-studio-library/react-native-naver-map)으로
   얹는 어댑터. `latitude`/`longitude`, `onPress`(→ `onTap`)를 추가로 받는다.
-- `src/constant/dummyMapMarkers.ts` — 실제 건물 좌표 연동 전까지 쓰는 더미 마커 데이터.
+- `src/constant/campusBuildings.ts` — 캠퍼스 건물(동) 목록과 지도에서 찍은 실제 좌표.
+- `src/constant/dummyCategoryMarkers.ts` — 카테고리 칩 마커 더미 데이터(시설 API가 생기기 전까지).
 
 아이콘은 Figma에서 export한 `currentColor` 기반 SVG(`markerPin.svg`, `markerDot.svg`,
 `markerFavoriteShape.svg`, `star.svg`)를 조합해서 그린다. 흰 점/별 배지는 40×40 마커 박스 안에서

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useBuilding } from '@api/generated/honggwart';
 import { BUILDING_DETAILS_AS_OF, getBuildingDetail } from '@constant/buildingDetails';
-import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
+import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
 import { useNow } from '@hooks/useNow';
 import { getOperatingStatus, parseOperatingHoursText } from '@utils/operatingHours';
 
@@ -16,7 +16,7 @@ const toServerCode = (buildingCode: string) => buildingCode.replace(/동$/, '');
  */
 export function useBuildingDetail(buildingCode: string | undefined) {
   const now = useNow();
-  const marker = useMemo(() => DUMMY_MAP_MARKERS.find(item => item.label === buildingCode), [buildingCode]);
+  const marker = useMemo(() => CAMPUS_BUILDINGS.find(item => item.label === buildingCode), [buildingCode]);
   const local = buildingCode ? getBuildingDetail(buildingCode) : undefined;
 
   const { data: server } = useBuilding(toServerCode(buildingCode ?? ''), {

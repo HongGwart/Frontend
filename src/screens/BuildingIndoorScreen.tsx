@@ -14,7 +14,7 @@ import { CollapsibleBottomSheet, CollapsibleBottomSheetRef } from '@components/c
 import { FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
-import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
+import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
 import { RootStackParamList } from '@navigation/types';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
@@ -49,7 +49,7 @@ export default function BuildingIndoorScreen() {
   useBlockScreenCapture('buildingIndoor');
 
   const marker = useMemo(
-    () => DUMMY_MAP_MARKERS.find(item => item.label === params.buildingCode),
+    () => CAMPUS_BUILDINGS.find(item => item.label === params.buildingCode),
     [params.buildingCode],
   );
   // 건물명은 넘겨받은 값(params)을 그대로 쓰지 않고 동 코드로 지금 데이터에서 다시 찾는다. params는 이 화면을
