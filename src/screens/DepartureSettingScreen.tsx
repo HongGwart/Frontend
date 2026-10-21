@@ -30,7 +30,7 @@ export default function DepartureSettingScreen() {
   const { departure, setDeparture } = useDefaultDeparture();
 
   // 길찾기 출발지 검색과 같은 서버 검색. 서버 결과엔 nodeId가 있어서 기본 출발지로도 실제 경로 탐색을 쓴다.
-  const { results: searchResults, isSearching } = useSearchSuggestions(value);
+  const { results: searchResults, isSearching, isError: searchFailed } = useSearchSuggestions(value);
   const results = value.trim() ? searchResults : [];
 
   // 지금 기본 출발지와 같은 장소면 선택 표시. 서버 장소는 nodeId로, 아니면 표시 이름으로 비교한다.
@@ -72,7 +72,7 @@ export default function DepartureSettingScreen() {
                 {...SEARCH_ITEM_ICONS[item.category]}
               />
             ))}
-            {!!value.trim() && !isSearching && results.length === 0 && <SearchEmptyResult />}
+            {!!value.trim() && !isSearching && !searchFailed && results.length === 0 && <SearchEmptyResult />}
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>

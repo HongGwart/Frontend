@@ -109,7 +109,11 @@ export default function SearchScreen() {
 
   const trimmedValue = value.trim();
   // 서버 검색(자동완성 API) + 아직 서버에 없는 앱 더미 장소. 실패하면 더미 결과로 대신한다.
-  const { results: searchResults, isSearching: isFetchingResults } = useSearchSuggestions(value);
+  const {
+    results: searchResults,
+    isSearching: isFetchingResults,
+    isError: searchFailed,
+  } = useSearchSuggestions(value);
 
   // 검색어가 없으면 최근 검색어를, 있으면 검색 결과를 보여준다.
   const isSearching = trimmedValue.length > 0;
@@ -466,7 +470,7 @@ export default function SearchScreen() {
                       {...SEARCH_ITEM_ICONS[item.category]}
                     />
                   ))
-                ) : isFetchingResults ? null : (
+                ) : isFetchingResults || searchFailed ? null : (
                   <SearchEmptyResult />
                 )
               ) : (

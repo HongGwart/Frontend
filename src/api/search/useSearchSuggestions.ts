@@ -78,8 +78,15 @@ export function useSearchSuggestions(keyword: string) {
     return remote;
   }, [immediate, query, isError, data, isPlaceholderData]);
 
-  // 디바운스 중이거나 지금 검색어의 응답을 기다리는 중 — 이때 결과가 비어 있어도 "검색 결과 없음"을 띄우지 않는다.
-  const isSearching = enabled && (query !== immediate || isFetching);
+  // 입력이 있는데 디바운스 중이거나 지금 검색어의 응답을 기다리는 중 — 이때 결과가 비어 있어도 "검색 결과 없음"을
+  // 띄우지 않는다. 디바운스된 query가 아니라 지금 입력값으로 봐야 빈 검색창에 첫 글자를 칠 때도 깜빡이지 않는다.
+  const isSearching = immediate.length > 0 && (query !== immediate || isFetching);
 
-  return { results, isLoading: enabled && isFetching && !data, isSearching };
+  return {
+    results,
+    isLoading: enabled && isFetching && !data,
+    isSearching,
+    /** 검색 요청 실패 — 전역 토스트가 뜨니 화면은 "검색 결과 없음"을 띄우지 않는다(결과 0개와 구분) */
+    isError: enabled && isError,
+  };
 }
