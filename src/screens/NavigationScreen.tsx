@@ -24,7 +24,7 @@ import Header from '@components/layout/Header';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { NaverMapStartPointMarker } from '@components/map/NaverMapStartPointMarker';
 import { ROUTE_OPTIONS, RouteOptionKey } from '@constant/routeOptions';
-import { DUMMY_DEFAULT_DEPARTURE } from '@constant/dummyMypage';
+import { departureLabelOf, useDefaultDeparture } from '@hooks/useDefaultDeparture';
 import { buildTestRoute, getRouteMapData, isTestRoutePair } from '@constant/testIndoorRoute';
 import {
   DUMMY_ROUTE_RESULTS,
@@ -55,6 +55,8 @@ export default function NavigationScreen() {
   const theme = useTheme();
 
   const [departure, setDeparture] = useState('');
+  // 마이페이지에서 설정한 기본 출발지(기기 저장). 출발지 입력창 오른쪽 버튼으로 바로 채운다.
+  const { departure: defaultDeparture } = useDefaultDeparture();
   const [destination, setDestination] = useState('');
   // 서버 검색 결과에서 고른 출발/도착의 노드 id. 둘 다 있으면 실제 경로 탐색 API를 쓴다.
   const [departureNodeId, setDepartureNodeId] = useState<number | undefined>();
@@ -212,11 +214,13 @@ export default function NavigationScreen() {
           rightSlot={
             <GpsButton
               onPress={() => {
-                // 기본 출발지는 아직 앱 더미라 노드 id가 없다(서버 경로 대신 더미 경로가 나온다).
-                setDeparture(
-                  `${DUMMY_DEFAULT_DEPARTURE.buildingCode} ${DUMMY_DEFAULT_DEPARTURE.buildingName} ${DUMMY_DEFAULT_DEPARTURE.roomNumber}`,
-                );
-                setDepartureNodeId(undefined);
+                // 기본 출발지를 아직 안 정했으면 설정 화면으로 보낸다.
+                if (!defaultDeparture) {
+                  navigation.navigate('DepartureSetting');
+                  return;
+                }
+                setDeparture(departureLabelOf(defaultDeparture));
+                setDepartureNodeId(defaultDeparture.nodeId);
               }}
               hitSlop={8}
             >

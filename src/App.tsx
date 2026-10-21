@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { theme } from '@theme';
 import { useAppFonts } from '@hooks/useAppFonts';
 import { FavoritesProvider } from '@hooks/useFavorites';
+import { DefaultDepartureProvider } from '@hooks/useDefaultDeparture';
 import RootNavigator from '@navigation/RootNavigator';
 import { isOnboardingCompleted } from '@storage/onboarding';
 import { queryClient } from '@api/queryClient';
@@ -48,7 +49,9 @@ function App() {
             <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
             <NavigationContainer>
               <FavoritesProvider>
-                <RootNavigator initialRouteName={onboardingCompleted ? 'MainTabs' : 'Onboarding'} />
+                <DefaultDepartureProvider>
+                  <RootNavigator initialRouteName={onboardingCompleted ? 'MainTabs' : 'Onboarding'} />
+                </DefaultDepartureProvider>
               </FavoritesProvider>
             </NavigationContainer>
             {/* API 실패 시 화면 아래에 뜨는 전역 경고 토스트(queryClient의 전역 onError가 띄운다) */}

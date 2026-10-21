@@ -9,7 +9,8 @@ import { FavoritePlaceCard } from '@components/mypage/FavoritePlaceCard';
 import { MenuRow } from '@components/mypage/MenuRow';
 import { APP_VERSION, PRIVACY_POLICY_URL } from '@constant/appInfo';
 import { useFavorites } from '@hooks/useFavorites';
-import { DUMMY_DEFAULT_DEPARTURE, FavoritePlace, favoritePlaceToFocusParam } from '@constant/dummyMypage';
+import { useDefaultDeparture } from '@hooks/useDefaultDeparture';
+import { FavoritePlace, favoritePlaceToFocusParam } from '@constant/dummyMypage';
 import { toFavoritePlace } from '@constant/favoriteCards';
 import { RootStackParamList } from '@navigation/types';
 import { resetOnboarding } from '@storage/onboarding';
@@ -24,6 +25,7 @@ export default function MypageScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(FavoritesProvider). 여기서 별을 끄면 목록에서 빠진다.
   const { favorites, removeFavorite } = useFavorites();
+  const { departure: defaultDeparture } = useDefaultDeparture();
 
   // 마이페이지에서는 즐겨찾기를 최대 5개까지만 보여준다(전체는 "더보기" → FavoriteListScreen).
   const visibleFavorites = useMemo(
@@ -54,10 +56,9 @@ export default function MypageScreen() {
             actionVariant="hint"
           />
           <DefaultDepartureCard
-            buildingCode={DUMMY_DEFAULT_DEPARTURE.buildingCode}
-            buildingName={DUMMY_DEFAULT_DEPARTURE.buildingName}
-            roomNumber={DUMMY_DEFAULT_DEPARTURE.roomNumber}
-            description={DUMMY_DEFAULT_DEPARTURE.description}
+            buildingCode={defaultDeparture?.building}
+            buildingName={defaultDeparture?.place}
+            roomNumber={defaultDeparture?.room}
             onEditPress={() => navigation.navigate('DepartureSetting')}
           />
         </DepartureSection>

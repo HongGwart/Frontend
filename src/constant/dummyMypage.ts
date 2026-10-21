@@ -4,17 +4,9 @@ import BuildingIcon from '@assets/svgs/icons/building.svg';
 import CafeIcon from '@assets/svgs/icons/cafe.svg';
 import { PhotoSource } from '@appTypes/photo';
 import { FocusFacilityParam } from '@navigation/types';
-import { SearchResultItem } from './dummySearchData';
 import { everyDay, OperatingHours } from '@utils/operatingHours';
 
 // 실제 API 연동 전까지 마이페이지 UI 확인용으로 쓰는 더미 데이터.
-
-export const DUMMY_DEFAULT_DEPARTURE = {
-  buildingCode: 'H동',
-  buildingName: '중앙도서관',
-  roomNumber: '314호',
-  description: '공과대학 전공 강의실 및 실습실',
-};
 
 export interface FavoritePlace {
   id: string;
@@ -89,11 +81,3 @@ export function favoritePlaceToFocusParam(place: FavoritePlace): FocusFacilityPa
   };
 }
 
-// "기본 출발지 설정" 화면에서 검색했을 때 나오는 결과 더미.
-// SearchResultItem 타입과 SEARCH_ITEM_ICONS(아바타 아이콘 프리셋)을 검색 페이지에서 그대로 가져다 쓴다.
-// 화면에서 keyword로 필터링하므로, "중앙" 등을 입력하면 아래 항목이 뜬다.
-export const DUMMY_DEPARTURE_SEARCH_RESULTS: SearchResultItem[] = [
-  { id: 'dep-1', building: 'H동', place: '중앙도서관', category: 'building' },
-  { id: 'dep-2', building: 'H동', place: '중앙도서관', room: '403호', category: 'classroom' },
-  { id: 'dep-3', building: 'H동', place: '중앙도서관', room: '501호', category: 'classroom' },
-];
