@@ -33,7 +33,6 @@ import {
   DummyMapMarker,
   DummyCategoryMarker,
 } from '@constant/dummyMapMarkers';
-import { DUMMY_FACILITY_IMAGES } from '@constant/dummyFacilityInfo';
 import { DUMMY_FACILITY_LIST_ITEMS } from '@constant/dummyFacilityListItems';
 import {
   favoriteFromCategoryMarker,
@@ -566,6 +565,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 toggleFavorite(favoriteFromCategoryMarker(selectedFacility.marker), selectedFacility.marker.room)
               }
               images={selectedFacility.marker.images}
+              placeholderIcon={CATEGORY_MARKER_ICONS[selectedFacility.marker.category].icon}
               {...routeButtonProps(
                 toRoutePlaceLabel(
                   selectedFacility.marker.buildingCode,
@@ -603,7 +603,6 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   selectedFacility.facility.facilityName,
                 )
               }
-              images={DUMMY_FACILITY_IMAGES}
               {...routeButtonProps(
                 toRoutePlaceLabel(
                   selectedFacility.facility.buildingCode,
@@ -630,6 +629,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                 )
               }
               images={selectedFacility.item.images}
+              placeholderIcon={selectedFacility.item.icon}
               {...routeButtonProps(
                 toRoutePlaceLabel(selectedFacility.item.building, selectedFacility.item.place, selectedFacility.item.room),
               )}

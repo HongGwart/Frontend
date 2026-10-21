@@ -3,7 +3,6 @@ import { SvgProps } from 'react-native-svg';
 import BuildingIcon from '@assets/svgs/icons/building.svg';
 import CafeIcon from '@assets/svgs/icons/cafe.svg';
 import { PhotoSource } from '@appTypes/photo';
-import { DUMMY_FACILITY_IMAGES } from './dummyFacilityInfo';
 import { FocusFacilityParam } from '@navigation/types';
 import { SearchResultItem } from './dummySearchData';
 import { everyDay, OperatingHours } from '@utils/operatingHours';
@@ -51,7 +50,7 @@ export const DUMMY_FAVORITE_PLACES: FavoritePlace[] = [
     buildingCode: 'A동',
     buildingName: '인문사회관',
     locationDetail: '1층',
-    photo: DUMMY_FACILITY_IMAGES[0],
+    icon: CafeIcon,
     operatingHours: everyDay('08:00', '22:00'),
   },
   {
@@ -60,7 +59,7 @@ export const DUMMY_FAVORITE_PLACES: FavoritePlace[] = [
     buildingCode: 'H동',
     buildingName: '중앙도서관',
     locationDetail: '3층',
-    photo: DUMMY_FACILITY_IMAGES[1],
+    icon: CafeIcon,
     operatingHours: everyDay('10:00', '19:00'),
   },
   {

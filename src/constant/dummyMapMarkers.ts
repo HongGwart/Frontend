@@ -1,6 +1,5 @@
 import { PhotoSource } from '@appTypes/photo';
 import { CategoryKey } from './categoryChips';
-import { DUMMY_FACILITY_IMAGES } from './dummyFacilityInfo';
 
 export interface DummyMapMarker {
   id: string;
@@ -10,7 +9,7 @@ export interface DummyMapMarker {
   /** FacilityInfoCard(outside)에 넘길 건물명/설명. label이 "동" 코드라면 이건 정식 명칭. */
   buildingName: string;
   description: string;
-  /** 건물 사진 2장. 아직 등록 안 된 건물은 생략하면 FacilityInfoCard에서 이미지 영역 자체가 빠진다. */
+  /** 건물 사진 2장. 확인된 사진이 없으면 생략한다(카드는 건물 아이콘 기본 이미지를 보여준다). */
   images?: [PhotoSource, PhotoSource];
 }
 
@@ -25,7 +24,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'A동',
     buildingName: '인문사회관',
     description: '경영대학 강의실·연구실',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-B',
@@ -34,7 +32,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'B동',
     buildingName: '인문사회관',
     description: '경영대학 강의실',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-C',
@@ -43,7 +40,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'C동',
     buildingName: '인문사회관',
     description: '문과대·사범대·경제학부 강의실',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-D',
@@ -52,7 +48,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'D동',
     buildingName: '인문사회관',
     description: '인문사회계열 공용 강의동',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'm5',
@@ -70,7 +65,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'F동',
     buildingName: '미술학관',
     description: '미술대학 실기실·작업실',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'm1',
@@ -79,7 +73,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'G동',
     buildingName: '학생회관',
     description: '동아리방, 식당, 학생 편의시설',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'm2',
@@ -88,7 +81,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'H동',
     buildingName: '중앙도서관',
     description: '열람실, 자료실',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'm3',
@@ -97,7 +89,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'I동',
     buildingName: '과학관',
     description: '공과대학 강의실·실험실 (기초과학 실험 포함)',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-J',
@@ -106,7 +97,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'J동',
     buildingName: '제3공학관',
     description: '건축도시대학 설계실·강의실',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-K',
@@ -115,7 +105,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'K동',
     buildingName: '제1공학관',
     description: '공과대학 전공 강의실·실험실',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-L',
@@ -124,7 +113,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'L동',
     buildingName: '와우관',
     description: '건축도시대학 설계 스튜디오',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-MH',
@@ -133,7 +121,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'MH동',
     buildingName: '문헌관',
     description: '행정 부서 (본부)',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-P',
@@ -142,7 +129,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'P동',
     buildingName: '제2공학관',
     description: '공과대학 전공 강의실·실험실',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-Q',
@@ -151,7 +137,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'Q동',
     buildingName: '정보통신센터',
     description: '전산실, 공용 PC 실습실',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-R',
@@ -160,7 +145,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'R동',
     buildingName: '홍문관',
     description: '법과대학 강의실, 대형 강의실',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'm4',
@@ -169,7 +153,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'S동',
     buildingName: '강당',
     description: '입학식·행사·공연',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-T',
@@ -178,7 +161,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'T동',
     buildingName: '제4공학관',
     description: '공과대학 전공 강의실·실습실',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-U',
@@ -187,7 +169,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'U동',
     buildingName: '미술종합강의동',
     description: '미술대학 강의동',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-Z1',
@@ -196,7 +177,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'Z1동',
     buildingName: '제1강의동',
     description: '공용 강의동',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-Z2',
@@ -205,7 +185,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'Z2동',
     buildingName: '이천득관 (제2강의동)',
     description: '공용 강의동',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'dong-Z3',
@@ -214,7 +193,6 @@ export const DUMMY_MAP_MARKERS: DummyMapMarker[] = [
     label: 'Z3동',
     buildingName: '제3강의동',
     description: '공용 강의동',
-    images: DUMMY_FACILITY_IMAGES,
   },
 ];
 
@@ -229,7 +207,7 @@ export interface DummyCategoryMarker {
   buildingName: string;
   room: string;
   description: string;
-  /** 시설 사진 2장. 생략하면 이미지 영역 없이 카드가 뜬다. */
+  /** 시설 사진 2장. 확인된 사진이 없으면 생략한다(카드는 카테고리 아이콘 기본 이미지를 보여준다). */
   images?: [PhotoSource, PhotoSource];
 }
 
@@ -267,7 +245,6 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     buildingName: '학생회관',
     room: '학생 식당',
     description: '학생 할인이 적용되는 교내 식당',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'c4',
@@ -278,7 +255,6 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     buildingName: '학생회관',
     room: '카페',
     description: '교내 카페',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'c5',
@@ -341,7 +317,6 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     buildingName: '강당',
     room: '식당',
     description: '학생 할인이 적용되는 교내 식당',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'c11',
@@ -352,7 +327,6 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     buildingName: '강당',
     room: '카페',
     description: '교내 카페',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'c12',
@@ -385,7 +359,6 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     buildingName: '홍문관',
     room: '카페나무',
     description: '로비층 교내 카페',
-    images: DUMMY_FACILITY_IMAGES,
   },
   {
     id: 'c17',
@@ -476,6 +449,5 @@ export const DUMMY_CATEGORY_MARKERS: DummyCategoryMarker[] = [
     buildingName: '제4공학관',
     room: '카페',
     description: '1층 교내 카페',
-    images: DUMMY_FACILITY_IMAGES,
   },
 ];

@@ -45,7 +45,6 @@ import { Chip } from '@components/common/Chip';
 import { SearchBar } from '@components/common/SearchBar';
 import { FacilityListSheet, FacilityListSheetItem } from '@components/common/FacilityListSheet';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
-import { DUMMY_FACILITY_IMAGES } from '@constant/dummyFacilityInfo';
 import { RootStackParamList } from '@navigation/types';
 import { markOnboardingCompleted } from '@storage/onboarding';
 
@@ -172,7 +171,6 @@ const SEARCH_DEMO_FACILITY_ITEMS: FacilityListSheetItem[] = [
     place: '제1공학관',
     room: '505호',
     description: '공과대학 전공 강의실 및 실습실',
-    images: DUMMY_FACILITY_IMAGES,
   },
 ];
 
@@ -223,7 +221,7 @@ interface FacilityDemoCategory {
   icon: React.FC<SvgProps>;
   cardProps: Pick<
     React.ComponentProps<typeof FacilityInfoCard>,
-    'facilityName' | 'buildingCode' | 'buildingName' | 'locationDetail' | 'operatingHours' | 'images'
+    'facilityName' | 'buildingCode' | 'buildingName' | 'locationDetail' | 'operatingHours' | 'placeholderIcon'
   >;
 }
 
@@ -237,7 +235,7 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
       buildingName: '홍문관',
       locationDetail: '로비층',
       operatingHours: { isOpen: true, statusText: '운영 중', detailText: '22:00에 운영 종료' },
-      images: DUMMY_FACILITY_IMAGES,
+      placeholderIcon: CafeIcon,
     },
   },
   {
@@ -249,7 +247,7 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
       buildingName: '홍문관',
       locationDetail: '지하 1층',
       operatingHours: { isOpen: true, statusText: '운영 중', detailText: '24시간 운영' },
-      images: DUMMY_FACILITY_IMAGES,
+      placeholderIcon: StoreIcon,
     },
   },
   {
@@ -261,7 +259,7 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
       buildingName: '학생회관',
       locationDetail: '1층',
       operatingHours: { isOpen: true, statusText: '운영 중', detailText: '14:00에 운영 종료' },
-      images: DUMMY_FACILITY_IMAGES,
+      placeholderIcon: RestaurantIcon,
     },
   },
   {
@@ -273,7 +271,7 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
       buildingName: '제1공학관',
       locationDetail: '2층',
       operatingHours: { isOpen: true, statusText: '운영 중', detailText: '22:00에 운영 종료' },
-      images: DUMMY_FACILITY_IMAGES,
+      placeholderIcon: PrinterIcon,
     },
   },
   {
@@ -285,7 +283,7 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
       buildingName: '신관',
       locationDetail: '옥상',
       operatingHours: { isOpen: true, statusText: '운영 중', detailText: '24시간 운영' },
-      images: DUMMY_FACILITY_IMAGES,
+      placeholderIcon: SmokeIcon,
     },
   },
   {
@@ -297,7 +295,7 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
       buildingName: '제1공학관',
       locationDetail: '3층',
       operatingHours: { isOpen: true, statusText: '운영 중', detailText: '24시간 운영' },
-      images: DUMMY_FACILITY_IMAGES,
+      placeholderIcon: BookIcon,
     },
   },
   {
@@ -309,7 +307,7 @@ const FACILITY_DEMO_CATEGORIES: FacilityDemoCategory[] = [
       buildingName: '제1공학관',
       locationDetail: '4층',
       operatingHours: { isOpen: true, statusText: '운영 중', detailText: '22:00에 운영 종료' },
-      images: DUMMY_FACILITY_IMAGES,
+      placeholderIcon: PcIcon,
     },
   },
 ];

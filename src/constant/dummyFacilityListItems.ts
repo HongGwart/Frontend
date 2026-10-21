@@ -1,6 +1,5 @@
 import PcIcon from '@assets/svgs/icons/pc.svg';
 import { FacilityListSheetItem } from '@components/common/FacilityListSheet';
-import { DUMMY_FACILITY_IMAGES } from './dummyFacilityInfo';
 
 // 숫자 배지가 붙은(군집된) 마커를 탭했을 때 보여줄 "건물/시설 리스트" 더미 데이터.
 // 마커 id 기준으로 그 자리에 겹쳐 있는 시설 항목들을 묶어뒀다.
@@ -28,7 +27,6 @@ export const DUMMY_FACILITY_LIST_ITEMS: Record<string, FacilityListSheetItem[]> 
       place: '조형관',
       room: 'PC실 2',
       description: '실습용 컴퓨터실',
-      images: DUMMY_FACILITY_IMAGES,
     },
     {
       id: 'c6-3',
@@ -49,7 +47,6 @@ export const DUMMY_FACILITY_LIST_ITEMS: Record<string, FacilityListSheetItem[]> 
       place: '조형관',
       room: 'PC실 4',
       description: '실습용 컴퓨터실',
-      images: DUMMY_FACILITY_IMAGES,
     },
     {
       id: 'c6-5',
@@ -70,7 +67,6 @@ export const DUMMY_FACILITY_LIST_ITEMS: Record<string, FacilityListSheetItem[]> 
       place: '조형관',
       room: 'PC실 6',
       description: '실습용 컴퓨터실',
-      images: DUMMY_FACILITY_IMAGES,
     },
     {
       id: 'c6-7',
@@ -91,7 +87,6 @@ export const DUMMY_FACILITY_LIST_ITEMS: Record<string, FacilityListSheetItem[]> 
       place: '조형관',
       room: 'PC실 8',
       description: '실습용 컴퓨터실',
-      images: DUMMY_FACILITY_IMAGES,
     },
   ],
 };

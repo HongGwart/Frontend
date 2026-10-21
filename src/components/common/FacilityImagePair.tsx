@@ -1,10 +1,14 @@
 import React from 'react';
 import { Image, ScrollView, StyleSheet } from 'react-native';
-import styled from 'styled-components/native';
+import { SvgProps } from 'react-native-svg';
+import styled, { useTheme } from 'styled-components/native';
 import { PhotoSource } from '@appTypes/photo';
 
 interface Props {
-  images: [PhotoSource, PhotoSource];
+  /** 사진 2장. 없으면 placeholderIcon으로 기본 이미지를 그린다(둘 다 없으면 아무것도 안 그린다). */
+  images?: [PhotoSource, PhotoSource];
+  /** 사진이 없을 때 기본 이미지 가운데에 놓을 아이콘(편의시설 카테고리·건물 아이콘). */
+  placeholderIcon?: React.FC<SvgProps>;
   /** 기본 100px(FacilityInfoCard 등). 건물 상세보기(BuildingDetailScreen)는 160px(가로 249px, 가로 스크롤)을 쓴다. */
   height?: number;
   /**
@@ -21,11 +25,40 @@ interface Props {
   bleed?: number;
 }
 
+// 기본 이미지 칸 높이 대비 아이콘 크기. 100px 칸에 40px(편의시설 탭의 카테고리 아이콘과 비슷한 크기).
+const PLACEHOLDER_ICON_RATIO = 0.4;
+
 /**
  * 시설 카드류(FacilityInfoCard, FacilityListItem, BuildingDetailScreen)에서 공통으로 쓰는
  * 이미지 2장 나열 블록. 사이 4px 간격, 바깥쪽 모서리만 4px 둥글게.
+ * 확인된 사진이 없는 곳은 옅은 배경 한 칸에 카테고리 아이콘을 얹은 기본 이미지를 보여준다
+ * (건물 상세 편의시설 그리드의 BuildingFacilityCard 기본 아이콘 칸과 같은 모양).
  */
-export function FacilityImagePair({ images, height = 100, compact = false, itemWidth, bleed = 0 }: Props) {
+export function FacilityImagePair({
+  images,
+  placeholderIcon: PlaceholderIcon,
+  height = 100,
+  compact = false,
+  itemWidth,
+  bleed = 0,
+}: Props) {
+  const theme = useTheme();
+  if (!images) {
+    if (!PlaceholderIcon) return null;
+    const iconSize = Math.round(height * PLACEHOLDER_ICON_RATIO);
+    return (
+      <PlaceholderSlot height={height} compact={compact}>
+        {/* 아이콘 SVG는 preserveAspectRatio="none"이라, 정사각형 칸에서 원본 비율을 지키도록 meet로 덮어쓴다. */}
+        <PlaceholderIcon
+          width={iconSize}
+          height={iconSize}
+          color={theme.blue[300]}
+          preserveAspectRatio="xMidYMid meet"
+        />
+      </PlaceholderSlot>
+    );
+  }
+
   if (itemWidth !== undefined) {
     return (
       <ScrollView
@@ -70,6 +103,15 @@ const ImageSlot = styled.View<{ first?: boolean; compact: boolean }>`
   border-bottom-left-radius: ${({ first, compact }) => (first ? (compact ? '2.739px' : '4px') : '0px')};
   border-top-right-radius: ${({ first, compact }) => (first ? '0px' : compact ? '2.739px' : '4px')};
   border-bottom-right-radius: ${({ first, compact }) => (first ? '0px' : compact ? '2.739px' : '4px')};
+`;
+
+const PlaceholderSlot = styled.View<{ height: number; compact: boolean }>`
+  width: 100%;
+  height: ${({ height }) => height}px;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${({ compact }) => (compact ? '2.739px' : '4px')};
+  background-color: ${({ theme }) => theme.semantic.background.color};
 `;
 
 // 가로 스크롤용 — 폭은 itemWidth로 고정(flex로 나누지 않음), 모서리 규칙은 ImageSlot과 같다.

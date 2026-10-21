@@ -259,7 +259,6 @@ export default function SearchScreen() {
         variant="facility"
         facilityName={name}
         locationDetail={nodeDetail?.floorText}
-        images={marker.images}
         {...common}
         onViewInsidePress={() => {
           closeCardWhenCovered();
@@ -402,6 +401,7 @@ export default function SearchScreen() {
                 isFavorite={isFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
                 onToggleFavorite={() => toggleFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
                 images={selectedFacility.marker.images}
+                placeholderIcon={CATEGORY_MARKER_ICONS[selectedFacility.marker.category].icon}
                 {...routeButtonProps(
                   toRoutePlaceLabel(
                     selectedFacility.marker.buildingCode,

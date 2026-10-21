@@ -12,7 +12,6 @@ import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
 import { NaverMapMarker } from '@components/map/NaverMapMarker';
 import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
 import { DUMMY_MAP_MARKERS } from '@constant/dummyMapMarkers';
-import { DUMMY_FACILITY_IMAGES } from '@constant/dummyFacilityInfo';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
 import { useCloseOnHardwareBack } from '@hooks/useCloseOnHardwareBack';
 import { useOperatingStatus } from '@hooks/useOperatingStatus';
@@ -108,7 +107,7 @@ export default function FacilityCategoryListScreen() {
             {...routeButtonProps(
               toRoutePlaceLabel(selectedPlace.buildingCode, selectedPlace.buildingName, selectedPlace.name),
             )}
-            images={DUMMY_FACILITY_IMAGES}
+            placeholderIcon={category?.icon}
             operatingHours={selectedStatus}
             onViewInsidePress={() =>
               navigation.navigate('BuildingIndoor', {

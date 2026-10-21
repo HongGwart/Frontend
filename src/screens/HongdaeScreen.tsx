@@ -111,6 +111,7 @@ export default function HongdaeScreen() {
             onToggleFavorite={() => toggleFavorite(selectedPlace)}
             {...routeButtonProps(toRoutePlaceLabel(selectedPlace.name))}
             images={selectedPlace.photos}
+            placeholderIcon={RestaurantIcon}
             operatingHours={status}
             ctaLabel="네이버 지도에서 열기"
             ctaIcon={null}

@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled, { useTheme } from 'styled-components/native';
+import BuildingIcon from '@assets/svgs/icons/building.svg';
 import BuildingViewIcon from '@assets/svgs/icons/buildingView.svg';
 import Header from '@components/layout/Header';
 import { Button } from './Button';
@@ -116,10 +117,15 @@ export function BuildingDetailBody({
         showsVerticalScrollIndicator={false}
       >
         <Section>
-          {/* 사진은 한 장 249×160으로 나열하고, 화면 폭을 넘는 만큼은 오른쪽으로 가로 스크롤된다. */}
-          {detail.images && (
-            <FacilityImagePair images={detail.images} itemWidth={249} height={160} bleed={20} />
-          )}
+          {/* 사진은 한 장 249×160으로 나열하고, 화면 폭을 넘는 만큼은 오른쪽으로 가로 스크롤된다.
+              사진이 없으면 건물 아이콘 기본 이미지를 화면 폭으로 깐다. */}
+          <FacilityImagePair
+            images={detail.images}
+            placeholderIcon={BuildingIcon}
+            itemWidth={249}
+            height={160}
+            bleed={20}
+          />
           {detail.description && <DescriptionText>{detail.description}</DescriptionText>}
           <InfoList>
             {detail.mainEntrance && (

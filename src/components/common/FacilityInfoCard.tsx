@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Pressable } from 'react-native';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
+import BuildingIcon from '@assets/svgs/icons/building.svg';
 import BuildingViewIcon from '@assets/svgs/icons/buildingView.svg';
 import { Button } from './Button';
 import { FavoriteToggle } from './FavoriteToggle';
@@ -51,6 +52,11 @@ interface Props {
   onArrivalPress?: () => void;
   /** outside/inside/facility에서만 쓰인다 */
   images?: [PhotoSource, PhotoSource];
+  /**
+   * 사진이 없을 때 기본 이미지에 넣을 아이콘. facility는 시설 카테고리 아이콘을 넘기고(안 넘기면 이미지 영역이
+   * 빠진다), outside/inside는 생략하면 건물 아이콘이다.
+   */
+  placeholderIcon?: React.FC<SvgProps>;
   /** outside/inside에서만 쓰인다 (예: 프린터 2, PC실 1) */
   facilityCounts?: FacilityCountItem[];
   /** outside/inside에서만 쓰인다 (예: "정문(1층), 후문(지하 1층)") */
@@ -110,6 +116,7 @@ export function FacilityInfoCard({
   onDeparturePress,
   onArrivalPress,
   images,
+  placeholderIcon,
   facilityCounts,
   mainEntrance,
   operatingHours,
@@ -194,13 +201,18 @@ export function FacilityInfoCard({
           </Body>
         )}
 
-        {isFacility && images && (
-          <FacilityImagePair images={images} compact={compact} height={compact ? 66.133 : 100} />
+        {isFacility && (images || placeholderIcon) && (
+          <FacilityImagePair
+            images={images}
+            placeholderIcon={placeholderIcon}
+            compact={compact}
+            height={compact ? 66.133 : 100}
+          />
         )}
 
         {hasBuildingDetails && (
           <DetailSection>
-            {images && <FacilityImagePair images={images} />}
+            <FacilityImagePair images={images} placeholderIcon={placeholderIcon ?? BuildingIcon} />
 
             {facilityCounts && facilityCounts.length > 0 && (
               <FacilityCountPill>
