@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  *
- * 층 하나를 통째로 처리하는 오케스트레이터. 아래 5개를 순서대로 돌려서, 원본 SVG 한 장으로
+ * 층 하나를 통째로 처리하는 오케스트레이터. 아래 단계를 순서대로 돌려서, 원본 SVG 한 장으로
  * IndoorMapView에 바로 꽂을 수 있는 산출물(_bg.svg / .json)을 한 번에 만든다.
  * (_doors.svg / _icons.svg는 중간 산출물 — 앱은 JSON의 문·아이콘 좌표로 공용 도형을 그린다.)
  *
@@ -10,6 +10,7 @@
  *   3. stripLabelPaths.js    - 배경 SVG에서 박혀있는 방 번호·방 이름 라벨 제거 (RoomLabelsLayer가 대신 그림)
  *   4. svgToIcons.js         - 같은 JSON에 아이콘 좌표 병합
  *   5. svgToDoors.js         - 같은 JSON에 문 위치·방향 병합
+ *   6. auditFloors.js        - 이 층 데이터 검사(번호 오타·다른 층 히트박스 복사·글자 겹침 등). 경고만 내고 멈추지 않는다
  *
  * 사용법:
  *   node scripts/processFloor.js <입력.svg> [출력 디렉토리] [--allow-empty]
@@ -98,6 +99,10 @@ function main() {
   console.log(
     `\n위 로그에 [경고]가 하나도 없었는지, rooms/icons 개수가 실제 도면 개수와 맞는지 확인하세요.`
   );
+
+  // 다른 층 히트박스 복사, 번호 오타, 글자 겹침 같은 데이터 오류를 바로 알 수 있게 이 층을 검사한다.
+  // 검사는 원본 SVG와 같은 폴더의 JSON·배경을 읽으므로 출력 폴더를 따로 준 경우엔 건너뛴다.
+  if (outDir === inputDir) run('auditFloors.js', [inputPath]);
 }
 
 main();
