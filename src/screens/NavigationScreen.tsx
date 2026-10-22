@@ -123,7 +123,7 @@ export default function NavigationScreen() {
     : placeLookupFailed
       ? '경로를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'
       : !routeSearch.enabled
-        ? '서버에 등록되지 않은 장소라 경로를 찾을 수 없어요'
+        ? '길찾기를 지원하지 않는 장소예요'
         : routeSearch.isLoading
           ? '경로를 찾고 있어요'
           : routeSearch.samePlace
