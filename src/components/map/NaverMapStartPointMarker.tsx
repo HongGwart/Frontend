@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { NaverMapMarkerOverlay } from '@mj-studio/react-native-naver-map';
 import { StartPointMarker } from '@components/common/StartPointMarker';
+import { getMarkerLabelWidth } from '@components/common/Marker';
 
 interface Props {
   latitude: number;
@@ -15,7 +16,8 @@ interface Props {
 const LABEL_PILL_HEIGHT = 4 * 2 + 21;
 const GAP = 8;
 const DOT_SIZE = 44;
-const WIDTH = 88;
+// 폭은 라벨 길이에 맞춘다. 고정 폭이면 "J동 100-1" 같은 긴 라벨이 "…"로 잘린다.
+const MIN_WIDTH = 88;
 const HEIGHT = LABEL_PILL_HEIGHT + GAP + DOT_SIZE;
 
 /**
@@ -23,11 +25,12 @@ const HEIGHT = LABEL_PILL_HEIGHT + GAP + DOT_SIZE;
  * 올려주는 어댑터. NaverMapMarker.tsx와 같은 방식(Custom React View 이미지 타입)을 쓴다.
  */
 export function NaverMapStartPointMarker({ latitude, longitude, label, active, onPress }: Props) {
+  const width = Math.max(MIN_WIDTH, getMarkerLabelWidth(label));
   return (
     <NaverMapMarkerOverlay
       latitude={latitude}
       longitude={longitude}
-      width={WIDTH}
+      width={width}
       height={HEIGHT}
       // 점의 중심이 좌표 기준점이어야 하므로, 오버레이 전체 높이가 아니라 점 반지름만큼
       // 위로 올라간 지점(라벨+gap+점 절반)에 앵커를 맞춘다.
@@ -37,7 +40,7 @@ export function NaverMapStartPointMarker({ latitude, longitude, label, active, o
       <View
         key={`${label}/${active}`}
         collapsable={false}
-        style={{ width: WIDTH, height: HEIGHT, alignItems: 'center', justifyContent: 'flex-start' }}
+        style={{ width, height: HEIGHT, alignItems: 'center', justifyContent: 'flex-start' }}
       >
         <StartPointMarker label={label} active={active} />
       </View>
