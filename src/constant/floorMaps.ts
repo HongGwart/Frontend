@@ -714,6 +714,20 @@ export function getRoomOwner(floorId: string, roomLabel: string): { buildingCode
 }
 
 /**
+ * 내부 지도에 그릴 방 번호. 한 도면에 두 동이 함께 그려진 층에서, 지금 보고 있는 동이 아닌 쪽 방에는 동 글자를
+ * 붙여 구분한다 — L동으로 보면 "J101"(도면 그대로), J동으로 보면 L동 방이 "L601". G동 4층으로 보면 위쪽 날개가
+ * "H101", H동 1층으로 보면 아래쪽이 "G410". 보고 있는 동의 방은 동 글자를 뗀다(J동에서 "J101" → "101",
+ * H동 3층 "H317" → "317") — 헤더에 이미 동이 나와 있다. 글자 이름("계단 세미나실")은 그대로 둔다.
+ */
+export function getRoomDisplayLabel(floorId: string, roomLabel: string, viewingBuildingCode: string): string {
+  const viewing = viewingBuildingCode.replace(/동$/, '');
+  const { buildingCode, roomNumber } = getRoomOwner(floorId, roomLabel);
+  const owner = buildingCode.replace(/동$/, '');
+  if (owner === viewing) return roomNumber;
+  return /^\d/.test(roomLabel) ? `${owner}${roomLabel}` : roomLabel;
+}
+
+/**
  * 건물 코드("T동" 또는 "T")의 층 목록을 엘리베이터 버튼처럼 높은 층이 위로 오게 내림차순으로
  * 돌려준다. 다른 동 도면에 함께 그려진 동(J동)은 그 도면을 자기 층 번호로 보여준다. 평면도가 없는 건물이면 빈 배열.
  */

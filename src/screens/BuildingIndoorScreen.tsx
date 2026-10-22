@@ -12,7 +12,7 @@ import { FloorDoors } from '@components/map/FloorDoors';
 import { FloorSelector } from '@components/map/FloorSelector';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { CollapsibleBottomSheet, CollapsibleBottomSheetRef } from '@components/common/CollapsibleBottomSheet';
-import { FLOOR_MAPS, getBuildingFloors, getRoomOwner } from '@constant/floorMaps';
+import { FLOOR_MAPS, getBuildingFloors, getRoomDisplayLabel, getRoomOwner } from '@constant/floorMaps';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
 import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
@@ -72,6 +72,20 @@ export default function BuildingIndoorScreen() {
     () => (floors.find(floor => floor.floorNum === 1) ?? floors[floors.length - 1])?.floorId,
   );
   const floorAssets = useMemo(() => (floorId ? FLOOR_MAPS[floorId]() : null), [floorId]);
+  // 한 도면에 두 동이 함께 그려진 층(L동↔J동, G동↔H동)은 보고 있는 동이 아닌 쪽 방 번호에 동 글자를 붙여 그린다
+  // (J동으로 보면 L동 방이 "L601"). 탭 판정·소속 판단은 원래 번호로 하니 표시 번호 → 원래 번호도 같이 둔다.
+  const { mapData, originalLabelOf } = useMemo(() => {
+    if (!floorId || !floorAssets) return { mapData: null, originalLabelOf: new Map<string, string>() };
+    const originals = new Map<string, string>();
+    const rooms = floorAssets.data.rooms.map(room => {
+      const label = room.label ?? room.id;
+      const display = label ? getRoomDisplayLabel(floorId, label, params.buildingCode) : label;
+      if (display === label) return room;
+      originals.set(display, label);
+      return { ...room, label: display };
+    });
+    return { mapData: { ...floorAssets.data, rooms }, originalLabelOf: originals };
+  }, [floorId, floorAssets, params.buildingCode]);
 
   // 탭한 강의실 라벨(예: "212"). 층을 바꾸면 이전 층의 선택은 의미가 없으니 비운다.
   const [selectedRoomLabel, setSelectedRoomLabel] = useState<string | null>(null);
@@ -163,12 +177,12 @@ export default function BuildingIndoorScreen() {
       </HeaderWrapper>
 
       <MapArea onLayout={event => setMapAreaHeight(event.nativeEvent.layout.height)}>
-        {floorId && floorAssets ? (
+        {floorId && floorAssets && mapData ? (
           <>
             <Animated.View style={[{ flex: 1 }, slideStyle]}>
               <IndoorMapView
                 key={floorId}
-                mapData={floorAssets.data}
+                mapData={mapData}
                 backgroundColor={theme.semantic.line.tertiary}
                 fitOffsetY={PLAN_FIT_OFFSET_Y}
                 onControlsReady={setMapControls}
@@ -184,7 +198,8 @@ export default function BuildingIndoorScreen() {
                   />
                 )}
                 onRoomSelect={room => {
-                  setSelectedRoomLabel(room ? room.label ?? room.id : null);
+                  const label = room ? room.label ?? room.id : null;
+                  setSelectedRoomLabel(label && (originalLabelOf.get(label) ?? label));
                   // 카드를 내려 둔 상태에서 강의실을 탭하면 카드를 부드럽게 올려 그 강의실 정보를 보여준다.
                   if (room) cardSheetRef.current?.expand();
                 }}
