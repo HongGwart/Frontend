@@ -661,14 +661,50 @@ export function parseFloorId(floorId: string): FloorInfo & { building: string } 
 }
 
 /**
+ * 자기 도면 없이 다른 동 도면에 함께 그려진 층 → 그 층이 그려진 도면. J동(제3공학관)은 L동(와우관) 4~8층
+ * 도면 안에 J로 시작하는 호실(J002, J001, J101 …)로 같이 들어 있다. 서버는 이 호실을 "J동 101호"(J동 1층)처럼
+ * J동 기준 층으로 주니, J동 층을 그 호실이 그려진 L동 도면으로 이어 준다.
+ */
+const HOSTED_FLOORS: Record<string, string> = {
+  J_B2: 'L_4',
+  J_B1: 'L_5',
+  J_1: 'L_6',
+  J_2: 'L_7',
+  J_3: 'L_8',
+};
+
+/** 층 키를 실제 평면도 키로 바꾼다. 다른 동 도면에 함께 그려진 층("J_1")이면 그 도면("L_6"), 아니면 그대로. */
+export function resolveFloorId(floorId: string): string {
+  return HOSTED_FLOORS[floorId] ?? floorId;
+}
+
+/**
+ * 평면도에서 탭한 방이 실제로 속한 동과 호실 번호. 보통은 도면의 동 그대로지만, L동 도면에 함께 그려진
+ * J동 호실("J101")은 J동 101호로 돌려준다 — 카드·즐겨찾기·길찾기가 서버 이름("J동 101호")과 맞도록.
+ */
+export function getRoomOwner(floorId: string, roomLabel: string): { buildingCode: string; roomNumber: string } {
+  const hosted = Object.keys(HOSTED_FLOORS)
+    .filter(key => HOSTED_FLOORS[key] === floorId)
+    .map(key => parseFloorId(key).building)
+    .find(building => new RegExp(`^${building}\\d`).test(roomLabel));
+  if (hosted) return { buildingCode: `${hosted}동`, roomNumber: roomLabel.slice(hosted.length) };
+  return { buildingCode: `${parseFloorId(floorId).building}동`, roomNumber: roomLabel };
+}
+
+/**
  * 건물 코드("T동" 또는 "T")의 층 목록을 엘리베이터 버튼처럼 높은 층이 위로 오게 내림차순으로
- * 돌려준다. 평면도가 없는 건물이면 빈 배열.
+ * 돌려준다. 다른 동 도면에 함께 그려진 동(J동)은 그 도면을 자기 층 번호로 보여준다. 평면도가 없는 건물이면 빈 배열.
  */
 export function getBuildingFloors(buildingCode: string): FloorInfo[] {
   const building = buildingCode.replace(/동$/, '');
-  return Object.keys(FLOOR_MAPS)
+  const own = Object.keys(FLOOR_MAPS)
+    .map(parseFloorId)
+    .filter(info => info.building === building);
+  const hosted = Object.keys(HOSTED_FLOORS)
     .map(parseFloorId)
     .filter(info => info.building === building)
+    .map(info => ({ ...info, floorId: HOSTED_FLOORS[info.floorId] }));
+  return [...own, ...hosted]
     .sort((a, b) => b.floorNum - a.floorNum)
     .map(({ floorId, floorNum, label }) => ({ floorId, floorNum, label }));
 }
@@ -683,7 +719,8 @@ export function findRoomFloor(buildingCode: string, roomNumber: string, preferre
   // H동처럼 평면도 방 번호에 건물 글자가 붙은 경우("H314")도 같은 호실로 본다.
   const prefixed = `${buildingCode.replace(/동$/, '')}${room}`;
   const floorIds = getBuildingFloors(buildingCode).map(info => info.floorId);
-  const ordered = preferredFloorId && FLOOR_MAPS[preferredFloorId] ? [preferredFloorId, ...floorIds] : floorIds;
+  const preferred = preferredFloorId && resolveFloorId(preferredFloorId);
+  const ordered = preferred && FLOOR_MAPS[preferred] ? [preferred, ...floorIds] : floorIds;
   for (const floorId of ordered) {
     const data = FLOOR_MAPS[floorId]().data;
     const rooms = data.rooms.filter(shape => [room, prefixed].includes(shape.label ?? shape.id));
