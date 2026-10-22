@@ -1,7 +1,6 @@
 import type { RouteDto, StepDto } from '@api/generated/model';
 import type { GuidanceMoveType, GuidanceStep, RouteResult, RouteStep } from '@appTypes/routeView';
 import type { RouteOptionKey } from '@constant/routeOptions';
-import { resolveFloorId } from '@constant/floorMaps';
 import type { FloorPathSegment, RouteMapData } from '@appTypes/routeView';
 import { pathMeters, routeCamera } from '@utils/routePath';
 import type { LatLng } from '@utils/routePath';
@@ -35,12 +34,12 @@ export function floorLabel(floor?: string) {
 }
 
 /**
- * "R동" + "L" → floorMaps 키 "R_L". 건물/층을 모르면 undefined(실외 구간처럼 평면도를 안 깐다).
- * 다른 동 도면에 함께 그려진 층은 그 도면 키로 바꾼다("J동" + "1" → "L_6").
+ * "R동" + "L" → 층 키 "R_L". 건물/층을 모르면 undefined(실외 구간처럼 평면도를 안 깐다). 다른 동 도면에 함께
+ * 그려진 층("J동" + "1" → "J_1")은 그대로 두면 FloorPlanOverlay가 그 도면(L_6)에서 J동 부분만 깐다.
  */
 export function toFloorId(buildingName?: string, floor?: string) {
   const code = buildingName?.match(/^([A-Z]+\d*)동$/)?.[1];
-  return code && floor ? resolveFloorId(`${code}_${floor}`) : undefined;
+  return code && floor ? `${code}_${floor}` : undefined;
 }
 
 const minutes = (seconds?: number) => Math.max(1, Math.round((seconds ?? 0) / 60));

@@ -12,6 +12,7 @@
  * 사용법:
  *   node scripts/renderFloorOverlay.js            # floorPlanAnchors.json에 있는 층 전부
  *   node scripts/renderFloorOverlay.js R_L C_1    # 지정한 층만 (나머지 기존 PNG는 유지)
+ *   node scripts/renderFloorOverlay.js J_1        # 다른 동 도면에 함께 그려진 층(hostedFloors.json)은 그 동 부분만
  *   node scripts/renderFloorOverlay.js --anchors=<다른 JSON> R_L   # 다른 기준점 파일로 굽기
  *
  * 앱 용량을 줄이려고 PNG는 256색으로 줄여(upng-js) 저장한다. 평면도는 색 수가 적어서 눈으로는 차이가 거의 없다.
@@ -29,6 +30,7 @@ const { extractTopLevelChildren } = require('./splitVisualLayers');
 const ROOT = path.join(__dirname, '..');
 const FLOORS_DIR = path.join(ROOT, 'src/assets/svgs/floors');
 const DEFAULT_ANCHORS_PATH = path.join(ROOT, 'src/constant/floorPlanAnchors.json');
+const HOSTED_FLOORS_PATH = path.join(ROOT, 'src/constant/hostedFloors.json');
 const OUT_DIR = path.join(ROOT, 'src/assets/floorOverlays');
 const INDEX_PATH = path.join(ROOT, 'src/constant/floorOverlayImages.ts');
 
@@ -127,9 +129,14 @@ function fitAffine(src, dst) {
   return [...solve3(MtM, Mtu), ...solve3(MtM, Mtv)];
 }
 
-function renderFloor(floorId, anchors) {
-  const svgPath = path.join(FLOORS_DIR, `${floorId}.svg`);
-  const jsonPath = path.join(FLOORS_DIR, `${floorId}.json`);
+/**
+ * hosted가 있으면(J_1처럼 다른 동 도면에 함께 그려진 층) 그 도면(hosted.floorId)에서 y ≥ hosted.minY인 부분만
+ * 잘라 굽는다. 네 모서리 기준점은 원래 도면 것을 그대로 쓰니, 잘린 PNG도 원래 도면과 같은 자리에 정확히 겹친다.
+ */
+function renderFloor(floorId, anchors, hosted) {
+  const sourceId = hosted ? hosted.floorId : floorId;
+  const svgPath = path.join(FLOORS_DIR, `${sourceId}.svg`);
+  const jsonPath = path.join(FLOORS_DIR, `${sourceId}.json`);
   if (!fs.existsSync(svgPath) || !fs.existsSync(jsonPath)) {
     throw new Error(`${floorId}: 원본 SVG/JSON이 없습니다 (${svgPath})`);
   }
@@ -162,12 +169,15 @@ function renderFloor(floorId, anchors) {
     }),
   );
 
+  // 구울 도면 영역(잘라 굽는 층이면 그 동 부분만)
+  const cropTop = hosted ? Math.max(minY, hosted.minY) : minY - MARGIN;
+  const crop = { x: minX - MARGIN, y: cropTop, width: width + MARGIN * 2, height: minY + height + MARGIN - cropTop };
   // 여유를 둔 도면 사각형이 돌아간 뒤의 바운딩 박스
   const padded = [
-    [minX - MARGIN, minY - MARGIN],
-    [minX + width + MARGIN, minY - MARGIN],
-    [minX + width + MARGIN, minY + height + MARGIN],
-    [minX - MARGIN, minY + height + MARGIN],
+    [crop.x, crop.y],
+    [crop.x + crop.width, crop.y],
+    [crop.x + crop.width, crop.y + crop.height],
+    [crop.x, crop.y + crop.height],
   ].map(apply);
   const uMin = Math.min(...padded.map(p => p[0]));
   const uMax = Math.max(...padded.map(p => p[0]));
@@ -191,7 +201,7 @@ function renderFloor(floorId, anchors) {
     const { rest, groups } = extractIconGroups(stripLabels(child, roomLabels));
     for (const group of groups) {
       const center = iconCenter(group.svg, viewBox, defsMatch ? defsMatch[0] : '');
-      if (center) icons.push({ type: group.type, center });
+      if (center && center[1] >= crop.y) icons.push({ type: group.type, center });
     }
     return rest;
   });
@@ -199,7 +209,14 @@ function renderFloor(floorId, anchors) {
   const out = [
     `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none">`,
     `<g transform="matrix(${matrix.join(' ')})">`,
-    ...visual,
+    ...(hosted
+      ? [
+          `<clipPath id="hosted-crop"><rect x="${crop.x}" y="${crop.y}" width="${crop.width}" height="${crop.height}"/></clipPath>`,
+          `<g clip-path="url(#hosted-crop)">`,
+          ...visual,
+          '</g>',
+        ]
+      : visual),
     '</g>',
     defsMatch ? defsMatch[0] : '',
     '</svg>',
@@ -282,8 +299,14 @@ function main() {
   const anchorsArg = args.find(arg => arg.startsWith('--anchors='));
   const anchorsPath = anchorsArg ? path.resolve(ROOT, anchorsArg.slice('--anchors='.length)) : DEFAULT_ANCHORS_PATH;
   const allAnchors = JSON.parse(fs.readFileSync(anchorsPath, 'utf8'));
+  // J_1처럼 다른 동 도면에 함께 그려진 층은 그 도면(L_6)의 기준점으로, 그 동 부분만 잘라 굽는다.
+  const hostedFloors = JSON.parse(fs.readFileSync(HOSTED_FLOORS_PATH, 'utf8'));
+  const anchorsOf = id => allAnchors[hostedFloors[id]?.floorId ?? id];
   const requested = args.filter(arg => !arg.startsWith('--'));
-  const targets = requested.length > 0 ? requested : Object.keys(allAnchors);
+  const targets =
+    requested.length > 0
+      ? requested
+      : [...Object.keys(allAnchors), ...Object.keys(hostedFloors).filter(id => allAnchors[hostedFloors[id].floorId])];
   if (targets.length === 0) {
     console.error(`[에러] ${path.relative(ROOT, anchorsPath)}가 비어 있습니다. 먼저 node scripts/buildFloorPlanAnchors.js를 돌리세요.`);
     process.exit(1);
@@ -292,11 +315,11 @@ function main() {
 
   const entries = readExistingIndex();
   for (const id of targets) {
-    if (!allAnchors[id]) {
+    if (!anchorsOf(id)) {
       console.error(`[건너뜀] ${id}: ${path.basename(anchorsPath)}에 기준점이 없습니다`);
       continue;
     }
-    entries[id] = renderFloor(id, allAnchors[id]);
+    entries[id] = renderFloor(id, anchorsOf(id), hostedFloors[id]);
   }
   writeIndex(entries);
   console.log(`\n→ src/constant/floorOverlayImages.ts 갱신 (${Object.keys(entries).length}개 층)`);

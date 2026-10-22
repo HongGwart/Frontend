@@ -660,22 +660,29 @@ export function parseFloorId(floorId: string): FloorInfo & { building: string } 
   };
 }
 
+/** 다른 동 도면에 함께 그려진 층: 그 층이 그려진 도면과, 도면에서 이 동 부분만 남길 영역(도면 y가 minY 이상) */
+interface HostedFloor {
+  floorId: string;
+  minY: number;
+}
+
 /**
- * 자기 도면 없이 다른 동 도면에 함께 그려진 층 → 그 층이 그려진 도면. J동(제3공학관)은 L동(와우관) 4~8층
- * 도면 안에 J로 시작하는 호실(J002, J001, J101 …)로 같이 들어 있다. 서버는 이 호실을 "J동 101호"(J동 1층)처럼
- * J동 기준 층으로 주니, J동 층을 그 호실이 그려진 L동 도면으로 이어 준다.
+ * 자기 도면 없이 다른 동 도면에 함께 그려진 층. J동(제3공학관)은 L동(와우관) 4~8층 도면 아래쪽(계단 통로 아래의
+ * 복도와 J로 시작하는 호실 줄)에 같이 들어 있다. 서버는 이 호실을 "J동 101호"(J동 1층)처럼 J동 기준 층으로 주니,
+ * "J_1" 같은 J동 층 키를 그 호실이 그려진 L동 도면으로 이어 준다. 지도(검색·길 안내)에는 J동 부분만 깔도록
+ * renderFloorOverlay.js가 이 영역만 잘라 J동 층 PNG를 따로 굽는다 — 그래서 스크립트와 같이 쓰는 JSON에 둔다.
  */
-const HOSTED_FLOORS: Record<string, string> = {
-  J_B2: 'L_4',
-  J_B1: 'L_5',
-  J_1: 'L_6',
-  J_2: 'L_7',
-  J_3: 'L_8',
-};
+const HOSTED_FLOORS = require('./hostedFloors.json') as Record<string, HostedFloor>;
 
 /** 층 키를 실제 평면도 키로 바꾼다. 다른 동 도면에 함께 그려진 층("J_1")이면 그 도면("L_6"), 아니면 그대로. */
 export function resolveFloorId(floorId: string): string {
-  return HOSTED_FLOORS[floorId] ?? floorId;
+  return HOSTED_FLOORS[floorId]?.floorId ?? floorId;
+}
+
+/** 다른 동 도면에 함께 그려진 층("J_1")이면 도면에서 그 동 부분의 경계(y ≥ minY). 아니면 undefined. */
+export function getHostedArea(floorId: string): { minY: number } | undefined {
+  const hosted = HOSTED_FLOORS[floorId];
+  return hosted ? { minY: hosted.minY } : undefined;
 }
 
 /**
@@ -684,7 +691,7 @@ export function resolveFloorId(floorId: string): string {
  */
 export function getRoomOwner(floorId: string, roomLabel: string): { buildingCode: string; roomNumber: string } {
   const hosted = Object.keys(HOSTED_FLOORS)
-    .filter(key => HOSTED_FLOORS[key] === floorId)
+    .filter(key => HOSTED_FLOORS[key].floorId === floorId)
     .map(key => parseFloorId(key).building)
     .find(building => new RegExp(`^${building}\\d`).test(roomLabel));
   if (hosted) return { buildingCode: `${hosted}동`, roomNumber: roomLabel.slice(hosted.length) };
@@ -703,7 +710,7 @@ export function getBuildingFloors(buildingCode: string): FloorInfo[] {
   const hosted = Object.keys(HOSTED_FLOORS)
     .map(parseFloorId)
     .filter(info => info.building === building)
-    .map(info => ({ ...info, floorId: HOSTED_FLOORS[info.floorId] }));
+    .map(info => ({ ...info, floorId: resolveFloorId(info.floorId) }));
   return [...own, ...hosted]
     .sort((a, b) => b.floorNum - a.floorNum)
     .map(({ floorId, floorNum, label }) => ({ floorId, floorNum, label }));
@@ -713,16 +720,22 @@ export function getBuildingFloors(buildingCode: string): FloorInfo[] {
  * 건물 코드("C동" 또는 "C")와 호실 번호("816" 또는 "816호")로 그 호실이 있는 층과 방 도형들을 찾는다. 한 호실이
  * 도형 여러 개로 나뉜 경우가 있어 같은 번호의 방을 모두 돌려준다. 층을 이미 알면(서버 장소 상세) preferredFloorId를
  * 먼저 본다. 평면도에 없는 호실이면 null.
+ * 돌려주는 floorId는 지도에 깔 층 키다 — 다른 동 도면에 함께 그려진 동(J동)이면 "J_1"처럼 그 동의 층 키라서,
+ * FloorPlanOverlay가 L동 도면 중 J동 부분만 깐다. data는 실제 도면(L_6) 것이다.
  */
 export function findRoomFloor(buildingCode: string, roomNumber: string, preferredFloorId?: string) {
+  const building = buildingCode.replace(/동$/, '');
   const room = roomNumber.replace(/호$/, '');
   // H동처럼 평면도 방 번호에 건물 글자가 붙은 경우("H314")도 같은 호실로 본다.
-  const prefixed = `${buildingCode.replace(/동$/, '')}${room}`;
-  const floorIds = getBuildingFloors(buildingCode).map(info => info.floorId);
-  const preferred = preferredFloorId && resolveFloorId(preferredFloorId);
-  const ordered = preferred && FLOOR_MAPS[preferred] ? [preferred, ...floorIds] : floorIds;
+  const prefixed = `${building}${room}`;
+  const floorIds = [
+    ...Object.keys(FLOOR_MAPS).filter(id => parseFloorId(id).building === building),
+    ...Object.keys(HOSTED_FLOORS).filter(id => parseFloorId(id).building === building),
+  ];
+  const ordered =
+    preferredFloorId && floorIds.includes(preferredFloorId) ? [preferredFloorId, ...floorIds] : floorIds;
   for (const floorId of ordered) {
-    const data = FLOOR_MAPS[floorId]().data;
+    const data = FLOOR_MAPS[resolveFloorId(floorId)]().data;
     const rooms = data.rooms.filter(shape => [room, prefixed].includes(shape.label ?? shape.id));
     if (rooms.length > 0) return { floorId, data, rooms };
   }
