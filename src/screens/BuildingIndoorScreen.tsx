@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, type LayoutChangeEvent } from 'react-native';
+import { Platform, StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -110,8 +110,11 @@ export default function BuildingIndoorScreen() {
       cardLift.value = withDelay(60, withTiming(0, { duration: 320, easing: Easing.out(Easing.cubic) }));
     };
     // 전환 애니메이션이 없는 경우(안드로이드 animation: 'none') transitionEnd가 안 올 수 있어서,
-    // 전환 시간(200ms)보다 넉넉한 뒤에는 이벤트가 없어도 내려앉힌다.
-    const fallbackId = setTimeout(settle, 400);
+    // 전환 시간(200ms)보다 넉넉한 뒤에는 이벤트가 없어도 내려앉힌다. iOS 크로스페이드는 transitionEnd가 꼭 오는데,
+    // R동처럼 화면을 그리는 데 오래 걸리면 전환이 늦게 시작돼 400ms보다 늦게 끝난다 — 그때 먼저 내려앉으면
+    // 아직 위에 떠 있는 지도 카드 밑에서 움직이다가, 지도 카드가 닫히는 순간 이미 내려간 카드가 툭 보인다.
+    // 그래서 iOS는 이벤트를 기다리고, 시간 대비책은 이벤트를 못 받을 때만을 위해 넉넉히 둔다.
+    const fallbackId = setTimeout(settle, Platform.OS === 'ios' ? 1500 : 400);
     const unsubscribe = navigation.addListener('transitionEnd', event => {
       if (!event.data.closing) settle();
     });
