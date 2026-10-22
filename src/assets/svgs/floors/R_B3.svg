@@ -376,7 +376,7 @@
 <rect id="room_303" x="1771.48" y="793.309" width="224.569" height="228.307" transform="rotate(10.0628 1771.48 793.309)" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_304" x="1388.42" y="727.715" width="127.537" height="82.5542" transform="rotate(10.0628 1388.42 727.715)" fill="#D9D9D9" fill-opacity="0.01"/>
 <path id="room_305" d="M1388.65 727.386L1374.15 809.065L1260 788.808V707.184L1260.45 704.637L1388.65 727.386Z" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_306" x="2310.35" y="757.844" width="107.037" height="162.155" transform="rotate(10.0628 2310.35 757.844)" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_B306" x="2310.35" y="757.844" width="107.037" height="162.155" transform="rotate(10.0628 2310.35 757.844)" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_308" x="198" y="840" width="464" height="120" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_301" x="1323" y="2205" width="118" height="137" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_302" x="1457" y="1525" width="44" height="64" fill="#D9D9D9" fill-opacity="0.01"/>
