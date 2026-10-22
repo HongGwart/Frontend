@@ -36,6 +36,12 @@ const ZOOM_DECELERATION = 0.996;
  * 대신 이 값으로 "가로 폭이 containerWidth - margin*2가 되는 배율"을 직접 계산해서 고정한다.
  */
 const DEFAULT_HORIZONTAL_MARGIN = 20;
+/**
+ * 지도를 끌어서 화면 가운데가 도면 밖으로 나가려 할 때의 저항. 한계 밖으로 끈 거리 중 이 비율만큼만 따라간다.
+ * 손을 떼면 진동 없는 스프링(PAN_BOUNCE_SPRING_CONFIG)으로 경계까지 돌아온다.
+ */
+const PAN_OVERSCROLL_RESISTANCE = 0.35;
+const PAN_BOUNCE_SPRING_CONFIG = { damping: 26, stiffness: 220, mass: 0.6 };
 
 function clamp(value: number, min: number, max: number) {
   'worklet';
@@ -141,6 +147,49 @@ export function useMapGestures({
   // 그 애니메이션 내내 축이 안 흔들린다. resetTransform이나 새 팬 제스처처럼 pivot과
   // 무관하게 translate를 직접 다루는 곳에서는 꺼야 서로 안 부딪힌다.
   const pivotActive = useSharedValue(false);
+  // 화면 가운데가 벗어나면 안 되는 도면 영역(원본 SVG 좌표). fitToContainer가 contentBounds로 채운다.
+  const boundsMinX = useSharedValue(0);
+  const boundsMinY = useSharedValue(0);
+  const boundsMaxX = useSharedValue(0);
+  const boundsMaxY = useSharedValue(0);
+  // 손가락으로 끄는 중(고무줄 허용)이거나 경계 복귀·원위치 애니메이션 중이면 아래 경계 검사 반응을 쉰다.
+  const isPanning = useSharedValue(false);
+  const isAutoMoving = useSharedValue(false);
+
+  // translate가 (tx, ty)일 때 화면 가운데가 가리키는 지도 좌표를 도면 영역 안으로 끌어당긴 translate.
+  // 회전·확대 상태에서도 "화면 가운데 = 도면 안"이라는 같은 기준이 되도록 지도 좌표계에서 자른다.
+  const clampTranslateToContent = (tx: number, ty: number) => {
+    'worklet';
+    const cx = containerWidthShared.value / 2;
+    const cy = containerHeightShared.value / 2;
+    const cos = Math.cos(rotation.value);
+    const sin = Math.sin(rotation.value);
+    const dx = (cx - tx) / scale.value;
+    const dy = (cy - ty) / scale.value;
+    const localX = dx * cos + dy * sin;
+    const localY = -dx * sin + dy * cos;
+    const clampedX = clamp(localX, boundsMinX.value, boundsMaxX.value);
+    const clampedY = clamp(localY, boundsMinY.value, boundsMaxY.value);
+    return {
+      x: cx - (clampedX * cos - clampedY * sin) * scale.value,
+      y: cy - (clampedX * sin + clampedY * cos) * scale.value,
+      outside: clampedX !== localX || clampedY !== localY,
+    };
+  };
+
+  // 경계 밖이면 진행 중이던 관성을 멈추고 경계까지 부드럽게 돌아간다.
+  const snapBackIntoContent = () => {
+    'worklet';
+    const target = clampTranslateToContent(translateX.value, translateY.value);
+    if (!target.outside) return;
+    cancelAnimation(translateX);
+    cancelAnimation(translateY);
+    isAutoMoving.value = true;
+    translateX.value = withSpring(target.x, PAN_BOUNCE_SPRING_CONFIG);
+    translateY.value = withSpring(target.y, PAN_BOUNCE_SPRING_CONFIG, () => {
+      isAutoMoving.value = false;
+    });
+  };
 
   // pivotLocalX/Y를 주어진 scale로 투영했을 때의 translate를 계산한다 (화면 중앙에 고정).
   // 아래 useAnimatedReaction(매 프레임)과 핀치 종료 시 한계 밖이면 튕겨 돌아갈 목표 지점
@@ -168,6 +217,17 @@ export function useMapGestures({
       const { x, y } = computePivotTranslate(current.scale);
       translateX.value = x;
       translateY.value = y;
+    }
+  );
+
+  // 팬 관성(withDecay)이 굴러가다 화면 가운데가 도면 밖으로 나가는 순간 멈추고 경계로 되돌린다.
+  // 핀치/회전은 화면 가운데를 축으로 하니 이 기준을 깨지 않아서 pivotActive 동안은 볼 필요가 없다.
+  useAnimatedReaction(
+    () => ({ x: translateX.value, y: translateY.value }),
+    () => {
+      if (isPanning.value || isAutoMoving.value || pivotActive.value) return;
+      if (!containerWidthShared.value || !containerHeightShared.value) return;
+      snapBackIntoContent();
     }
   );
 
@@ -253,15 +313,32 @@ export function useMapGestures({
         // 확대 관성/바운스가 아직 안 끝났는데 사용자가 직접 팬을 시작하면, 그쪽이 계속
         // translate를 다시 계산하며 이 팬 업데이트와 충돌하니 여기서 넘겨받는다.
         pivotActive.value = false;
+        isAutoMoving.value = false;
+        isPanning.value = true;
       })
       .onUpdate((e) => {
-        translateX.value = savedTranslateX.value + e.translationX;
-        translateY.value = savedTranslateY.value + e.translationY;
+        // 화면 가운데가 도면 밖으로 나가는 만큼은 고무줄처럼 일부만 따라간다.
+        const nextX = savedTranslateX.value + e.translationX;
+        const nextY = savedTranslateY.value + e.translationY;
+        const inside = clampTranslateToContent(nextX, nextY);
+        translateX.value = inside.x + (nextX - inside.x) * PAN_OVERSCROLL_RESISTANCE;
+        translateY.value = inside.y + (nextY - inside.y) * PAN_OVERSCROLL_RESISTANCE;
       })
       .onEnd((e) => {
-        // 손을 뗄 때 속도가 남아있으면 그 방향으로 서서히 미끄러지다 멈춘다 (관성 스크롤)
+        isPanning.value = false;
+        // 경계 밖에서 손을 뗐으면 관성 없이 경계로 돌아간다.
+        if (clampTranslateToContent(translateX.value, translateY.value).outside) {
+          snapBackIntoContent();
+          return;
+        }
+        // 손을 뗄 때 속도가 남아있으면 그 방향으로 서서히 미끄러지다 멈춘다 (관성 스크롤).
+        // 미끄러지다 경계를 넘으면 위 useAnimatedReaction이 멈춰 세운다.
         translateX.value = withDecay({ velocity: e.velocityX, deceleration: PAN_DECELERATION });
         translateY.value = withDecay({ velocity: e.velocityY, deceleration: PAN_DECELERATION });
+      })
+      .onFinalize(() => {
+        // 팬이 취소돼 onEnd 없이 끝나도 경계 검사가 다시 돌도록.
+        isPanning.value = false;
       });
 
     const rotationGesture = Gesture.Rotation()
@@ -317,6 +394,12 @@ export function useMapGestures({
     pivotLocalX,
     pivotLocalY,
     pivotActive,
+    isPanning,
+    isAutoMoving,
+    boundsMinX,
+    boundsMinY,
+    boundsMaxX,
+    boundsMaxY,
   ]);
 
   // transformOrigin '0 0' 기준, 순서가 곧 공식이다: 자식 좌표 p에 scale -> rotate -> translate
@@ -339,9 +422,13 @@ export function useMapGestures({
     // 여기서 scale/translate를 직접 목표로 애니메이션하므로, pivot 반응형 추적은 꺼서
     // useAnimatedReaction이 옛 pivotLocalX/Y 기준으로 translate를 덮어쓰지 않게 한다.
     pivotActive.value = false;
+    // 되돌아가는 도중엔 배율·위치·회전이 따로 움직여 잠깐 경계 밖처럼 계산될 수 있으니 경계 검사를 쉰다.
+    isAutoMoving.value = true;
     scale.value = withTiming(defaultScaleShared.value, { duration: 300 });
     translateX.value = withTiming(fitOffsetX.value, { duration: 300 });
-    translateY.value = withTiming(fitOffsetY.value, { duration: 300 });
+    translateY.value = withTiming(fitOffsetY.value, { duration: 300 }, () => {
+      isAutoMoving.value = false;
+    });
     // 예: 350도 회전한 상태에서 0으로 애니메이션하면 큰 원을 그리며 돌아간다.
     // -180~180도 범위의 동일한 각으로 먼저 순간 이동(시각적으로 티 안 남)시켜서
     // 항상 더 짧은 방향으로 0에 수렴하게 만든다.
@@ -368,6 +455,7 @@ export function useMapGestures({
     fitOffsetX,
     fitOffsetY,
     pivotActive,
+    isAutoMoving,
   ]);
 
   /**
@@ -410,6 +498,10 @@ export function useMapGestures({
       containerHeightShared.value = containerHeight;
       fitOffsetX.value = offsetX;
       fitOffsetY.value = offsetY;
+      boundsMinX.value = contentMinX;
+      boundsMinY.value = contentMinY;
+      boundsMaxX.value = contentMinX + contentWidth;
+      boundsMaxY.value = contentMinY + contentHeight;
       hasFitted.value = 1;
 
       scale.value = savedScale.value = initialScale;
@@ -439,6 +531,10 @@ export function useMapGestures({
       fitOffsetX,
       fitOffsetY,
       hasFitted,
+      boundsMinX,
+      boundsMinY,
+      boundsMaxX,
+      boundsMaxY,
     ]
   );
 
