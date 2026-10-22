@@ -3,5 +3,6 @@
   "J_B1": { "floorId": "L_5", "minY": 740 },
   "J_1": { "floorId": "L_6", "minY": 740 },
   "J_2": { "floorId": "L_7", "minY": 740 },
-  "J_3": { "floorId": "L_8", "minY": 740 }
+  "J_3": { "floorId": "L_8", "minY": 740 },
+  "H_1": { "floorId": "G_4", "maxY": 335 }
 }

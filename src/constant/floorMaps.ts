@@ -186,10 +186,6 @@ export const FLOOR_MAPS: Record<string, () => FloorMapAssets> = {
     data: require('@assets/svgs/floors/G_4.json') as FloorMapData,
     Background: require('@assets/svgs/floors/G_4_bg.svg').default,
   }),
-  H_1: () => ({
-    data: require('@assets/svgs/floors/H_1.json') as FloorMapData,
-    Background: require('@assets/svgs/floors/H_1_bg.svg').default,
-  }),
   H_2: () => ({
     data: require('@assets/svgs/floors/H_2.json') as FloorMapData,
     Background: require('@assets/svgs/floors/H_2_bg.svg').default,
@@ -660,17 +656,24 @@ export function parseFloorId(floorId: string): FloorInfo & { building: string } 
   };
 }
 
-/** 다른 동 도면에 함께 그려진 층: 그 층이 그려진 도면과, 도면에서 이 동 부분만 남길 영역(도면 y가 minY 이상) */
-interface HostedFloor {
+/** 도면에서 한 동 부분의 경계(도면 y 범위). minY만 있으면 그 아래쪽, maxY만 있으면 그 위쪽 전부. */
+export interface HostedArea {
+  minY?: number;
+  maxY?: number;
+}
+
+/** 다른 동 도면에 함께 그려진 층: 그 층이 그려진 도면과, 도면에서 이 동 부분의 경계 */
+interface HostedFloor extends HostedArea {
   floorId: string;
-  minY: number;
 }
 
 /**
- * 자기 도면 없이 다른 동 도면에 함께 그려진 층. J동(제3공학관)은 L동(와우관) 4~8층 도면 아래쪽(계단 통로 아래의
- * 복도와 J로 시작하는 호실 줄)에 같이 들어 있다. 서버는 이 호실을 "J동 101호"(J동 1층)처럼 J동 기준 층으로 주니,
- * "J_1" 같은 J동 층 키를 그 호실이 그려진 L동 도면으로 이어 준다. 지도(검색·길 안내)에는 J동 부분만 깔도록
- * renderFloorOverlay.js가 이 영역만 잘라 J동 층 PNG를 따로 굽는다 — 그래서 스크립트와 같이 쓰는 JSON에 둔다.
+ * 자기 도면 없이 다른 동 도면에 함께 그려진 층. 서버는 이 호실을 그 동 기준 층으로 주니("J동 101호" → J동 1층),
+ * 그 동의 층 키("J_1")를 호실이 그려진 도면으로 이어 준다.
+ * - J동(제3공학관): L동(와우관) 4~8층 도면 아래쪽(계단 통로 아래 복도와 J로 시작하는 호실 줄)
+ * - H동 1층: G동(학생회관) 4층 도면 위쪽 날개(101~106)
+ * 지도(검색)에는 그 동 부분만 깔도록 renderFloorOverlay.js가 이 영역만 잘라 PNG를 따로 굽는다 — 그래서 스크립트와
+ * 같이 쓰는 JSON에 둔다.
  */
 const HOSTED_FLOORS = require('./hostedFloors.json') as Record<string, HostedFloor>;
 
@@ -679,23 +682,35 @@ export function resolveFloorId(floorId: string): string {
   return HOSTED_FLOORS[floorId]?.floorId ?? floorId;
 }
 
-/** 다른 동 도면에 함께 그려진 층("J_1")이면 도면에서 그 동 부분의 경계(y ≥ minY). 아니면 undefined. */
-export function getHostedArea(floorId: string): { minY: number } | undefined {
+/** 다른 동 도면에 함께 그려진 층("J_1")이면 도면에서 그 동 부분의 경계. 아니면 undefined. */
+export function getHostedArea(floorId: string): HostedArea | undefined {
   const hosted = HOSTED_FLOORS[floorId];
-  return hosted ? { minY: hosted.minY } : undefined;
+  return hosted ? { minY: hosted.minY, maxY: hosted.maxY } : undefined;
+}
+
+/** 도면 좌표가 그 동 부분 안에 있는지. */
+export function isInHostedArea(area: HostedArea, [, y]: [number, number]): boolean {
+  return (area.minY === undefined || y >= area.minY) && (area.maxY === undefined || y <= area.maxY);
 }
 
 /**
- * 평면도에서 탭한 방이 실제로 속한 동과 호실 번호. 보통은 도면의 동 그대로지만, L동 도면에 함께 그려진
- * J동 호실("J101")은 J동 101호로 돌려준다 — 카드·즐겨찾기·길찾기가 서버 이름("J동 101호")과 맞도록.
+ * 평면도에서 탭한 방이 실제로 속한 동과 호실 번호. 보통은 도면의 동 그대로지만, 다른 동 부분에 있는 방은 그 동
+ * 호실로 돌려준다 — L동 도면의 "J101"은 J동 101호, G동 4층 도면 위쪽 날개의 "101"은 H동 101호. 카드·즐겨찾기·
+ * 길찾기가 서버 이름("J동 101호", "H동 101호")과 맞도록.
  */
 export function getRoomOwner(floorId: string, roomLabel: string): { buildingCode: string; roomNumber: string } {
+  const pieces = FLOOR_MAPS[floorId]?.().data.rooms.filter(room => (room.label ?? room.id) === roomLabel) ?? [];
   const hosted = Object.keys(HOSTED_FLOORS)
     .filter(key => HOSTED_FLOORS[key].floorId === floorId)
-    .map(key => parseFloorId(key).building)
-    .find(building => new RegExp(`^${building}\\d`).test(roomLabel));
-  if (hosted) return { buildingCode: `${hosted}동`, roomNumber: roomLabel.slice(hosted.length) };
-  return { buildingCode: `${parseFloorId(floorId).building}동`, roomNumber: roomLabel };
+    .find(
+      key =>
+        pieces.length > 0 &&
+        pieces.every(room => room.points.every(point => isInHostedArea(HOSTED_FLOORS[key], point))),
+    );
+  const building = parseFloorId(hosted ?? floorId).building;
+  // 도면 번호에 동 글자가 붙어 있으면("J101", H동 3층 "H317") 뗀다. 서버 호실 번호는 동 글자 없이 "101"이다.
+  const roomNumber = new RegExp(`^${building}\\d`).test(roomLabel) ? roomLabel.slice(building.length) : roomLabel;
+  return { buildingCode: `${building}동`, roomNumber };
 }
 
 /**

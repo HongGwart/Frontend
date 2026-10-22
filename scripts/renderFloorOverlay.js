@@ -130,8 +130,8 @@ function fitAffine(src, dst) {
 }
 
 /**
- * hosted가 있으면(J_1처럼 다른 동 도면에 함께 그려진 층) 그 도면(hosted.floorId)에서 y ≥ hosted.minY인 부분만
- * 잘라 굽는다. 네 모서리 기준점은 원래 도면 것을 그대로 쓰니, 잘린 PNG도 원래 도면과 같은 자리에 정확히 겹친다.
+ * hosted가 있으면(J_1처럼 다른 동 도면에 함께 그려진 층) 그 도면(hosted.floorId)에서 그 동 부분(y가 hosted.minY 이상,
+ * hosted.maxY 이하)만 잘라 굽는다. 네 모서리 기준점은 원래 도면 것을 그대로 쓰니, 잘린 PNG도 원래 도면과 같은 자리에 정확히 겹친다.
  */
 function renderFloor(floorId, anchors, hosted) {
   const sourceId = hosted ? hosted.floorId : floorId;
@@ -170,8 +170,9 @@ function renderFloor(floorId, anchors, hosted) {
   );
 
   // 구울 도면 영역(잘라 굽는 층이면 그 동 부분만)
-  const cropTop = hosted ? Math.max(minY, hosted.minY) : minY - MARGIN;
-  const crop = { x: minX - MARGIN, y: cropTop, width: width + MARGIN * 2, height: minY + height + MARGIN - cropTop };
+  const cropTop = hosted?.minY !== undefined ? Math.max(minY - MARGIN, hosted.minY) : minY - MARGIN;
+  const cropBottom = hosted?.maxY !== undefined ? Math.min(minY + height + MARGIN, hosted.maxY) : minY + height + MARGIN;
+  const crop = { x: minX - MARGIN, y: cropTop, width: width + MARGIN * 2, height: cropBottom - cropTop };
   // 여유를 둔 도면 사각형이 돌아간 뒤의 바운딩 박스
   const padded = [
     [crop.x, crop.y],
@@ -201,7 +202,7 @@ function renderFloor(floorId, anchors, hosted) {
     const { rest, groups } = extractIconGroups(stripLabels(child, roomLabels));
     for (const group of groups) {
       const center = iconCenter(group.svg, viewBox, defsMatch ? defsMatch[0] : '');
-      if (center && center[1] >= crop.y) icons.push({ type: group.type, center });
+      if (center && center[1] >= crop.y && center[1] <= crop.y + crop.height) icons.push({ type: group.type, center });
     }
     return rest;
   });

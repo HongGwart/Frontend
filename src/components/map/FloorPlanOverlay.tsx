@@ -6,7 +6,7 @@ import {
   NaverMapPolygonOverlay,
 } from '@mj-studio/react-native-naver-map';
 import { getBuildingMask } from '@constant/buildingMasks';
-import { FLOOR_MAPS, getHostedArea, parseFloorId, resolveFloorId } from '@constant/floorMaps';
+import { FLOOR_MAPS, getHostedArea, isInHostedArea, parseFloorId, resolveFloorId } from '@constant/floorMaps';
 import { FLOOR_OVERLAY_IMAGES, FloorOverlayIconType, FloorOverlayImage } from '@constant/floorOverlayImages';
 import { createFloorToGeo, FloorGeoAnchors, GeoCoord, getContentBounds } from '@utils/floorGeoTransform';
 import { theme } from '@theme/color';
@@ -150,7 +150,7 @@ export function FloorPlanOverlay({
     const toGeo = createFloorToGeo(getContentBounds(data), anchors);
     // 다른 동 도면에 함께 그려진 층(J동 → L동 도면)이면 그 동 부분(PNG도 그만큼만 구웠다)의 방·아이콘만 그린다.
     const area = getHostedArea(floorId);
-    const inArea = ([, y]: [number, number]) => !area || y >= area.minY;
+    const inArea = (point: [number, number]) => !area || isInHostedArea(area, point);
     const icons = (data.icons ?? [])
       .filter(icon => inArea(icon.center))
       .map(icon => ({ ...icon, position: toGeo(icon.center[0], icon.center[1]) }));
