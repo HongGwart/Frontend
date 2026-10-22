@@ -6,8 +6,8 @@
  * (_doors.svg / _icons.svg는 중간 산출물 — 앱은 JSON의 문·아이콘 좌표로 공용 도형을 그린다.)
  *
  *   1. splitVisualLayers.js  - 배경/문/아이콘 SVG 3개로 분리
- *   2. stripLabelPaths.js    - 배경 SVG에서 박혀있는 방 번호 라벨 제거 (RoomLabelsLayer가 대신 그림)
- *   3. svgToRoomShapes.js    - Hitbox 레이어로 방 좌표 JSON 생성
+ *   2. svgToRoomShapes.js    - Hitbox 레이어로 방 좌표 JSON 생성
+ *   3. stripLabelPaths.js    - 배경 SVG에서 박혀있는 방 번호·방 이름 라벨 제거 (RoomLabelsLayer가 대신 그림)
  *   4. svgToIcons.js         - 같은 JSON에 아이콘 좌표 병합
  *   5. svgToDoors.js         - 같은 JSON에 문 위치·방향 병합
  *
@@ -80,9 +80,10 @@ function main() {
 
   const jsonPath = path.join(outDir, `${base}.json`);
 
-  run('stripLabelPaths.js', [moved.bg]);
   // 방 좌표는 원본(문/아이콘까지 다 있는) SVG에서 뽑아야 방 순서·이름 인식이 안정적이다.
   run('svgToRoomShapes.js', [inputPath, jsonPath, ...(allowEmpty ? ['--allow-empty'] : [])]);
+  // 방 이름을 알아야 "계단 세미나실"처럼 글자로 된 이름 라벨도 지울 수 있어서 방 JSON을 만든 뒤에 돌린다.
+  run('stripLabelPaths.js', [moved.bg, `--rooms=${jsonPath}`]);
   run('svgToIcons.js', [moved.icons, jsonPath]);
   run('svgToDoors.js', [moved.doors, jsonPath]);
 

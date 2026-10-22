@@ -9,19 +9,37 @@
  * 예전 svgToRoomShapes.js(Visual 방식)의 라벨 인식과 같은 id 패턴(숫자 또는 숫자-숫자)을 사용하므로,
  * 방 JSON의 room.id와 여기서 제거되는 id가 서로 대응하는지 로그로 비교해서 확인할 수 있다.
  *
+ * "계단 세미나실", "Hall"처럼 글자로 된 방 이름 라벨은 숫자 패턴에 안 걸린다. --rooms=<층 JSON>을 주면
+ * id가 그 층 방 이름과 같은 path도 지운다(renderFloorOverlay.js가 PNG에서 빼는 것과 같은 기준). 안 지우면
+ * 내부 지도에서 배경 글자와 RoomLabelsLayer 글자가 겹쳐 보인다.
+ *
  * 사용법:
- *   node stripLabelPaths.js <입력_bg.svg> [출력.svg]
+ *   node stripLabelPaths.js <입력_bg.svg> [출력.svg] [--rooms=<층.json>]
  * 출력을 생략하면 입력 파일을 그대로 덮어쓴다.
  */
 
 const fs = require('fs');
 
+// Figma가 한글 id를 UTF-8 바이트 단위 문자 참조(&#234;&#179;...)로 내보내서 풀어서 비교한다.
+// 같은 이름이 겹치면 붙는 "_2" 같은 꼬리는 뗀다.
+const decodeSvgId = (id) =>
+  Buffer.from(id.replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code))), 'latin1')
+    .toString('utf8')
+    .replace(/_\d+$/, '');
+
 function main() {
-  const [, , inputPath, outputPathArg] = process.argv;
+  const args = process.argv.slice(2);
+  const roomsArg = args.find((arg) => arg.startsWith('--rooms='));
+  const [inputPath, outputPathArg] = args.filter((arg) => !arg.startsWith('--'));
   if (!inputPath) {
-    console.error('사용법: node stripLabelPaths.js <입력_bg.svg> [출력.svg]');
+    console.error('사용법: node stripLabelPaths.js <입력_bg.svg> [출력.svg] [--rooms=<층.json>]');
     process.exit(1);
   }
+  const roomNames = new Set(
+    roomsArg
+      ? JSON.parse(fs.readFileSync(roomsArg.slice('--rooms='.length), 'utf8')).rooms.map((room) => room.label ?? room.id)
+      : [],
+  );
 
   const svgText = fs.readFileSync(inputPath, 'utf8');
   // 예전 svgToRoomShapes.js(Visual 방식)의 라벨 인식과 동일한 id 패턴. self-closing <path .../> 하나가
@@ -33,11 +51,17 @@ function main() {
   const labelPathRegex = /<path id="[A-Za-z]?\d+(?:-\d+)?(?:_\d+)?"[^>]*\/>\s*/g;
 
   const removedIds = [];
-  const result = svgText.replace(labelPathRegex, (match) => {
-    const idMatch = match.match(/id="([^"]*)"/);
-    removedIds.push(idMatch ? idMatch[1] : '?');
-    return '';
-  });
+  const result = svgText
+    .replace(labelPathRegex, (match) => {
+      const idMatch = match.match(/id="([^"]*)"/);
+      removedIds.push(idMatch ? idMatch[1] : '?');
+      return '';
+    })
+    .replace(/<path id="([^"]*)"[^>]*\/>\s*/g, (match, id) => {
+      if (!roomNames.has(decodeSvgId(id))) return match;
+      removedIds.push(decodeSvgId(id));
+      return '';
+    });
 
   if (removedIds.length === 0) {
     console.warn('[경고] 제거할 라벨 path(id="103" 같은 숫자)를 하나도 못 찾았습니다. 이미 제거된 파일이거나 패턴이 안 맞을 수 있습니다.');
