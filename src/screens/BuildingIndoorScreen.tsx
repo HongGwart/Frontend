@@ -8,6 +8,7 @@ import styled, { useTheme } from 'styled-components/native';
 import Header from '@components/layout/Header';
 import { IndoorMapView, IndoorMapViewControls } from '@components/map/IndoorMapView';
 import { ResetViewButton } from '@components/map/ResetViewButton';
+import { FloorDoors } from '@components/map/FloorDoors';
 import { FloorSelector } from '@components/map/FloorSelector';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { CollapsibleBottomSheet, CollapsibleBottomSheetRef } from '@components/common/CollapsibleBottomSheet';
@@ -159,7 +160,14 @@ export default function BuildingIndoorScreen() {
                 // LayerSize를 그대로 펼친다. viewBox가 없을 때 viewBox={undefined}로 넘기면 SVG 컴포넌트의
                 // 원래 viewBox를 덮어써서 도면 스케일이 깨진다.
                 renderBackground={layerSize => <floorAssets.Background {...layerSize} />}
-                renderForeground={layerSize => <floorAssets.Doors {...layerSize} />}
+                renderForeground={layerSize => (
+                  <FloorDoors
+                    doors={floorAssets.data.doors ?? []}
+                    mapWidth={floorAssets.data.width}
+                    mapHeight={floorAssets.data.height}
+                    {...layerSize}
+                  />
+                )}
                 onRoomSelect={room => {
                   setSelectedRoomLabel(room ? room.label ?? room.id : null);
                   // 카드를 내려 둔 상태에서 강의실을 탭하면 카드를 부드럽게 올려 그 강의실 정보를 보여준다.
