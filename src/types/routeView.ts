@@ -4,10 +4,12 @@ import type { LatLng } from '@utils/routePath';
 // 길찾기 경로 카드·길 안내 화면 모델 타입. 서버 경로 응답을 toRouteView가 이 모양으로 바꾼다.
 export interface RouteStep {
   id: string;
-  type: 'walk' | 'elevator';
+  /** 구간 목록 아이콘을 고르는 이동 방식 — walk는 실외 도보 */
+  type: 'walk' | 'indoor' | 'stairs' | 'elevator';
   /** 이동 수단 라벨 (예: "도보 이동", "구름다리 이동", "엘리베이터") */
   label: string;
   from: string;
+  /** 비어 있으면 화살표 없이 from만 한 줄로 보여준다(층 정보를 모르는 층 이동) */
   to: string;
   distanceMeters: number;
   durationMinutes: number;

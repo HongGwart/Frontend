@@ -111,6 +111,12 @@ function placeLabel(step: StepDto) {
   return step.landmark?.name ?? step.road ?? '바깥';
 }
 
+/** 실내 걷기 구간이면 그 층, 아니면(실외·층 이동·없음) undefined */
+function indoorFloorOf(step?: StepDto) {
+  if (!step || step.type === 'FLOOR_CHANGE' || !step.context?.indoor) return undefined;
+  return step.context.floor;
+}
+
 /**
  * GET /api/route 응답의 경로 하나를 경로 카드(RouteResult)와 지도/길 안내 데이터(RouteMapData)로 바꾼다.
  * 경로선이 2점 미만이면 그릴 수 없어서 null.
@@ -138,19 +144,27 @@ export function toRouteView(route: RouteDto): RouteView | null {
     };
     if (step.type === 'FLOOR_CHANGE') {
       const isElevator = step.meta?.transport === 'ELEVATOR';
+      const prev = steps[index - 1];
+      // 서버가 층 정보를 비워 보내는 구간(계단에서 보임)은 앞뒤 실내 구간이 있던 층으로 채운다.
+      const fromFloor = step.meta?.fromFloor ?? indoorFloorOf(prev);
+      const toFloor = step.meta?.toFloor ?? indoorFloorOf(next);
+      const building = step.context?.buildingName ?? prev?.context?.buildingName;
+      const known = Boolean(fromFloor && toFloor);
       return {
         ...base,
-        // RouteStep엔 계단 타입이 없어서 도보 아이콘 + "계단 이동" 라벨로 보여준다.
-        type: isElevator ? 'elevator' : 'walk',
+        type: isElevator ? 'elevator' : 'stairs',
         label: isElevator ? '엘리베이터' : '계단 이동',
         congested: isElevator && step.meta?.congested === true,
-        from: [step.context?.buildingName, floorLabel(step.meta?.fromFloor)].filter(Boolean).join(' '),
-        to: floorLabel(step.meta?.toFloor),
+        // 그래도 층을 모르면 빈 화살표 대신 한 줄 문장으로 보여준다.
+        from: known
+          ? [building, floorLabel(fromFloor)].filter(Boolean).join(' ')
+          : `${isElevator ? '엘리베이터' : '계단'}로 층 이동`,
+        to: known ? floorLabel(toFloor) : '',
       };
     }
     return {
       ...base,
-      type: 'walk',
+      type: step.context?.indoor ? 'indoor' : 'walk',
       label: step.context?.indoor ? '실내 이동' : '도보 이동',
       from: step.type === 'DEPART' ? departure : placeLabel(step),
       to: nextTargetLabel(next, destination),
