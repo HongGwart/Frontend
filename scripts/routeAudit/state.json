@@ -2,13 +2,7 @@
  "done": {
   "1367->1368": {
    "at": "2026-10-23T04:07:13.286Z",
-   "problems": [
-    {
-     "mode": "INDOOR_PREFERRED",
-     "type": "unknown-floor",
-     "detail": "계단 이동: 계단으로 층 이동"
-    }
-   ]
+   "problems": []
   },
   "1367->789": {
    "at": "2026-10-23T04:07:15.539Z",

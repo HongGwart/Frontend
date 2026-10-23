@@ -121,16 +121,20 @@ interface OpenLeg {
   from: string;
   meters: number;
   seconds: number;
-  /** 도보 구간에 합친 야외 계단 수(서버는 캠퍼스 비탈 계단도 층 정보 없는 FLOOR_CHANGE로 준다) */
-  outdoorStairs: number;
+  /**
+   * 구간에 합친 계단 수. 서버는 캠퍼스 비탈의 야외 계단과 건물 사이 공용 통로의 계단도 건물·층 없는 FLOOR_CHANGE로
+   * 주는데, 층을 옮기는 게 아니라 길 중간의 단차라 따로 줄을 만들지 않는다.
+   */
+  stairs: number;
   building?: string;
   floor?: string;
 }
 
 /**
  * 경로 카드 구간 목록. 서버 step은 회전마다 끊겨 있어서, 건물 출입과 실내 층 이동을 경계로 묶는다.
- * - EXIT_BUILDING → 도보 이동, ENTER_BUILDING → 그 건물·층의 실내 이동, 실내 FLOOR_CHANGE → 엘리베이터/계단 이동
- * - 나머지(WALK·회전·야외 계단)는 진행 중인 구간에 거리·시간을 더한다. 거리·시간은 서버 값의 합이다.
+ * - EXIT_BUILDING → 도보 이동, ENTER_BUILDING → 그 건물·층의 실내 이동, 건물 안 FLOOR_CHANGE → 엘리베이터/계단 이동
+ * - 실내로 표시된 EXIT_BUILDING은 건물 사이 공용 통로라 "건물 밖"이 아니라 "공용 통로" 실내 이동으로 시작한다.
+ * - 나머지(WALK·회전·건물 밖이나 통로의 계단)는 진행 중인 구간에 거리·시간을 더한다. 거리·시간은 서버 값의 합이다.
  * - 구간 끝 이름은 다음 경계(건물 밖, 들어가는 건물·층, 엘리베이터/계단)로, 마지막 구간은 도착지로 채운다.
  * 길 안내 화면은 회전 안내가 필요해서 이 묶음을 쓰지 않는다.
  */
@@ -145,7 +149,7 @@ function toRouteSteps(steps: StepDto[], mode: string, departure: string, destina
       from,
       meters: 0,
       seconds: 0,
-      outdoorStairs: 0,
+      stairs: 0,
       building: step.context?.buildingName ?? undefined,
       floor: step.context?.floor ?? undefined,
     };
@@ -153,10 +157,10 @@ function toRouteSteps(steps: StepDto[], mode: string, departure: string, destina
   const close = (to: string) => {
     // 건물에 들어가자마자 층을 옮기는 경우처럼 걸은 게 없는 구간은 줄을 만들지 않는다.
     if (open && (open.meters >= 1 || open.seconds > 0)) {
-      const stairsText = open.outdoorStairs ? ` · 계단 ${open.outdoorStairs}곳 포함` : '';
+      const stairsText = open.stairs ? ` · 계단 ${open.stairs}곳 포함` : '';
       legs.push({
         type: open.type,
-        label: open.type === 'indoor' ? '실내 이동' : `도보 이동${stairsText}`,
+        label: `${open.type === 'indoor' ? '실내 이동' : '도보 이동'}${stairsText}`,
         from: open.from,
         to,
         distanceMeters: Math.round(open.meters),
@@ -177,11 +181,13 @@ function toRouteSteps(steps: StepDto[], mode: string, departure: string, destina
         start(step, departure);
         add(step);
         return;
-      case 'EXIT_BUILDING':
-        close('건물 밖');
-        start(step, '건물 밖');
+      case 'EXIT_BUILDING': {
+        const place = step.context?.indoor ? '공용 통로' : '건물 밖';
+        close(place);
+        start(step, place);
         add(step);
         return;
+      }
       case 'ENTER_BUILDING': {
         const place = floorPlace(step.context?.buildingName, step.context?.floor);
         close(place);
@@ -190,14 +196,14 @@ function toRouteSteps(steps: StepDto[], mode: string, departure: string, destina
         return;
       }
       case 'FLOOR_CHANGE': {
-        if (!step.context?.indoor) {
-          // 야외 계단은 층 이동이 아니라 도보 구간의 일부로 본다.
+        if (!step.context?.indoor || !step.context.buildingName) {
+          // 건물 밖이나 공용 통로의 계단은 층 이동이 아니라 지금 구간의 일부로 본다.
           add(step);
-          open!.outdoorStairs += 1;
+          open!.stairs += 1;
           return;
         }
         const isElevator = step.meta?.transport === 'ELEVATOR';
-        const building = step.context.buildingName ?? open?.building;
+        const building = step.context.buildingName;
         // 층 이동 step의 context는 도착 층이다. 층 정보가 비어 있으면 직전 실내 구간 층·도착 층으로 채운다.
         const fromFloor = step.meta?.fromFloor ?? open?.floor;
         const toFloor = step.meta?.toFloor ?? step.context.floor ?? undefined;

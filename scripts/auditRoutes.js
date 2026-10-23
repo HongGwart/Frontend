@@ -28,7 +28,7 @@
  *   - unknown-floor       층 정보를 몰라서 "계단으로 층 이동" 문구로 대체됨
  *   - same-from-to        구간 출발 = 도착 ("건물 밖 → 건물 밖", "L동 4층 → 4층")
  *   - distance-mismatch   구간 거리 합과 서버 총거리 차이가 반올림 오차(구간당 0.5m, 최소 2m)보다 큼
- *   - indoor-exit         실내 공용 통로로 나가는 EXIT_BUILDING(context.indoor=true)인데 화면엔 "건물 밖"으로 나옴
+ *   - indoor-exit         실내 구간인데 출발 쪽이 "건물 밖" (공용 통로를 건물 밖으로 처리)
  *   - stairs-in-avoidance 계단 회피 경로에 계단(실내 계단 구간 또는 야외 계단 포함)
  *   - unknown-step-type   toRouteView가 따로 처리하지 않는 step 종류
  */
@@ -127,8 +127,6 @@ function inspect(body, toRouteView) {
     const mode = route.mode;
     const unknownTypes = [...new Set((route.steps ?? []).map((s) => s.type).filter((t) => !KNOWN_STEP_TYPES.has(t)))];
     if (unknownTypes.length) add(mode, 'unknown-step-type', unknownTypes.join(', '));
-    for (const step of route.steps ?? [])
-      if (step.type === 'EXIT_BUILDING' && step.context?.indoor) add(mode, 'indoor-exit', step.instruction ?? '');
 
     const view = toRouteView(route);
     if (!view) {
@@ -139,6 +137,7 @@ function inspect(body, toRouteView) {
     if (!legs.length) add(mode, 'no-steps', '');
     for (const leg of legs) {
       const text = `${leg.label}: ${leg.from}${leg.to ? ` → ${leg.to}` : ''}`;
+      if (leg.type === 'indoor' && leg.from === '건물 밖') add(mode, 'indoor-exit', text);
       if (leg.from.endsWith('층 이동') && !leg.to) add(mode, 'unknown-floor', text);
       else if (!leg.from || !leg.to) add(mode, 'empty-label', text);
       // 층 이동은 "L동 4층 → 4층"처럼 도착 쪽에 건물 이름이 없어서 끝부분만 비교한다.

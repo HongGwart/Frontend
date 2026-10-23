@@ -23,12 +23,7 @@ node scripts/auditRoutes.js --recheck     # 문제 나온 경로만 서버에 �
 
 ### 앱에서 고칠 것
 
-**실내 공용 통로가 "건물 밖"으로 나오고, 통로 안 계단이 "계단으로 층 이동"으로 나옴** (`unknown-floor`, `indoor-exit`)
-- 예: A동 → B동 실내 위주 (`1367->1368`). 첫 50건 중 33건이 이 경우다.
-- 서버는 건물 사이 실내 통로를 `EXIT_BUILDING`(`context.indoor: true`, 건물 없음, "A동에서 공용 통로로 이동하세요") →
-  `FLOOR_CHANGE`(건물·층 없음) → `ENTER_BUILDING`으로 준다.
-- `toRouteView`가 `EXIT_BUILDING`을 무조건 "건물 밖"으로, 실내 `FLOOR_CHANGE`를 층 이동 구간으로 처리해서 생긴다.
-  통로는 "공용 통로" 같은 실내 구간으로 묶고, 통로 안 계단은 야외 계단처럼 그 구간에 "계단 포함"으로 합치는 방향이 맞다.
+(없음)
 
 ### 서버(백엔드)에 요청할 것
 
@@ -41,6 +36,16 @@ node scripts/auditRoutes.js --recheck     # 문제 나온 경로만 서버에 �
 
 **실외 구간 이름 없음**
 - 실외 step의 `road`·`landmark`가 항상 `null`이라 앱은 "건물 밖"으로만 보여준다.
+
+## 해결됨
+
+**실내 공용 통로가 "건물 밖"으로 나오고, 통로 안 계단이 "계단으로 층 이동"으로 나옴** (`unknown-floor`, `indoor-exit`) — 2026-10-23
+- 예: A동 → B동 실내 위주 (`1367->1368`). 첫 50건 중 33건.
+- 서버는 건물 사이 실내 통로를 `EXIT_BUILDING`(`context.indoor: true`, 건물 없음, "A동에서 공용 통로로 이동하세요") →
+  `FLOOR_CHANGE`(건물·층 없음) → `ENTER_BUILDING`으로 준다.
+- `toRouteView`가 실내 `EXIT_BUILDING`은 "공용 통로" 실내 이동으로 시작하고, 건물 없는 계단은 야외 계단처럼 지금 구간에
+  "계단 N곳 포함"으로 합치게 고쳤다. A동 → B동: "실내 이동 · 계단 1곳 포함: 공용 통로 → B동 1층".
+- state.json의 나머지 32건은 응답 원본이 없어 재검사 전이다. 다음에 `--recheck`로 다시 요청하면 지워진다.
 
 ## 기록
 
