@@ -498,10 +498,14 @@ export function useMapGestures({
       containerHeightShared.value = containerHeight;
       fitOffsetX.value = offsetX;
       fitOffsetY.value = offsetY;
+      // 처음 맞춘 위치에서 화면 가운데가 가리키는 도면 y좌표(회전 0)까지 경계에 넣는다. fitOffsetY로 도면을 올려 두면
+      // 세로로 얇은 층(K동·T동 등, 도면 세로 절반 < 올린 거리)은 이 점이 도면 밖이라, 안 넣으면 맞추자마자 경계 검사가
+      // 도면을 화면 가운데로 끌어내린다. 가로는 처음 위치가 항상 도면 가운데라 그대로 둔다.
+      const fittedCenterY = (containerHeight / 2 - offsetY) / initialScale;
       boundsMinX.value = contentMinX;
-      boundsMinY.value = contentMinY;
+      boundsMinY.value = Math.min(contentMinY, fittedCenterY);
       boundsMaxX.value = contentMinX + contentWidth;
-      boundsMaxY.value = contentMinY + contentHeight;
+      boundsMaxY.value = Math.max(contentMinY + contentHeight, fittedCenterY);
       hasFitted.value = 1;
 
       scale.value = savedScale.value = initialScale;
