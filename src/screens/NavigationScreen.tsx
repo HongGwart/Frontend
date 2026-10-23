@@ -141,8 +141,9 @@ export default function NavigationScreen() {
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
-  // 고른 카드의 옵션. 경로를 다시 불러왔을 때(1분 지나 화면 복귀) 고른 카드가 다른 카드와 같은 길이 되어 합쳐지면
-  // id로는 못 찾으니, 같은 옵션이 들어 있는 카드를 대신 보여준다 — 보던 경로 화면이 갑자기 목록으로 닫히지 않게.
+  // 고른 카드의 옵션. 경로를 다시 불러왔는데 서버 길 데이터가 바뀌어(백엔드 배포) 고른 카드가 다른 카드와 같은 길이
+  // 되어 합쳐지면 id로는 못 찾으니, 같은 옵션이 들어 있는 카드를 대신 보여준다 — 보던 경로 화면이 갑자기 목록으로
+  // 닫히지 않게. 엘리베이터 혼잡 예상은 경로를 바꾸지 않아서 이 경우가 아니다.
   const [selectedRouteOptions, setSelectedRouteOptions] = useState<RouteOptionKey[]>([]);
   const selectedView = useMemo(() => {
     if (!selectedRouteId) return null;
