@@ -108,13 +108,121 @@ function nextTargetLabel(next: StepDto | undefined, destination: string) {
 function placeLabel(step: StepDto) {
   const { context } = step;
   if (context?.indoor) return [context.buildingName, floorLabel(context.floor)].filter(Boolean).join(' ');
-  return step.landmark?.name ?? step.road ?? '바깥';
+  return step.landmark?.name ?? step.road ?? '건물 밖';
 }
 
-/** 실내 걷기 구간이면 그 층, 아니면(실외·층 이동·없음) undefined */
-function indoorFloorOf(step?: StepDto) {
-  if (!step || step.type === 'FLOOR_CHANGE' || !step.context?.indoor) return undefined;
-  return step.context.floor;
+/** "J동" + "B1" → "J동 지하 1층" */
+function floorPlace(buildingName?: string | null, floor?: string | null) {
+  return [buildingName, floorLabel(floor ?? undefined)].filter(Boolean).join(' ');
+}
+
+interface OpenLeg {
+  type: 'walk' | 'indoor';
+  from: string;
+  meters: number;
+  seconds: number;
+  /** 도보 구간에 합친 야외 계단 수(서버는 캠퍼스 비탈 계단도 층 정보 없는 FLOOR_CHANGE로 준다) */
+  outdoorStairs: number;
+  building?: string;
+  floor?: string;
+}
+
+/**
+ * 경로 카드 구간 목록. 서버 step은 회전마다 끊겨 있어서, 건물 출입과 실내 층 이동을 경계로 묶는다.
+ * - EXIT_BUILDING → 도보 이동, ENTER_BUILDING → 그 건물·층의 실내 이동, 실내 FLOOR_CHANGE → 엘리베이터/계단 이동
+ * - 나머지(WALK·회전·야외 계단)는 진행 중인 구간에 거리·시간을 더한다. 거리·시간은 서버 값의 합이다.
+ * - 구간 끝 이름은 다음 경계(건물 밖, 들어가는 건물·층, 엘리베이터/계단)로, 마지막 구간은 도착지로 채운다.
+ * 길 안내 화면은 회전 안내가 필요해서 이 묶음을 쓰지 않는다.
+ */
+function toRouteSteps(steps: StepDto[], mode: string, departure: string, destination: string): RouteStep[] {
+  const legs: Omit<RouteStep, 'id'>[] = [];
+  let open: OpenLeg | undefined;
+
+  const start = (step: StepDto, from: string) => {
+    const indoor = !!step.context?.indoor;
+    open = {
+      type: indoor ? 'indoor' : 'walk',
+      from,
+      meters: 0,
+      seconds: 0,
+      outdoorStairs: 0,
+      building: step.context?.buildingName ?? undefined,
+      floor: step.context?.floor ?? undefined,
+    };
+  };
+  const close = (to: string) => {
+    // 건물에 들어가자마자 층을 옮기는 경우처럼 걸은 게 없는 구간은 줄을 만들지 않는다.
+    if (open && (open.meters >= 1 || open.seconds > 0)) {
+      const stairsText = open.outdoorStairs ? ` · 계단 ${open.outdoorStairs}곳 포함` : '';
+      legs.push({
+        type: open.type,
+        label: open.type === 'indoor' ? '실내 이동' : `도보 이동${stairsText}`,
+        from: open.from,
+        to,
+        distanceMeters: Math.round(open.meters),
+        durationMinutes: minutes(open.seconds),
+      });
+    }
+    open = undefined;
+  };
+  const add = (step: StepDto) => {
+    if (!open) start(step, placeLabel(step));
+    open!.meters += step.distanceMeters ?? 0;
+    open!.seconds += step.durationSeconds ?? 0;
+  };
+
+  steps.forEach(step => {
+    switch (step.type) {
+      case 'DEPART':
+        start(step, departure);
+        add(step);
+        return;
+      case 'EXIT_BUILDING':
+        close('건물 밖');
+        start(step, '건물 밖');
+        add(step);
+        return;
+      case 'ENTER_BUILDING': {
+        const place = floorPlace(step.context?.buildingName, step.context?.floor);
+        close(place);
+        start(step, place);
+        add(step);
+        return;
+      }
+      case 'FLOOR_CHANGE': {
+        if (!step.context?.indoor) {
+          // 야외 계단은 층 이동이 아니라 도보 구간의 일부로 본다.
+          add(step);
+          open!.outdoorStairs += 1;
+          return;
+        }
+        const isElevator = step.meta?.transport === 'ELEVATOR';
+        const building = step.context.buildingName ?? open?.building;
+        // 층 이동 step의 context는 도착 층이다. 층 정보가 비어 있으면 직전 실내 구간 층·도착 층으로 채운다.
+        const fromFloor = step.meta?.fromFloor ?? open?.floor;
+        const toFloor = step.meta?.toFloor ?? step.context.floor ?? undefined;
+        const known = Boolean(fromFloor && toFloor);
+        close(isElevator ? '엘리베이터' : '계단');
+        legs.push({
+          type: isElevator ? 'elevator' : 'stairs',
+          label: isElevator ? '엘리베이터' : '계단 이동',
+          congested: isElevator && step.meta?.congested === true,
+          // 그래도 층을 모르면 빈 화살표 대신 한 줄 문장으로 보여준다.
+          from: known ? floorPlace(building, fromFloor) : `${isElevator ? '엘리베이터로' : '계단으로'} 층 이동`,
+          to: known ? floorLabel(toFloor) : '',
+          distanceMeters: Math.round(step.distanceMeters ?? 0),
+          durationMinutes: minutes(step.durationSeconds),
+        });
+        start(step, floorPlace(building, toFloor));
+        return;
+      }
+      default:
+        add(step);
+    }
+  });
+  close(destination);
+
+  return legs.map((leg, index) => ({ id: `${mode}-${index}`, ...leg }));
 }
 
 /**
@@ -135,41 +243,7 @@ export function toRouteView(route: RouteDto): RouteView | null {
   // 도착(ARRIVE)은 길 안내 화면이 마지막 "다음"에서 직접 보여주니 구간에서 뺀다.
   const steps = mergeFloorChanges(foldWalks(route.steps ?? [])).filter(step => step.type !== 'ARRIVE');
 
-  const routeSteps: RouteStep[] = steps.map((step, index) => {
-    const next = steps[index + 1];
-    const base = {
-      id: `${mode}-${index}`,
-      distanceMeters: Math.round(step.distanceMeters ?? 0),
-      durationMinutes: minutes(step.durationSeconds),
-    };
-    if (step.type === 'FLOOR_CHANGE') {
-      const isElevator = step.meta?.transport === 'ELEVATOR';
-      const prev = steps[index - 1];
-      // 서버가 층 정보를 비워 보내는 구간(계단에서 보임)은 앞뒤 실내 구간이 있던 층으로 채운다.
-      const fromFloor = step.meta?.fromFloor ?? indoorFloorOf(prev);
-      const toFloor = step.meta?.toFloor ?? indoorFloorOf(next);
-      const building = step.context?.buildingName ?? prev?.context?.buildingName;
-      const known = Boolean(fromFloor && toFloor);
-      return {
-        ...base,
-        type: isElevator ? 'elevator' : 'stairs',
-        label: isElevator ? '엘리베이터' : '계단 이동',
-        congested: isElevator && step.meta?.congested === true,
-        // 그래도 층을 모르면 빈 화살표 대신 한 줄 문장으로 보여준다.
-        from: known
-          ? [building, floorLabel(fromFloor)].filter(Boolean).join(' ')
-          : `${isElevator ? '엘리베이터' : '계단'}로 층 이동`,
-        to: known ? floorLabel(toFloor) : '',
-      };
-    }
-    return {
-      ...base,
-      type: step.context?.indoor ? 'indoor' : 'walk',
-      label: step.context?.indoor ? '실내 이동' : '도보 이동',
-      from: step.type === 'DEPART' ? departure : placeLabel(step),
-      to: nextTargetLabel(next, destination),
-    };
-  });
+  const routeSteps = toRouteSteps(steps, mode, departure, destination);
 
   const guidance: GuidanceStep[] = steps.map((step, index) => {
     const meters = Math.round(step.distanceMeters ?? 0);
