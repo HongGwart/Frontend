@@ -25,7 +25,7 @@ interface Props {
   icon: React.FC<SvgProps>;
   /**
    * 안내 문구. Figma처럼 특정 지점에서 줄바꿈해야 하면 문자열에 "\n"을 넣어서 두 줄로
-   * 만든다(자동 줄바꿈에 맡기면 Figma와 다른 지점에서 끊길 수 있다).
+   * 만든다(자동 줄바꿈에 맡기면 Figma와 다른 지점에서 끊길 수 있다). 칸은 2줄 높이로 고정이고, 넘치면 글자를 줄인다.
    */
   title: string;
   /** 예: "약 1분 소요" */
@@ -68,7 +68,11 @@ export function MoveInfoCard({
           <SlidingContent style={contentStyle}>
             <Icon width={64} height={64} color={theme.blue[500]} />
             <TextBlock>
-              <Title>{title}</Title>
+              {/* 1줄·2줄·3줄 문구마다 카드 높이가 바뀌면 진행 점 위치와 지도 패딩(카메라)이 같이 흔들려서, 문구 칸을
+                  2줄 높이로 고정한다. 2줄을 넘는 문구(실제 응답의 13%)는 글자를 80%까지 줄여 2줄 안에 넣는다. */}
+              <Title numberOfLines={TITLE_LINES} adjustsFontSizeToFit minimumFontScale={0.8}>
+                {title}
+              </Title>
               <Duration>{durationText}</Duration>
             </TextBlock>
           </SlidingContent>
@@ -160,7 +164,10 @@ const TextBlock = styled.View`
   gap: 4px;
 `;
 
+const TITLE_LINES = 2;
+
 const Title = styled.Text`
+  height: ${({ theme }) => theme.typography.headline.semiBold.lineHeight * TITLE_LINES}px;
   font-family: ${({ theme }) => theme.typography.headline.semiBold.fontFamily};
   font-size: ${({ theme }) => theme.typography.headline.semiBold.fontSize}px;
   line-height: ${({ theme }) => theme.typography.headline.semiBold.lineHeight}px;
