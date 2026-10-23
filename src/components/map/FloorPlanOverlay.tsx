@@ -35,17 +35,19 @@ const MAP_ICON_MIN_ZOOM = 18;
 // 찍어 붙여서 줌마다 크기를 바꾸면 매번 다시 찍어야 하므로 크기는 고정하고, 내부지도 뷰(RoomLabelsLayer)의 최소 크기 9pt에
 // 가깝게 둔다.
 const LABEL_FONT_SIZE = 10;
-const LABEL_CHAR_WIDTH = LABEL_FONT_SIZE * 0.62;
+// 굵기 600이라 내부지도 뷰(500, 0.62em)보다 숫자 폭을 조금 넓게 잡는다.
+const LABEL_CHAR_WIDTH = LABEL_FONT_SIZE * 0.65;
 const LABEL_LINE_HEIGHT = LABEL_FONT_SIZE * 1.2;
 // 글자가 방에 들어가는지 볼 때 쓰는 여백. 내부지도 뷰와 같게 가로는 방 폭의 80%, 세로는 60%까지만 쓴다.
 const LABEL_FIT_WIDTH_RATIO = 0.8;
 const LABEL_FIT_HEIGHT_RATIO = 0.6;
 // PNG 위 라벨은 내부지도 뷰(RoomLabelsLayer)와 같은 검정, PNG 없이 파란 방 도형 위에 그릴 땐 파랑.
-const LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '500', color: '#000000' } as const;
-const FALLBACK_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '600', color: '#003E80' } as const;
+// 지도 타일·건물 색 위에 얹혀 내부지도 뷰보다 묽어 보여서 한 단계 굵게 쓴다.
+const LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '600', color: '#000000' } as const;
+const FALLBACK_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '700', color: '#003E80' } as const;
 // 강조한 방(검색한 호실)은 내부지도 뷰(RoomPolygons·RoomLabelsLayer)와 같게 브랜드 남색으로 불투명하게 칠하고 번호는 흰색.
 const HIGHLIGHT_FILL = theme.blue[800];
-const HIGHLIGHT_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '500', color: '#FFFFFF' } as const;
+const HIGHLIGHT_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '600', color: '#FFFFFF' } as const;
 // 네이버 지도 폴리곤은 outlineWidth=0이 반영되지 않는 버그가 있어 테두리를 투명색으로 지운다.
 const NO_OUTLINE = 'rgba(0, 0, 0, 0)';
 // 건물 덮개(buildingMasks.ts): 네이버 지도 캠퍼스 바닥색으로 칠해 그 건물의 네이버 윤곽만 가린다. 찍은 모서리보다
@@ -246,9 +248,8 @@ export function FloorPlanOverlay({
             width={Math.ceil(room.label.length * LABEL_CHAR_WIDTH) + 8}
             height={16}
             anchor={{ x: 0.5, y: 0.5 }}
-            // 축소해서 글자가 방보다 커지면 숨긴다(방마다 다르다).
-            // 강조한 방 번호는 줌과 상관없이 보인다.
-            minZoom={isHighlighted(room.id) ? 0 : room.minZoom}
+            // 축소해서 글자가 방보다 커지면 숨긴다(방마다 다르다). 강조한 방도 같다 — 방 자체는 칠해져서 보인다.
+            minZoom={room.minZoom}
             zIndex={4}
           >
             <View key={room.label} collapsable={false} style={{ alignItems: 'center' }}>

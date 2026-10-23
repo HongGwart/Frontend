@@ -60,7 +60,7 @@ interface LabelProps {
  * 지도가 회전해도 글자는 항상 똑바로 보인다.
  *
  * 글자 크기는 층 전체가 같고(방마다 다르면 큰 방 번호만 커져 들쭉날쭉하다), 배율을 따라 MIN~MAX pt 사이에서 바뀐다.
- * 그 크기로 방에 안 들어가면 숨겼다가 확대해서 들어가는 순간 보인다. 선택한 방은 항상 보인다.
+ * 그 크기로 방에 안 들어가면 숨겼다가 확대해서 들어가는 순간 보인다. 선택한 방도 같은 규칙이다(방 자체는 칠해져서 보인다).
  * 크기·숨김은 transform scale과 opacity로 UI 스레드에서만 바꿔서 확대·축소 중 다시 렌더하지 않는다.
  *
  * 방을 탭하면 selectedRoomIds가 바뀌어 레이어 전체가 다시 렌더되는데, 한 층에 라벨이 70개
@@ -91,7 +91,7 @@ const RoomLabel = React.memo(function RoomLabel({
     const fontSize = Math.min(MAX_FONT_SIZE, Math.max(MIN_FONT_SIZE, floorSize * scale.value));
     const fits = fitSize * scale.value >= fontSize;
     return {
-      opacity: fits || isSelected ? 1 : 0,
+      opacity: fits ? 1 : 0,
       transform: [
         { translateX: translateX.value + rotatedX - boxWidth / 2 },
         { translateY: translateY.value + rotatedY - boxHeight / 2 },
