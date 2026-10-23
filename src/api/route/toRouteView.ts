@@ -42,6 +42,16 @@ export function toFloorId(buildingName?: string, floor?: string) {
 const minutes = (seconds?: number) => Math.max(1, Math.round((seconds ?? 0) / 60));
 
 /**
+ * 구간·안내 카드의 소요 시간 문구. 1분이 안 되는 구간까지 "1분"으로 올리면 구간을 더한 시간이 총 소요 시간보다
+ * 한참 커진다(카드 23장이 "약 1분"씩인데 총 10분). 캠퍼스 안 구간은 대부분 1분이 안 걸려서 "1분 미만"으로 뭉뚱그리면
+ * 거의 모든 줄이 같아지니, 1분 미만은 10초 단위 초로 적는다.
+ */
+const durationLabel = (seconds?: number) => {
+  const tens = Math.max(1, Math.round((seconds ?? 0) / 10));
+  return tens < 6 ? `${tens * 10}초` : `${minutes(seconds)}분`;
+};
+
+/**
  * 서버는 엘리베이터로 여러 층을 한 번에 가도 한 층마다 FLOOR_CHANGE를 따로 준다(L→1→2→…). 같은 건물에서
  * 같은 수단으로 이어지는 층 이동은 "엘리베이터로 5층까지"처럼 한 구간으로 합친다.
  */
@@ -108,7 +118,131 @@ function nextTargetLabel(next: StepDto | undefined, destination: string) {
 function placeLabel(step: StepDto) {
   const { context } = step;
   if (context?.indoor) return [context.buildingName, floorLabel(context.floor)].filter(Boolean).join(' ');
-  return step.landmark?.name ?? step.road ?? '바깥';
+  return step.landmark?.name ?? step.road ?? '건물 밖';
+}
+
+/** "J동" + "B1" → "J동 지하 1층" */
+function floorPlace(buildingName?: string | null, floor?: string | null) {
+  return [buildingName, floorLabel(floor ?? undefined)].filter(Boolean).join(' ');
+}
+
+interface OpenLeg {
+  type: 'walk' | 'indoor';
+  from: string;
+  meters: number;
+  seconds: number;
+  /**
+   * 구간에 합친 계단 수·엘리베이터 수. 서버는 캠퍼스 비탈의 야외 계단과 건물 사이 공용 통로의 계단·엘리베이터도
+   * 건물·층 없는 FLOOR_CHANGE로 주는데, 어느 건물의 몇 층인지 몰라 따로 줄을 만들지 않고 지금 구간에 합친다.
+   */
+  stairs: number;
+  elevators: number;
+  building?: string;
+  floor?: string;
+}
+
+/**
+ * 경로 카드 구간 목록. 서버 step은 회전마다 끊겨 있어서, 건물 출입과 실내 층 이동을 경계로 묶는다.
+ * - EXIT_BUILDING → 도보 이동, ENTER_BUILDING → 그 건물·층의 실내 이동, 건물 안 FLOOR_CHANGE → 엘리베이터/계단 이동
+ * - 실내로 표시된 EXIT_BUILDING은 건물 사이 공용 통로라 "건물 밖"이 아니라 "공용 통로" 실내 이동으로 시작한다.
+ * - 나머지(WALK·회전·건물 밖이나 통로의 계단·엘리베이터)는 진행 중인 구간에 거리·시간을 더한다. 거리·시간은 서버 값의 합이다.
+ * - 구간 끝 이름은 다음 경계(건물 밖, 들어가는 건물·층, 엘리베이터/계단)로, 마지막 구간은 도착지로 채운다.
+ * 길 안내 화면은 회전 안내가 필요해서 이 묶음을 쓰지 않는다.
+ */
+function toRouteSteps(steps: StepDto[], mode: string, departure: string, destination: string): RouteStep[] {
+  const legs: Omit<RouteStep, 'id'>[] = [];
+  let open: OpenLeg | undefined;
+
+  const start = (step: StepDto, from: string) => {
+    const indoor = !!step.context?.indoor;
+    open = {
+      type: indoor ? 'indoor' : 'walk',
+      from,
+      meters: 0,
+      seconds: 0,
+      stairs: 0,
+      elevators: 0,
+      building: step.context?.buildingName ?? undefined,
+      floor: step.context?.floor ?? undefined,
+    };
+  };
+  const close = (to: string) => {
+    // 건물에 들어가자마자 층을 옮기는 경우처럼 걸은 게 없는 구간은 줄을 만들지 않는다.
+    if (open && (open.meters >= 1 || open.seconds > 0)) {
+      // 경로 카드의 "계단 N곳 · 엘리베이터 N회"와 같은 단위로 적는다.
+      const included = [open.stairs && `계단 ${open.stairs}곳`, open.elevators && `엘리베이터 ${open.elevators}회`].filter(Boolean);
+      legs.push({
+        type: open.type,
+        label: `${open.type === 'indoor' ? '실내 이동' : '도보 이동'}${included.length ? ` · ${included.join(' · ')} 포함` : ''}`,
+        from: open.from,
+        to,
+        distanceMeters: Math.round(open.meters),
+        durationText: durationLabel(open.seconds),
+      });
+    }
+    open = undefined;
+  };
+  const add = (step: StepDto) => {
+    if (!open) start(step, placeLabel(step));
+    open!.meters += step.distanceMeters ?? 0;
+    open!.seconds += step.durationSeconds ?? 0;
+  };
+
+  steps.forEach(step => {
+    switch (step.type) {
+      case 'DEPART':
+        start(step, departure);
+        add(step);
+        return;
+      case 'EXIT_BUILDING': {
+        const place = step.context?.indoor ? '공용 통로' : '건물 밖';
+        close(place);
+        start(step, place);
+        add(step);
+        return;
+      }
+      case 'ENTER_BUILDING': {
+        const place = floorPlace(step.context?.buildingName, step.context?.floor);
+        close(place);
+        start(step, place);
+        add(step);
+        return;
+      }
+      case 'FLOOR_CHANGE': {
+        if (!step.context?.indoor || !step.context.buildingName) {
+          // 건물 밖이나 공용 통로의 계단·엘리베이터는 따로 줄을 만들지 않고 지금 구간의 일부로 본다.
+          add(step);
+          if (step.meta?.transport === 'ELEVATOR') open!.elevators += 1;
+          else open!.stairs += 1;
+          return;
+        }
+        const isElevator = step.meta?.transport === 'ELEVATOR';
+        const building = step.context.buildingName;
+        // 층 이동 step의 context는 도착 층이다. 층 정보가 비어 있으면 직전 실내 구간 층·도착 층으로 채운다.
+        const fromFloor = step.meta?.fromFloor ?? open?.floor;
+        const toFloor = step.meta?.toFloor ?? step.context.floor ?? undefined;
+        const known = Boolean(fromFloor && toFloor);
+        close(isElevator ? '엘리베이터' : '계단');
+        legs.push({
+          type: isElevator ? 'elevator' : 'stairs',
+          label: isElevator ? '엘리베이터' : '계단 이동',
+          congested: isElevator && step.meta?.congested === true,
+          // 그래도 층을 모르면 빈 화살표 대신 한 줄 문장으로 보여준다.
+          from: known ? floorPlace(building, fromFloor) : `${isElevator ? '엘리베이터로' : '계단으로'} 층 이동`,
+          to: known ? floorLabel(toFloor) : '',
+          distanceMeters: Math.round(step.distanceMeters ?? 0),
+          durationText: durationLabel(step.durationSeconds),
+        });
+        start(step, floorPlace(building, toFloor));
+        return;
+      }
+      default:
+        add(step);
+    }
+  });
+  close(destination);
+
+  return legs.map((leg, index) => ({ id: `${mode}-${index}`, ...leg }));
 }
 
 /**
@@ -129,33 +263,7 @@ export function toRouteView(route: RouteDto): RouteView | null {
   // 도착(ARRIVE)은 길 안내 화면이 마지막 "다음"에서 직접 보여주니 구간에서 뺀다.
   const steps = mergeFloorChanges(foldWalks(route.steps ?? [])).filter(step => step.type !== 'ARRIVE');
 
-  const routeSteps: RouteStep[] = steps.map((step, index) => {
-    const next = steps[index + 1];
-    const base = {
-      id: `${mode}-${index}`,
-      distanceMeters: Math.round(step.distanceMeters ?? 0),
-      durationMinutes: minutes(step.durationSeconds),
-    };
-    if (step.type === 'FLOOR_CHANGE') {
-      const isElevator = step.meta?.transport === 'ELEVATOR';
-      return {
-        ...base,
-        // RouteStep엔 계단 타입이 없어서 도보 아이콘 + "계단 이동" 라벨로 보여준다.
-        type: isElevator ? 'elevator' : 'walk',
-        label: isElevator ? '엘리베이터' : '계단 이동',
-        congested: isElevator && step.meta?.congested === true,
-        from: [step.context?.buildingName, floorLabel(step.meta?.fromFloor)].filter(Boolean).join(' '),
-        to: floorLabel(step.meta?.toFloor),
-      };
-    }
-    return {
-      ...base,
-      type: 'walk',
-      label: step.context?.indoor ? '실내 이동' : '도보 이동',
-      from: step.type === 'DEPART' ? departure : placeLabel(step),
-      to: nextTargetLabel(next, destination),
-    };
-  });
+  const routeSteps = toRouteSteps(steps, mode, departure, destination);
 
   const guidance: GuidanceStep[] = steps.map((step, index) => {
     const meters = Math.round(step.distanceMeters ?? 0);
@@ -170,7 +278,7 @@ export function toRouteView(route: RouteDto): RouteView | null {
       id: `g-${mode}-${index}`,
       moveType: moveTypeOf(step),
       title: `${step.instruction ?? ''}${walkText}`,
-      durationText: `약 ${minutes(step.durationSeconds)}분 소요${congested ? ` · ${CONGESTED_ELEVATOR_TEXT}` : ''}`,
+      durationText: `약 ${durationLabel(step.durationSeconds)} 소요${congested ? ` · ${CONGESTED_ELEVATOR_TEXT}` : ''}`,
       progress: progressAt(step.polylineRange?.[0] ?? 0),
       ...(floorId ? { floorId } : {}),
     };
@@ -178,16 +286,22 @@ export function toRouteView(route: RouteDto): RouteView | null {
 
   // 실내 경로선을 층별로 묶는다(길 안내에서 지금 층 구간만 그릴 때 쓴다). 경로선 점엔 건물 이름이 없어서,
   // 그 점을 지나는 구간(polylineRange)의 건물을 쓴다.
-  const buildingAt = (index: number) =>
-    steps.find(({ polylineRange: range }) => range && index >= range[0] && index <= range[1])?.context?.buildingName;
+  // 구간 경계의 점은 앞뒤 두 구간에 다 걸치는데, 앞 구간이 "건물 밖으로 나가세요"처럼 건물 이름 없는 단계면 이름을
+  // 못 찾으니 이름 있는 단계를 먼저 쓴다.
+  const buildingAt = (index: number) => {
+    const covering = steps.filter(({ polylineRange: range }) => range && index >= range[0] && index <= range[1]);
+    return (covering.find(step => step.context?.buildingName) ?? covering[0])?.context?.buildingName;
+  };
   const floorSegments: FloorPathSegment[] = [];
   polyline.forEach((point, index) => {
     if (index === 0) return;
     const prevPoint = polyline[index - 1];
-    if (!point.indoor || !prevPoint.indoor) return;
-    const floorId = toFloorId(buildingAt(index), point.floor);
-    // 층이 바뀌는 점(엘리베이터)끼리 잇는 선은 어느 층에도 넣지 않는다.
-    if (!floorId || prevPoint.floor !== point.floor) return;
+    // 한쪽 끝만 실내인 선(출입문 안쪽 끝)은 실내 쪽 층에, 층이 바뀌는 선(계단·엘리베이터)은 도착 층에 넣는다.
+    // 어느 층에도 안 넣으면, 다른 층에 있을 때 그 층 경로를 지워도 이 선만 회색으로 남아 건물 안에 토막이 뜬다.
+    const indoorIndex = point.indoor ? index : prevPoint.indoor ? index - 1 : undefined;
+    if (indoorIndex === undefined) return;
+    const floorId = toFloorId(buildingAt(indoorIndex), polyline[indoorIndex].floor);
+    if (!floorId) return;
     const from = progressAt(index - 1);
     const to = progressAt(index);
     const last = floorSegments[floorSegments.length - 1];
@@ -201,7 +315,7 @@ export function toRouteView(route: RouteDto): RouteView | null {
       .length;
   const result: RouteResult = {
     id: `api-${mode}`,
-    option: MODE_TO_OPTION[mode] ?? 'shortest',
+    options: [MODE_TO_OPTION[mode] ?? 'shortest'],
     durationMinutes: minutes(route.summary?.durationSeconds),
     distanceMeters: Math.round(route.summary?.distanceMeters ?? totalMeters),
     // 실내 비율·엘리베이터 혼잡은 서버 지표를 쓴다. 값이 없는 응답(구버전 서버)이면 undefined라 화면이 표시를 뺀다.

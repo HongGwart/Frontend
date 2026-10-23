@@ -9,6 +9,25 @@ export interface RouteSearchParams {
 }
 
 /**
+ * 서버는 세 모드 경로를 따로 주지만, 절반 넘게는 두세 모드가 똑같은 길이다(실제 응답 569건 중 두 모드 같음 50%,
+ * 세 모드 같음 20%). 같은 길을 이름만 바꿔 카드 여러 장으로 보여주지 않게, 경로선이 같은 경로는 앞의 카드 하나로
+ * 합치고 옵션만 덧붙인다. 합친 카드는 앞 경로의 id를 그대로 써서 길 안내 화면이 같은 id로 찾는다.
+ * 받은 경로 객체는 고치지 않고 합친 카드만 새로 만든다.
+ */
+function mergeSameRoutes(views: RouteView[]): RouteView[] {
+  const groups = new Map<string, RouteView[]>();
+  views.forEach(view => {
+    const signature = view.map.path.map(point => `${point.latitude},${point.longitude}`).join(';');
+    groups.set(signature, [...(groups.get(signature) ?? []), view]);
+  });
+  return [...groups.values()].map(([first, ...rest]) =>
+    rest.length === 0
+      ? first
+      : { ...first, result: { ...first.result, options: [first, ...rest].flatMap(view => view.result.options) } },
+  );
+}
+
+/**
  * 출발/도착 노드 사이 경로를 찾는다(GET /api/route). mode를 빼고 한 번 불러서 세 모드(최단/실내 위주/계단
  * 회피) 경로를 같이 받는다 — 경로 선택 화면과 길 안내 화면이 같은 캐시를 쓴다.
  * 출발/도착 중 노드가 없는 곳(서버에 없는 장소)이 있으면 요청하지 않는다(enabled=false, 화면이 안내 문구를 띄운다).
@@ -33,7 +52,7 @@ export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
   );
 
   const routes = useMemo(
-    () => (data?.routes ?? []).map(toRouteView).filter((view): view is RouteView => view !== null),
+    () => mergeSameRoutes((data?.routes ?? []).map(toRouteView).filter((view): view is RouteView => view !== null)),
     [data],
   );
 

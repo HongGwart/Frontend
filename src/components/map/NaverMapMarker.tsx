@@ -7,6 +7,7 @@ import {
   MARKER_PIN_BOX_SIZE,
   MARKER_LABEL_GAP,
   MARKER_LABEL_PILL_HEIGHT,
+  getMarkerLabelWidth,
 } from '@components/common/Marker';
 
 interface Props {
@@ -51,8 +52,7 @@ const PIN_SIZE = {
 
 function getOverlaySize(hasLabel: boolean, label?: string) {
   if (!hasLabel || !label) return PIN_SIZE;
-  // 한글 기준 글자당 대략 15px + 좌우 패딩(10px*2) + 여유값.
-  const labelWidth = Math.max(PIN_SIZE.width, label.length * 15 + 20 + 10);
+  const labelWidth = Math.max(PIN_SIZE.width, getMarkerLabelWidth(label));
   return {
     width: labelWidth,
     height: MARKER_LABEL_PILL_HEIGHT + MARKER_LABEL_GAP + PIN_SIZE.height,

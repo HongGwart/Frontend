@@ -13,6 +13,14 @@ export const MARKER_LABEL_GAP = 0;
 // LabelPill(padding 4px 위/아래) + LabelText(labelNormal.semiBold lineHeight 14*1.5=21px)
 export const MARKER_LABEL_PILL_HEIGHT = 4 * 2 + 21;
 
+/**
+ * 라벨 필을 자르지 않고 담을 오버레이 폭 추정값. 한글 기준 글자당 대략 15px + 좌우 패딩(10px*2) + 여유값.
+ * 오버레이가 이 폭으로 고정 래스터화되므로 모자라면 라벨이 "…"로 잘린다.
+ */
+export function getMarkerLabelWidth(label: string): number {
+  return label.length * 15 + 20 + 10;
+}
+
 interface Props {
   /** 마커 위에 뜨는 라벨 텍스트 (예: "G동"). number가 true면 라벨은 표시되지 않는다. */
   label?: string;

@@ -4,20 +4,24 @@ import type { LatLng } from '@utils/routePath';
 // 길찾기 경로 카드·길 안내 화면 모델 타입. 서버 경로 응답을 toRouteView가 이 모양으로 바꾼다.
 export interface RouteStep {
   id: string;
-  type: 'walk' | 'elevator';
+  /** 구간 목록 아이콘을 고르는 이동 방식 — walk는 실외 도보 */
+  type: 'walk' | 'indoor' | 'stairs' | 'elevator';
   /** 이동 수단 라벨 (예: "도보 이동", "구름다리 이동", "엘리베이터") */
   label: string;
   from: string;
+  /** 비어 있으면 화살표 없이 from만 한 줄로 보여준다(층 정보를 모르는 층 이동) */
   to: string;
   distanceMeters: number;
-  durationMinutes: number;
+  /** 소요 시간 문구 ("3분", 1분이 안 되면 "30초"처럼 10초 단위) */
+  durationText: string;
   /** 엘리베이터 구간의 혼잡 예상(서버 meta.congested) — 구간 목록에 경고 아이콘을 붙인다 */
   congested?: boolean;
 }
 
 export interface RouteResult {
   id: string;
-  option: RouteOptionKey;
+  /** 이 경로가 해당하는 경로 옵션. 서버가 여러 모드에 같은 경로를 주면 한 카드로 합쳐서 옵션이 여러 개다 */
+  options: RouteOptionKey[];
   durationMinutes: number;
   distanceMeters: number;
   /** 실내 보행 비율(%) — 서버 summary.indoorPercent. 값이 없는 응답(구버전 서버)이면 0%로 단정하지 않고 표시를 뺀다 */

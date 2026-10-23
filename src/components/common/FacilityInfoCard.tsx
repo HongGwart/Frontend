@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
 import BuildingIcon from '@assets/svgs/icons/building.svg';
@@ -50,6 +50,9 @@ interface Props {
   onToggleFavorite?: () => void;
   onDeparturePress?: () => void;
   onArrivalPress?: () => void;
+  /** 출발/도착을 누른 뒤 길찾기 장소를 찾는 동안 그 버튼에 로딩 표시(useRouteButtonProps가 채운다) */
+  departureLoading?: boolean;
+  arrivalLoading?: boolean;
   /** outside/inside/facility에서만 쓰인다 */
   images?: [PhotoSource, PhotoSource];
   /**
@@ -115,6 +118,8 @@ export function FacilityInfoCard({
   onToggleFavorite,
   onDeparturePress,
   onArrivalPress,
+  departureLoading = false,
+  arrivalLoading = false,
   images,
   placeholderIcon,
   facilityCounts,
@@ -140,10 +145,10 @@ export function FacilityInfoCard({
 
   const actionButtons = (
     <ActionButtonRow compact={compact}>
-      <SubButton variant="secondary" onPress={onDeparturePress} compact={compact}>
+      <SubButton variant="secondary" onPress={onDeparturePress} loading={departureLoading} compact={compact}>
         출발
       </SubButton>
-      <SubButton variant="primary" onPress={onArrivalPress} compact={compact}>
+      <SubButton variant="primary" onPress={onArrivalPress} loading={arrivalLoading} compact={compact}>
         도착
       </SubButton>
     </ActionButtonRow>
@@ -297,14 +302,17 @@ export function OperatingHoursRow({
 function SubButton({
   variant,
   onPress,
+  loading,
   children,
   compact,
 }: {
   variant: 'primary' | 'secondary';
   onPress?: () => void;
+  loading: boolean;
   children: string;
   compact: boolean;
 }) {
+  const theme = useTheme();
   // 누르고 있는 동안의 배경색 — 공용 Button처럼 Pressable style 함수 대신 상태로 들고 있는다.
   const [isPressed, setIsPressed] = useState(false);
   return (
@@ -315,10 +323,20 @@ function SubButton({
       onPressOut={() => setIsPressed(false)}
       pressed={isPressed}
       compact={compact}
+      disabled={loading}
+      accessibilityState={{ busy: loading }}
     >
-      <SubButtonText variant={variant} pressed={isPressed} compact={compact}>
+      {/* 로딩 중에도 글자 자리를 남겨 버튼 폭이 바뀌지 않게 하고, 그 위에 스피너를 얹는다. */}
+      <SubButtonText variant={variant} pressed={isPressed} compact={compact} style={loading && { opacity: 0 }}>
         {children}
       </SubButtonText>
+      {loading && (
+        <ActivityIndicator
+          size="small"
+          color={variant === 'primary' ? theme.semantic.text.white : theme.blue[700]}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
     </SubButtonContainer>
   );
 }
