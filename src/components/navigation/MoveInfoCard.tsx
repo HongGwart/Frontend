@@ -1,10 +1,24 @@
 import React from 'react';
 import { Pressable, StyleProp, ViewStyle } from 'react-native';
-import Animated, { AnimatedStyle } from 'react-native-reanimated';
+import Animated, { AnimatedStyle, FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import styled, { useTheme } from 'styled-components/native';
 import { SvgProps } from 'react-native-svg';
 import CloseThinIcon from '@assets/svgs/icons/closeThin.svg';
+
+// 진행 점은 이 개수까지만 보여준다. 카드 폭(320pt 안팎)에 점 6px + 간격 8px이면 23개가 한계인데 안내 카드는
+// 37장까지 나와서, 지금 구간 주변만 보여주고 넘길 때마다 점 줄이 따라 움직인다(인스타그램 사진 넘김처럼).
+const MAX_VISIBLE_DOTS = 7;
+const DOT_SIZE = 6;
+// 앞뒤로 점이 더 있다는 표시로 창 맨 끝 점을 작게 그린다.
+const EDGE_DOT_SIZE = 3;
+
+/** 보여줄 점의 구간 인덱스들. 지금 구간이 가능한 한 가운데 오게 창을 잡는다. */
+function visibleDotRange(stepCount: number, activeIndex: number) {
+  if (stepCount <= MAX_VISIBLE_DOTS) return { start: 0, end: stepCount };
+  const start = Math.min(stepCount - MAX_VISIBLE_DOTS, Math.max(0, activeIndex - Math.floor(MAX_VISIBLE_DOTS / 2)));
+  return { start, end: start + MAX_VISIBLE_DOTS };
+}
 
 interface Props {
   /** 이동 방식 아이콘(도보/계단/출입구/엘리베이터 등). 64x64로 그려진다. */
@@ -17,7 +31,7 @@ interface Props {
   /** 예: "약 1분 소요" */
   durationText: string;
   onClose?: () => void;
-  /** 전체 구간 수. 하단 진행 점(dot)을 이 개수만큼 그린다. */
+  /** 전체 구간 수. 하단 진행 점(dot)을 이 개수만큼(많으면 지금 구간 주변 MAX_VISIBLE_DOTS개만) 그린다. */
   stepCount: number;
   /** 지금 보여주는 구간의 인덱스(0부터 시작). 이 점만 강조색으로 그려진다. */
   activeStepIndex: number;
@@ -65,15 +79,38 @@ export function MoveInfoCard({
           </CloseButton>
         </TopRow>
 
-        {stepCount > 1 && (
-          <DotRow>
-            {Array.from({ length: stepCount }).map((_, index) => (
-              <Dot key={index} active={index === activeStepIndex} />
-            ))}
-          </DotRow>
-        )}
+        {stepCount > 1 && <StepDots stepCount={stepCount} activeIndex={activeStepIndex} />}
       </Content>
     </Container>
+  );
+}
+
+function StepDots({ stepCount, activeIndex }: { stepCount: number; activeIndex: number }) {
+  const theme = useTheme();
+  const { start, end } = visibleDotRange(stepCount, activeIndex);
+  const indexes = Array.from({ length: end - start }, (_, i) => start + i);
+  return (
+    <DotRow>
+      {indexes.map(index => {
+        const isEdge = (index === start && start > 0) || (index === end - 1 && end < stepCount);
+        const size = isEdge ? EDGE_DOT_SIZE : DOT_SIZE;
+        return (
+          // 구간 인덱스를 key로 써서, 창이 밀리면 기존 점은 옆으로 미끄러지고 끝에서 하나가 들어오고 나간다.
+          <Animated.View
+            key={index}
+            entering={FadeIn.duration(150)}
+            exiting={FadeOut.duration(150)}
+            layout={LinearTransition.duration(200)}
+            style={{
+              width: size,
+              height: size,
+              borderRadius: size / 2,
+              backgroundColor: index === activeIndex ? theme.blue[500] : theme.semantic.line.primary,
+            }}
+          />
+        );
+      })}
+    </DotRow>
   );
 }
 
@@ -146,16 +183,11 @@ const CloseButton = styled(Pressable)`
   justify-content: center;
 `;
 
+// 점 크기가 끝에서 바뀌어도 줄 높이가 흔들리지 않게 큰 점 높이로 고정한다.
 const DotRow = styled.View`
   flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 8px;
-`;
-
-const Dot = styled.View<{ active: boolean }>`
-  width: 6px;
-  height: 6px;
-  border-radius: 3px;
-  background-color: ${({ theme, active }) => (active ? theme.blue[500] : theme.semantic.line.primary)};
+  height: ${DOT_SIZE}px;
 `;
