@@ -5,6 +5,7 @@ import {
   NaverMapMarkerOverlay,
   NaverMapPolygonOverlay,
 } from '@mj-studio/react-native-naver-map';
+import { labelWidthEm } from '@utils/roomLabel';
 import { getBuildingMask } from '@constant/buildingMasks';
 import { FLOOR_MAPS, getHostedArea, isInHostedArea, parseFloorId, resolveFloorId } from '@constant/floorMaps';
 import { FLOOR_OVERLAY_IMAGES, FloorOverlayIconType, FloorOverlayImage } from '@constant/floorOverlayImages';
@@ -35,8 +36,9 @@ const MAP_ICON_MIN_ZOOM = 18;
 // 찍어 붙여서 줌마다 크기를 바꾸면 매번 다시 찍어야 하므로 크기는 고정하고, 내부지도 뷰(RoomLabelsLayer)의 최소 크기 9pt에
 // 가깝게 둔다.
 const LABEL_FONT_SIZE = 10;
-// 굵기 600이라 내부지도 뷰(500, 0.62em)보다 숫자 폭을 조금 넓게 잡는다.
-const LABEL_CHAR_WIDTH = LABEL_FONT_SIZE * 0.65;
+// 굵기 600이라 내부지도 뷰(500)보다 글자 폭을 조금 넓게 잡는다(labelWidthEm × 이 배율).
+const LABEL_WEIGHT_WIDTH_FACTOR = 1.05;
+const labelWidthPt = (label: string) => labelWidthEm(label) * LABEL_FONT_SIZE * LABEL_WEIGHT_WIDTH_FACTOR;
 const LABEL_LINE_HEIGHT = LABEL_FONT_SIZE * 1.2;
 // 글자가 방에 들어가는지 볼 때 쓰는 여백. 내부지도 뷰와 같게 가로는 방 폭의 80%, 세로는 60%까지만 쓴다.
 const LABEL_FIT_WIDTH_RATIO = 0.8;
@@ -123,7 +125,7 @@ function labelMinZoom(coords: GeoCoord[], center: GeoCoord, label: string) {
   const metersPerPtAtZoom0 = (EARTH_CIRCUMFERENCE_M * cosLat) / 256;
   const zoomToFit = (meters: number, pt: number) => Math.log2((metersPerPtAtZoom0 * pt) / meters);
   return Math.max(
-    zoomToFit(width * LABEL_FIT_WIDTH_RATIO, label.length * LABEL_CHAR_WIDTH),
+    zoomToFit(width * LABEL_FIT_WIDTH_RATIO, labelWidthPt(label)),
     zoomToFit(height * LABEL_FIT_HEIGHT_RATIO, LABEL_LINE_HEIGHT),
   );
 }
@@ -245,7 +247,7 @@ export function FloorPlanOverlay({
             key={`floor-label-${floorId}-${room.id}${isHighlighted(room.id) ? '-on' : ''}`}
             latitude={room.center.latitude}
             longitude={room.center.longitude}
-            width={Math.ceil(room.label.length * LABEL_CHAR_WIDTH) + 8}
+            width={Math.ceil(labelWidthPt(room.label)) + 8}
             height={16}
             anchor={{ x: 0.5, y: 0.5 }}
             // 축소해서 글자가 방보다 커지면 숨긴다(방마다 다르다). 강조한 방도 같다 — 방 자체는 칠해져서 보인다.
