@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NaverMapView, NaverMapPolylineOverlay, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
@@ -104,7 +104,9 @@ export default function NavigationScreen() {
   const toNodeId = destinationNodeId ?? destinationLookup.nodeId;
   const isLookingUpPlace = departureLookup.isLoading || destinationLookup.isLoading;
   const placeLookupFailed = departureLookup.isError || destinationLookup.isError;
-  const routeSearch = useRouteSearch({ fromNodeId, toNodeId });
+  // 길 안내·장소 검색 화면 밑에 가려져 있는 동안은 앱 복귀 때 다시 불러오지 않는다(돌아오면 아래 refetchIfStale이 확인).
+  const isFocused = useIsFocused();
+  const routeSearch = useRouteSearch({ fromNodeId, toNodeId, autoRefetch: isFocused });
   // 장소 검색·길 안내 화면에서 돌아오면(이 화면은 스택에 남아 포커스만 바뀐다) 재사용 기한이 지난 경로를 다시
   // 불러와 엘리베이터 혼잡 예상을 새로 계산한다(기한은 useRouteSearch의 staleTime). 길 안내 화면은 처음 정한 경로를
   // 고정해 두므로 영향이 없다.

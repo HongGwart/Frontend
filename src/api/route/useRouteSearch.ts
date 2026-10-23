@@ -7,6 +7,14 @@ import { RouteView, toRouteView } from './toRouteView';
 export interface RouteSearchParams {
   fromNodeId?: number;
   toNodeId?: number;
+  /**
+   * false면 캐시에 경로가 있는 동안 저절로 다시 불러오지 않는다(화면 진입·앱 복귀·네트워크 복구 때). 캐시가 없으면
+   * 그대로 한 번 받는다. 앱 복귀 때는 이 경로를 보는 화면 중 하나라도 켜져 있으면 다시 불러오므로, 경로를 쓰지 않는
+   * 화면은 모두 꺼야 한다.
+   * - 길 안내 화면: 처음 정한 경로를 고정해 두고 다시 받은 응답을 쓰지 않는다 → 항상 false
+   * - 길찾기 화면: 길 안내 화면 밑에 가려져 있는 동안 false. 다시 보이면 refetchIfStale로 기한을 확인한다
+   */
+  autoRefetch?: boolean;
 }
 
 /**
@@ -34,7 +42,7 @@ function mergeSameRoutes(views: RouteView[]): RouteView[] {
  * 출발/도착 중 노드가 없는 곳(서버에 없는 장소)이 있으면 요청하지 않는다(enabled=false, 화면이 안내 문구를 띄운다).
  * 실패는 토스트 대신 notFound(404 ROUTE_NOT_FOUND)/error로 돌려줘서 화면이 목록 자리에 안내한다.
  */
-export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
+export function useRouteSearch({ fromNodeId, toNodeId, autoRefetch = true }: RouteSearchParams) {
   const enabled = fromNodeId !== undefined && toNodeId !== undefined;
 
   const { data, error, isError, isFetching, isStale, refetch } = useRouteQuery(
@@ -51,6 +59,9 @@ export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
             query.state.dataUpdatedAt,
             Math.max(0, ...(query.state.data?.routes ?? []).map(route => route.summary?.durationSeconds ?? 0)),
           ),
+        refetchOnMount: autoRefetch,
+        refetchOnWindowFocus: autoRefetch,
+        refetchOnReconnect: autoRefetch,
       },
     },
   );

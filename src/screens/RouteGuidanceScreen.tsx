@@ -266,7 +266,7 @@ export default function RouteGuidanceScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'RouteGuidance'>>();
   const insets = useSafeAreaInsets();
-  const routeSearch = useRouteSearch({ fromNodeId: params.fromNodeId, toNodeId: params.toNodeId });
+  const routeSearch = useRouteSearch({ fromNodeId: params.fromNodeId, toNodeId: params.toNodeId, autoRefetch: false });
   const findApiRoute = (): GuidanceRoute | null => {
     const view = routeSearch.routes.find(item => item.result.id === params.routeId);
     return view ? { route: view.result, routeMap: view.map } : null;
