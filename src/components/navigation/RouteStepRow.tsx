@@ -29,6 +29,9 @@ const STEP_ICONS = {
 export function RouteStepRow({ step, showDivider = true }: Props) {
   const theme = useTheme();
   const Icon = STEP_ICONS[step.type];
+  // 층 이동(엘리베이터·계단)은 위아래로 움직여서 서버 거리가 0m이거나 의미가 없고, 걸은 게 없는 구간(통로
+  // 엘리베이터만 탄 경우)도 0m라서 "0m · 1분" 대신 시간만 보여준다.
+  const showDistance = (step.type === 'walk' || step.type === 'indoor') && step.distanceMeters > 0;
 
   return (
     <Container showDivider={showDivider}>
@@ -49,7 +52,7 @@ export function RouteStepRow({ step, showDivider = true }: Props) {
         </RouteText>
       </Content>
       <SummaryText>
-        {step.distanceMeters}m · {step.durationText}
+        {showDistance ? `${step.distanceMeters}m · ${step.durationText}` : step.durationText}
       </SummaryText>
     </Container>
   );
