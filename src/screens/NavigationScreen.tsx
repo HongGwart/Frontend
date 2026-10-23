@@ -105,8 +105,9 @@ export default function NavigationScreen() {
   const isLookingUpPlace = departureLookup.isLoading || destinationLookup.isLoading;
   const placeLookupFailed = departureLookup.isError || destinationLookup.isError;
   const routeSearch = useRouteSearch({ fromNodeId, toNodeId });
-  // 장소 검색·길 안내 화면에서 돌아오면(이 화면은 스택에 남아 포커스만 바뀐다) 1분 지난 경로를 다시 불러와
-  // 엘리베이터 혼잡 예상을 새로 계산한다. 길 안내 화면은 처음 정한 경로를 고정해 두므로 영향이 없다.
+  // 장소 검색·길 안내 화면에서 돌아오면(이 화면은 스택에 남아 포커스만 바뀐다) 재사용 기한이 지난 경로를 다시
+  // 불러와 엘리베이터 혼잡 예상을 새로 계산한다(기한은 useRouteSearch의 staleTime). 길 안내 화면은 처음 정한 경로를
+  // 고정해 두므로 영향이 없다.
   const refetchIfStaleRef = useRef(routeSearch.refetchIfStale);
   refetchIfStaleRef.current = routeSearch.refetchIfStale;
   useFocusEffect(useCallback(() => refetchIfStaleRef.current(), []));

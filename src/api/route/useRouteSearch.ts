@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useRoute as useRouteQuery } from '@api/generated/honggwart';
 import { toApiError } from '@api/errors';
+import { routeFreshMs } from './routeCacheTime';
 import { RouteView, toRouteView } from './toRouteView';
 
 export interface RouteSearchParams {
@@ -43,10 +44,13 @@ export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
         enabled,
         // 실패하면 경로 목록 자리에 바로 문구를 띄우니(경로 없음/그 밖의 실패) 전역 토스트는 끈다.
         meta: { silent: true },
-        // 엘리베이터 혼잡은 요청 시각 기준 예상이라 무기한 재사용하지 않는다 — 1분이 지나면 길찾기 화면에 다시
-        // 들어오거나 앱으로 돌아올 때 새로 불러온다. 길 안내 화면은 처음 정한 경로를 상태로 고정해 두므로
-        // 안내 도중 다시 불러와도 구간이 바뀌지 않는다(RouteGuidanceScreen).
-        staleTime: 60_000,
+        // 응답이 달라질 수 있는 건 엘리베이터 혼잡 시간(평일 매시 50분~정각) 경계를 넘을 때뿐이라, 그 전까지는
+        // 다시 요청하지 않는다(routeCacheTime). 혼잡은 엘리베이터 도착 시각으로 판정해서 가장 긴 경로 시간만큼 앞당긴다.
+        staleTime: query =>
+          routeFreshMs(
+            query.state.dataUpdatedAt,
+            Math.max(0, ...(query.state.data?.routes ?? []).map(route => route.summary?.durationSeconds ?? 0)),
+          ),
       },
     },
   );
@@ -71,7 +75,7 @@ export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
     /** 경로 없음 외의 실패(네트워크·서버 오류). 화면이 문구를 띄운다. */
     error: apiError && !notFound ? apiError : undefined,
     /**
-     * 캐시가 1분이 지났으면 다시 불러온다. 다른 화면에 갔다가 돌아오면 화면이 새로 마운트되지 않아(포커스만 바뀜)
+     * 캐시가 재사용 기한(staleTime — 다음 혼잡 시간 경계 전)을 넘겼으면 다시 불러온다. 다른 화면에 갔다가 돌아오면 화면이 새로 마운트되지 않아(포커스만 바뀜)
      * 자동으로 다시 불러오지 않아서, 화면 포커스 때 부른다. 이미 불러오는 중이면 겹쳐 요청하지 않는다.
      */
     refetchIfStale: () => {
