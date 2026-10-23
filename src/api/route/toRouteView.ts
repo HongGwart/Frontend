@@ -286,16 +286,22 @@ export function toRouteView(route: RouteDto): RouteView | null {
 
   // 실내 경로선을 층별로 묶는다(길 안내에서 지금 층 구간만 그릴 때 쓴다). 경로선 점엔 건물 이름이 없어서,
   // 그 점을 지나는 구간(polylineRange)의 건물을 쓴다.
-  const buildingAt = (index: number) =>
-    steps.find(({ polylineRange: range }) => range && index >= range[0] && index <= range[1])?.context?.buildingName;
+  // 구간 경계의 점은 앞뒤 두 구간에 다 걸치는데, 앞 구간이 "건물 밖으로 나가세요"처럼 건물 이름 없는 단계면 이름을
+  // 못 찾으니 이름 있는 단계를 먼저 쓴다.
+  const buildingAt = (index: number) => {
+    const covering = steps.filter(({ polylineRange: range }) => range && index >= range[0] && index <= range[1]);
+    return (covering.find(step => step.context?.buildingName) ?? covering[0])?.context?.buildingName;
+  };
   const floorSegments: FloorPathSegment[] = [];
   polyline.forEach((point, index) => {
     if (index === 0) return;
     const prevPoint = polyline[index - 1];
-    if (!point.indoor || !prevPoint.indoor) return;
-    const floorId = toFloorId(buildingAt(index), point.floor);
-    // 층이 바뀌는 점(엘리베이터)끼리 잇는 선은 어느 층에도 넣지 않는다.
-    if (!floorId || prevPoint.floor !== point.floor) return;
+    // 한쪽 끝만 실내인 선(출입문 안쪽 끝)은 실내 쪽 층에, 층이 바뀌는 선(계단·엘리베이터)은 도착 층에 넣는다.
+    // 어느 층에도 안 넣으면, 다른 층에 있을 때 그 층 경로를 지워도 이 선만 회색으로 남아 건물 안에 토막이 뜬다.
+    const indoorIndex = point.indoor ? index : prevPoint.indoor ? index - 1 : undefined;
+    if (indoorIndex === undefined) return;
+    const floorId = toFloorId(buildingAt(indoorIndex), polyline[indoorIndex].floor);
+    if (!floorId) return;
     const from = progressAt(index - 1);
     const to = progressAt(index);
     const last = floorSegments[floorSegments.length - 1];

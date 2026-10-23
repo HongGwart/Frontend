@@ -37,7 +37,7 @@ import { NaverMapUserPointMarker } from '@components/map/NaverMapUserPointMarker
 import { GuidanceMoveType, RouteResult } from '@appTypes/routeView';
 import { CAMPUS_EXTENT, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
-import { LatLng, regionToFit, slicePath, splitPathAt } from '@utils/routePath';
+import { regionToFit, slicePath, splitPathAt } from '@utils/routePath';
 import type { RouteMapData } from '@appTypes/routeView';
 import { useFloorGeoAnchors } from '@api/floorPlan/useFloorGeoAnchors';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
@@ -96,29 +96,6 @@ const toRippleFrame = (t: number): RippleFrame => ({
   radius: RIPPLE_MAX_RADIUS_M * t,
   alpha: RIPPLE_MAX_ALPHA * (1 - t),
 });
-
-/**
- * 경로선 한 줄. 지나온 경로처럼 토막 수가 바뀌어 새로 마운트되는 선도 끝·꺾임이 둥글게 나오도록, 아래
- * lineCapReady 우회(Butt/Miter로 그렸다가 다음 틱에 Round)를 선마다 스스로 한다.
- */
-function RouteLine({ coords, color }: { coords: LatLng[]; color: string }) {
-  const [capReady, setCapReady] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setCapReady(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-  return (
-    <NaverMapPolylineOverlay
-      coords={coords}
-      width={6}
-      color={color}
-      capType={capReady ? 'Round' : 'Butt'}
-      joinType={capReady ? 'Round' : 'Miter'}
-      // 토막이 나중에 새로 붙어도 파란 남은 경로(zIndex 0) 아래에 깔리게 한다.
-      zIndex={-1}
-    />
-  );
-}
 
 /**
  * 길 안내 지도 위 오버레이(경로선, 출발/도착 핀, 도착 파동, 현재 위치 마커). 경로선·파동·마커
@@ -204,26 +181,9 @@ function GuidanceMapOverlays({
     return { position: split.position, remaining: slicePath(routeMap.path, clamped, visibleRange.to) };
   }, [routeMap.path, displayProgress, visibleRange]);
 
-  // 지나온 경로(회색, Figma 784:4466)는 바깥 길은 계속 남기고, 실내 경로는 지금 있는 층 것만 그린다. 건물 안
-  // 구불구불한 경로까지 다 남기면 지도가 지저분해져서 — 예: C동에선 R동 안 경로가 빠지고 바깥 길만 이어진다.
-  // 실내 구간을 빼고 나면 여러 토막이 될 수 있어 토막마다 따로 그린다.
-  const traveledPieces = useMemo(() => {
-    const end = Math.min(displayProgress, visibleRange.to);
-    const otherFloors = routeMap.floorSegments.filter(segment => segment.floorId !== currentFloorId);
-    let ranges: [number, number][] = [[0, end]];
-    otherFloors.forEach(({ from, to }) => {
-      ranges = ranges.flatMap(([a, b]): [number, number][] => [
-        [a, Math.min(b, from)],
-        [Math.max(a, to), b],
-      ]);
-    });
-    return ranges
-      .filter(([a, b]) => b - a > 1e-6)
-      .map(([a, b]) => slicePath(routeMap.path, a, b))
-      .filter(coords => coords.length >= 2);
-  }, [routeMap.path, routeMap.floorSegments, displayProgress, visibleRange.to, currentFloorId]);
-  // 출발지 핀은 지나온 회색 경로의 시작점이라 계속 띄운다. 회색 경로와 같은 규칙으로, 지금 있는 건물의
-  // 다른 층(예: R동 1층에 있을 때 R동 로비층의 출발지)일 때만 겹쳐 보이지 않게 숨긴다.
+  // 지나온 경로는 그리지 않는다. 실내 경로를 지금 층 것만 남기면 건물 사이 몇 m짜리 실외 구간이 혼자 떠서
+  // 토막처럼 보이고, 실내까지 다 그리면 같은 건물 여러 층 경로가 겹쳐 보여서다. 출발지 핀은 계속 띄우되,
+  // 지금 있는 건물의 다른 층(예: R동 1층에 있을 때 R동 로비층의 출발지)일 때만 겹쳐 보이지 않게 숨긴다.
   // 도착지 핀은 그 지점이 지금 보이는 구간(경로 맨 끝)에 있을 때만.
   const startFloorId = routeMap.floorSegments.find(segment => segment.from === 0)?.floorId;
   const showStart =
@@ -246,9 +206,6 @@ function GuidanceMapOverlays({
 
   return (
     <>
-      {traveledPieces.map((coords, index) => (
-        <RouteLine key={index} coords={coords} color={theme.semantic.line.primary} />
-      ))}
       <NaverMapPolylineOverlay
         coords={lineCoords(remaining)}
         width={6}
@@ -342,7 +299,7 @@ export default function RouteGuidanceScreen() {
 /**
  * 길찾기 "경로 안내 시작"을 누르면 뜨는 길 안내 화면 본체. Figma "길 안내_걷기"(784:4466).
  * 지도 전체 위에 상단 "move info" 카드(지금 구간 안내)와 우하단 이전/다음 버튼을 얹는다.
- * 지나온 구간은 회색, 남은 구간은 파란색 경로선으로 나누고, 그 경계에 현재 위치 마커를
+ * 남은 구간만 파란색 경로선으로 그리고(지나온 구간은 그리지 않는다), 그 시작점에 현재 위치 마커를
  * 찍은 뒤 카메라를 현재 위치에 맞춘다. 아직 실제 위치 추적이 없어서 구간은 버튼으로 넘긴다.
  */
 function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
