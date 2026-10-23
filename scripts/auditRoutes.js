@@ -49,8 +49,23 @@ const EXCLUDED_BUILDINGS = new Set(['D']);
 
 const args = process.argv.slice(2);
 const flag = (name) => args.includes(name);
-const LIMIT = Number(args[args.indexOf('--limit') + 1]) || 50;
+const LIMIT = readLimit();
 const DELAY_MS = 2000;
+
+/**
+ * --limit 값. 없으면 하루 한도 50. 있으면 1 이상 정수만 받는다 — "-1"은 slice(0, -1)이 되어 남은 경로를 거의 다
+ * 한 번에 요청하고, "0"·"abc"·값 빠짐을 조용히 50으로 바꾸면 잘못 입력한 걸 알 수 없다.
+ */
+function readLimit() {
+  const index = args.indexOf('--limit');
+  if (index === -1) return 50;
+  const value = args[index + 1];
+  if (!/^[1-9]\d*$/.test(value ?? '')) {
+    console.error(`--limit에는 1 이상의 정수를 넣어 주세요 (받은 값: ${value ?? '없음'})`);
+    process.exit(1);
+  }
+  return Number(value);
+}
 
 const KNOWN_STEP_TYPES = new Set([
   'DEPART', 'WALK', 'TURN_LEFT', 'TURN_RIGHT', 'EXIT_BUILDING', 'ENTER_BUILDING', 'FLOOR_CHANGE', 'ARRIVE',
@@ -109,12 +124,36 @@ function buildCases() {
   }
 }
 
+/**
+ * 진행 기록을 읽는다. 파일이 없을 때만 새로 시작한다. 내용이 깨졌거나 형식이 틀리면 빈 기록으로 시작하지 않고
+ * 멈춘다 — 그대로 시작하면 다음 저장이 지금까지의 기록을 덮어쓰고 검사한 경로를 처음부터 다시 요청한다.
+ */
 function readState() {
+  let text;
   try {
-    return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
-  } catch {
-    return { done: {}, runs: [] };
+    text = fs.readFileSync(STATE_FILE, 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') return { done: {}, runs: [] };
+    throw error;
   }
+  let state;
+  try {
+    state = JSON.parse(text);
+  } catch (error) {
+    throw new Error(`${STATE_FILE}의 JSON이 깨졌어요. 고치거나 백업에서 되돌린 뒤 다시 실행해 주세요. (${error.message})`);
+  }
+  const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+  if (!isObject(state) || !isObject(state.done) || !Array.isArray(state.runs)) {
+    throw new Error(`${STATE_FILE} 형식이 달라요. { done: {...}, runs: [...] } 모양이어야 해요.`);
+  }
+  return state;
+}
+
+/** 진행 기록을 저장한다. 임시 파일에 다 쓴 뒤 이름을 바꿔서, 쓰는 도중에 끊겨도 기존 파일이 반쯤 잘리지 않게 한다. */
+function writeState(state) {
+  const temp = `${STATE_FILE}.tmp`;
+  fs.writeFileSync(temp, JSON.stringify(state, null, 1));
+  fs.renameSync(temp, STATE_FILE);
 }
 
 /** 응답 하나(세 모드)를 검사해서 문제 목록을 돌려준다. */
@@ -207,12 +246,16 @@ function report(state, cases) {
       state.done[c.key] = { ...state.done[c.key], problems: inspect(JSON.parse(fs.readFileSync(responseFile(c.key), 'utf8')), toRouteView) };
       count++;
     }
-    fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 1));
+    writeState(state);
     console.log(`저장된 응답 ${count}건을 지금 코드로 다시 검사했어요.`);
     return report(state, cases);
   }
+  // 다시 검사는 마지막으로 요청한 지 오래된 경로부터 한다. 다시 요청한 경로는 시각(at)이 새로 찍혀 뒤로 가서,
+  // 문제 경로가 한도보다 많아도 실행할 때마다 다음 경로로 넘어간다(앞 50건만 계속 다시 보지 않는다).
   const queue = flag('--recheck')
-    ? cases.filter((c) => state.done[c.key]?.problems.length)
+    ? cases
+        .filter((c) => state.done[c.key]?.problems.length)
+        .sort((a, b) => (state.done[a.key].at ?? '').localeCompare(state.done[b.key].at ?? ''))
     : cases.filter((c) => !state.done[c.key]);
   const today = queue.slice(0, LIMIT);
   console.log(`오늘 ${today.length}건 요청 (남은 ${queue.length}건, ${DELAY_MS / 1000}초 간격)`);
@@ -226,12 +269,12 @@ function report(state, cases) {
     const problems = error ? [{ mode: '-', type: 'http-error', detail: error }] : inspect(body, toRouteView);
     state.done[c.key] = { at: new Date().toISOString(), problems };
     // 중간에 끊겨도 진행이 남게 매 요청마다 저장한다.
-    fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 1));
+    writeState(state);
     const mark = problems.length ? `✗ ${[...new Set(problems.map((p) => p.type))].join(', ')}` : '✓';
     console.log(`${String(i + 1).padStart(3)} ${c.group.padEnd(9)} ${c.from.name} → ${c.to.name}  ${mark}`);
     if (i < today.length - 1) await new Promise((r) => setTimeout(r, DELAY_MS));
   }
   state.runs.push({ at: new Date().toISOString(), count: today.length, recheck: flag('--recheck') });
-  fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 1));
+  writeState(state);
   report(state, cases);
 })();
