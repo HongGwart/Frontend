@@ -9,7 +9,7 @@ import { ElevatorCongestionIcon } from './ElevatorCongestionIcon';
 
 interface Props {
   result: RouteResult;
-  /** 칩에서 고른 경로 옵션의 한글 라벨 (예: "최단 경로") */
+  /** 이 경로의 경로 옵션 한글 라벨 (예: "최단 경로", 여러 옵션이 같은 경로면 "최단 경로 · 계단 회피") */
   optionLabel: string;
   /** 카드 사이 4px 두께 구분선 (마지막 카드는 보통 false) */
   showDivider?: boolean;
@@ -123,6 +123,9 @@ const SummaryText = styled.Text`
 `;
 
 const OptionLabelText = styled.Text`
+  flex-shrink: 1;
+  margin-left: 12px;
+  text-align: right;
   font-family: ${({ theme }) => theme.typography.caption.semiBold.fontFamily};
   font-size: ${({ theme }) => theme.typography.caption.semiBold.fontSize}px;
   line-height: ${({ theme }) => theme.typography.caption.semiBold.lineHeight}px;

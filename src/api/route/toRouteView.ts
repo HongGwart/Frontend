@@ -309,7 +309,7 @@ export function toRouteView(route: RouteDto): RouteView | null {
       .length;
   const result: RouteResult = {
     id: `api-${mode}`,
-    option: MODE_TO_OPTION[mode] ?? 'shortest',
+    options: [MODE_TO_OPTION[mode] ?? 'shortest'],
     durationMinutes: minutes(route.summary?.durationSeconds),
     distanceMeters: Math.round(route.summary?.distanceMeters ?? totalMeters),
     // 실내 비율·엘리베이터 혼잡은 서버 지표를 쓴다. 값이 없는 응답(구버전 서버)이면 undefined라 화면이 표시를 뺀다.

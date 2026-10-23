@@ -20,7 +20,8 @@ export interface RouteStep {
 
 export interface RouteResult {
   id: string;
-  option: RouteOptionKey;
+  /** 이 경로가 해당하는 경로 옵션. 서버가 여러 모드에 같은 경로를 주면 한 카드로 합쳐서 옵션이 여러 개다 */
+  options: RouteOptionKey[];
   durationMinutes: number;
   distanceMeters: number;
   /** 실내 보행 비율(%) — 서버 summary.indoorPercent. 값이 없는 응답(구버전 서버)이면 0%로 단정하지 않고 표시를 뺀다 */

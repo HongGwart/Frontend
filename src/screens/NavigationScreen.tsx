@@ -114,7 +114,7 @@ export default function NavigationScreen() {
   const allRouteResults = useMemo(() => routeSearch.routes.map(view => view.result), [routeSearch.routes]);
   // 경로 옵션 칩을 고르면 그 옵션 경로만 보여준다.
   const routeResults = useMemo(
-    () => (selectedOption ? allRouteResults.filter(route => route.option === selectedOption) : allRouteResults),
+    () => (selectedOption ? allRouteResults.filter(route => route.options.includes(selectedOption)) : allRouteResults),
     [allRouteResults, selectedOption],
   );
   // 경로 목록 대신 띄울 안내 — 장소 찾는 중/장소 찾기 실패/서버에 없는 장소/경로 찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
@@ -138,18 +138,23 @@ export default function NavigationScreen() {
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
-  const selectedRoute = useMemo(
-    () => routeResults.find(route => route.id === selectedRouteId) ?? null,
-    [routeResults, selectedRouteId],
-  );
+  // 고른 카드의 옵션. 경로를 다시 불러왔을 때(1분 지나 화면 복귀) 고른 카드가 다른 카드와 같은 길이 되어 합쳐지면
+  // id로는 못 찾으니, 같은 옵션이 들어 있는 카드를 대신 보여준다 — 보던 경로 화면이 갑자기 목록으로 닫히지 않게.
+  const [selectedRouteOptions, setSelectedRouteOptions] = useState<RouteOptionKey[]>([]);
+  const selectedView = useMemo(() => {
+    if (!selectedRouteId) return null;
+    return (
+      routeSearch.routes.find(view => view.result.id === selectedRouteId) ??
+      routeSearch.routes.find(view => view.result.options.some(option => selectedRouteOptions.includes(option))) ??
+      null
+    );
+  }, [routeSearch.routes, selectedRouteId, selectedRouteOptions]);
+  const selectedRoute = selectedView?.result ?? null;
   // 경로를 골라 지도로 보는 동안만 캡처를 막는다(출발/도착 입력·경로 목록은 그대로 캡처할 수 있다).
   useBlockScreenCapture('routeView', selectedRoute !== null);
 
   // 경로선/출발·도착 핀/경로 보기 카메라 — 선택한 경로 기준.
-  const routeMap = useMemo(
-    () => routeSearch.routes.find(view => view.result.id === selectedRouteId)?.map ?? null,
-    [routeSearch.routes, selectedRouteId],
-  );
+  const routeMap = selectedView?.map ?? null;
 
   // 경로 보기 카드를 끌어내리면(Figma "길 찾기_전체 경로" 762:4620) 지도를 전체로 펼치고
   // 상단에 헤더 + 출발/도착 입력을 띄운다. 지도 카메라 패딩을 맞추려고 시트/상단 패널 높이를 잰다.
@@ -457,9 +462,15 @@ export default function NavigationScreen() {
               <RouteResultCard
                 key={result.id}
                 result={result}
-                optionLabel={ROUTE_OPTIONS.find(option => option.key === result.option)?.label ?? ''}
+                // 여러 옵션이 같은 경로면 한 카드에 "최단 경로 · 계단 회피"처럼 같이 적는다.
+                optionLabel={ROUTE_OPTIONS.filter(option => result.options.includes(option.key))
+                  .map(option => option.label)
+                  .join(' · ')}
                 showDivider={index !== routeResults.length - 1}
-                onPress={() => setSelectedRouteId(result.id)}
+                onPress={() => {
+                  setSelectedRouteId(result.id);
+                  setSelectedRouteOptions(result.options);
+                }}
               />
             ))}
           </ScrollView>
