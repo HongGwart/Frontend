@@ -45,8 +45,12 @@ export function usePlaceNodeId(place: RoutePlace | undefined) {
 /**
  * usePlaceNodeId와 같은 조회를 지금 바로 한다(출발/도착 버튼을 누를 때). 같은 쿼리 캐시를 쓰므로 이어서 열리는
  * 길찾기 화면은 다시 요청하지 않는다. 서버에 없는 장소면 undefined, 요청이 실패하면 예외를 던진다.
+ * 버튼을 누른 사람이 스피너를 보며 기다리는 조회라 재시도하지 않는다 — 전역 기본값(최대 2회 재시도)을 따르면
+ * 타임아웃(10초) 때 30초 넘게 멈춘다. 실패하면 호출부가 길찾기 화면으로 넘겨 "다시 시도" 안내에 맡긴다.
  */
 export async function fetchPlaceNodeId(queryClient: QueryClient, place: RoutePlace): Promise<number | undefined> {
-  const data = await queryClient.fetchQuery(getAutocompleteQueryOptions(lookupParams(placeName(place)), { query: LOOKUP_QUERY }));
+  const data = await queryClient.query(
+    getAutocompleteQueryOptions(lookupParams(placeName(place)), { query: { ...LOOKUP_QUERY, retry: false } }),
+  );
   return pickNodeId(data, place);
 }

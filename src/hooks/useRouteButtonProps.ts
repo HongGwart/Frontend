@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { StackActions, useNavigation } from '@react-navigation/native';
 import { queryClient } from '@api/queryClient';
 import { showErrorToast } from '@api/errorToast';
@@ -30,8 +30,11 @@ type RouteTarget = 'departure' | 'destination';
  */
 export function useRouteButtonProps(onBeforeNavigate?: () => void) {
   const navigation = useNavigation();
-  // 지금 노드를 찾고 있는 버튼. 같은 훅으로 카드 여러 장을 그릴 수 있어서 어느 카드(label)인지도 같이 기억한다.
+  // 지금 노드를 찾고 있는 버튼(스피너 표시용). 같은 훅으로 카드 여러 장을 그릴 수 있어서 어느 카드(label)인지도 같이 기억한다.
   const [pending, setPending] = useState<{ label: string; target: RouteTarget } | null>(null);
+  // 연타 막기는 state가 아니라 ref로 한다. state는 다음 렌더에야 반영돼서, 그 전에 한 번 더 누르면 조회와 화면
+  // 이동이 두 번 일어난다(버튼 disabled도 다시 렌더된 뒤에야 걸린다).
+  const pendingRef = useRef(false);
 
   return useCallback(
     (label: string, nodeId?: number, place?: RoutePlace) => {
@@ -44,11 +47,12 @@ export function useRouteButtonProps(onBeforeNavigate?: () => void) {
         navigation.dispatch(StackActions.push('Navigation', { routeSelection }));
       };
       const goToRoute = async (target: RouteTarget) => {
-        if (pending) return;
+        if (pendingRef.current) return;
         if (nodeId !== undefined || !place) {
           navigate(target, nodeId);
           return;
         }
+        pendingRef.current = true;
         setPending({ label, target });
         try {
           const found = await fetchPlaceNodeId(queryClient, place);
@@ -60,6 +64,7 @@ export function useRouteButtonProps(onBeforeNavigate?: () => void) {
         } catch {
           navigate(target);
         } finally {
+          pendingRef.current = false;
           setPending(null);
         }
       };
