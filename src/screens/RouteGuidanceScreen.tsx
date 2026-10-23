@@ -36,6 +36,7 @@ import { NaverMapStartPointMarker } from '@components/map/NaverMapStartPointMark
 import { NaverMapUserPointMarker } from '@components/map/NaverMapUserPointMarker';
 import { GuidanceMoveType, RouteResult } from '@appTypes/routeView';
 import { CAMPUS_EXTENT, MAP_MIN_ZOOM } from '@constant/mapCamera';
+import { resolveFloorId } from '@constant/floorMaps';
 import { RootStackParamList } from '@navigation/types';
 import { regionToFit, slicePath, splitPathAt } from '@utils/routePath';
 import type { RouteMapData } from '@appTypes/routeView';
@@ -411,8 +412,11 @@ function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
   // 지금 있는 층 — 건물 안 구간이면 그 층 평면도를 지도에 깔고, 바깥 구간이면 아무것도 안 깐다.
   // 도착하면 마지막 구간의 층(도착지가 있는 층)을 그대로 보여준다.
   const currentFloorId = hasArrived ? guidanceSteps[guidanceSteps.length - 1].floorId : step.floorId;
+  // 지도에 깔 평면도. 다른 동 도면에 함께 그려진 층(J동 1층 → L동 6층 도면)은 검색과 달리 그 동 부분만 자르지
+  // 않고 L동이 포함된 도면 전체를 깐다 — 길 안내는 L동 쪽 계단·통로로 이어지는 길까지 보여야 해서.
+  const currentPlanFloorId = currentFloorId && resolveFloorId(currentFloorId);
   // 그 층 평면도를 지도에 앉힐 네 모서리 — 서버 기준 꼭짓점 + Figma 도면 기준점으로 계산(없으면 앱에 맞춰 둔 값).
-  const currentFloorAnchors = useFloorGeoAnchors(currentFloorId);
+  const currentFloorAnchors = useFloorGeoAnchors(currentPlanFloorId);
   useEffect(() => {
     if (hasArrived) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [hasArrived]);
@@ -474,10 +478,10 @@ function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
         isRotateGesturesEnabled={false}
         isTiltGesturesEnabled={false}
       >
-        {currentFloorId && (
+        {currentPlanFloorId && (
           <FloorPlanOverlay
-            key={currentFloorId}
-            floorId={currentFloorId}
+            key={currentPlanFloorId}
+            floorId={currentPlanFloorId}
             anchors={currentFloorAnchors}
           />
         )}

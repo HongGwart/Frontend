@@ -1,4 +1,4 @@
-<svg width="3020" height="2503" viewBox="0 0 3020 2503" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="3020" height="2503" viewBox="0 0 3020 2503" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g>
 <g id="map_stairs" clip-path="url(#clip0_912_33426)">
 <rect id="Rectangle 240653084" x="271" y="778.844" width="32" height="32" rx="4" fill="#474F5A"/>
@@ -30,6 +30,7 @@
 </g>
 </g>
 <defs>
+<path id="stroke0_912_33426" d="M1568.58 704.826L2299.86 832.631L2322.03 706.532L2723.21 776.88L2539.58 1821.05V1823H2016.58V2342H657.577V1799H1175.58V1481H553V1641H468V1472.86L231 751.956L321.577 722.178V695H772.577V511H1156.58V159H1568.58V704.826Z"/>
 <clipPath id="clip0_912_33426">
 <rect width="32" height="32" fill="white" transform="translate(271 778.844)"/>
 </clipPath>

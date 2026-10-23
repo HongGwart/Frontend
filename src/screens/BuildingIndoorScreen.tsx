@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, type LayoutChangeEvent } from 'react-native';
+import { Platform, StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -8,11 +8,13 @@ import styled, { useTheme } from 'styled-components/native';
 import Header from '@components/layout/Header';
 import { IndoorMapView, IndoorMapViewControls } from '@components/map/IndoorMapView';
 import { ResetViewButton } from '@components/map/ResetViewButton';
+import { FloorDoors } from '@components/map/FloorDoors';
 import { FloorSelector } from '@components/map/FloorSelector';
 import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { CollapsibleBottomSheet, CollapsibleBottomSheetRef } from '@components/common/CollapsibleBottomSheet';
-import { FLOOR_MAPS, getBuildingFloors } from '@constant/floorMaps';
+import { FLOOR_MAPS, getBuildingFloors, getRoomDisplayLabel, getRoomOwner } from '@constant/floorMaps';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
+import { roomDisplayName } from '@utils/roomLabel';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
 import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
 import { RootStackParamList } from '@navigation/types';
@@ -71,6 +73,20 @@ export default function BuildingIndoorScreen() {
     () => (floors.find(floor => floor.floorNum === 1) ?? floors[floors.length - 1])?.floorId,
   );
   const floorAssets = useMemo(() => (floorId ? FLOOR_MAPS[floorId]() : null), [floorId]);
+  // 한 도면에 두 동이 함께 그려진 층(L동↔J동, G동↔H동)은 보고 있는 동이 아닌 쪽 방 번호에 동 글자를 붙여 그린다
+  // (J동으로 보면 L동 방이 "L601"). 탭 판정·소속 판단은 원래 번호로 하니 표시 번호 → 원래 번호도 같이 둔다.
+  const { mapData, originalLabelOf } = useMemo(() => {
+    if (!floorId || !floorAssets) return { mapData: null, originalLabelOf: new Map<string, string>() };
+    const originals = new Map<string, string>();
+    const rooms = floorAssets.data.rooms.map(room => {
+      const label = room.label ?? room.id;
+      const display = label ? getRoomDisplayLabel(floorId, label, params.buildingCode) : label;
+      if (display === label) return room;
+      originals.set(display, label);
+      return { ...room, label: display };
+    });
+    return { mapData: { ...floorAssets.data, rooms }, originalLabelOf: originals };
+  }, [floorId, floorAssets, params.buildingCode]);
 
   // 탭한 강의실 라벨(예: "212"). 층을 바꾸면 이전 층의 선택은 의미가 없으니 비운다.
   const [selectedRoomLabel, setSelectedRoomLabel] = useState<string | null>(null);
@@ -110,8 +126,11 @@ export default function BuildingIndoorScreen() {
       cardLift.value = withDelay(60, withTiming(0, { duration: 320, easing: Easing.out(Easing.cubic) }));
     };
     // 전환 애니메이션이 없는 경우(안드로이드 animation: 'none') transitionEnd가 안 올 수 있어서,
-    // 전환 시간(200ms)보다 넉넉한 뒤에는 이벤트가 없어도 내려앉힌다.
-    const fallbackId = setTimeout(settle, 400);
+    // 전환 시간(200ms)보다 넉넉한 뒤에는 이벤트가 없어도 내려앉힌다. iOS 크로스페이드는 transitionEnd가 꼭 오는데,
+    // R동처럼 화면을 그리는 데 오래 걸리면 전환이 늦게 시작돼 400ms보다 늦게 끝난다 — 그때 먼저 내려앉으면
+    // 아직 위에 떠 있는 지도 카드 밑에서 움직이다가, 지도 카드가 닫히는 순간 이미 내려간 카드가 툭 보인다.
+    // 그래서 iOS는 이벤트를 기다리고, 시간 대비책은 이벤트를 못 받을 때만을 위해 넉넉히 둔다.
+    const fallbackId = setTimeout(settle, Platform.OS === 'ios' ? 1500 : 400);
     const unsubscribe = navigation.addListener('transitionEnd', event => {
       if (!event.data.closing) settle();
     });
@@ -130,12 +149,28 @@ export default function BuildingIndoorScreen() {
   // 층이 많으면 층 선택기가 지도 영역 밖(카드 뒤)까지 내려가지 않게 지도 영역 높이에 맞춰 자른다.
   const [mapAreaHeight, setMapAreaHeight] = useState(0);
 
+  // 탭한 강의실이 실제로 속한 동. 보통 이 건물이지만, L동 도면에 함께 그려진 J동 호실("J101")은 J동 101호다.
+  const roomOwner = selectedRoomLabel && floorId ? getRoomOwner(floorId, selectedRoomLabel) : null;
+  const roomBuildingCode = roomOwner?.buildingCode ?? params.buildingCode;
+  const roomMarker = CAMPUS_BUILDINGS.find(item => item.label === roomBuildingCode) ?? marker;
+  const roomBuildingName = roomMarker?.buildingName || buildingName;
+  const roomBuildingDetail = useBuildingDetail(roomBuildingCode);
+
   // 출발/도착을 누르면 길찾기 탭으로 가서 해당 입력창을 채운다(강의실을 골랐으면 호수까지).
   const routeButtonProps = useRouteButtonProps();
-  const selectedRoom = selectedRoomLabel ? `${selectedRoomLabel}호` : undefined;
-  const placeLabel = toRoutePlaceLabel(params.buildingCode, buildingName, selectedRoom);
+  // 번호 방은 "101호", 글자 이름 방("제1열람실", "멀티미디어실")은 그대로.
+  const selectedRoom = roomOwner ? roomDisplayName(roomOwner.roomNumber) : undefined;
+  const placeLabel = toRoutePlaceLabel(roomBuildingCode, roomBuildingName, selectedRoom);
   // 건물 내부 지도는 서버 검색을 거치지 않아 nodeId가 없다 — 동 코드 + 호실로 누를 때 서버 노드를 찾는다.
-  const routePlace = { buildingCode: params.buildingCode, room: selectedRoom };
+  const routePlace = { buildingCode: roomBuildingCode, room: selectedRoom };
+  const roomFavorite: FavoriteInput = {
+    buildingCode: roomBuildingCode,
+    buildingName: roomBuildingName,
+    name: selectedRoom,
+    category: 'classroom',
+    latitude: roomMarker?.latitude,
+    longitude: roomMarker?.longitude,
+  };
 
   return (
     <Container>
@@ -144,21 +179,29 @@ export default function BuildingIndoorScreen() {
       </HeaderWrapper>
 
       <MapArea onLayout={event => setMapAreaHeight(event.nativeEvent.layout.height)}>
-        {floorId && floorAssets ? (
+        {floorId && floorAssets && mapData ? (
           <>
             <Animated.View style={[{ flex: 1 }, slideStyle]}>
               <IndoorMapView
                 key={floorId}
-                mapData={floorAssets.data}
+                mapData={mapData}
                 backgroundColor={theme.semantic.line.tertiary}
                 fitOffsetY={PLAN_FIT_OFFSET_Y}
                 onControlsReady={setMapControls}
                 // LayerSize를 그대로 펼친다. viewBox가 없을 때 viewBox={undefined}로 넘기면 SVG 컴포넌트의
                 // 원래 viewBox를 덮어써서 도면 스케일이 깨진다.
                 renderBackground={layerSize => <floorAssets.Background {...layerSize} />}
-                renderForeground={layerSize => <floorAssets.Doors {...layerSize} />}
+                renderForeground={layerSize => (
+                  <FloorDoors
+                    doors={floorAssets.data.doors ?? []}
+                    mapWidth={floorAssets.data.width}
+                    mapHeight={floorAssets.data.height}
+                    {...layerSize}
+                  />
+                )}
                 onRoomSelect={room => {
-                  setSelectedRoomLabel(room ? room.label ?? room.id : null);
+                  const label = room ? room.label ?? room.id : null;
+                  setSelectedRoomLabel(label && (originalLabelOf.get(label) ?? label));
                   // 카드를 내려 둔 상태에서 강의실을 탭하면 카드를 부드럽게 올려 그 강의실 정보를 보여준다.
                   if (room) cardSheetRef.current?.expand();
                 }}
@@ -206,22 +249,20 @@ export default function BuildingIndoorScreen() {
             borderTopRightRadius: 16,
           }}
         >
-          {selectedRoomLabel ? (
+          {selectedRoom ? (
             <FacilityInfoCard
               variant="room"
               hideGrabber
               hideShadow
-              buildingCode={params.buildingCode}
-              buildingName={buildingName}
-              roomNumber={`${selectedRoomLabel}호`}
-              description={params.description}
-              isFavorite={isFavorite({ buildingCode: params.buildingCode, name: `${selectedRoomLabel}호` })}
-              onToggleFavorite={() =>
-                toggleFavorite({ ...buildingFavorite, name: `${selectedRoomLabel}호`, category: 'classroom' })
-              }
+              buildingCode={roomBuildingCode}
+              buildingName={roomBuildingName}
+              roomNumber={selectedRoom}
+              description={roomMarker?.description ?? params.description}
+              isFavorite={isFavorite(roomFavorite)}
+              onToggleFavorite={() => toggleFavorite(roomFavorite)}
               {...routeButtonProps(placeLabel, undefined, routePlace)}
-              // 강의실에는 따로 운영 시간이 없어 그 건물의 운영 시간을 쓴다.
-              operatingHours={buildingDetail.operatingHours}
+              // 강의실에는 따로 운영 시간이 없어 그 강의실이 속한 건물의 운영 시간을 쓴다.
+              operatingHours={roomBuildingDetail.operatingHours}
             />
           ) : (
             <FacilityInfoCard

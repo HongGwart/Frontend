@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { FLOOR_MAPS } from '@constant/floorMaps';
+import { FloorDoors } from './FloorDoors';
 import ElevatorIcon from '@assets/svgs/icons/elevator.svg';
 import StairsIcon from '@assets/svgs/icons/stairs.svg';
 
@@ -37,7 +38,7 @@ interface Props {
  * NaverMapView와 같은 부모 안에 absoluteFill로 얹어야 화면 좌표가 지도 좌표와 맞는다.
  */
 export const FloorPlanEditor = forwardRef<FloorPlanEditorHandle, Props>(({ floorId, initial }, ref) => {
-  const { data, Background, Doors } = useMemo(() => FLOOR_MAPS[floorId](), [floorId]);
+  const { data, Background } = useMemo(() => FLOOR_MAPS[floorId](), [floorId]);
   const cb = data.contentBounds ?? { minX: 0, minY: 0, width: data.width, height: data.height };
   const k = initial.pxPerUnit;
   // 여유를 둔 도면 영역 = 화면에 그릴 박스. 중심은 contentBounds 중심과 같다.
@@ -125,7 +126,13 @@ export const FloorPlanEditor = forwardRef<FloorPlanEditorHandle, Props>(({ floor
           <View style={{ position: 'absolute', left: -box.minX * k, top: -box.minY * k }}>
             <Background width={data.width * k} height={data.height * k} />
             <View style={StyleSheet.absoluteFill}>
-              <Doors width={data.width * k} height={data.height * k} />
+              <FloorDoors
+                doors={data.doors ?? []}
+                width={data.width * k}
+                height={data.height * k}
+                mapWidth={data.width}
+                mapHeight={data.height}
+              />
             </View>
           </View>
           {(data.icons ?? []).map(icon => {

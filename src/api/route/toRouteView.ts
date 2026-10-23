@@ -33,7 +33,10 @@ export function floorLabel(floor?: string) {
   return `${floor}층`;
 }
 
-/** "R동" + "L" → floorMaps 키 "R_L". 건물/층을 모르면 undefined(실외 구간처럼 평면도를 안 깐다). */
+/**
+ * "R동" + "L" → 층 키 "R_L". 건물/층을 모르면 undefined(실외 구간처럼 평면도를 안 깐다). 다른 동 도면에 함께
+ * 그려진 층("J동" + "1" → "J_1")은 그대로 두면 FloorPlanOverlay가 그 도면(L_6)에서 J동 부분만 깐다.
+ */
 export function toFloorId(buildingName?: string, floor?: string) {
   const code = buildingName?.match(/^([A-Z]+\d*)동$/)?.[1];
   return code && floor ? `${code}_${floor}` : undefined;

@@ -5,8 +5,9 @@ import {
   NaverMapMarkerOverlay,
   NaverMapPolygonOverlay,
 } from '@mj-studio/react-native-naver-map';
+import { labelWidthEm } from '@utils/roomLabel';
 import { getBuildingMask } from '@constant/buildingMasks';
-import { FLOOR_MAPS, parseFloorId } from '@constant/floorMaps';
+import { FLOOR_MAPS, getHostedArea, isInHostedArea, parseFloorId, resolveFloorId } from '@constant/floorMaps';
 import { FLOOR_OVERLAY_IMAGES, FloorOverlayIconType, FloorOverlayImage } from '@constant/floorOverlayImages';
 import { createFloorToGeo, FloorGeoAnchors, GeoCoord, getContentBounds } from '@utils/floorGeoTransform';
 import { theme } from '@theme/color';
@@ -31,16 +32,24 @@ const MAP_ICON_SIZE = 20;
 // 도면 아이콘은 실제 1m 남짓이라 방 번호처럼 "들어갈 때부터" 보이게 하면 거의 안 보인다. 평면도를 알아볼 만큼
 // 확대했을 때부터 보이게 고정 줌으로 정한다.
 const MAP_ICON_MIN_ZOOM = 18;
-// 호수 라벨 글자 크기(pt)와, 방 안에 들어가는지 볼 때 쓰는 글자 한 개 폭/위아래 높이 어림값(pt)
-const LABEL_FONT_SIZE = 11;
-const LABEL_CHAR_WIDTH = 6.5;
-const LABEL_LINE_HEIGHT = 13;
+// 호수 라벨 글자 크기(pt)와, 방 안에 들어가는지 볼 때 쓰는 글자 한 개 폭/위아래 높이 어림값(pt). 네이버 지도 마커는 그림으로
+// 찍어 붙여서 줌마다 크기를 바꾸면 매번 다시 찍어야 하므로 크기는 고정하고, 내부지도 뷰(RoomLabelsLayer)의 최소 크기 9pt에
+// 가깝게 둔다.
+const LABEL_FONT_SIZE = 10;
+// 굵기 600이라 내부지도 뷰(500)보다 글자 폭을 조금 넓게 잡는다(labelWidthEm × 이 배율).
+const LABEL_WEIGHT_WIDTH_FACTOR = 1.05;
+const labelWidthPt = (label: string) => labelWidthEm(label) * LABEL_FONT_SIZE * LABEL_WEIGHT_WIDTH_FACTOR;
+const LABEL_LINE_HEIGHT = LABEL_FONT_SIZE * 1.2;
+// 글자가 방에 들어가는지 볼 때 쓰는 여백. 내부지도 뷰와 같게 가로는 방 폭의 80%, 세로는 60%까지만 쓴다.
+const LABEL_FIT_WIDTH_RATIO = 0.8;
+const LABEL_FIT_HEIGHT_RATIO = 0.6;
 // PNG 위 라벨은 내부지도 뷰(RoomLabelsLayer)와 같은 검정, PNG 없이 파란 방 도형 위에 그릴 땐 파랑.
-const LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '500', color: '#000000' } as const;
-const FALLBACK_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '600', color: '#003E80' } as const;
+// 지도 타일·건물 색 위에 얹혀 내부지도 뷰보다 묽어 보여서 한 단계 굵게 쓴다.
+const LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '600', color: '#000000' } as const;
+const FALLBACK_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '700', color: '#003E80' } as const;
 // 강조한 방(검색한 호실)은 내부지도 뷰(RoomPolygons·RoomLabelsLayer)와 같게 브랜드 남색으로 불투명하게 칠하고 번호는 흰색.
 const HIGHLIGHT_FILL = theme.blue[800];
-const HIGHLIGHT_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '500', color: '#FFFFFF' } as const;
+const HIGHLIGHT_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '600', color: '#FFFFFF' } as const;
 // 네이버 지도 폴리곤은 outlineWidth=0이 반영되지 않는 버그가 있어 테두리를 투명색으로 지운다.
 const NO_OUTLINE = 'rgba(0, 0, 0, 0)';
 // 건물 덮개(buildingMasks.ts): 네이버 지도 캠퍼스 바닥색으로 칠해 그 건물의 네이버 윤곽만 가린다. 찍은 모서리보다
@@ -115,7 +124,10 @@ function labelMinZoom(coords: GeoCoord[], center: GeoCoord, label: string) {
   if (width <= 0 || height <= 0) return Infinity;
   const metersPerPtAtZoom0 = (EARTH_CIRCUMFERENCE_M * cosLat) / 256;
   const zoomToFit = (meters: number, pt: number) => Math.log2((metersPerPtAtZoom0 * pt) / meters);
-  return Math.max(zoomToFit(width, label.length * LABEL_CHAR_WIDTH), zoomToFit(height, LABEL_LINE_HEIGHT));
+  return Math.max(
+    zoomToFit(width * LABEL_FIT_WIDTH_RATIO, labelWidthPt(label)),
+    zoomToFit(height * LABEL_FIT_HEIGHT_RATIO, LABEL_LINE_HEIGHT),
+  );
 }
 
 interface Props {
@@ -146,10 +158,15 @@ export function FloorPlanOverlay({
 
   const floor = useMemo(() => {
     if (!anchors) return null;
-    const data = FLOOR_MAPS[floorId]().data;
+    const data = FLOOR_MAPS[resolveFloorId(floorId)]().data;
     const toGeo = createFloorToGeo(getContentBounds(data), anchors);
-    const icons = (data.icons ?? []).map(icon => ({ ...icon, position: toGeo(icon.center[0], icon.center[1]) }));
-    const rooms = data.rooms.map(room => {
+    // 다른 동 도면에 함께 그려진 층(J동 → L동 도면)이면 그 동 부분(PNG도 그만큼만 구웠다)의 방·아이콘만 그린다.
+    const area = getHostedArea(floorId);
+    const inArea = (point: [number, number]) => !area || isInHostedArea(area, point);
+    const icons = (data.icons ?? [])
+      .filter(icon => inArea(icon.center))
+      .map(icon => ({ ...icon, position: toGeo(icon.center[0], icon.center[1]) }));
+    const rooms = data.rooms.filter(room => room.points.every(inArea)).map(room => {
       const [cx, cy] =
         room.labelAnchor ??
         room.points
@@ -230,12 +247,11 @@ export function FloorPlanOverlay({
             key={`floor-label-${floorId}-${room.id}${isHighlighted(room.id) ? '-on' : ''}`}
             latitude={room.center.latitude}
             longitude={room.center.longitude}
-            width={room.label.length * 8 + 8}
+            width={Math.ceil(labelWidthPt(room.label)) + 8}
             height={16}
             anchor={{ x: 0.5, y: 0.5 }}
-            // 축소해서 글자가 방보다 커지면 숨긴다(방마다 다르다).
-            // 강조한 방 번호는 줌과 상관없이 보인다.
-            minZoom={isHighlighted(room.id) ? 0 : room.minZoom}
+            // 축소해서 글자가 방보다 커지면 숨긴다(방마다 다르다). 강조한 방도 같다 — 방 자체는 칠해져서 보인다.
+            minZoom={room.minZoom}
             zIndex={4}
           >
             <View key={room.label} collapsable={false} style={{ alignItems: 'center' }}>

@@ -537,8 +537,8 @@
 </g>
 <g id="Hitbox">
 <ellipse id="room_407" cx="467" cy="428.5" rx="169" ry="169.5" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_403-2" x="531" y="778" width="218" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
-<rect id="room_403-2_2" x="848" y="778" width="209" height="215" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_403-1" x="531" y="778" width="218" height="214" fill="#D9D9D9" fill-opacity="0.01"/>
+<rect id="room_403-2" x="848" y="778" width="209" height="215" fill="#D9D9D9" fill-opacity="0.01"/>
 <path id="room_406" d="M632 424H848V632H632V424Z" fill="#D9D9D9" fill-opacity="0.01"/>
 <path id="room_405" d="M998 688H848V424H1373V632H998V688Z" fill="#D9D9D9" fill-opacity="0.01"/>
 <rect id="room_404" x="1373" y="424" width="214" height="208" fill="#D9D9D9" fill-opacity="0.01"/>

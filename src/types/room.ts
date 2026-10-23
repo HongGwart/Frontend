@@ -33,6 +33,16 @@ export interface IconMarker {
   size: number;
 }
 
+export interface DoorMarker {
+  /**
+   * 기준 문(경첩 (0,0), 닫힌 끝 (-16,0), 열린 끝 (0,-16))을 원본 SVG 좌표로 옮기는 affine 변환 [a, b, c, d, e, f]
+   * (SVG matrix 순서). svgToDoors.js가 Figma 문 그룹에서 뽑는다. FloorDoors가 이 값으로 공용 문 도형을 그린다.
+   */
+  m: [number, number, number, number, number, number];
+  /** "opening"이면 문짝·호 없이 벽 틈만 있는 출입구. 생략하면 여닫이 문 */
+  kind?: 'opening';
+}
+
 export interface FloorMapData {
   floorId: string;
   /** 원본 SVG viewBox 기준 너비/높이 (배경 SVG와 반드시 같은 좌표계여야 함) */
@@ -47,4 +57,6 @@ export interface FloorMapData {
   rooms: RoomShape[];
   /** 계단/엘리베이터 등 확대해도 크기가 고정되어야 하는 마커. 없는 층은 생략 가능 */
   icons?: IconMarker[];
+  /** 문 위치·방향. 하이라이트 위에 다시 그려서 문 자리가 덮이지 않게 한다 */
+  doors?: DoorMarker[];
 }

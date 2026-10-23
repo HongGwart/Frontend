@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 /**
  *
- * 층 하나를 통째로 처리하는 오케스트레이터. 아래 4개를 순서대로 돌려서, 원본 SVG 한 장으로
- * IndoorMapView에 바로 꽂을 수 있는 산출물(_bg.svg / _doors.svg / _icons.svg / .json)을
- * 한 번에 만든다.
+ * 층 하나를 통째로 처리하는 오케스트레이터. 아래 단계를 순서대로 돌려서, 원본 SVG 한 장으로
+ * IndoorMapView에 바로 꽂을 수 있는 산출물(_bg.svg / .json)을 한 번에 만든다.
+ * (_doors.svg / _icons.svg는 중간 산출물 — 앱은 JSON의 문·아이콘 좌표로 공용 도형을 그린다.)
  *
  *   1. splitVisualLayers.js  - 배경/문/아이콘 SVG 3개로 분리
- *   2. stripLabelPaths.js    - 배경 SVG에서 박혀있는 방 번호 라벨 제거 (RoomLabelsLayer가 대신 그림)
- *   3. svgToRoomShapes.js    - Hitbox 레이어로 방 좌표 JSON 생성
+ *   2. svgToRoomShapes.js    - Hitbox 레이어로 방 좌표 JSON 생성
+ *   3. stripLabelPaths.js    - 배경 SVG에서 박혀있는 방 번호·방 이름 라벨 제거 (RoomLabelsLayer가 대신 그림)
  *   4. svgToIcons.js         - 같은 JSON에 아이콘 좌표 병합
+ *   5. svgToDoors.js         - 같은 JSON에 문 위치·방향 병합
+ *   6. auditFloors.js        - 이 층 데이터 검사(번호 오타·다른 층 히트박스 복사·글자 겹침 등). 경고만 내고 멈추지 않는다
  *
  * 사용법:
  *   node scripts/processFloor.js <입력.svg> [출력 디렉토리] [--allow-empty]
@@ -79,20 +81,28 @@ function main() {
 
   const jsonPath = path.join(outDir, `${base}.json`);
 
-  run('stripLabelPaths.js', [moved.bg]);
   // 방 좌표는 원본(문/아이콘까지 다 있는) SVG에서 뽑아야 방 순서·이름 인식이 안정적이다.
   run('svgToRoomShapes.js', [inputPath, jsonPath, ...(allowEmpty ? ['--allow-empty'] : [])]);
+  // 방 이름을 알아야 "계단 세미나실"처럼 글자로 된 이름 라벨도 지울 수 있어서 방 JSON을 만든 뒤에 돌린다.
+  run('stripLabelPaths.js', [moved.bg, `--rooms=${jsonPath}`]);
   run('svgToIcons.js', [moved.icons, jsonPath]);
+  run('svgToDoors.js', [moved.doors, jsonPath]);
 
   const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
   console.log(`\n✓ "${base}" 층 처리 완료`);
   console.log(`  배경: ${moved.bg}`);
   console.log(`  문:   ${moved.doors}`);
   console.log(`  아이콘: ${moved.icons}`);
-  console.log(`  데이터: ${jsonPath} (방 ${data.rooms.length}개, 아이콘 ${(data.icons ?? []).length}개)`);
+  console.log(
+    `  데이터: ${jsonPath} (방 ${data.rooms.length}개, 아이콘 ${(data.icons ?? []).length}개, 문 ${(data.doors ?? []).length}개)`
+  );
   console.log(
     `\n위 로그에 [경고]가 하나도 없었는지, rooms/icons 개수가 실제 도면 개수와 맞는지 확인하세요.`
   );
+
+  // 다른 층 히트박스 복사, 번호 오타, 글자 겹침 같은 데이터 오류를 바로 알 수 있게 이 층을 검사한다.
+  // 검사는 원본 SVG와 같은 폴더의 JSON·배경을 읽으므로 출력 폴더를 따로 준 경우엔 건너뛴다.
+  if (outDir === inputDir) run('auditFloors.js', [inputPath]);
 }
 
 main();

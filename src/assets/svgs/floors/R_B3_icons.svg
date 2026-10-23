@@ -1,4 +1,4 @@
-<svg width="2683" height="2503" viewBox="0 0 2683 2503" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="2683" height="2503" viewBox="0 0 2683 2503" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g>
 <g id="map_elevator" clip-path="url(#clip0_912_32278)">
 <rect id="Rectangle 240653084" x="1459" y="957.211" width="32" height="32" rx="4" fill="#474F5A"/>
@@ -22,6 +22,7 @@
 </g>
 </g>
 <defs>
+<path id="stroke0_912_32278" d="M1261.06 704.826L1992.34 832.631L2014.51 706.532L2415.69 776.88L2232.06 1821.05V1823H1709.06V2342H350.058V1799H849.058V961H198.058V839H465.058V479H849.058V159H1261.06V704.826Z"/>
 <clipPath id="clip0_912_32278">
 <rect width="32" height="32" fill="white" transform="translate(1459 957.211)"/>
 </clipPath>
