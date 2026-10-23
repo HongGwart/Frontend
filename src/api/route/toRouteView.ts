@@ -122,10 +122,11 @@ interface OpenLeg {
   meters: number;
   seconds: number;
   /**
-   * 구간에 합친 계단 수. 서버는 캠퍼스 비탈의 야외 계단과 건물 사이 공용 통로의 계단도 건물·층 없는 FLOOR_CHANGE로
-   * 주는데, 층을 옮기는 게 아니라 길 중간의 단차라 따로 줄을 만들지 않는다.
+   * 구간에 합친 계단 수·엘리베이터 수. 서버는 캠퍼스 비탈의 야외 계단과 건물 사이 공용 통로의 계단·엘리베이터도
+   * 건물·층 없는 FLOOR_CHANGE로 주는데, 어느 건물의 몇 층인지 몰라 따로 줄을 만들지 않고 지금 구간에 합친다.
    */
   stairs: number;
+  elevators: number;
   building?: string;
   floor?: string;
 }
@@ -134,7 +135,7 @@ interface OpenLeg {
  * 경로 카드 구간 목록. 서버 step은 회전마다 끊겨 있어서, 건물 출입과 실내 층 이동을 경계로 묶는다.
  * - EXIT_BUILDING → 도보 이동, ENTER_BUILDING → 그 건물·층의 실내 이동, 건물 안 FLOOR_CHANGE → 엘리베이터/계단 이동
  * - 실내로 표시된 EXIT_BUILDING은 건물 사이 공용 통로라 "건물 밖"이 아니라 "공용 통로" 실내 이동으로 시작한다.
- * - 나머지(WALK·회전·건물 밖이나 통로의 계단)는 진행 중인 구간에 거리·시간을 더한다. 거리·시간은 서버 값의 합이다.
+ * - 나머지(WALK·회전·건물 밖이나 통로의 계단·엘리베이터)는 진행 중인 구간에 거리·시간을 더한다. 거리·시간은 서버 값의 합이다.
  * - 구간 끝 이름은 다음 경계(건물 밖, 들어가는 건물·층, 엘리베이터/계단)로, 마지막 구간은 도착지로 채운다.
  * 길 안내 화면은 회전 안내가 필요해서 이 묶음을 쓰지 않는다.
  */
@@ -150,6 +151,7 @@ function toRouteSteps(steps: StepDto[], mode: string, departure: string, destina
       meters: 0,
       seconds: 0,
       stairs: 0,
+      elevators: 0,
       building: step.context?.buildingName ?? undefined,
       floor: step.context?.floor ?? undefined,
     };
@@ -157,10 +159,11 @@ function toRouteSteps(steps: StepDto[], mode: string, departure: string, destina
   const close = (to: string) => {
     // 건물에 들어가자마자 층을 옮기는 경우처럼 걸은 게 없는 구간은 줄을 만들지 않는다.
     if (open && (open.meters >= 1 || open.seconds > 0)) {
-      const stairsText = open.stairs ? ` · 계단 ${open.stairs}곳 포함` : '';
+      // 경로 카드의 "계단 N곳 · 엘리베이터 N회"와 같은 단위로 적는다.
+      const included = [open.stairs && `계단 ${open.stairs}곳`, open.elevators && `엘리베이터 ${open.elevators}회`].filter(Boolean);
       legs.push({
         type: open.type,
-        label: `${open.type === 'indoor' ? '실내 이동' : '도보 이동'}${stairsText}`,
+        label: `${open.type === 'indoor' ? '실내 이동' : '도보 이동'}${included.length ? ` · ${included.join(' · ')} 포함` : ''}`,
         from: open.from,
         to,
         distanceMeters: Math.round(open.meters),
@@ -197,9 +200,10 @@ function toRouteSteps(steps: StepDto[], mode: string, departure: string, destina
       }
       case 'FLOOR_CHANGE': {
         if (!step.context?.indoor || !step.context.buildingName) {
-          // 건물 밖이나 공용 통로의 계단은 층 이동이 아니라 지금 구간의 일부로 본다.
+          // 건물 밖이나 공용 통로의 계단·엘리베이터는 따로 줄을 만들지 않고 지금 구간의 일부로 본다.
           add(step);
-          open!.stairs += 1;
+          if (step.meta?.transport === 'ELEVATOR') open!.elevators += 1;
+          else open!.stairs += 1;
           return;
         }
         const isElevator = step.meta?.transport === 'ELEVATOR';
