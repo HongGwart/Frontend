@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useRoute as useRouteQuery } from '@api/generated/honggwart';
-import { toApiError } from '@api/errors';
+import { isRetryableError, toApiError } from '@api/errors';
 import { routeFreshMs } from './routeCacheTime';
 import { RouteView, toRouteView } from './toRouteView';
 
@@ -16,6 +16,10 @@ export interface RouteSearchParams {
    */
   autoRefetch?: boolean;
 }
+
+// 화면을 나간 뒤에도 경로 응답을 이만큼 들고 있는다(기본 5분). 강의실을 확인하고 조금 뒤 같은 경로를 다시 찾을 때
+// 요청하지 않게 한다. 응답 하나가 30KB 안팎이라 부담이 작다.
+const ROUTE_GC_TIME_MS = 30 * 60 * 1000;
 
 /**
  * 서버는 세 모드 경로를 따로 주지만, 절반 넘게는 두세 모드가 똑같은 길이다(실제 응답 569건 중 두 모드 같음 50%,
@@ -59,6 +63,9 @@ export function useRouteSearch({ fromNodeId, toNodeId, autoRefetch = true }: Rou
             query.state.dataUpdatedAt,
             Math.max(0, ...(query.state.data?.routes ?? []).map(route => route.summary?.durationSeconds ?? 0)),
           ),
+        gcTime: ROUTE_GC_TIME_MS,
+        // 경로는 요청마다 서버가 새로 계산한다. 서버가 힘들어 5xx를 낼 때 세 번씩 보내면 더 힘들어져서 한 번만 다시 시도한다.
+        retry: (failureCount, retryError) => isRetryableError(retryError) && failureCount < 1,
         refetchOnMount: autoRefetch,
         refetchOnWindowFocus: autoRefetch,
         refetchOnReconnect: autoRefetch,
