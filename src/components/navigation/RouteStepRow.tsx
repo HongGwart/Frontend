@@ -49,7 +49,7 @@ export function RouteStepRow({ step, showDivider = true }: Props) {
         </RouteText>
       </Content>
       <SummaryText>
-        {step.distanceMeters}m · {step.durationMinutes}분
+        {step.distanceMeters}m · {step.durationText}
       </SummaryText>
     </Container>
   );

@@ -12,7 +12,8 @@ export interface RouteStep {
   /** 비어 있으면 화살표 없이 from만 한 줄로 보여준다(층 정보를 모르는 층 이동) */
   to: string;
   distanceMeters: number;
-  durationMinutes: number;
+  /** 소요 시간 문구 ("3분", 1분이 안 되면 "30초"처럼 10초 단위) */
+  durationText: string;
   /** 엘리베이터 구간의 혼잡 예상(서버 meta.congested) — 구간 목록에 경고 아이콘을 붙인다 */
   congested?: boolean;
 }

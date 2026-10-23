@@ -42,6 +42,16 @@ export function toFloorId(buildingName?: string, floor?: string) {
 const minutes = (seconds?: number) => Math.max(1, Math.round((seconds ?? 0) / 60));
 
 /**
+ * 구간·안내 카드의 소요 시간 문구. 1분이 안 되는 구간까지 "1분"으로 올리면 구간을 더한 시간이 총 소요 시간보다
+ * 한참 커진다(카드 23장이 "약 1분"씩인데 총 10분). 캠퍼스 안 구간은 대부분 1분이 안 걸려서 "1분 미만"으로 뭉뚱그리면
+ * 거의 모든 줄이 같아지니, 1분 미만은 10초 단위 초로 적는다.
+ */
+const durationLabel = (seconds?: number) => {
+  const tens = Math.max(1, Math.round((seconds ?? 0) / 10));
+  return tens < 6 ? `${tens * 10}초` : `${minutes(seconds)}분`;
+};
+
+/**
  * 서버는 엘리베이터로 여러 층을 한 번에 가도 한 층마다 FLOOR_CHANGE를 따로 준다(L→1→2→…). 같은 건물에서
  * 같은 수단으로 이어지는 층 이동은 "엘리베이터로 5층까지"처럼 한 구간으로 합친다.
  */
@@ -167,7 +177,7 @@ function toRouteSteps(steps: StepDto[], mode: string, departure: string, destina
         from: open.from,
         to,
         distanceMeters: Math.round(open.meters),
-        durationMinutes: minutes(open.seconds),
+        durationText: durationLabel(open.seconds),
       });
     }
     open = undefined;
@@ -221,7 +231,7 @@ function toRouteSteps(steps: StepDto[], mode: string, departure: string, destina
           from: known ? floorPlace(building, fromFloor) : `${isElevator ? '엘리베이터로' : '계단으로'} 층 이동`,
           to: known ? floorLabel(toFloor) : '',
           distanceMeters: Math.round(step.distanceMeters ?? 0),
-          durationMinutes: minutes(step.durationSeconds),
+          durationText: durationLabel(step.durationSeconds),
         });
         start(step, floorPlace(building, toFloor));
         return;
@@ -268,7 +278,7 @@ export function toRouteView(route: RouteDto): RouteView | null {
       id: `g-${mode}-${index}`,
       moveType: moveTypeOf(step),
       title: `${step.instruction ?? ''}${walkText}`,
-      durationText: `약 ${minutes(step.durationSeconds)}분 소요${congested ? ` · ${CONGESTED_ELEVATOR_TEXT}` : ''}`,
+      durationText: `약 ${durationLabel(step.durationSeconds)} 소요${congested ? ` · ${CONGESTED_ELEVATOR_TEXT}` : ''}`,
       progress: progressAt(step.polylineRange?.[0] ?? 0),
       ...(floorId ? { floorId } : {}),
     };
