@@ -14,6 +14,7 @@ import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
 import { CollapsibleBottomSheet, CollapsibleBottomSheetRef } from '@components/common/CollapsibleBottomSheet';
 import { FLOOR_MAPS, getBuildingFloors, getRoomDisplayLabel, getRoomOwner } from '@constant/floorMaps';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
+import { roomDisplayName } from '@utils/roomLabel';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
 import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
 import { RootStackParamList } from '@navigation/types';
@@ -157,7 +158,8 @@ export default function BuildingIndoorScreen() {
 
   // 출발/도착을 누르면 길찾기 탭으로 가서 해당 입력창을 채운다(강의실을 골랐으면 호수까지).
   const routeButtonProps = useRouteButtonProps();
-  const selectedRoom = roomOwner ? `${roomOwner.roomNumber}호` : undefined;
+  // 번호 방은 "101호", 글자 이름 방("제1열람실", "멀티미디어실")은 그대로.
+  const selectedRoom = roomOwner ? roomDisplayName(roomOwner.roomNumber) : undefined;
   const placeLabel = toRoutePlaceLabel(roomBuildingCode, roomBuildingName, selectedRoom);
   // 건물 내부 지도는 서버 검색을 거치지 않아 nodeId가 없다 — 동 코드 + 호실로 누를 때 서버 노드를 찾는다.
   const routePlace = { buildingCode: roomBuildingCode, room: selectedRoom };

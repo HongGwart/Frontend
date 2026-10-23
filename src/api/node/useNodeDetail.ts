@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { roomDisplayName } from '@utils/roomLabel';
 import { useNode } from '@api/generated/honggwart';
 import type { NodeDetailResponse } from '@api/generated/model';
 import { floorLabel, toFloorId } from '@api/route/toRouteView';
@@ -44,7 +45,7 @@ function toNodeDetailView(detail: NodeDetailResponse): NodeDetailView {
     isBuilding,
     displayName: detail.displayName ?? '',
     buildingCode: isBuilding ? detail.displayName : detail.parent?.displayName,
-    roomNumber: detail.roomNumber ? `${detail.roomNumber}호` : undefined,
+    roomNumber: detail.roomNumber ? roomDisplayName(detail.roomNumber) : undefined,
     floorText: isBuilding ? undefined : floorLabel(detail.floor) || undefined,
     floorId: isBuilding ? undefined : toFloorId(detail.parent?.displayName, detail.floor),
     mainEntrance: formatEntrances(detail.entrances),
