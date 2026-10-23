@@ -259,24 +259,24 @@ function GuidanceMapOverlays({
         joinType={lineCapReady ? 'Round' : 'Miter'}
         zIndex={0}
       />
-      {showStart && (
-        <NaverMapStartPointMarker
-          latitude={routeMap.start.latitude}
-          longitude={routeMap.start.longitude}
-          label={routeMap.start.label}
-          // 이미 떠난 출발지라 Figma처럼 회색 비활성 톤으로 그린다.
-          active={false}
-        />
-      )}
-      {showEnd && (
-        <NaverMapMarker
-          latitude={routeMap.end.latitude}
-          longitude={routeMap.end.longitude}
-          label={routeMap.end.label}
-          zIndex={1}
-          scale={1}
-        />
-      )}
+      {/* 핀은 층을 오갈 때마다 숨겼다 보였다 해서, 언마운트하지 않고 hidden으로 끈다(다시 마운트하면 커스텀 뷰를
+          새로 래스터화하느라 늦게 나타난다). */}
+      <NaverMapStartPointMarker
+        latitude={routeMap.start.latitude}
+        longitude={routeMap.start.longitude}
+        label={routeMap.start.label}
+        // 이미 떠난 출발지라 Figma처럼 회색 비활성 톤으로 그린다.
+        active={false}
+        hidden={!showStart}
+      />
+      <NaverMapMarker
+        latitude={routeMap.end.latitude}
+        longitude={routeMap.end.longitude}
+        label={routeMap.end.label}
+        zIndex={1}
+        scale={1}
+        hidden={!showEnd}
+      />
       {ripples.map((ripple, index) => (
         <NaverMapCircleOverlay
           key={index}
