@@ -1,0 +1,480 @@
+{
+ "done": {
+  "1367->1368": {
+   "at": "2026-10-23T04:07:13.286Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1367->789": {
+   "at": "2026-10-23T04:07:15.539Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1367->2411": {
+   "at": "2026-10-23T04:07:17.757Z",
+   "problems": [
+    {
+     "mode": "-",
+     "type": "no-route",
+     "detail": "ROUTE_NOT_FOUND"
+    }
+   ]
+  },
+  "1367->1510": {
+   "at": "2026-10-23T04:07:19.911Z",
+   "problems": []
+  },
+  "1367->1509": {
+   "at": "2026-10-23T04:07:22.146Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "STAIR_AVOIDANCE",
+     "type": "stairs-in-avoidance",
+     "detail": "도보 이동 · 계단 1곳 포함: A1 북측 출입구 → F동"
+    }
+   ]
+  },
+  "1367->2413": {
+   "at": "2026-10-23T04:07:24.413Z",
+   "problems": []
+  },
+  "1367->2414": {
+   "at": "2026-10-23T04:07:26.668Z",
+   "problems": [
+    {
+     "mode": "SHORTEST",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "STAIR_AVOIDANCE",
+     "type": "distance-mismatch",
+     "detail": "구간 합 388m, 총거리 390m"
+    }
+   ]
+  },
+  "1367->2416": {
+   "at": "2026-10-23T04:07:29.008Z",
+   "problems": [
+    {
+     "mode": "STAIR_AVOIDANCE",
+     "type": "stairs-in-avoidance",
+     "detail": "도보 이동 · 계단 1곳 포함: 건물 밖 → I동"
+    }
+   ]
+  },
+  "1367->3006": {
+   "at": "2026-10-23T04:07:31.279Z",
+   "problems": []
+  },
+  "1367->3554": {
+   "at": "2026-10-23T04:07:33.552Z",
+   "problems": []
+  },
+  "1367->2415": {
+   "at": "2026-10-23T04:07:35.813Z",
+   "problems": []
+  },
+  "1367->1518": {
+   "at": "2026-10-23T04:07:37.981Z",
+   "problems": []
+  },
+  "1367->2417": {
+   "at": "2026-10-23T04:07:40.309Z",
+   "problems": []
+  },
+  "1367->2412": {
+   "at": "2026-10-23T04:07:42.551Z",
+   "problems": [
+    {
+     "mode": "STAIR_AVOIDANCE",
+     "type": "stairs-in-avoidance",
+     "detail": "계단 이동: G동 1층 → 2층"
+    }
+   ]
+  },
+  "1367->3555": {
+   "at": "2026-10-23T04:07:44.874Z",
+   "problems": []
+  },
+  "1367->5509": {
+   "at": "2026-10-23T04:07:47.208Z",
+   "problems": []
+  },
+  "1367->602": {
+   "at": "2026-10-23T04:07:49.427Z",
+   "problems": []
+  },
+  "1367->1531": {
+   "at": "2026-10-23T04:07:51.672Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1367->5510": {
+   "at": "2026-10-23T04:07:53.829Z",
+   "problems": [
+    {
+     "mode": "-",
+     "type": "no-route",
+     "detail": "ROUTE_NOT_FOUND"
+    }
+   ]
+  },
+  "1367->5511": {
+   "at": "2026-10-23T04:07:56.029Z",
+   "problems": []
+  },
+  "1368->1367": {
+   "at": "2026-10-23T04:07:58.248Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1368->789": {
+   "at": "2026-10-23T04:08:00.578Z",
+   "problems": []
+  },
+  "1368->2411": {
+   "at": "2026-10-23T04:08:02.823Z",
+   "problems": [
+    {
+     "mode": "-",
+     "type": "no-route",
+     "detail": "ROUTE_NOT_FOUND"
+    }
+   ]
+  },
+  "1368->1510": {
+   "at": "2026-10-23T04:08:04.979Z",
+   "problems": []
+  },
+  "1368->1509": {
+   "at": "2026-10-23T04:08:07.217Z",
+   "problems": [
+    {
+     "mode": "STAIR_AVOIDANCE",
+     "type": "stairs-in-avoidance",
+     "detail": "도보 이동 · 계단 1곳 포함: B1 북동측 출입구 → F동"
+    }
+   ]
+  },
+  "1368->2413": {
+   "at": "2026-10-23T04:08:09.630Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1368->2414": {
+   "at": "2026-10-23T04:08:11.866Z",
+   "problems": [
+    {
+     "mode": "SHORTEST",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1368->2416": {
+   "at": "2026-10-23T04:08:14.210Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "STAIR_AVOIDANCE",
+     "type": "stairs-in-avoidance",
+     "detail": "도보 이동 · 계단 1곳 포함: 건물 밖 → I동"
+    }
+   ]
+  },
+  "1368->3006": {
+   "at": "2026-10-23T04:08:16.536Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1368->3554": {
+   "at": "2026-10-23T04:08:18.779Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1368->2415": {
+   "at": "2026-10-23T04:08:21.035Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1368->1518": {
+   "at": "2026-10-23T04:08:23.283Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1368->2417": {
+   "at": "2026-10-23T04:08:25.648Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1368->2412": {
+   "at": "2026-10-23T04:08:27.978Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "STAIR_AVOIDANCE",
+     "type": "stairs-in-avoidance",
+     "detail": "계단 이동: G동 1층 → 2층"
+    }
+   ]
+  },
+  "1368->3555": {
+   "at": "2026-10-23T04:08:30.211Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1368->5509": {
+   "at": "2026-10-23T04:08:32.437Z",
+   "problems": [
+    {
+     "mode": "SHORTEST",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1368->602": {
+   "at": "2026-10-23T04:08:34.679Z",
+   "problems": [
+    {
+     "mode": "SHORTEST",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "1368->1531": {
+   "at": "2026-10-23T04:08:36.841Z",
+   "problems": []
+  },
+  "1368->5510": {
+   "at": "2026-10-23T04:08:39.023Z",
+   "problems": [
+    {
+     "mode": "-",
+     "type": "no-route",
+     "detail": "ROUTE_NOT_FOUND"
+    }
+   ]
+  },
+  "1368->5511": {
+   "at": "2026-10-23T04:08:41.244Z",
+   "problems": [
+    {
+     "mode": "SHORTEST",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "789->1367": {
+   "at": "2026-10-23T04:08:43.468Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "789->1368": {
+   "at": "2026-10-23T04:08:45.687Z",
+   "problems": []
+  },
+  "789->2411": {
+   "at": "2026-10-23T04:08:47.913Z",
+   "problems": [
+    {
+     "mode": "-",
+     "type": "no-route",
+     "detail": "ROUTE_NOT_FOUND"
+    }
+   ]
+  },
+  "789->1510": {
+   "at": "2026-10-23T04:08:50.153Z",
+   "problems": []
+  },
+  "789->1509": {
+   "at": "2026-10-23T04:08:52.400Z",
+   "problems": [
+    {
+     "mode": "STAIR_AVOIDANCE",
+     "type": "stairs-in-avoidance",
+     "detail": "도보 이동 · 계단 1곳 포함: C3 북측 외부 출입구 → F동"
+    }
+   ]
+  },
+  "789->2413": {
+   "at": "2026-10-23T04:08:54.630Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "789->2414": {
+   "at": "2026-10-23T04:08:56.977Z",
+   "problems": [
+    {
+     "mode": "SHORTEST",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "789->2416": {
+   "at": "2026-10-23T04:08:59.300Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    },
+    {
+     "mode": "STAIR_AVOIDANCE",
+     "type": "stairs-in-avoidance",
+     "detail": "도보 이동 · 계단 1곳 포함: 건물 밖 → I동"
+    }
+   ]
+  },
+  "789->3006": {
+   "at": "2026-10-23T04:09:01.698Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  },
+  "789->3554": {
+   "at": "2026-10-23T04:09:03.931Z",
+   "problems": [
+    {
+     "mode": "INDOOR_PREFERRED",
+     "type": "unknown-floor",
+     "detail": "계단 이동: 계단으로 층 이동"
+    }
+   ]
+  }
+ },
+ "runs": [
+  {
+   "at": "2026-10-23T04:09:03.933Z",
+   "count": 50,
+   "recheck": false
+  }
+ ]
+}

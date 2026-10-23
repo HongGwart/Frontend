@@ -1,0 +1,3793 @@
+{
+ "A": {
+  "building": 1367,
+  "rooms": [
+   {
+    "nodeId": 1378,
+    "name": "A동 101호"
+   },
+   {
+    "nodeId": 1377,
+    "name": "A동 103호"
+   },
+   {
+    "nodeId": 1388,
+    "name": "A동 104호"
+   },
+   {
+    "nodeId": 1386,
+    "name": "A동 105호"
+   },
+   {
+    "nodeId": 1379,
+    "name": "A동 106호"
+   },
+   {
+    "nodeId": 1380,
+    "name": "A동 107호"
+   },
+   {
+    "nodeId": 1381,
+    "name": "A동 108호"
+   },
+   {
+    "nodeId": 1376,
+    "name": "A동 109호"
+   },
+   {
+    "nodeId": 1382,
+    "name": "A동 110호"
+   },
+   {
+    "nodeId": 1393,
+    "name": "A동 112호"
+   },
+   {
+    "nodeId": 1406,
+    "name": "A동 201호"
+   },
+   {
+    "nodeId": 1419,
+    "name": "A동 202-1호"
+   },
+   {
+    "nodeId": 1405,
+    "name": "A동 203호"
+   },
+   {
+    "nodeId": 1407,
+    "name": "A동 204호"
+   },
+   {
+    "nodeId": 1408,
+    "name": "A동 205호"
+   },
+   {
+    "nodeId": 1409,
+    "name": "A동 206호"
+   },
+   {
+    "nodeId": 1410,
+    "name": "A동 207호"
+   },
+   {
+    "nodeId": 1404,
+    "name": "A동 208호"
+   },
+   {
+    "nodeId": 1411,
+    "name": "A동 209호"
+   },
+   {
+    "nodeId": 1422,
+    "name": "A동 210호"
+   }
+  ]
+ },
+ "B": {
+  "building": 1368,
+  "rooms": [
+   {
+    "nodeId": 1434,
+    "name": "B동 101호"
+   },
+   {
+    "nodeId": 1435,
+    "name": "B동 102호"
+   },
+   {
+    "nodeId": 1436,
+    "name": "B동 103호"
+   },
+   {
+    "nodeId": 1433,
+    "name": "B동 104호"
+   },
+   {
+    "nodeId": 1437,
+    "name": "B동 105호"
+   },
+   {
+    "nodeId": 1460,
+    "name": "B동 201호"
+   },
+   {
+    "nodeId": 1468,
+    "name": "B동 202호"
+   },
+   {
+    "nodeId": 1466,
+    "name": "B동 203호"
+   },
+   {
+    "nodeId": 1463,
+    "name": "B동 204호"
+   },
+   {
+    "nodeId": 1459,
+    "name": "B동 205호"
+   },
+   {
+    "nodeId": 1461,
+    "name": "B동 206호"
+   },
+   {
+    "nodeId": 1477,
+    "name": "B동 301호"
+   },
+   {
+    "nodeId": 1485,
+    "name": "B동 302호"
+   },
+   {
+    "nodeId": 1483,
+    "name": "B동 303호"
+   },
+   {
+    "nodeId": 1480,
+    "name": "B동 304호"
+   },
+   {
+    "nodeId": 1476,
+    "name": "B동 305호"
+   },
+   {
+    "nodeId": 1478,
+    "name": "B동 306호"
+   },
+   {
+    "nodeId": 1494,
+    "name": "B동 401호"
+   },
+   {
+    "nodeId": 1501,
+    "name": "B동 402호"
+   },
+   {
+    "nodeId": 1495,
+    "name": "B동 404호"
+   }
+  ]
+ },
+ "C": {
+  "building": 789,
+  "rooms": [
+   {
+    "nodeId": 1352,
+    "name": "C동 101호"
+   },
+   {
+    "nodeId": 1349,
+    "name": "C동 102호"
+   },
+   {
+    "nodeId": 1347,
+    "name": "C동 105호"
+   },
+   {
+    "nodeId": 1351,
+    "name": "C동 106호"
+   },
+   {
+    "nodeId": 1353,
+    "name": "C동 107호"
+   },
+   {
+    "nodeId": 1327,
+    "name": "C동 201호"
+   },
+   {
+    "nodeId": 1328,
+    "name": "C동 202호"
+   },
+   {
+    "nodeId": 1334,
+    "name": "C동 206호"
+   },
+   {
+    "nodeId": 1318,
+    "name": "C동 207호"
+   },
+   {
+    "nodeId": 1319,
+    "name": "C동 208호"
+   },
+   {
+    "nodeId": 1320,
+    "name": "C동 209호"
+   },
+   {
+    "nodeId": 1322,
+    "name": "C동 210호"
+   },
+   {
+    "nodeId": 1324,
+    "name": "C동 213호"
+   },
+   {
+    "nodeId": 1325,
+    "name": "C동 214호"
+   },
+   {
+    "nodeId": 1326,
+    "name": "C동 215호"
+   },
+   {
+    "nodeId": 1268,
+    "name": "C동 301호"
+   },
+   {
+    "nodeId": 1273,
+    "name": "C동 301호"
+   },
+   {
+    "nodeId": 1271,
+    "name": "C동 302호"
+   },
+   {
+    "nodeId": 1286,
+    "name": "C동 310호"
+   },
+   {
+    "nodeId": 1282,
+    "name": "C동 313호"
+   },
+   {
+    "nodeId": 1306,
+    "name": "C동 315-1호"
+   },
+   {
+    "nodeId": 1290,
+    "name": "C동 316-1호"
+   },
+   {
+    "nodeId": 1281,
+    "name": "C동 319호"
+   },
+   {
+    "nodeId": 1257,
+    "name": "C동 321호"
+   },
+   {
+    "nodeId": 1265,
+    "name": "C동 329호"
+   },
+   {
+    "nodeId": 1266,
+    "name": "C동 330호"
+   },
+   {
+    "nodeId": 1267,
+    "name": "C동 331호"
+   },
+   {
+    "nodeId": 1214,
+    "name": "C동 401호"
+   },
+   {
+    "nodeId": 1208,
+    "name": "C동 403호"
+   },
+   {
+    "nodeId": 1224,
+    "name": "C동 407-1호"
+   },
+   {
+    "nodeId": 1226,
+    "name": "C동 408호"
+   },
+   {
+    "nodeId": 1227,
+    "name": "C동 409-1호"
+   },
+   {
+    "nodeId": 1191,
+    "name": "C동 417호"
+   },
+   {
+    "nodeId": 1190,
+    "name": "C동 418호"
+   },
+   {
+    "nodeId": 1194,
+    "name": "C동 419호"
+   },
+   {
+    "nodeId": 1198,
+    "name": "C동 422호"
+   },
+   {
+    "nodeId": 1201,
+    "name": "C동 425호"
+   },
+   {
+    "nodeId": 1205,
+    "name": "C동 428호"
+   },
+   {
+    "nodeId": 1207,
+    "name": "C동 429호"
+   },
+   {
+    "nodeId": 820,
+    "name": "C동 501호"
+   },
+   {
+    "nodeId": 836,
+    "name": "C동 508호"
+   },
+   {
+    "nodeId": 837,
+    "name": "C동 509호"
+   },
+   {
+    "nodeId": 852,
+    "name": "C동 517호"
+   },
+   {
+    "nodeId": 829,
+    "name": "C동 523-1호"
+   },
+   {
+    "nodeId": 793,
+    "name": "C동 527호"
+   },
+   {
+    "nodeId": 796,
+    "name": "C동 530호"
+   },
+   {
+    "nodeId": 799,
+    "name": "C동 533호"
+   },
+   {
+    "nodeId": 800,
+    "name": "C동 534호"
+   },
+   {
+    "nodeId": 803,
+    "name": "C동 536호"
+   },
+   {
+    "nodeId": 806,
+    "name": "C동 539호"
+   },
+   {
+    "nodeId": 907,
+    "name": "C동 601호"
+   },
+   {
+    "nodeId": 949,
+    "name": "C동 614호"
+   },
+   {
+    "nodeId": 877,
+    "name": "C동 616호"
+   },
+   {
+    "nodeId": 882,
+    "name": "C동 620호"
+   },
+   {
+    "nodeId": 941,
+    "name": "C동 621호"
+   },
+   {
+    "nodeId": 929,
+    "name": "C동 623호"
+   },
+   {
+    "nodeId": 891,
+    "name": "C동 637호"
+   },
+   {
+    "nodeId": 893,
+    "name": "C동 639호"
+   },
+   {
+    "nodeId": 896,
+    "name": "C동 642호"
+   },
+   {
+    "nodeId": 901,
+    "name": "C동 646호"
+   },
+   {
+    "nodeId": 1003,
+    "name": "C동 701호"
+   },
+   {
+    "nodeId": 996,
+    "name": "C동 703호"
+   },
+   {
+    "nodeId": 1027,
+    "name": "C동 709호"
+   },
+   {
+    "nodeId": 1042,
+    "name": "C동 716호"
+   },
+   {
+    "nodeId": 1018,
+    "name": "C동 721호"
+   },
+   {
+    "nodeId": 976,
+    "name": "C동 726호"
+   },
+   {
+    "nodeId": 979,
+    "name": "C동 728호"
+   },
+   {
+    "nodeId": 986,
+    "name": "C동 735호"
+   },
+   {
+    "nodeId": 990,
+    "name": "C동 739호"
+   },
+   {
+    "nodeId": 1000,
+    "name": "C동 744호"
+   },
+   {
+    "nodeId": 1089,
+    "name": "C동 801호"
+   },
+   {
+    "nodeId": 1085,
+    "name": "C동 803호"
+   },
+   {
+    "nodeId": 1108,
+    "name": "C동 808호"
+   },
+   {
+    "nodeId": 1117,
+    "name": "C동 810호"
+   },
+   {
+    "nodeId": 1122,
+    "name": "C동 816호"
+   },
+   {
+    "nodeId": 1102,
+    "name": "C동 819호"
+   },
+   {
+    "nodeId": 1059,
+    "name": "C동 820호"
+   },
+   {
+    "nodeId": 1076,
+    "name": "C동 833호"
+   },
+   {
+    "nodeId": 1081,
+    "name": "C동 836호"
+   },
+   {
+    "nodeId": 1083,
+    "name": "C동 837호"
+   },
+   {
+    "nodeId": 1176,
+    "name": "C동 904호"
+   },
+   {
+    "nodeId": 1161,
+    "name": "C동 908호"
+   },
+   {
+    "nodeId": 1158,
+    "name": "C동 909호"
+   },
+   {
+    "nodeId": 1144,
+    "name": "C동 911호"
+   },
+   {
+    "nodeId": 1141,
+    "name": "C동 917호"
+   },
+   {
+    "nodeId": 1142,
+    "name": "C동 918호"
+   },
+   {
+    "nodeId": 1143,
+    "name": "C동 919호"
+   },
+   {
+    "nodeId": 1145,
+    "name": "C동 920호"
+   },
+   {
+    "nodeId": 1149,
+    "name": "C동 923호"
+   },
+   {
+    "nodeId": 1150,
+    "name": "C동 924호"
+   }
+  ]
+ },
+ "D": {
+  "building": 2411,
+  "rooms": []
+ },
+ "E": {
+  "building": 1510,
+  "rooms": [
+   {
+    "nodeId": 1711,
+    "name": "E동 1001호"
+   },
+   {
+    "nodeId": 1710,
+    "name": "E동 1002호"
+   },
+   {
+    "nodeId": 1704,
+    "name": "E동 1003호"
+   },
+   {
+    "nodeId": 1702,
+    "name": "E동 1004호"
+   },
+   {
+    "nodeId": 1703,
+    "name": "E동 1005호"
+   },
+   {
+    "nodeId": 1536,
+    "name": "E동 101호"
+   },
+   {
+    "nodeId": 1535,
+    "name": "E동 102호"
+   },
+   {
+    "nodeId": 1555,
+    "name": "E동 103호"
+   },
+   {
+    "nodeId": 1537,
+    "name": "E동 104호"
+   },
+   {
+    "nodeId": 1538,
+    "name": "E동 106호"
+   },
+   {
+    "nodeId": 1565,
+    "name": "E동 201호"
+   },
+   {
+    "nodeId": 1556,
+    "name": "E동 202호"
+   },
+   {
+    "nodeId": 1557,
+    "name": "E동 203호"
+   },
+   {
+    "nodeId": 1558,
+    "name": "E동 204호"
+   },
+   {
+    "nodeId": 1575,
+    "name": "E동 301-2호"
+   },
+   {
+    "nodeId": 1576,
+    "name": "E동 302호"
+   },
+   {
+    "nodeId": 1577,
+    "name": "E동 303호"
+   },
+   {
+    "nodeId": 1578,
+    "name": "E동 304호"
+   },
+   {
+    "nodeId": 1574,
+    "name": "E동 305호"
+   },
+   {
+    "nodeId": 1600,
+    "name": "E동 401호"
+   },
+   {
+    "nodeId": 1590,
+    "name": "E동 402호"
+   },
+   {
+    "nodeId": 1591,
+    "name": "E동 403호"
+   },
+   {
+    "nodeId": 1596,
+    "name": "E동 404-1호"
+   },
+   {
+    "nodeId": 1594,
+    "name": "E동 404-2호"
+   },
+   {
+    "nodeId": 1592,
+    "name": "E동 405호"
+   },
+   {
+    "nodeId": 1588,
+    "name": "E동 406-2호"
+   },
+   {
+    "nodeId": 1593,
+    "name": "E동 406호"
+   },
+   {
+    "nodeId": 1609,
+    "name": "E동 501호"
+   },
+   {
+    "nodeId": 1610,
+    "name": "E동 502호"
+   },
+   {
+    "nodeId": 1611,
+    "name": "E동 503호"
+   },
+   {
+    "nodeId": 1612,
+    "name": "E동 504호"
+   },
+   {
+    "nodeId": 1607,
+    "name": "E동 505호"
+   },
+   {
+    "nodeId": 1632,
+    "name": "E동 601호"
+   },
+   {
+    "nodeId": 1633,
+    "name": "E동 602-1호"
+   },
+   {
+    "nodeId": 1631,
+    "name": "E동 602-2호"
+   },
+   {
+    "nodeId": 1624,
+    "name": "E동 603호"
+   },
+   {
+    "nodeId": 1622,
+    "name": "E동 604-1호"
+   },
+   {
+    "nodeId": 1625,
+    "name": "E동 604호"
+   },
+   {
+    "nodeId": 1626,
+    "name": "E동 605호"
+   },
+   {
+    "nodeId": 1652,
+    "name": "E동 701호"
+   },
+   {
+    "nodeId": 1653,
+    "name": "E동 702호"
+   },
+   {
+    "nodeId": 1643,
+    "name": "E동 703호"
+   },
+   {
+    "nodeId": 1646,
+    "name": "E동 704호"
+   },
+   {
+    "nodeId": 1644,
+    "name": "E동 705호"
+   },
+   {
+    "nodeId": 1641,
+    "name": "E동 706-1호"
+   },
+   {
+    "nodeId": 1645,
+    "name": "E동 706-2호"
+   },
+   {
+    "nodeId": 1672,
+    "name": "E동 801호"
+   },
+   {
+    "nodeId": 1673,
+    "name": "E동 802호"
+   },
+   {
+    "nodeId": 1670,
+    "name": "E동 803호"
+   },
+   {
+    "nodeId": 1665,
+    "name": "E동 804호"
+   },
+   {
+    "nodeId": 1664,
+    "name": "E동 805호"
+   },
+   {
+    "nodeId": 1661,
+    "name": "E동 806-1호"
+   },
+   {
+    "nodeId": 1663,
+    "name": "E동 806-2호"
+   },
+   {
+    "nodeId": 1692,
+    "name": "E동 901호"
+   },
+   {
+    "nodeId": 1691,
+    "name": "E동 902호"
+   },
+   {
+    "nodeId": 1689,
+    "name": "E동 903호"
+   },
+   {
+    "nodeId": 1685,
+    "name": "E동 904호"
+   },
+   {
+    "nodeId": 1684,
+    "name": "E동 905호"
+   },
+   {
+    "nodeId": 1681,
+    "name": "E동 906-1호"
+   },
+   {
+    "nodeId": 1683,
+    "name": "E동 906-2호"
+   }
+  ]
+ },
+ "F": {
+  "building": 1509,
+  "rooms": [
+   {
+    "nodeId": 2050,
+    "name": "F동 101-1호"
+   },
+   {
+    "nodeId": 2051,
+    "name": "F동 101-2호"
+   },
+   {
+    "nodeId": 2047,
+    "name": "F동 101-3호"
+   },
+   {
+    "nodeId": 2049,
+    "name": "F동 102호"
+   },
+   {
+    "nodeId": 2046,
+    "name": "F동 103-1호"
+   },
+   {
+    "nodeId": 2048,
+    "name": "F동 103-2호"
+   },
+   {
+    "nodeId": 2054,
+    "name": "F동 201호"
+   },
+   {
+    "nodeId": 2060,
+    "name": "F동 202호"
+   },
+   {
+    "nodeId": 2056,
+    "name": "F동 203호"
+   },
+   {
+    "nodeId": 2055,
+    "name": "F동 205호"
+   },
+   {
+    "nodeId": 2059,
+    "name": "F동 206호"
+   },
+   {
+    "nodeId": 2070,
+    "name": "F동 301호"
+   },
+   {
+    "nodeId": 2069,
+    "name": "F동 302-1호"
+   },
+   {
+    "nodeId": 2077,
+    "name": "F동 401호"
+   },
+   {
+    "nodeId": 2082,
+    "name": "F동 402-1호"
+   },
+   {
+    "nodeId": 2076,
+    "name": "F동 406호"
+   },
+   {
+    "nodeId": 2103,
+    "name": "F동 501-1호"
+   },
+   {
+    "nodeId": 2104,
+    "name": "F동 501-2호"
+   },
+   {
+    "nodeId": 2089,
+    "name": "F동 502-1호"
+   },
+   {
+    "nodeId": 2099,
+    "name": "F동 503호"
+   },
+   {
+    "nodeId": 2096,
+    "name": "F동 505호"
+   },
+   {
+    "nodeId": 2095,
+    "name": "F동 506호"
+   },
+   {
+    "nodeId": 2092,
+    "name": "F동 507-1호"
+   },
+   {
+    "nodeId": 2093,
+    "name": "F동 507호"
+   },
+   {
+    "nodeId": 2109,
+    "name": "F동 601호"
+   },
+   {
+    "nodeId": 2119,
+    "name": "F동 603호"
+   },
+   {
+    "nodeId": 2120,
+    "name": "F동 604-1호"
+   },
+   {
+    "nodeId": 2118,
+    "name": "F동 604-2호"
+   },
+   {
+    "nodeId": 2115,
+    "name": "F동 605호"
+   },
+   {
+    "nodeId": 2114,
+    "name": "F동 606호"
+   },
+   {
+    "nodeId": 2113,
+    "name": "F동 607호"
+   },
+   {
+    "nodeId": 2112,
+    "name": "F동 608호"
+   },
+   {
+    "nodeId": 2110,
+    "name": "F동 609호"
+   },
+   {
+    "nodeId": 2139,
+    "name": "F동 701호"
+   },
+   {
+    "nodeId": 2137,
+    "name": "F동 702호"
+   },
+   {
+    "nodeId": 2134,
+    "name": "F동 703호"
+   },
+   {
+    "nodeId": 2133,
+    "name": "F동 704호"
+   },
+   {
+    "nodeId": 2131,
+    "name": "F동 705호"
+   },
+   {
+    "nodeId": 2148,
+    "name": "F동 801호"
+   },
+   {
+    "nodeId": 2145,
+    "name": "F동 802호"
+   },
+   {
+    "nodeId": 2144,
+    "name": "F동 803호"
+   },
+   {
+    "nodeId": 2146,
+    "name": "F동 804호"
+   }
+  ]
+ },
+ "G": {
+  "building": 2413,
+  "rooms": [
+   {
+    "nodeId": 3216,
+    "name": "G동 101호"
+   },
+   {
+    "nodeId": 3225,
+    "name": "G동 103호"
+   },
+   {
+    "nodeId": 3222,
+    "name": "G동 104호"
+   },
+   {
+    "nodeId": 3237,
+    "name": "G동 105호"
+   },
+   {
+    "nodeId": 3231,
+    "name": "G동 106호"
+   },
+   {
+    "nodeId": 3246,
+    "name": "G동 201호"
+   },
+   {
+    "nodeId": 3244,
+    "name": "G동 203호"
+   },
+   {
+    "nodeId": 3260,
+    "name": "G동 204호"
+   },
+   {
+    "nodeId": 3264,
+    "name": "G동 205호"
+   },
+   {
+    "nodeId": 3267,
+    "name": "G동 206호"
+   },
+   {
+    "nodeId": 3269,
+    "name": "G동 207호"
+   },
+   {
+    "nodeId": 3266,
+    "name": "G동 208호"
+   },
+   {
+    "nodeId": 3258,
+    "name": "G동 210호"
+   },
+   {
+    "nodeId": 3286,
+    "name": "G동 212호"
+   },
+   {
+    "nodeId": 3287,
+    "name": "G동 213호"
+   },
+   {
+    "nodeId": 3301,
+    "name": "G동 304호"
+   },
+   {
+    "nodeId": 3307,
+    "name": "G동 306호"
+   },
+   {
+    "nodeId": 3310,
+    "name": "G동 307호"
+   },
+   {
+    "nodeId": 3316,
+    "name": "G동 308호"
+   },
+   {
+    "nodeId": 3324,
+    "name": "G동 312호"
+   },
+   {
+    "nodeId": 3311,
+    "name": "G동 315호"
+   },
+   {
+    "nodeId": 3305,
+    "name": "G동 318호"
+   },
+   {
+    "nodeId": 3326,
+    "name": "G동 320호"
+   },
+   {
+    "nodeId": 3329,
+    "name": "G동 321호"
+   },
+   {
+    "nodeId": 3331,
+    "name": "G동 322호"
+   },
+   {
+    "nodeId": 3341,
+    "name": "G동 323-6호"
+   },
+   {
+    "nodeId": 3344,
+    "name": "G동 323-7호"
+   },
+   {
+    "nodeId": 3347,
+    "name": "G동 323-8호"
+   },
+   {
+    "nodeId": 3348,
+    "name": "G동 323-9호"
+   },
+   {
+    "nodeId": 3372,
+    "name": "G동 404호"
+   },
+   {
+    "nodeId": 3385,
+    "name": "G동 408호"
+   },
+   {
+    "nodeId": 3387,
+    "name": "G동 409호"
+   },
+   {
+    "nodeId": 3384,
+    "name": "G동 414호"
+   },
+   {
+    "nodeId": 3381,
+    "name": "G동 415호"
+   },
+   {
+    "nodeId": 3373,
+    "name": "G동 417호"
+   },
+   {
+    "nodeId": 3396,
+    "name": "G동 418호"
+   },
+   {
+    "nodeId": 3399,
+    "name": "G동 419호"
+   },
+   {
+    "nodeId": 3365,
+    "name": "G동 425호"
+   },
+   {
+    "nodeId": 3364,
+    "name": "G동 431호"
+   },
+   {
+    "nodeId": 3182,
+    "name": "G동 B1 열람실(Blue)"
+   },
+   {
+    "nodeId": 3177,
+    "name": "G동 B102호"
+   },
+   {
+    "nodeId": 3176,
+    "name": "G동 B103호"
+   },
+   {
+    "nodeId": 3175,
+    "name": "G동 B104호"
+   },
+   {
+    "nodeId": 3174,
+    "name": "G동 B106호"
+   },
+   {
+    "nodeId": 3173,
+    "name": "G동 B107호"
+   },
+   {
+    "nodeId": 3172,
+    "name": "G동 B108호"
+   },
+   {
+    "nodeId": 3171,
+    "name": "G동 B109호"
+   },
+   {
+    "nodeId": 3169,
+    "name": "G동 B110호"
+   },
+   {
+    "nodeId": 3170,
+    "name": "G동 B111호"
+   }
+  ]
+ },
+ "H": {
+  "building": 2414,
+  "rooms": [
+   {
+    "nodeId": 3421,
+    "name": "H동 101-1호"
+   },
+   {
+    "nodeId": 3423,
+    "name": "H동 101-2호"
+   },
+   {
+    "nodeId": 3425,
+    "name": "H동 101-3호"
+   },
+   {
+    "nodeId": 3426,
+    "name": "H동 101-4호"
+   },
+   {
+    "nodeId": 3413,
+    "name": "H동 101호"
+   },
+   {
+    "nodeId": 3422,
+    "name": "H동 102호"
+   },
+   {
+    "nodeId": 3424,
+    "name": "H동 103호"
+   },
+   {
+    "nodeId": 3457,
+    "name": "H동 201호"
+   },
+   {
+    "nodeId": 3440,
+    "name": "H동 202호"
+   },
+   {
+    "nodeId": 3439,
+    "name": "H동 203호"
+   },
+   {
+    "nodeId": 3450,
+    "name": "H동 210호"
+   },
+   {
+    "nodeId": 3449,
+    "name": "H동 214호"
+   },
+   {
+    "nodeId": 3451,
+    "name": "H동 215호"
+   },
+   {
+    "nodeId": 3452,
+    "name": "H동 216호"
+   },
+   {
+    "nodeId": 3465,
+    "name": "H동 301호"
+   },
+   {
+    "nodeId": 3478,
+    "name": "H동 302-1호"
+   },
+   {
+    "nodeId": 3477,
+    "name": "H동 302-2호"
+   },
+   {
+    "nodeId": 3476,
+    "name": "H동 302-3호"
+   },
+   {
+    "nodeId": 3475,
+    "name": "H동 302-4호"
+   },
+   {
+    "nodeId": 3484,
+    "name": "H동 304-1호"
+   },
+   {
+    "nodeId": 3481,
+    "name": "H동 304-2호"
+   },
+   {
+    "nodeId": 3492,
+    "name": "H동 304호"
+   },
+   {
+    "nodeId": 3482,
+    "name": "H동 305호"
+   },
+   {
+    "nodeId": 3483,
+    "name": "H동 306호"
+   },
+   {
+    "nodeId": 3499,
+    "name": "H동 314-1호"
+   },
+   {
+    "nodeId": 3498,
+    "name": "H동 314호"
+   },
+   {
+    "nodeId": 3500,
+    "name": "H동 315호"
+   },
+   {
+    "nodeId": 3501,
+    "name": "H동 316호"
+   },
+   {
+    "nodeId": 3503,
+    "name": "H동 317호"
+   },
+   {
+    "nodeId": 3462,
+    "name": "H동 318호"
+   },
+   {
+    "nodeId": 3521,
+    "name": "H동 401호"
+   },
+   {
+    "nodeId": 3527,
+    "name": "H동 401호"
+   },
+   {
+    "nodeId": 3508,
+    "name": "H동 403호"
+   },
+   {
+    "nodeId": 3509,
+    "name": "H동 406호"
+   },
+   {
+    "nodeId": 3525,
+    "name": "H동 407호"
+   },
+   {
+    "nodeId": 3505,
+    "name": "H동 408호"
+   },
+   {
+    "nodeId": 3534,
+    "name": "H동 501호"
+   },
+   {
+    "nodeId": 3529,
+    "name": "H동 504호"
+   },
+   {
+    "nodeId": 3545,
+    "name": "H동 601호"
+   },
+   {
+    "nodeId": 3544,
+    "name": "H동 606호"
+   }
+  ]
+ },
+ "I": {
+  "building": 2416,
+  "rooms": [
+   {
+    "nodeId": 2420,
+    "name": "I동 104-3호"
+   },
+   {
+    "nodeId": 2423,
+    "name": "I동 107호"
+   },
+   {
+    "nodeId": 2424,
+    "name": "I동 108호"
+   },
+   {
+    "nodeId": 2419,
+    "name": "I동 109호"
+   },
+   {
+    "nodeId": 2436,
+    "name": "I동 201호"
+   },
+   {
+    "nodeId": 2433,
+    "name": "I동 202호"
+   },
+   {
+    "nodeId": 2432,
+    "name": "I동 203호"
+   },
+   {
+    "nodeId": 2426,
+    "name": "I동 204호"
+   },
+   {
+    "nodeId": 2431,
+    "name": "I동 206호"
+   },
+   {
+    "nodeId": 2435,
+    "name": "I동 207호"
+   },
+   {
+    "nodeId": 2447,
+    "name": "I동 208호"
+   },
+   {
+    "nodeId": 2441,
+    "name": "I동 211호"
+   },
+   {
+    "nodeId": 2439,
+    "name": "I동 212호"
+   },
+   {
+    "nodeId": 2438,
+    "name": "I동 213호"
+   },
+   {
+    "nodeId": 2450,
+    "name": "I동 303호"
+   },
+   {
+    "nodeId": 2451,
+    "name": "I동 305호"
+   },
+   {
+    "nodeId": 2453,
+    "name": "I동 306호"
+   },
+   {
+    "nodeId": 2459,
+    "name": "I동 307호"
+   },
+   {
+    "nodeId": 2463,
+    "name": "I동 309호"
+   },
+   {
+    "nodeId": 2464,
+    "name": "I동 310호"
+   },
+   {
+    "nodeId": 2449,
+    "name": "I동 311호"
+   },
+   {
+    "nodeId": 2460,
+    "name": "I동 312호"
+   },
+   {
+    "nodeId": 2458,
+    "name": "I동 313호"
+   },
+   {
+    "nodeId": 2456,
+    "name": "I동 314호"
+   },
+   {
+    "nodeId": 2472,
+    "name": "I동 401호"
+   },
+   {
+    "nodeId": 2469,
+    "name": "I동 403호"
+   },
+   {
+    "nodeId": 2468,
+    "name": "I동 405호"
+   },
+   {
+    "nodeId": 2470,
+    "name": "I동 406호"
+   },
+   {
+    "nodeId": 2475,
+    "name": "I동 407호"
+   },
+   {
+    "nodeId": 2491,
+    "name": "I동 408호"
+   },
+   {
+    "nodeId": 2479,
+    "name": "I동 409호"
+   },
+   {
+    "nodeId": 2480,
+    "name": "I동 410호"
+   },
+   {
+    "nodeId": 2467,
+    "name": "I동 412호"
+   },
+   {
+    "nodeId": 2477,
+    "name": "I동 413호"
+   },
+   {
+    "nodeId": 2499,
+    "name": "I동 501호"
+   },
+   {
+    "nodeId": 2496,
+    "name": "I동 502호"
+   },
+   {
+    "nodeId": 2495,
+    "name": "I동 503호"
+   },
+   {
+    "nodeId": 2494,
+    "name": "I동 505호"
+   },
+   {
+    "nodeId": 2497,
+    "name": "I동 506호"
+   },
+   {
+    "nodeId": 2503,
+    "name": "I동 507호"
+   },
+   {
+    "nodeId": 2506,
+    "name": "I동 508호"
+   },
+   {
+    "nodeId": 2508,
+    "name": "I동 509호"
+   },
+   {
+    "nodeId": 2493,
+    "name": "I동 511호"
+   },
+   {
+    "nodeId": 2501,
+    "name": "I동 513호"
+   },
+   {
+    "nodeId": 2521,
+    "name": "I동 601호"
+   },
+   {
+    "nodeId": 2518,
+    "name": "I동 602호"
+   },
+   {
+    "nodeId": 2517,
+    "name": "I동 603호"
+   },
+   {
+    "nodeId": 2520,
+    "name": "I동 606호"
+   },
+   {
+    "nodeId": 2523,
+    "name": "I동 607호"
+   },
+   {
+    "nodeId": 2525,
+    "name": "I동 608호"
+   },
+   {
+    "nodeId": 2528,
+    "name": "I동 609호"
+   },
+   {
+    "nodeId": 2530,
+    "name": "I동 610호"
+   },
+   {
+    "nodeId": 2526,
+    "name": "I동 613호"
+   },
+   {
+    "nodeId": 2524,
+    "name": "I동 614호"
+   }
+  ]
+ },
+ "J": {
+  "building": 3006,
+  "rooms": [
+   {
+    "nodeId": 3009,
+    "name": "J동 001-1호"
+   },
+   {
+    "nodeId": 3010,
+    "name": "J동 001호"
+   },
+   {
+    "nodeId": 3050,
+    "name": "J동 101호"
+   },
+   {
+    "nodeId": 3108,
+    "name": "J동 301호"
+   }
+  ]
+ },
+ "K": {
+  "building": 3554,
+  "rooms": [
+   {
+    "nodeId": 4854,
+    "name": "K동 106호"
+   },
+   {
+    "nodeId": 4852,
+    "name": "K동 108호"
+   },
+   {
+    "nodeId": 4851,
+    "name": "K동 109호"
+   },
+   {
+    "nodeId": 4849,
+    "name": "K동 111호"
+   },
+   {
+    "nodeId": 4848,
+    "name": "K동 112호"
+   },
+   {
+    "nodeId": 4847,
+    "name": "K동 113호"
+   },
+   {
+    "nodeId": 4846,
+    "name": "K동 114호"
+   },
+   {
+    "nodeId": 4832,
+    "name": "K동 115호"
+   },
+   {
+    "nodeId": 4833,
+    "name": "K동 117호"
+   },
+   {
+    "nodeId": 4840,
+    "name": "K동 123호"
+   },
+   {
+    "nodeId": 4953,
+    "name": "K동 202호"
+   },
+   {
+    "nodeId": 4949,
+    "name": "K동 206호"
+   },
+   {
+    "nodeId": 4945,
+    "name": "K동 210호"
+   },
+   {
+    "nodeId": 4943,
+    "name": "K동 212호"
+   },
+   {
+    "nodeId": 4942,
+    "name": "K동 213호"
+   },
+   {
+    "nodeId": 4941,
+    "name": "K동 214호"
+   },
+   {
+    "nodeId": 4939,
+    "name": "K동 216호"
+   },
+   {
+    "nodeId": 4938,
+    "name": "K동 217호"
+   },
+   {
+    "nodeId": 4918,
+    "name": "K동 219호"
+   },
+   {
+    "nodeId": 4925,
+    "name": "K동 223호"
+   },
+   {
+    "nodeId": 5005,
+    "name": "K동 302호"
+   },
+   {
+    "nodeId": 5004,
+    "name": "K동 303호"
+   },
+   {
+    "nodeId": 5003,
+    "name": "K동 304호"
+   },
+   {
+    "nodeId": 5002,
+    "name": "K동 305호"
+   },
+   {
+    "nodeId": 5000,
+    "name": "K동 306호"
+   },
+   {
+    "nodeId": 4993,
+    "name": "K동 310호"
+   },
+   {
+    "nodeId": 4992,
+    "name": "K동 312호"
+   },
+   {
+    "nodeId": 4991,
+    "name": "K동 313호"
+   },
+   {
+    "nodeId": 4990,
+    "name": "K동 314호"
+   },
+   {
+    "nodeId": 4970,
+    "name": "K동 315호"
+   },
+   {
+    "nodeId": 5073,
+    "name": "K동 404호"
+   },
+   {
+    "nodeId": 5072,
+    "name": "K동 405호"
+   },
+   {
+    "nodeId": 5070,
+    "name": "K동 407호"
+   },
+   {
+    "nodeId": 5068,
+    "name": "K동 409호"
+   },
+   {
+    "nodeId": 5063,
+    "name": "K동 412호"
+   },
+   {
+    "nodeId": 5062,
+    "name": "K동 413호"
+   },
+   {
+    "nodeId": 5057,
+    "name": "K동 417호"
+   },
+   {
+    "nodeId": 5055,
+    "name": "K동 420호"
+   },
+   {
+    "nodeId": 5054,
+    "name": "K동 421호"
+   },
+   {
+    "nodeId": 5053,
+    "name": "K동 422호"
+   },
+   {
+    "nodeId": 5133,
+    "name": "K동 505호"
+   },
+   {
+    "nodeId": 5132,
+    "name": "K동 506호"
+   },
+   {
+    "nodeId": 5130,
+    "name": "K동 508호"
+   },
+   {
+    "nodeId": 5127,
+    "name": "K동 511호"
+   },
+   {
+    "nodeId": 5126,
+    "name": "K동 512호"
+   },
+   {
+    "nodeId": 5122,
+    "name": "K동 515호"
+   },
+   {
+    "nodeId": 5117,
+    "name": "K동 519호"
+   },
+   {
+    "nodeId": 5116,
+    "name": "K동 520호"
+   },
+   {
+    "nodeId": 5115,
+    "name": "K동 521호"
+   },
+   {
+    "nodeId": 5088,
+    "name": "K동 522호"
+   },
+   {
+    "nodeId": 5171,
+    "name": "K동 601호"
+   },
+   {
+    "nodeId": 5189,
+    "name": "K동 602호"
+   },
+   {
+    "nodeId": 5188,
+    "name": "K동 603호"
+   },
+   {
+    "nodeId": 5187,
+    "name": "K동 604호"
+   },
+   {
+    "nodeId": 5186,
+    "name": "K동 605호"
+   },
+   {
+    "nodeId": 5185,
+    "name": "K동 607호"
+   },
+   {
+    "nodeId": 5181,
+    "name": "K동 609호"
+   },
+   {
+    "nodeId": 5178,
+    "name": "K동 610호"
+   },
+   {
+    "nodeId": 5174,
+    "name": "K동 612호"
+   },
+   {
+    "nodeId": 5149,
+    "name": "K동 615호"
+   }
+  ]
+ },
+ "L": {
+  "building": 2415,
+  "rooms": [
+   {
+    "nodeId": 3143,
+    "name": "L동 1002호"
+   },
+   {
+    "nodeId": 3137,
+    "name": "L동 1005호"
+   },
+   {
+    "nodeId": 3135,
+    "name": "L동 1006호"
+   },
+   {
+    "nodeId": 3138,
+    "name": "L동 1008호"
+   },
+   {
+    "nodeId": 3139,
+    "name": "L동 1009호"
+   },
+   {
+    "nodeId": 3142,
+    "name": "L동 1010호"
+   },
+   {
+    "nodeId": 3145,
+    "name": "L동 1012호"
+   },
+   {
+    "nodeId": 3136,
+    "name": "L동 1013호"
+   },
+   {
+    "nodeId": 3133,
+    "name": "L동 1014호"
+   },
+   {
+    "nodeId": 3149,
+    "name": "L동 1016호"
+   },
+   {
+    "nodeId": 2898,
+    "name": "L동 201호"
+   },
+   {
+    "nodeId": 2929,
+    "name": "L동 301호"
+   },
+   {
+    "nodeId": 2930,
+    "name": "L동 302호"
+   },
+   {
+    "nodeId": 2931,
+    "name": "L동 303호"
+   },
+   {
+    "nodeId": 2921,
+    "name": "L동 304호"
+   },
+   {
+    "nodeId": 2922,
+    "name": "L동 305호"
+   },
+   {
+    "nodeId": 2945,
+    "name": "L동 306호"
+   },
+   {
+    "nodeId": 2952,
+    "name": "L동 401호"
+   },
+   {
+    "nodeId": 2989,
+    "name": "L동 501호"
+   },
+   {
+    "nodeId": 2988,
+    "name": "L동 502호"
+   },
+   {
+    "nodeId": 2990,
+    "name": "L동 503호"
+   },
+   {
+    "nodeId": 3030,
+    "name": "L동 601호"
+   },
+   {
+    "nodeId": 3042,
+    "name": "L동 602호"
+   },
+   {
+    "nodeId": 3041,
+    "name": "L동 603호"
+   },
+   {
+    "nodeId": 3063,
+    "name": "L동 701호"
+   },
+   {
+    "nodeId": 3079,
+    "name": "L동 702호"
+   },
+   {
+    "nodeId": 3074,
+    "name": "L동 703호"
+   },
+   {
+    "nodeId": 3086,
+    "name": "L동 801호"
+   },
+   {
+    "nodeId": 3091,
+    "name": "L동 802호"
+   },
+   {
+    "nodeId": 3090,
+    "name": "L동 803호"
+   },
+   {
+    "nodeId": 3114,
+    "name": "L동 901호"
+   },
+   {
+    "nodeId": 3116,
+    "name": "L동 902호"
+   },
+   {
+    "nodeId": 3115,
+    "name": "L동 903호"
+   }
+  ]
+ },
+ "MH": {
+  "building": 1518,
+  "rooms": [
+   {
+    "nodeId": 1894,
+    "name": "MH동 1001호"
+   },
+   {
+    "nodeId": 1905,
+    "name": "MH동 1009호"
+   },
+   {
+    "nodeId": 1902,
+    "name": "MH동 1012호"
+   },
+   {
+    "nodeId": 1720,
+    "name": "MH동 101호"
+   },
+   {
+    "nodeId": 1927,
+    "name": "MH동 1105호"
+   },
+   {
+    "nodeId": 1981,
+    "name": "MH동 1301호"
+   },
+   {
+    "nodeId": 1986,
+    "name": "MH동 1307호"
+   },
+   {
+    "nodeId": 2014,
+    "name": "MH동 1405호"
+   },
+   {
+    "nodeId": 2013,
+    "name": "MH동 1406호"
+   },
+   {
+    "nodeId": 2010,
+    "name": "MH동 1408호"
+   },
+   {
+    "nodeId": 1751,
+    "name": "MH동 301호"
+   },
+   {
+    "nodeId": 1752,
+    "name": "MH동 304호"
+   },
+   {
+    "nodeId": 1753,
+    "name": "MH동 308호"
+   },
+   {
+    "nodeId": 1750,
+    "name": "MH동 309호"
+   },
+   {
+    "nodeId": 1769,
+    "name": "MH동 401호"
+   },
+   {
+    "nodeId": 1771,
+    "name": "MH동 402호"
+   },
+   {
+    "nodeId": 1770,
+    "name": "MH동 403호"
+   },
+   {
+    "nodeId": 1788,
+    "name": "MH동 501호"
+   },
+   {
+    "nodeId": 1786,
+    "name": "MH동 502호"
+   },
+   {
+    "nodeId": 1789,
+    "name": "MH동 503호"
+   },
+   {
+    "nodeId": 1784,
+    "name": "MH동 504호"
+   },
+   {
+    "nodeId": 1787,
+    "name": "MH동 505호"
+   },
+   {
+    "nodeId": 1792,
+    "name": "MH동 508호"
+   },
+   {
+    "nodeId": 1815,
+    "name": "MH동 601호"
+   },
+   {
+    "nodeId": 1813,
+    "name": "MH동 602호"
+   },
+   {
+    "nodeId": 1805,
+    "name": "MH동 603호"
+   },
+   {
+    "nodeId": 1807,
+    "name": "MH동 604호"
+   },
+   {
+    "nodeId": 1808,
+    "name": "MH동 605호"
+   },
+   {
+    "nodeId": 1810,
+    "name": "MH동 606호"
+   },
+   {
+    "nodeId": 1811,
+    "name": "MH동 607호"
+   },
+   {
+    "nodeId": 1812,
+    "name": "MH동 608호"
+   },
+   {
+    "nodeId": 1814,
+    "name": "MH동 611호"
+   },
+   {
+    "nodeId": 1828,
+    "name": "MH동 701호"
+   },
+   {
+    "nodeId": 1830,
+    "name": "MH동 702호"
+   },
+   {
+    "nodeId": 1835,
+    "name": "MH동 707호"
+   },
+   {
+    "nodeId": 1826,
+    "name": "MH동 711호"
+   },
+   {
+    "nodeId": 1831,
+    "name": "MH동 712호"
+   },
+   {
+    "nodeId": 1829,
+    "name": "MH동 713호"
+   },
+   {
+    "nodeId": 1848,
+    "name": "MH동 801호"
+   },
+   {
+    "nodeId": 1849,
+    "name": "MH동 802호"
+   },
+   {
+    "nodeId": 1850,
+    "name": "MH동 803호"
+   },
+   {
+    "nodeId": 1851,
+    "name": "MH동 804호"
+   },
+   {
+    "nodeId": 1846,
+    "name": "MH동 805호"
+   },
+   {
+    "nodeId": 1852,
+    "name": "MH동 808호"
+   },
+   {
+    "nodeId": 1865,
+    "name": "MH동 901호"
+   },
+   {
+    "nodeId": 1866,
+    "name": "MH동 902호"
+   },
+   {
+    "nodeId": 1867,
+    "name": "MH동 903호"
+   },
+   {
+    "nodeId": 1868,
+    "name": "MH동 904호"
+   },
+   {
+    "nodeId": 1869,
+    "name": "MH동 905호"
+   },
+   {
+    "nodeId": 1870,
+    "name": "MH동 907호"
+   },
+   {
+    "nodeId": 1877,
+    "name": "MH동 908호"
+   },
+   {
+    "nodeId": 1876,
+    "name": "MH동 909호"
+   },
+   {
+    "nodeId": 1872,
+    "name": "MH동 913호"
+   },
+   {
+    "nodeId": 1871,
+    "name": "MH동 914호"
+   }
+  ]
+ },
+ "P": {
+  "building": 2417,
+  "rooms": [
+   {
+    "nodeId": 2600,
+    "name": "P동 101호"
+   },
+   {
+    "nodeId": 2604,
+    "name": "P동 102호"
+   },
+   {
+    "nodeId": 2597,
+    "name": "P동 103호"
+   },
+   {
+    "nodeId": 2614,
+    "name": "P동 104호"
+   },
+   {
+    "nodeId": 2629,
+    "name": "P동 107호"
+   },
+   {
+    "nodeId": 2611,
+    "name": "P동 108호"
+   },
+   {
+    "nodeId": 2607,
+    "name": "P동 109호"
+   },
+   {
+    "nodeId": 2602,
+    "name": "P동 110호"
+   },
+   {
+    "nodeId": 2598,
+    "name": "P동 111호"
+   },
+   {
+    "nodeId": 2596,
+    "name": "P동 112호"
+   },
+   {
+    "nodeId": 2639,
+    "name": "P동 201호"
+   },
+   {
+    "nodeId": 2643,
+    "name": "P동 202호"
+   },
+   {
+    "nodeId": 2636,
+    "name": "P동 203호"
+   },
+   {
+    "nodeId": 2653,
+    "name": "P동 204호"
+   },
+   {
+    "nodeId": 2652,
+    "name": "P동 207호"
+   },
+   {
+    "nodeId": 2651,
+    "name": "P동 208호"
+   },
+   {
+    "nodeId": 2645,
+    "name": "P동 209호"
+   },
+   {
+    "nodeId": 2641,
+    "name": "P동 210호"
+   },
+   {
+    "nodeId": 2637,
+    "name": "P동 211호"
+   },
+   {
+    "nodeId": 2635,
+    "name": "P동 212호"
+   },
+   {
+    "nodeId": 2670,
+    "name": "P동 301호"
+   },
+   {
+    "nodeId": 2674,
+    "name": "P동 303호"
+   },
+   {
+    "nodeId": 2676,
+    "name": "P동 304호"
+   },
+   {
+    "nodeId": 2667,
+    "name": "P동 305호"
+   },
+   {
+    "nodeId": 2685,
+    "name": "P동 309호"
+   },
+   {
+    "nodeId": 2684,
+    "name": "P동 310호"
+   },
+   {
+    "nodeId": 2681,
+    "name": "P동 311호"
+   },
+   {
+    "nodeId": 2672,
+    "name": "P동 313호"
+   },
+   {
+    "nodeId": 2668,
+    "name": "P동 314호"
+   },
+   {
+    "nodeId": 2666,
+    "name": "P동 315호"
+   },
+   {
+    "nodeId": 2705,
+    "name": "P동 402호"
+   },
+   {
+    "nodeId": 2708,
+    "name": "P동 403호"
+   },
+   {
+    "nodeId": 2698,
+    "name": "P동 404호"
+   },
+   {
+    "nodeId": 2712,
+    "name": "P동 405호"
+   },
+   {
+    "nodeId": 2715,
+    "name": "P동 406호"
+   },
+   {
+    "nodeId": 2714,
+    "name": "P동 411호"
+   },
+   {
+    "nodeId": 2721,
+    "name": "P동 412호"
+   },
+   {
+    "nodeId": 2704,
+    "name": "P동 417호"
+   },
+   {
+    "nodeId": 2703,
+    "name": "P동 418호"
+   },
+   {
+    "nodeId": 2699,
+    "name": "P동 420호"
+   },
+   {
+    "nodeId": 2738,
+    "name": "P동 501호"
+   },
+   {
+    "nodeId": 2735,
+    "name": "P동 504호"
+   },
+   {
+    "nodeId": 2748,
+    "name": "P동 507호"
+   },
+   {
+    "nodeId": 2751,
+    "name": "P동 508호"
+   },
+   {
+    "nodeId": 2749,
+    "name": "P동 513호"
+   },
+   {
+    "nodeId": 2747,
+    "name": "P동 514호"
+   },
+   {
+    "nodeId": 2743,
+    "name": "P동 516호"
+   },
+   {
+    "nodeId": 2739,
+    "name": "P동 519호"
+   },
+   {
+    "nodeId": 2736,
+    "name": "P동 520호"
+   },
+   {
+    "nodeId": 2734,
+    "name": "P동 521호"
+   },
+   {
+    "nodeId": 2774,
+    "name": "P동 601호"
+   },
+   {
+    "nodeId": 2778,
+    "name": "P동 603호"
+   },
+   {
+    "nodeId": 2790,
+    "name": "P동 605호"
+   },
+   {
+    "nodeId": 2792,
+    "name": "P동 606호"
+   },
+   {
+    "nodeId": 2791,
+    "name": "P동 613호"
+   },
+   {
+    "nodeId": 2779,
+    "name": "P동 615호"
+   },
+   {
+    "nodeId": 2775,
+    "name": "P동 617호"
+   },
+   {
+    "nodeId": 2787,
+    "name": "P동 618호"
+   },
+   {
+    "nodeId": 2772,
+    "name": "P동 619호"
+   },
+   {
+    "nodeId": 2770,
+    "name": "P동 620호"
+   },
+   {
+    "nodeId": 2811,
+    "name": "P동 701호"
+   },
+   {
+    "nodeId": 2814,
+    "name": "P동 702호"
+   },
+   {
+    "nodeId": 2824,
+    "name": "P동 703호"
+   },
+   {
+    "nodeId": 2826,
+    "name": "P동 704호"
+   },
+   {
+    "nodeId": 2830,
+    "name": "P동 706호"
+   },
+   {
+    "nodeId": 2820,
+    "name": "P동 712호"
+   },
+   {
+    "nodeId": 2819,
+    "name": "P동 713호"
+   },
+   {
+    "nodeId": 2831,
+    "name": "P동 714호"
+   },
+   {
+    "nodeId": 2825,
+    "name": "P동 717호"
+   },
+   {
+    "nodeId": 2809,
+    "name": "P동 721호"
+   },
+   {
+    "nodeId": 2849,
+    "name": "P동 801호"
+   },
+   {
+    "nodeId": 2852,
+    "name": "P동 802호"
+   },
+   {
+    "nodeId": 2863,
+    "name": "P동 803호"
+   },
+   {
+    "nodeId": 2867,
+    "name": "P동 805호"
+   },
+   {
+    "nodeId": 2869,
+    "name": "P동 806호"
+   },
+   {
+    "nodeId": 2856,
+    "name": "P동 807호"
+   },
+   {
+    "nodeId": 2871,
+    "name": "P동 811호"
+   },
+   {
+    "nodeId": 2870,
+    "name": "P동 815호"
+   },
+   {
+    "nodeId": 2868,
+    "name": "P동 816호"
+   },
+   {
+    "nodeId": 2850,
+    "name": "P동 820호"
+   },
+   {
+    "nodeId": 2573,
+    "name": "P동 B102호"
+   },
+   {
+    "nodeId": 2581,
+    "name": "P동 B109호"
+   },
+   {
+    "nodeId": 2579,
+    "name": "P동 B110호"
+   },
+   {
+    "nodeId": 2575,
+    "name": "P동 B111호"
+   },
+   {
+    "nodeId": 2571,
+    "name": "P동 B112호"
+   },
+   {
+    "nodeId": 2567,
+    "name": "P동 B113호"
+   },
+   {
+    "nodeId": 2539,
+    "name": "P동 B204호"
+   },
+   {
+    "nodeId": 2545,
+    "name": "P동 B205호"
+   },
+   {
+    "nodeId": 2547,
+    "name": "P동 B206호"
+   },
+   {
+    "nodeId": 2553,
+    "name": "P동 B209호"
+   }
+  ]
+ },
+ "Q": {
+  "building": 2412,
+  "rooms": [
+   {
+    "nodeId": 5604,
+    "name": "Q동 1001호"
+   },
+   {
+    "nodeId": 5624,
+    "name": "Q동 1005호"
+   },
+   {
+    "nodeId": 5626,
+    "name": "Q동 1007호"
+   },
+   {
+    "nodeId": 5628,
+    "name": "Q동 1008호"
+   },
+   {
+    "nodeId": 5630,
+    "name": "Q동 1009호"
+   },
+   {
+    "nodeId": 5265,
+    "name": "Q동 102호"
+   },
+   {
+    "nodeId": 5249,
+    "name": "Q동 105호"
+   },
+   {
+    "nodeId": 5250,
+    "name": "Q동 106호"
+   },
+   {
+    "nodeId": 5272,
+    "name": "Q동 109호"
+   },
+   {
+    "nodeId": 5294,
+    "name": "Q동 110호"
+   },
+   {
+    "nodeId": 5316,
+    "name": "Q동 201호"
+   },
+   {
+    "nodeId": 5317,
+    "name": "Q동 202호"
+   },
+   {
+    "nodeId": 5318,
+    "name": "Q동 203호"
+   },
+   {
+    "nodeId": 5319,
+    "name": "Q동 204호"
+   },
+   {
+    "nodeId": 5301,
+    "name": "Q동 211-1호"
+   },
+   {
+    "nodeId": 5326,
+    "name": "Q동 211호"
+   },
+   {
+    "nodeId": 5327,
+    "name": "Q동 212호"
+   },
+   {
+    "nodeId": 5328,
+    "name": "Q동 213호"
+   },
+   {
+    "nodeId": 5343,
+    "name": "Q동 301호"
+   },
+   {
+    "nodeId": 5345,
+    "name": "Q동 304호"
+   },
+   {
+    "nodeId": 5349,
+    "name": "Q동 306호"
+   },
+   {
+    "nodeId": 5373,
+    "name": "Q동 307호"
+   },
+   {
+    "nodeId": 5378,
+    "name": "Q동 308호"
+   },
+   {
+    "nodeId": 5425,
+    "name": "Q동 401호"
+   },
+   {
+    "nodeId": 5406,
+    "name": "Q동 402호"
+   },
+   {
+    "nodeId": 5407,
+    "name": "Q동 403호"
+   },
+   {
+    "nodeId": 5394,
+    "name": "Q동 408호"
+   },
+   {
+    "nodeId": 5396,
+    "name": "Q동 409호"
+   },
+   {
+    "nodeId": 5400,
+    "name": "Q동 410호"
+   },
+   {
+    "nodeId": 5454,
+    "name": "Q동 501호"
+   },
+   {
+    "nodeId": 5438,
+    "name": "Q동 503호"
+   },
+   {
+    "nodeId": 5459,
+    "name": "Q동 506호"
+   },
+   {
+    "nodeId": 5464,
+    "name": "Q동 507호"
+   },
+   {
+    "nodeId": 5474,
+    "name": "Q동 508호"
+   },
+   {
+    "nodeId": 5490,
+    "name": "Q동 601호"
+   },
+   {
+    "nodeId": 5475,
+    "name": "Q동 602호"
+   },
+   {
+    "nodeId": 5492,
+    "name": "Q동 605호"
+   },
+   {
+    "nodeId": 5496,
+    "name": "Q동 606호"
+   },
+   {
+    "nodeId": 5508,
+    "name": "Q동 607호"
+   },
+   {
+    "nodeId": 5512,
+    "name": "Q동 701호"
+   },
+   {
+    "nodeId": 5535,
+    "name": "Q동 801호"
+   },
+   {
+    "nodeId": 5552,
+    "name": "Q동 804호"
+   },
+   {
+    "nodeId": 5556,
+    "name": "Q동 805-1호"
+   },
+   {
+    "nodeId": 5558,
+    "name": "Q동 805-2호"
+   },
+   {
+    "nodeId": 5553,
+    "name": "Q동 807호"
+   },
+   {
+    "nodeId": 5585,
+    "name": "Q동 901-1호"
+   },
+   {
+    "nodeId": 5587,
+    "name": "Q동 901-2호"
+   },
+   {
+    "nodeId": 5589,
+    "name": "Q동 901-3호"
+   },
+   {
+    "nodeId": 5567,
+    "name": "Q동 901-8호"
+   },
+   {
+    "nodeId": 5591,
+    "name": "Q동 904호"
+   },
+   {
+    "nodeId": 5593,
+    "name": "Q동 906호"
+   },
+   {
+    "nodeId": 5595,
+    "name": "Q동 908호"
+   },
+   {
+    "nodeId": 5598,
+    "name": "Q동 909호"
+   }
+  ]
+ },
+ "R": {
+  "building": 3555,
+  "rooms": [
+   {
+    "nodeId": 4399,
+    "name": "R동 1009호"
+   },
+   {
+    "nodeId": 4377,
+    "name": "R동 1010호"
+   },
+   {
+    "nodeId": 4446,
+    "name": "R동 1102호"
+   },
+   {
+    "nodeId": 4445,
+    "name": "R동 1103호"
+   },
+   {
+    "nodeId": 4444,
+    "name": "R동 1104호"
+   },
+   {
+    "nodeId": 4480,
+    "name": "R동 1202호"
+   },
+   {
+    "nodeId": 4479,
+    "name": "R동 1203호"
+   },
+   {
+    "nodeId": 4452,
+    "name": "R동 1210호"
+   },
+   {
+    "nodeId": 4486,
+    "name": "R동 1313호"
+   },
+   {
+    "nodeId": 4571,
+    "name": "R동 1510호"
+   },
+   {
+    "nodeId": 3708,
+    "name": "R동 201호"
+   },
+   {
+    "nodeId": 3707,
+    "name": "R동 202호"
+   },
+   {
+    "nodeId": 3691,
+    "name": "R동 203호"
+   },
+   {
+    "nodeId": 3682,
+    "name": "R동 204-2호"
+   },
+   {
+    "nodeId": 3678,
+    "name": "R동 205호"
+   },
+   {
+    "nodeId": 3760,
+    "name": "R동 303호"
+   },
+   {
+    "nodeId": 3761,
+    "name": "R동 304호"
+   },
+   {
+    "nodeId": 3778,
+    "name": "R동 306호"
+   },
+   {
+    "nodeId": 3776,
+    "name": "R동 309호"
+   },
+   {
+    "nodeId": 3772,
+    "name": "R동 310호"
+   },
+   {
+    "nodeId": 3747,
+    "name": "R동 312호"
+   },
+   {
+    "nodeId": 3744,
+    "name": "R동 313호"
+   },
+   {
+    "nodeId": 3716,
+    "name": "R동 315호"
+   },
+   {
+    "nodeId": 3723,
+    "name": "R동 319호"
+   },
+   {
+    "nodeId": 3720,
+    "name": "R동 320호"
+   },
+   {
+    "nodeId": 3837,
+    "name": "R동 404호"
+   },
+   {
+    "nodeId": 3836,
+    "name": "R동 405호"
+   },
+   {
+    "nodeId": 3858,
+    "name": "R동 408호"
+   },
+   {
+    "nodeId": 3855,
+    "name": "R동 409호"
+   },
+   {
+    "nodeId": 3851,
+    "name": "R동 411호"
+   },
+   {
+    "nodeId": 3831,
+    "name": "R동 416호"
+   },
+   {
+    "nodeId": 3800,
+    "name": "R동 421호"
+   },
+   {
+    "nodeId": 3796,
+    "name": "R동 422호"
+   },
+   {
+    "nodeId": 3798,
+    "name": "R동 424호"
+   },
+   {
+    "nodeId": 3791,
+    "name": "R동 426호"
+   },
+   {
+    "nodeId": 3939,
+    "name": "R동 507호"
+   },
+   {
+    "nodeId": 3936,
+    "name": "R동 513호"
+   },
+   {
+    "nodeId": 3933,
+    "name": "R동 514호"
+   },
+   {
+    "nodeId": 3919,
+    "name": "R동 518호"
+   },
+   {
+    "nodeId": 3917,
+    "name": "R동 522호"
+   },
+   {
+    "nodeId": 3902,
+    "name": "R동 525호"
+   },
+   {
+    "nodeId": 3896,
+    "name": "R동 526호"
+   },
+   {
+    "nodeId": 3878,
+    "name": "R동 529호"
+   },
+   {
+    "nodeId": 3895,
+    "name": "R동 532호"
+   },
+   {
+    "nodeId": 3877,
+    "name": "R동 535호"
+   },
+   {
+    "nodeId": 4070,
+    "name": "R동 601호"
+   },
+   {
+    "nodeId": 4069,
+    "name": "R동 602호"
+   },
+   {
+    "nodeId": 4041,
+    "name": "R동 614호"
+   },
+   {
+    "nodeId": 4040,
+    "name": "R동 615호"
+   },
+   {
+    "nodeId": 4031,
+    "name": "R동 618호"
+   },
+   {
+    "nodeId": 4029,
+    "name": "R동 619호"
+   },
+   {
+    "nodeId": 4023,
+    "name": "R동 621호"
+   },
+   {
+    "nodeId": 4025,
+    "name": "R동 624호"
+   },
+   {
+    "nodeId": 4016,
+    "name": "R동 625호"
+   },
+   {
+    "nodeId": 4013,
+    "name": "R동 626호"
+   },
+   {
+    "nodeId": 4151,
+    "name": "R동 707호"
+   },
+   {
+    "nodeId": 4160,
+    "name": "R동 708호"
+   },
+   {
+    "nodeId": 4153,
+    "name": "R동 711호"
+   },
+   {
+    "nodeId": 4144,
+    "name": "R동 714호"
+   },
+   {
+    "nodeId": 4140,
+    "name": "R동 716호"
+   },
+   {
+    "nodeId": 4139,
+    "name": "R동 718호"
+   },
+   {
+    "nodeId": 4131,
+    "name": "R동 719호"
+   },
+   {
+    "nodeId": 4127,
+    "name": "R동 721호"
+   },
+   {
+    "nodeId": 4111,
+    "name": "R동 724호"
+   },
+   {
+    "nodeId": 4110,
+    "name": "R동 727호"
+   },
+   {
+    "nodeId": 4257,
+    "name": "R동 804호"
+   },
+   {
+    "nodeId": 4256,
+    "name": "R동 805호"
+   },
+   {
+    "nodeId": 4247,
+    "name": "R동 807호"
+   },
+   {
+    "nodeId": 4245,
+    "name": "R동 811호"
+   },
+   {
+    "nodeId": 4227,
+    "name": "R동 819호"
+   },
+   {
+    "nodeId": 4225,
+    "name": "R동 820호"
+   },
+   {
+    "nodeId": 4221,
+    "name": "R동 821호"
+   },
+   {
+    "nodeId": 4215,
+    "name": "R동 822호"
+   },
+   {
+    "nodeId": 4214,
+    "name": "R동 825호"
+   },
+   {
+    "nodeId": 4208,
+    "name": "R동 826호"
+   },
+   {
+    "nodeId": 4367,
+    "name": "R동 901호"
+   },
+   {
+    "nodeId": 4364,
+    "name": "R동 904호"
+   },
+   {
+    "nodeId": 4354,
+    "name": "R동 910호"
+   },
+   {
+    "nodeId": 4326,
+    "name": "R동 912호"
+   },
+   {
+    "nodeId": 4319,
+    "name": "R동 914호"
+   },
+   {
+    "nodeId": 4318,
+    "name": "R동 915호"
+   },
+   {
+    "nodeId": 4305,
+    "name": "R동 917호"
+   },
+   {
+    "nodeId": 4303,
+    "name": "R동 918호"
+   },
+   {
+    "nodeId": 4285,
+    "name": "R동 926호"
+   },
+   {
+    "nodeId": 4281,
+    "name": "R동 927호"
+   },
+   {
+    "nodeId": 3580,
+    "name": "R동 B103호"
+   },
+   {
+    "nodeId": 4661,
+    "name": "R동 B206호"
+   },
+   {
+    "nodeId": 4658,
+    "name": "R동 B208호"
+   },
+   {
+    "nodeId": 4653,
+    "name": "R동 B211호"
+   },
+   {
+    "nodeId": 4647,
+    "name": "R동 B213호"
+   },
+   {
+    "nodeId": 4706,
+    "name": "R동 B214호"
+   },
+   {
+    "nodeId": 4716,
+    "name": "R동 B305호"
+   },
+   {
+    "nodeId": 4730,
+    "name": "R동 B306호"
+   },
+   {
+    "nodeId": 4712,
+    "name": "R동 B307호"
+   },
+   {
+    "nodeId": 4790,
+    "name": "R동 B405호"
+   }
+  ]
+ },
+ "S": {
+  "building": 5509,
+  "rooms": []
+ },
+ "T": {
+  "building": 602,
+  "rooms": [
+   {
+    "nodeId": 767,
+    "name": "T동 1001호"
+   },
+   {
+    "nodeId": 769,
+    "name": "T동 1002호"
+   },
+   {
+    "nodeId": 771,
+    "name": "T동 1003호"
+   },
+   {
+    "nodeId": 776,
+    "name": "T동 1005호"
+   },
+   {
+    "nodeId": 778,
+    "name": "T동 1006호"
+   },
+   {
+    "nodeId": 777,
+    "name": "T동 1008호"
+   },
+   {
+    "nodeId": 775,
+    "name": "T동 1009호"
+   },
+   {
+    "nodeId": 774,
+    "name": "T동 1010호"
+   },
+   {
+    "nodeId": 2364,
+    "name": "T동 101호"
+   },
+   {
+    "nodeId": 2375,
+    "name": "T동 103-2호"
+   },
+   {
+    "nodeId": 2376,
+    "name": "T동 103-3호"
+   },
+   {
+    "nodeId": 2378,
+    "name": "T동 103-4호"
+   },
+   {
+    "nodeId": 2381,
+    "name": "T동 106호"
+   },
+   {
+    "nodeId": 2344,
+    "name": "T동 201호"
+   },
+   {
+    "nodeId": 2346,
+    "name": "T동 202호"
+   },
+   {
+    "nodeId": 2356,
+    "name": "T동 207호"
+   },
+   {
+    "nodeId": 2352,
+    "name": "T동 208호"
+   },
+   {
+    "nodeId": 2349,
+    "name": "T동 209호"
+   },
+   {
+    "nodeId": 2347,
+    "name": "T동 210호"
+   },
+   {
+    "nodeId": 2345,
+    "name": "T동 211호"
+   },
+   {
+    "nodeId": 2343,
+    "name": "T동 212호"
+   },
+   {
+    "nodeId": 2337,
+    "name": "T동 212호"
+   },
+   {
+    "nodeId": 618,
+    "name": "T동 301호"
+   },
+   {
+    "nodeId": 619,
+    "name": "T동 302호"
+   },
+   {
+    "nodeId": 623,
+    "name": "T동 303호"
+   },
+   {
+    "nodeId": 628,
+    "name": "T동 401호"
+   },
+   {
+    "nodeId": 631,
+    "name": "T동 402호"
+   },
+   {
+    "nodeId": 635,
+    "name": "T동 501호"
+   },
+   {
+    "nodeId": 654,
+    "name": "T동 502호"
+   },
+   {
+    "nodeId": 648,
+    "name": "T동 503호"
+   },
+   {
+    "nodeId": 644,
+    "name": "T동 504호"
+   },
+   {
+    "nodeId": 640,
+    "name": "T동 505호"
+   },
+   {
+    "nodeId": 646,
+    "name": "T동 506-1호"
+   },
+   {
+    "nodeId": 642,
+    "name": "T동 506호"
+   },
+   {
+    "nodeId": 652,
+    "name": "T동 507-1호"
+   },
+   {
+    "nodeId": 650,
+    "name": "T동 507호"
+   },
+   {
+    "nodeId": 660,
+    "name": "T동 601호"
+   },
+   {
+    "nodeId": 673,
+    "name": "T동 602호"
+   },
+   {
+    "nodeId": 669,
+    "name": "T동 603호"
+   },
+   {
+    "nodeId": 667,
+    "name": "T동 604호"
+   },
+   {
+    "nodeId": 663,
+    "name": "T동 605호"
+   },
+   {
+    "nodeId": 664,
+    "name": "T동 606호"
+   },
+   {
+    "nodeId": 668,
+    "name": "T동 607호"
+   },
+   {
+    "nodeId": 671,
+    "name": "T동 608호"
+   },
+   {
+    "nodeId": 672,
+    "name": "T동 609호"
+   },
+   {
+    "nodeId": 680,
+    "name": "T동 702호"
+   },
+   {
+    "nodeId": 682,
+    "name": "T동 703호"
+   },
+   {
+    "nodeId": 684,
+    "name": "T동 704호"
+   },
+   {
+    "nodeId": 689,
+    "name": "T동 707호"
+   },
+   {
+    "nodeId": 694,
+    "name": "T동 710호"
+   },
+   {
+    "nodeId": 696,
+    "name": "T동 711호"
+   },
+   {
+    "nodeId": 698,
+    "name": "T동 712호"
+   },
+   {
+    "nodeId": 701,
+    "name": "T동 714호"
+   },
+   {
+    "nodeId": 700,
+    "name": "T동 715호"
+   },
+   {
+    "nodeId": 695,
+    "name": "T동 717호"
+   },
+   {
+    "nodeId": 708,
+    "name": "T동 801호"
+   },
+   {
+    "nodeId": 713,
+    "name": "T동 803호"
+   },
+   {
+    "nodeId": 717,
+    "name": "T동 805호"
+   },
+   {
+    "nodeId": 720,
+    "name": "T동 806호"
+   },
+   {
+    "nodeId": 722,
+    "name": "T동 808호"
+   },
+   {
+    "nodeId": 724,
+    "name": "T동 809호"
+   },
+   {
+    "nodeId": 728,
+    "name": "T동 813호"
+   },
+   {
+    "nodeId": 725,
+    "name": "T동 814호"
+   },
+   {
+    "nodeId": 719,
+    "name": "T동 816호"
+   },
+   {
+    "nodeId": 714,
+    "name": "T동 819호"
+   },
+   {
+    "nodeId": 739,
+    "name": "T동 904호"
+   },
+   {
+    "nodeId": 743,
+    "name": "T동 907호"
+   },
+   {
+    "nodeId": 744,
+    "name": "T동 908호"
+   },
+   {
+    "nodeId": 748,
+    "name": "T동 910호"
+   },
+   {
+    "nodeId": 751,
+    "name": "T동 911호"
+   },
+   {
+    "nodeId": 752,
+    "name": "T동 912호"
+   },
+   {
+    "nodeId": 757,
+    "name": "T동 915호"
+   },
+   {
+    "nodeId": 758,
+    "name": "T동 916호"
+   },
+   {
+    "nodeId": 760,
+    "name": "T동 917호"
+   },
+   {
+    "nodeId": 754,
+    "name": "T동 920호"
+   }
+  ]
+ },
+ "U": {
+  "building": 1531,
+  "rooms": [
+   {
+    "nodeId": 2189,
+    "name": "U동 101호"
+   },
+   {
+    "nodeId": 2192,
+    "name": "U동 102호"
+   },
+   {
+    "nodeId": 2206,
+    "name": "U동 201호"
+   },
+   {
+    "nodeId": 2208,
+    "name": "U동 202호"
+   },
+   {
+    "nodeId": 2220,
+    "name": "U동 301호"
+   },
+   {
+    "nodeId": 2222,
+    "name": "U동 302호"
+   },
+   {
+    "nodeId": 2224,
+    "name": "U동 303호"
+   },
+   {
+    "nodeId": 2232,
+    "name": "U동 304호"
+   },
+   {
+    "nodeId": 2234,
+    "name": "U동 401호"
+   },
+   {
+    "nodeId": 2244,
+    "name": "U동 402호"
+   },
+   {
+    "nodeId": 2248,
+    "name": "U동 501호"
+   },
+   {
+    "nodeId": 2246,
+    "name": "U동 502호"
+   },
+   {
+    "nodeId": 2258,
+    "name": "U동 601호"
+   },
+   {
+    "nodeId": 2266,
+    "name": "U동 603호"
+   },
+   {
+    "nodeId": 2288,
+    "name": "U동 701호"
+   },
+   {
+    "nodeId": 2287,
+    "name": "U동 702호"
+   },
+   {
+    "nodeId": 2284,
+    "name": "U동 703호"
+   },
+   {
+    "nodeId": 2278,
+    "name": "U동 704호"
+   },
+   {
+    "nodeId": 2276,
+    "name": "U동 705호"
+   },
+   {
+    "nodeId": 2277,
+    "name": "U동 706호"
+   },
+   {
+    "nodeId": 2275,
+    "name": "U동 707호"
+   },
+   {
+    "nodeId": 2274,
+    "name": "U동 708호"
+   },
+   {
+    "nodeId": 2273,
+    "name": "U동 709호"
+   },
+   {
+    "nodeId": 2271,
+    "name": "U동 710호"
+   },
+   {
+    "nodeId": 2173,
+    "name": "U동 B101호"
+   },
+   {
+    "nodeId": 2175,
+    "name": "U동 B102호"
+   },
+   {
+    "nodeId": 2153,
+    "name": "U동 B202호"
+   },
+   {
+    "nodeId": 2169,
+    "name": "U동 B203호"
+   },
+   {
+    "nodeId": 2152,
+    "name": "U동 B204호"
+   },
+   {
+    "nodeId": 2155,
+    "name": "U동 B206호"
+   },
+   {
+    "nodeId": 2151,
+    "name": "U동 B2101호"
+   }
+  ]
+ },
+ "Z1": {
+  "building": 5510,
+  "rooms": [
+   {
+    "nodeId": 5662,
+    "name": "Z1동 101호"
+   },
+   {
+    "nodeId": 5665,
+    "name": "Z1동 102호"
+   },
+   {
+    "nodeId": 5666,
+    "name": "Z1동 103호"
+   },
+   {
+    "nodeId": 5668,
+    "name": "Z1동 104호"
+   },
+   {
+    "nodeId": 5670,
+    "name": "Z1동 105호"
+   },
+   {
+    "nodeId": 5672,
+    "name": "Z1동 106호"
+   },
+   {
+    "nodeId": 5673,
+    "name": "Z1동 107호"
+   },
+   {
+    "nodeId": 5675,
+    "name": "Z1동 108호"
+   },
+   {
+    "nodeId": 5678,
+    "name": "Z1동 109호"
+   },
+   {
+    "nodeId": 5711,
+    "name": "Z1동 202호"
+   },
+   {
+    "nodeId": 5713,
+    "name": "Z1동 203호"
+   },
+   {
+    "nodeId": 5719,
+    "name": "Z1동 206호"
+   },
+   {
+    "nodeId": 5721,
+    "name": "Z1동 207호"
+   }
+  ]
+ },
+ "Z2": {
+  "building": 5511,
+  "rooms": [
+   {
+    "nodeId": 5754,
+    "name": "Z2동 102호"
+   },
+   {
+    "nodeId": 5753,
+    "name": "Z2동 103호"
+   },
+   {
+    "nodeId": 5752,
+    "name": "Z2동 104호"
+   },
+   {
+    "nodeId": 5751,
+    "name": "Z2동 105호"
+   },
+   {
+    "nodeId": 5750,
+    "name": "Z2동 107호"
+   },
+   {
+    "nodeId": 5748,
+    "name": "Z2동 108호"
+   },
+   {
+    "nodeId": 5780,
+    "name": "Z2동 201호"
+   },
+   {
+    "nodeId": 5779,
+    "name": "Z2동 202호"
+   },
+   {
+    "nodeId": 5776,
+    "name": "Z2동 203호"
+   },
+   {
+    "nodeId": 5775,
+    "name": "Z2동 204호"
+   },
+   {
+    "nodeId": 5772,
+    "name": "Z2동 205호"
+   },
+   {
+    "nodeId": 5771,
+    "name": "Z2동 208호"
+   },
+   {
+    "nodeId": 5819,
+    "name": "Z2동 301호"
+   },
+   {
+    "nodeId": 5817,
+    "name": "Z2동 302호"
+   },
+   {
+    "nodeId": 5815,
+    "name": "Z2동 303호"
+   },
+   {
+    "nodeId": 5814,
+    "name": "Z2동 304호"
+   },
+   {
+    "nodeId": 5812,
+    "name": "Z2동 305호"
+   },
+   {
+    "nodeId": 5810,
+    "name": "Z2동 306호"
+   },
+   {
+    "nodeId": 5807,
+    "name": "Z2동 307호"
+   },
+   {
+    "nodeId": 5804,
+    "name": "Z2동 308호"
+   },
+   {
+    "nodeId": 5803,
+    "name": "Z2동 310호"
+   },
+   {
+    "nodeId": 5860,
+    "name": "Z2동 401-2호"
+   },
+   {
+    "nodeId": 5866,
+    "name": "Z2동 402-1호"
+   },
+   {
+    "nodeId": 5865,
+    "name": "Z2동 402-2호"
+   },
+   {
+    "nodeId": 5861,
+    "name": "Z2동 403호"
+   },
+   {
+    "nodeId": 5858,
+    "name": "Z2동 404호"
+   },
+   {
+    "nodeId": 5856,
+    "name": "Z2동 405호"
+   },
+   {
+    "nodeId": 5854,
+    "name": "Z2동 406호"
+   },
+   {
+    "nodeId": 5852,
+    "name": "Z2동 407호"
+   },
+   {
+    "nodeId": 5850,
+    "name": "Z2동 408호"
+   },
+   {
+    "nodeId": 5849,
+    "name": "Z2동 409호"
+   },
+   {
+    "nodeId": 5905,
+    "name": "Z2동 501호"
+   },
+   {
+    "nodeId": 5903,
+    "name": "Z2동 502호"
+   },
+   {
+    "nodeId": 5899,
+    "name": "Z2동 503호"
+   },
+   {
+    "nodeId": 5736,
+    "name": "Z2동 601호"
+   },
+   {
+    "nodeId": 5734,
+    "name": "Z2동 602호"
+   },
+   {
+    "nodeId": 5733,
+    "name": "Z2동 603호"
+   },
+   {
+    "nodeId": 5732,
+    "name": "Z2동 604호"
+   }
+  ]
+ },
+ "Z3": {
+  "building": null,
+  "rooms": []
+ }
+}
