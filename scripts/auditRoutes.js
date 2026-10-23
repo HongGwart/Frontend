@@ -44,6 +44,8 @@ const STATE_FILE = path.join(DIR, 'state.json');
 const RESPONSES_DIR = path.join(DIR, 'responses');
 const PLACES = JSON.parse(fs.readFileSync(path.join(DIR, 'places.json'), 'utf8'));
 const API = 'https://dev-api.honggwart.com';
+// 테스트에서 뺄 건물. D동은 길찾기 그래프에서 떨어져 있어 오가는 경로가 전부 404라 확인할 게 없다(docs/route-audit.md).
+const EXCLUDED_BUILDINGS = new Set(['D']);
 
 const args = process.argv.slice(2);
 const flag = (name) => args.includes(name);
@@ -71,7 +73,7 @@ function loadToRouteView() {
 
 /** 장소 목록 → 테스트할 [출발, 도착] 목록. 순서가 고정이라 state.json의 진행 위치가 그대로 이어진다. */
 function buildCases() {
-  const codes = Object.keys(PLACES).filter((code) => PLACES[code].building);
+  const codes = Object.keys(PLACES).filter((code) => PLACES[code].building && !EXCLUDED_BUILDINGS.has(code));
   const cases = [];
   for (const a of codes)
     for (const b of codes)
@@ -140,8 +142,10 @@ function inspect(body, toRouteView) {
       if (leg.type === 'indoor' && leg.from === '건물 밖') add(mode, 'indoor-exit', text);
       if (leg.from.endsWith('층 이동') && !leg.to) add(mode, 'unknown-floor', text);
       else if (!leg.from || !leg.to) add(mode, 'empty-label', text);
-      // 층 이동은 "L동 4층 → 4층"처럼 도착 쪽에 건물 이름이 없어서 끝부분만 비교한다.
-      const sameFloorChange = (leg.type === 'elevator' || leg.type === 'stairs') && leg.to && leg.from.endsWith(` ${leg.to}`);
+      // 층 이동은 "L동 4층 → 4층"처럼 출발 쪽에만 건물 이름이 붙어서, 건물 이름을 떼고 층끼리 비교한다.
+      // (끝부분만 비교하면 "지하 1층 → 1층"도 같은 층으로 잡힌다.)
+      const fromFloor = leg.from.replace(/^\S+동 /, '');
+      const sameFloorChange = (leg.type === 'elevator' || leg.type === 'stairs') && leg.to && fromFloor === leg.to;
       if (leg.from && leg.from === leg.to) add(mode, 'same-from-to', text);
       else if (sameFloorChange) add(mode, 'same-from-to', text);
     }
