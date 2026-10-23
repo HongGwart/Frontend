@@ -31,10 +31,15 @@ const MAP_ICON_SIZE = 20;
 // 도면 아이콘은 실제 1m 남짓이라 방 번호처럼 "들어갈 때부터" 보이게 하면 거의 안 보인다. 평면도를 알아볼 만큼
 // 확대했을 때부터 보이게 고정 줌으로 정한다.
 const MAP_ICON_MIN_ZOOM = 18;
-// 호수 라벨 글자 크기(pt)와, 방 안에 들어가는지 볼 때 쓰는 글자 한 개 폭/위아래 높이 어림값(pt)
-const LABEL_FONT_SIZE = 11;
-const LABEL_CHAR_WIDTH = 6.5;
-const LABEL_LINE_HEIGHT = 13;
+// 호수 라벨 글자 크기(pt)와, 방 안에 들어가는지 볼 때 쓰는 글자 한 개 폭/위아래 높이 어림값(pt). 네이버 지도 마커는 그림으로
+// 찍어 붙여서 줌마다 크기를 바꾸면 매번 다시 찍어야 하므로 크기는 고정하고, 내부지도 뷰(RoomLabelsLayer)의 최소 크기 9pt에
+// 가깝게 둔다.
+const LABEL_FONT_SIZE = 10;
+const LABEL_CHAR_WIDTH = LABEL_FONT_SIZE * 0.62;
+const LABEL_LINE_HEIGHT = LABEL_FONT_SIZE * 1.2;
+// 글자가 방에 들어가는지 볼 때 쓰는 여백. 내부지도 뷰와 같게 가로는 방 폭의 80%, 세로는 60%까지만 쓴다.
+const LABEL_FIT_WIDTH_RATIO = 0.8;
+const LABEL_FIT_HEIGHT_RATIO = 0.6;
 // PNG 위 라벨은 내부지도 뷰(RoomLabelsLayer)와 같은 검정, PNG 없이 파란 방 도형 위에 그릴 땐 파랑.
 const LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '500', color: '#000000' } as const;
 const FALLBACK_LABEL_TEXT_STYLE = { fontSize: LABEL_FONT_SIZE, fontWeight: '600', color: '#003E80' } as const;
@@ -115,7 +120,10 @@ function labelMinZoom(coords: GeoCoord[], center: GeoCoord, label: string) {
   if (width <= 0 || height <= 0) return Infinity;
   const metersPerPtAtZoom0 = (EARTH_CIRCUMFERENCE_M * cosLat) / 256;
   const zoomToFit = (meters: number, pt: number) => Math.log2((metersPerPtAtZoom0 * pt) / meters);
-  return Math.max(zoomToFit(width, label.length * LABEL_CHAR_WIDTH), zoomToFit(height, LABEL_LINE_HEIGHT));
+  return Math.max(
+    zoomToFit(width * LABEL_FIT_WIDTH_RATIO, label.length * LABEL_CHAR_WIDTH),
+    zoomToFit(height * LABEL_FIT_HEIGHT_RATIO, LABEL_LINE_HEIGHT),
+  );
 }
 
 interface Props {
@@ -235,7 +243,7 @@ export function FloorPlanOverlay({
             key={`floor-label-${floorId}-${room.id}${isHighlighted(room.id) ? '-on' : ''}`}
             latitude={room.center.latitude}
             longitude={room.center.longitude}
-            width={room.label.length * 8 + 8}
+            width={Math.ceil(room.label.length * LABEL_CHAR_WIDTH) + 8}
             height={16}
             anchor={{ x: 0.5, y: 0.5 }}
             // 축소해서 글자가 방보다 커지면 숨긴다(방마다 다르다).

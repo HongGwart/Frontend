@@ -103,8 +103,6 @@ interface Props {
   maxScale?: number;
   /** 계단/엘리베이터 마커의 고정 화면 픽셀 크기 (확대/축소해도 안 바뀜). 생략 시 IconMarkersLayer 기본값 */
   iconSize?: number;
-  /** 방 번호 라벨의 고정 폰트 크기 (확대/축소해도 안 바뀜). 생략 시 RoomLabelsLayer 기본값 */
-  labelFontSize?: number;
   /** 도면 바깥 배경색. 생략하면 흰색 (건물 내부 지도 화면은 Figma대로 회색). */
   backgroundColor?: string;
   /** 처음 맞춤 위치를 세로 가운데에서 이만큼(px) 옮긴다. 음수면 위로(useMapGestures fitOffsetY). */
@@ -124,7 +122,6 @@ export function IndoorMapView({
   minScale = 1,
   maxScale = 1.5,
   iconSize,
-  labelFontSize = 5,
   backgroundColor,
   fitOffsetY,
   onControlsReady,
@@ -329,7 +326,6 @@ export function IndoorMapView({
         translateX={translateX}
         translateY={translateY}
         rotation={rotation}
-        fontSize={labelFontSize}
         selectedRoomIds={selectedRoomIds}
       />
       </Animated.View>
