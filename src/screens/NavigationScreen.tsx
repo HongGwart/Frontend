@@ -643,11 +643,12 @@ const InputSection = styled.View`
   width: 100%;
   padding: 8px 20px;
   background-color: ${({ theme }) => theme.semantic.background.primary};
-  /* Figma box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.05) */
+  /* Figma drop-shadow: 0px 4px 5px rgba(0, 0, 0, 0.05) — 아래로만 번진다. 퍼짐이 아래로 내린 거리(4px)보다
+     크면 위쪽 헤더까지 그림자가 비쳐서 Figma와 달라진다. */
   shadow-color: #000;
   shadow-offset: 0px 4px;
   shadow-opacity: 0.05;
-  shadow-radius: 10px;
+  shadow-radius: 5px;
   elevation: 3;
 `;
 
