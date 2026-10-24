@@ -71,7 +71,7 @@ export function BuildingDetailBody({
     () => CAMPUS_BUILDINGS.find(marker => marker.label === buildingCode),
     [buildingCode],
   );
-  // 이 건물의 편의시설. 서버 시설 목록 API 전까지는 비어 있어서 편의시설 칸이 빠진다.
+  // 이 건물의 편의시설(서버 시설 목록). 등록된 시설이 없으면 편의시설 칸이 빠진다.
   const facilityMarkers = useFacilityMarkers();
   const facilities = useMemo(
     () => facilityMarkers.filter(marker => marker.buildingCode === buildingCode),

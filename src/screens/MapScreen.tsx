@@ -150,7 +150,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     toastTimerRef.current = setTimeout(() => setToastMessage(null), TOAST_DURATION_MS);
   }, []);
 
-  // 편의시설 마커. 서버 시설 목록 API 전까지는 비어 있어서 카테고리 칩을 누르면 준비 중 안내를 띄운다.
+  // 편의시설 마커(서버 시설 목록). 그 카테고리에 등록된 시설이 없으면 칩을 누를 때 준비 중 안내를 띄운다.
   const facilityMarkers = useFacilityMarkers();
   // 카테고리 마커 카드의 운영 상태 — 서버 장소 소개(place-info)의 시설 운영 시간. 없으면 그 줄이 빠진다.
   const facilityStatus = useFacilityOperatingStatus(
@@ -166,8 +166,8 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
     [toggleFavoritePlace, showToast],
   );
 
-  // 마커를 누르면 단일 카드로 연다. 같은 자리에 겹친 시설 목록(숫자 배지)은 실제 좌표 기반 그룹핑(#13)과
-  // 시설 목록 API가 생긴 뒤에 붙인다. "즐겨찾기" 칩에서 동 안 시설이 여러 개 즐겨찾기된 경우는
+  // 마커를 누르면 단일 카드로 연다. 같은 자리에 겹친 시설 목록(숫자 배지)은 실제 좌표 기반 그룹핑(#13)에서
+  // 붙인다. "즐겨찾기" 칩에서 동 안 시설이 여러 개 즐겨찾기된 경우는
   // openFavoriteDongSheet가 목록으로 연다.
   const openDongMarkerSheet = useCallback((marker: CampusBuilding) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

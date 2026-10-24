@@ -96,7 +96,7 @@ export default function SearchScreen() {
   const { recentSearches, addRecentSearch, removeRecentSearch } = useRecentSearches();
   // 즐겨찾기 별은 기기 로컬에 저장된 앱 전역 상태로 표시한다(지도/마이페이지와 같은 상태).
   const { isFavorite, toggleFavorite } = useFavorites();
-  // 편의시설 마커(서버 시설 목록 API 전까지는 빈 목록) — 검색 결과가 편의시설이면 그 마커 카드로 연다.
+  // 편의시설 마커(서버 시설 목록) — 검색 결과가 편의시설이면 그 마커 카드로 연다.
   const facilityMarkers = useFacilityMarkers();
   const openSearchItem = (item: SearchResultItem) => {
     addRecentSearch(item);

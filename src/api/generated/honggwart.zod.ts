@@ -290,6 +290,40 @@ export const FloorPlanCornersResponse = zod.object({
 
 
 /**
+ * 활성·검색 가능한 장소에 등록된 시설을 장소당 한 건씩 반환합니다. category를 생략하면 전체, 지정하면 앞뒤 공백 제거 후 대소문자를 구분해 정확히 일치하는 분류만 조회합니다. 표시명·장소 UUID 오름차순이며 페이지 제한은 없습니다. 교내·교외 시설을 모두 포함합니다. 미등록 카테고리는 빈 목록이고, 목록은 검증된 캠퍼스 전체 시설 재고를 뜻하지 않습니다.
+ * @summary 편의시설 전체·카테고리별 목록 조회
+ */
+export const facilitiesQueryCategoryMax = 32;
+
+
+
+export const FacilitiesQueryParams = zod.object({
+  "category": zod.string().min(1).max(facilitiesQueryCategoryMax).optional().describe('생략하면 전체. 저장된 카테고리 코드로 필터링하며 enum으로 제한하지 않습니다.')
+})
+
+export const FacilitiesResponse = zod.object({
+  "items": zod.array(zod.object({
+  "placeId": zod.uuid().describe('장소 상세 조회 및 길찾기에 사용할 장소 UUID'),
+  "legacyNodeId": zod.int().describe('기존 노드 API용 대표 노드 ID'),
+  "displayName": zod.string(),
+  "category": zod.string().describe('저장된 카테고리 코드'),
+  "onCampus": zod.boolean(),
+  "buildingPlaceId": zod.uuid().nullable(),
+  "buildingCode": zod.string().nullable().describe('등록된 건물 코드. 건물 프로필이 없으면 null'),
+  "buildingName": zod.string().nullable().describe('건물 프로필 명칭, 없으면 건물 장소 표시명. 소속 건물이 없으면 null'),
+  "floor": zod.string().nullable(),
+  "floorOrder": zod.int().nullable(),
+  "roomNumber": zod.string().nullable(),
+  "lat": zod.number().describe('대표 접근점의 위도. 실제 길찾기 출입구는 경로 API가 선택한다'),
+  "lng": zod.number().describe('대표 접근점의 경도'),
+  "entranceCount": zod.int().describe('해당 시설의 접근점 수'),
+  "introduction": zod.string().nullable().describe('시설 자체 소개. 미등록이면 null이며 건물 소개로 대체하지 않는다'),
+  "operatingHoursText": zod.string().nullable().describe('운영시간 원문. 미등록이면 null이며 실시간 영업 여부가 아니다')
+})).describe('조건에 맞는 모든 공개 시설. 표시명, 장소 UUID 오름차순. 없으면 빈 배열')
+})
+
+
+/**
  * 건물 공식명, 소개, 주출입구와 운영시간 원문을 반환합니다. T와 T동을 같은 코드로 처리합니다.
  * @summary 건물 정보 조회
  */

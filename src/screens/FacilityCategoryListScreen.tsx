@@ -47,7 +47,7 @@ export default function FacilityCategoryListScreen() {
   const { params } = useRoute<RouteProp<RootStackParamList, 'FacilityCategoryList'>>();
 
   const category = FACILITY_CATEGORIES.find(item => item.id === params.categoryId);
-  // 서버 시설 목록 API 전까지는 빈 목록이라 아래 "등록된 ○○ 정보가 없어요" 빈 상태가 보인다.
+  // 서버 시설 목록(GET /api/facilities). 등록된 시설이 없으면 아래 "등록된 ○○ 정보가 없어요" 빈 상태가 보인다.
   const places = useFacilityPlaces(params.categoryId);
 
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(마이페이지/지도/길찾기와 같은 상태).

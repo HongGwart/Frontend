@@ -25,6 +25,8 @@ import type {
   AutocompleteResponse,
   BuildingInfoResponse,
   ErrorResponse,
+  FacilitiesParams,
+  FacilityListResponse,
   NodeDetailResponse,
   PlaceInfoBatchResponse,
   PlaceInfoResponse,
@@ -612,6 +614,101 @@ export function useFloorPlanCorners<TData = Awaited<ReturnType<typeof floorPlanC
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getFloorPlanCornersQueryOptions(layerId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+/**
+ * 활성·검색 가능한 장소에 등록된 시설을 장소당 한 건씩 반환합니다. category를 생략하면 전체, 지정하면 앞뒤 공백 제거 후 대소문자를 구분해 정확히 일치하는 분류만 조회합니다. 표시명·장소 UUID 오름차순이며 페이지 제한은 없습니다. 교내·교외 시설을 모두 포함합니다. 미등록 카테고리는 빈 목록이고, 목록은 검증된 캠퍼스 전체 시설 재고를 뜻하지 않습니다.
+ * @summary 편의시설 전체·카테고리별 목록 조회
+ */
+export const facilities = (
+    params?: FacilitiesParams,
+ options?: SecondParameter<typeof apiRequest>,signal?: AbortSignal
+) => {
+
+
+      return apiRequest<FacilityListResponse>(
+      {url: `/api/facilities`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getFacilitiesQueryKey = (params?: FacilitiesParams,) => {
+    return [
+    `/api/facilities`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getFacilitiesQueryOptions = <TData = Awaited<ReturnType<typeof facilities>>, TError = ErrorType<ErrorResponse>>(params?: FacilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof facilities>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getFacilitiesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof facilities>>> = ({ signal }) => facilities(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof facilities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type FacilitiesQueryResult = NonNullable<Awaited<ReturnType<typeof facilities>>>
+export type FacilitiesQueryError = ErrorType<ErrorResponse>
+
+
+export function useFacilities<TData = Awaited<ReturnType<typeof facilities>>, TError = ErrorType<ErrorResponse>>(
+ params: undefined |  FacilitiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof facilities>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof facilities>>,
+          TError,
+          Awaited<ReturnType<typeof facilities>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useFacilities<TData = Awaited<ReturnType<typeof facilities>>, TError = ErrorType<ErrorResponse>>(
+ params?: FacilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof facilities>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof facilities>>,
+          TError,
+          Awaited<ReturnType<typeof facilities>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useFacilities<TData = Awaited<ReturnType<typeof facilities>>, TError = ErrorType<ErrorResponse>>(
+ params?: FacilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof facilities>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 편의시설 전체·카테고리별 목록 조회
+ */
+
+export function useFacilities<TData = Awaited<ReturnType<typeof facilities>>, TError = ErrorType<ErrorResponse>>(
+ params?: FacilitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof facilities>>, TError, TData>>, request?: SecondParameter<typeof apiRequest>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getFacilitiesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
