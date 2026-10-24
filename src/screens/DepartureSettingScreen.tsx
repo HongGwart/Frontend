@@ -15,7 +15,8 @@ import { useFavorites } from '@hooks/useFavorites';
 
 // 마이페이지 "기본 출발지" 카드의 "수정"을 누르면 오는 화면(Figma "마이페이지_기본 출발지 설정").
 // 검색창에 입력하면 아래에 서버 검색 결과가 리스트로 뜨고(SearchListItem 재사용), 항목을 누르면 기본 출발지로
-// 기기에 저장되면서 선택 표시(배경/체크) + 하단 토스트가 2초간 떴다 사라진다.
+// 기기에 저장되면서 선택 표시(배경/체크) + 하단 토스트가 2초간 떴다 사라진다. 검색 전에는 지금 기본 출발지를
+// 선택된 항목으로 보여준다.
 export default function DepartureSettingScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -59,6 +60,19 @@ export default function DepartureSettingScreen() {
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
           >
+            {/* 아직 검색하지 않았으면 지금 기본 출발지를 선택된 항목으로 보여준다(설정 전이면 비어 있다). */}
+            {!value.trim() && departure && (
+              <SearchListItem
+                building={departure.building}
+                place={departure.place}
+                room={departure.room}
+                isFavorite={isFavorite({ buildingCode: departure.building, name: departure.room })}
+                selected
+                showDivider={false}
+                onPress={Keyboard.dismiss}
+                {...SEARCH_ITEM_ICONS[departure.category]}
+              />
+            )}
             {results.map((item, index) => (
               <SearchListItem
                 key={item.id}
