@@ -41,6 +41,20 @@ const PX_PER_SVG_PX = 1;
 const MAX_SIDE = 4096;
 // PNG 색 수(0이면 무손실). 256색이면 원본 대비 대략 1/3 크기.
 const PNG_COLORS = 256;
+// 확대용 고해상도 조각. 층마다 도면 축척이 달라 기본 PNG의 배수가 아니라 실제 길이로 정한다: PNG 1px = 2cm면 최대 줌(21)에서
+// 3배 화면 1px(약 2cm)과 같다. 한 장으로 올리면 GPU 메모리가 너무 커서 작은 조각으로 잘라 두고, 앱은 확대했을 때 화면과
+// 겹치는 조각만 얹는다(docs/floor-plans/decisions.md).
+const HIRES_METERS_PER_PX = 0.02;
+const HIRES_TILE_SIDE = 1024;
+// 위도 1도의 길이(m). 굽는 좌표(u, v)는 위도 단위라 이걸로 m를 바꾼다.
+const METERS_PER_DEGREE = 111320;
+// 줌 0에서 화면 1pt가 몇 m인지(적도 기준, cos(위도)를 곱해 쓴다)와, 흐림을 판단할 화면 배율(3배 화면).
+const METERS_PER_PT_AT_ZOOM0 = 156543.03;
+const SCREEN_PIXEL_RATIO = 3;
+// 기본 PNG가 화면보다 거칠어지는 줌보다 이만큼 더 확대해야 조각으로 바꾼다. 바로 바꾸면 화면에 조각이 너무 많이 걸려
+// 메모리를 많이 쓴다.
+const HIRES_ZOOM_DELAY = 0.5;
+const HIRES_DIR = path.join(OUT_DIR, 'hires');
 // 방 번호 라벨 path(id="103", "102-2", "B110", "106_2"). stripLabelPaths.js와 같은 패턴.
 // PNG에 구우면 건물 기울기만큼 글자가 같이 돌아가므로 빼고, 앱(FloorPlanOverlay)이 마커로 똑바로 그린다.
 const LABEL_PATH_REGEX = /<path id="[A-Za-z]?\d+(?:-\d+)?(?:_\d+)?"[^>]*\/>\s*/g;
@@ -189,11 +203,6 @@ function renderFloor(floorId, anchors, hosted) {
   const unitsPerSvgPx = Math.sqrt(Math.abs(a * e - b * d));
   let k = PX_PER_SVG_PX / unitsPerSvgPx;
   k = Math.min(k, MAX_SIDE / (uMax - uMin), MAX_SIDE / (vMax - vMin));
-  const W = Math.round((uMax - uMin) * k);
-  const H = Math.round((vMax - vMin) * k);
-
-  // 도면 (x, y) → PNG (px, py). py는 북쪽이 위라 v를 뒤집는다.
-  const matrix = [k * a, -k * d, k * b, -k * e, k * (c - uMin), k * (vMax - f)];
 
   const defsMatch = svgText.match(/<defs>[\s\S]*?<\/defs>/);
   const viewBox = (svgText.match(/viewBox="([^"]+)"/) || [])[1];
@@ -207,9 +216,16 @@ function renderFloor(floorId, anchors, hosted) {
     return rest;
   });
   if (visual.length === 0) throw new Error(`${floorId}: id="Visual" 그룹을 찾지 못했습니다`);
-  const out = [
-    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none">`,
-    `<g transform="matrix(${matrix.join(' ')})">`,
+
+  // 배율 scale(도면 1px당 PNG px)로 돌린 도면을 그린다. 기본 PNG와 확대용 조각이 같은 그림을 배율만 달리 쓴다.
+  const renderAt = scale => {
+    const width = Math.round((uMax - uMin) * scale);
+    const height = Math.round((vMax - vMin) * scale);
+    // 도면 (x, y) → PNG (px, py). py는 북쪽이 위라 v를 뒤집는다.
+    const matrix = [scale * a, -scale * d, scale * b, -scale * e, scale * (c - uMin), scale * (vMax - f)];
+    const svg = [
+      `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none">`,
+      `<g transform="matrix(${matrix.join(' ')})">`,
     ...(hosted
       ? [
           `<clipPath id="hosted-crop"><rect x="${crop.x}" y="${crop.y}" width="${crop.width}" height="${crop.height}"/></clipPath>`,
@@ -218,16 +234,72 @@ function renderFloor(floorId, anchors, hosted) {
           '</g>',
         ]
       : visual),
-    '</g>',
-    defsMatch ? defsMatch[0] : '',
-    '</svg>',
-  ].join('\n');
+      '</g>',
+      defsMatch ? defsMatch[0] : '',
+      '</svg>',
+    ].join('\n');
+    return new Resvg(svg, { background: 'rgba(0,0,0,0)' }).render();
+  };
+  const encodePng = (pixels, width, height) =>
+    Buffer.from(UPNG.encode([pixels.buffer], width, height, PNG_COLORS));
 
-  const rendered = new Resvg(out, { background: 'rgba(0,0,0,0)' }).render();
-  const png = Buffer.from(
-    UPNG.encode([new Uint8Array(rendered.pixels).buffer], rendered.width, rendered.height, PNG_COLORS),
-  );
+  const rendered = renderAt(k);
+  const W = rendered.width;
+  const H = rendered.height;
+  const png = encodePng(new Uint8Array(rendered.pixels), W, H);
   fs.writeFileSync(path.join(OUT_DIR, `${floorId}.png`), png);
+
+  // 확대용 조각: 같은 그림을 1px = HIRES_METERS_PER_PX로 그려 HIRES_TILE_SIDE 이하 조각으로 자른다. 다 투명한 조각은 버린다.
+  const hiresScale = METERS_PER_DEGREE / HIRES_METERS_PER_PX;
+  // 기본 PNG 1px이 3배 화면 1px보다 커지는 줌(+ 여유) — 앱은 이 줌부터 조각을 얹는다.
+  const baseMetersPerPx = METERS_PER_DEGREE / k;
+  const metersPerPtAtZoom0 = METERS_PER_PT_AT_ZOOM0 * cosLat;
+  const tilesMinZoom =
+    Math.round((Math.log2(metersPerPtAtZoom0 / (baseMetersPerPx * SCREEN_PIXEL_RATIO)) + HIRES_ZOOM_DELAY) * 100) / 100;
+  const hires = renderAt(hiresScale);
+  const hiresPixels = new Uint8Array(hires.pixels);
+  const cols = Math.ceil(hires.width / HIRES_TILE_SIDE);
+  const rows = Math.ceil(hires.height / HIRES_TILE_SIDE);
+  const tileW = Math.ceil(hires.width / cols);
+  const tileH = Math.ceil(hires.height / rows);
+  fs.mkdirSync(HIRES_DIR, { recursive: true });
+  for (const old of fs.readdirSync(HIRES_DIR).filter(name => name.startsWith(`${floorId}_`))) {
+    fs.unlinkSync(path.join(HIRES_DIR, old));
+  }
+  const tiles = [];
+  let tilesBytes = 0;
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const x0 = col * tileW;
+      const y0 = row * tileH;
+      const x1 = Math.min(x0 + tileW, hires.width);
+      const y1 = Math.min(y0 + tileH, hires.height);
+      const w = x1 - x0;
+      const h = y1 - y0;
+      const pixels = new Uint8Array(w * h * 4);
+      let opaque = false;
+      for (let y = 0; y < h; y++) {
+        const start = ((y0 + y) * hires.width + x0) * 4;
+        const line = hiresPixels.subarray(start, start + w * 4);
+        pixels.set(line, y * w * 4);
+        if (!opaque) for (let i = 3; i < line.length; i += 4) if (line[i] !== 0) { opaque = true; break; }
+      }
+      if (!opaque) continue;
+      const file = `${floorId}_${row}_${col}.png`;
+      const tilePng = encodePng(pixels, w, h);
+      fs.writeFileSync(path.join(HIRES_DIR, file), tilePng);
+      tilesBytes += tilePng.length;
+      tiles.push({
+        file,
+        region: {
+          latitude: vMax - y1 / hiresScale,
+          longitude: (uMin + x0 / hiresScale) / cosLat,
+          latitudeDelta: h / hiresScale,
+          longitudeDelta: w / hiresScale / cosLat,
+        },
+      });
+    }
+  }
 
   const region = {
     latitude: vMin,
@@ -238,7 +310,10 @@ function renderFloor(floorId, anchors, hosted) {
   console.log(
     `✓ ${floorId}: ${W}x${H}px, ${Math.round(png.length / 1024)}KB, 모서리 최대 오차 ${maxErr.toFixed(2)}m, 아이콘 ${icons.length}개 → src/assets/floorOverlays/${floorId}.png`,
   );
-  return { region, anchors, icons };
+  console.log(
+    `  확대용 조각 ${tiles.length}개(${hires.width}x${hires.height}px를 ${cols}x${rows}로), ${Math.round(tilesBytes / 1024)}KB, 줌 ${tilesMinZoom}부터 → src/assets/floorOverlays/hires/`,
+  );
+  return { region, anchors, icons, tiles, tilesMinZoom };
 }
 
 /** 이미 만들어둔 floorOverlayImages.ts에서 층별 region/anchors를 다시 읽는다 (지정 층만 다시 구울 때 유지용). */
@@ -252,13 +327,24 @@ function writeIndex(entries) {
   const ids = Object.keys(entries).sort();
   const body = ids
     .map(id => {
-      const { region, anchors, icons = [] } = entries[id];
+      const { region, anchors, icons = [], tiles = [], tilesMinZoom } = entries[id];
       return [
         `  ${id}: {`,
         `    image: require('@assets/floorOverlays/${id}.png'),`,
         `    region: ${JSON.stringify(region)},`,
         `    anchors: ${JSON.stringify(anchors)} as FloorGeoAnchors,`,
         `    icons: ${JSON.stringify(icons)} as FloorOverlayIcon[],`,
+        ...(tiles.length > 0
+          ? [
+              `    tilesMinZoom: ${tilesMinZoom},`,
+              '    tiles: [',
+              ...tiles.map(
+                tile =>
+                  `      { image: require('@assets/floorOverlays/hires/${tile.file}'), region: ${JSON.stringify(tile.region)} },`,
+              ),
+              '    ],',
+            ]
+          : []),
         '  },',
       ].join('\n');
     })
@@ -285,6 +371,15 @@ export interface FloorOverlayImage {
   anchors: FloorGeoAnchors;
   /** PNG에서 뺀 엘리베이터/계단/화장실 아이콘. 기울어지지 않게 앱이 마커로 그린다 */
   icons: FloorOverlayIcon[];
+  /** 이 줌부터 기본 PNG가 화면보다 거칠어져 확대용 조각(tiles)을 얹는다 */
+  tilesMinZoom?: number;
+  /** 같은 그림을 1px = 2cm로 구워 자른 확대용 조각. 화면과 겹치는 것만 얹는다 */
+  tiles?: FloorOverlayTile[];
+}
+
+export interface FloorOverlayTile {
+  image: ImageRequireSource;
+  region: Region;
 }
 
 /* DATA ${JSON.stringify(entries)} DATA */

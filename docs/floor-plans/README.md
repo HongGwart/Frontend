@@ -15,6 +15,7 @@ Figma에서 내보낸 층 평면도 SVG를 앱 데이터(내부 지도 JSON·배
 - 층 목록: `src/constant/floorMaps.ts`의 `FLOOR_MAPS` — 층 키는 `{동}_{층}` (지하 `_B1`, R동 로비 `_L`)
 - 지도 기준점: `src/constant/floorPlanReferencePoints.json`(서버 layerId + Figma 기준점 두 개) → `floorPlanAnchors.json`(계산된 네 모서리)
 - 지도용 PNG: `src/assets/floorOverlays/{층}.png` + `src/constant/floorOverlayImages.ts`(자동 생성, 직접 고치지 않음)
+- 확대용 조각: `src/assets/floorOverlays/hires/{층}_{행}_{열}.png` — 지도용 PNG와 같이 구워진다([decisions.md](decisions.md) 2026-10-25)
 - 다른 동 도면에 함께 그려진 층: `src/constant/hostedFloors.json` ([decisions.md](decisions.md))
 
 ## 층을 추가하거나 다시 처리할 때
