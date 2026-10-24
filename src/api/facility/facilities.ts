@@ -115,6 +115,8 @@ export function useFacilityPlaces(categoryId: FacilityCategoryId): FavoritePlace
         locationDetail: floorLabel(item.floor ?? undefined) || undefined,
         icon: category?.icon,
         operatingHours: parseOperatingHoursText(item.operatingHoursText),
+        latitude: item.lat,
+        longitude: item.lng,
       }));
   }, [facilities, categoryId]);
 }

@@ -60,8 +60,8 @@ export default function FacilityCategoryListScreen() {
   });
   const routeButtonProps = useRouteButtonProps();
 
-  // 목록에서 장소를 누르면 주변상권처럼 지도 + 시설 카드 상세로 바뀐다. 편의시설은 아직 자체 좌표가
-  // 없어서, 그 시설이 있는 건물(동) 마커의 좌표에 카테고리 마커를 찍는다.
+  // 목록에서 장소를 누르면 주변상권처럼 지도 + 시설 카드 상세로 바뀐다. 마커는 시설 자체 좌표에 찍고,
+  // 좌표가 없으면 그 시설이 있는 건물(동) 마커 좌표에 찍는다.
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const selectedPlace = useMemo(
     () => places.find(place => place.id === selectedPlaceId) ?? null,
@@ -74,7 +74,10 @@ export default function FacilityCategoryListScreen() {
 
   if (selectedPlace) {
     const building = CAMPUS_BUILDINGS.find(marker => marker.label === selectedPlace.buildingCode);
-    const { latitude, longitude } = building ?? CAMPUS_CENTER;
+    const { latitude, longitude } =
+      selectedPlace.latitude !== undefined && selectedPlace.longitude !== undefined
+        ? { latitude: selectedPlace.latitude, longitude: selectedPlace.longitude }
+        : (building ?? CAMPUS_CENTER);
     const markerIconKey = MARKER_ICON_BY_CATEGORY[params.categoryId];
     const facilityName = selectedPlace.name ?? selectedPlace.buildingName;
 
