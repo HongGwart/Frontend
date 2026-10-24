@@ -24,6 +24,7 @@ export const favoriteFromCategoryMarker = (marker: FacilityMarker): FavoriteInpu
   category: marker.category,
   latitude: marker.latitude,
   longitude: marker.longitude,
+  nodeId: marker.nodeId,
 });
 
 /** 겹친 마커 리스트 시트의 항목 */

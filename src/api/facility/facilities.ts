@@ -117,6 +117,7 @@ export function useFacilityPlaces(categoryId: FacilityCategoryId): FavoritePlace
         operatingHours: parseOperatingHoursText(item.operatingHoursText),
         latitude: item.lat,
         longitude: item.lng,
+        nodeId: item.legacyNodeId,
       }));
   }, [facilities, categoryId]);
 }

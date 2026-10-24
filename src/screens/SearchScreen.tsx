@@ -410,7 +410,8 @@ export default function SearchScreen() {
                     selectedFacility.marker.buildingName,
                     selectedFacility.marker.room,
                   ),
-                  undefined,
+                  // 시설은 서버 시설 목록의 노드로 바로 길을 찾는다(이름 검색으로는 동 표기가 없어 못 찾는다).
+                  selectedFacility.marker.nodeId,
                   { buildingCode: selectedFacility.marker.buildingCode, room: selectedFacility.marker.room },
                 )}
                 // 시설이 있는 건물(동)의 내부 지도로 간다(지도 화면의 시설 카드와 같음).

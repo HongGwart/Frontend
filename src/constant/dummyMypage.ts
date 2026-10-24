@@ -20,6 +20,8 @@ export interface FavoritePlace {
   /** 장소 자체 좌표(서버 시설 목록의 대표 접근점). 없으면 지도는 소속 건물 마커 좌표에 찍는다 */
   latitude?: number;
   longitude?: number;
+  /** 서버 노드 id. 있으면 길찾기가 이름 검색 없이 이 노드로 바로 간다 */
+  nodeId?: number;
 }
 
 /**

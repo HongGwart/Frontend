@@ -57,6 +57,7 @@ export default function FacilityCategoryListScreen() {
     buildingName: place.buildingName,
     name: place.name,
     category: MARKER_ICON_BY_CATEGORY[params.categoryId],
+    nodeId: place.nodeId,
   });
   const routeButtonProps = useRouteButtonProps();
 
@@ -110,7 +111,7 @@ export default function FacilityCategoryListScreen() {
             onToggleFavorite={() => togglePlaceFavorite(toFavoriteInput(selectedPlace))}
             {...routeButtonProps(
               toRoutePlaceLabel(selectedPlace.buildingCode, selectedPlace.buildingName, selectedPlace.name),
-              undefined,
+              selectedPlace.nodeId,
               { buildingCode: selectedPlace.buildingCode, room: selectedPlace.name },
             )}
             placeholderIcon={category?.icon}
