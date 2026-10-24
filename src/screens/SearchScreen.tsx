@@ -314,7 +314,8 @@ export default function SearchScreen() {
               favorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
             />
           )}
-          {selectedFacility.type === 'category' && (
+          {/* 시설이 있는 방을 평면도에 칠했으면 그걸로 위치가 보여서 시설 마커는 안 띄운다. 칠할 방을 못 찾았을 때만 마커로 표시. */}
+          {selectedFacility.type === 'category' && !(searchedRoom && searchedRoomAnchors) && (
             <NaverMapCategoryMarker
               latitude={selectedFacility.marker.latitude}
               longitude={selectedFacility.marker.longitude}
