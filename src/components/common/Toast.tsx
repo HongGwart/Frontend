@@ -23,15 +23,28 @@ export function Toast({ text, variant = 'warning' }: Props) {
 
   return (
     <Container variant={variant}>
-      {isSuccess ? (
-        <CheckCircleIcon width={20} height={20} color={theme.blue[800]} />
-      ) : (
-        <WarningIcon width={20} height={20} color={theme.semantic.warning} />
-      )}
+      <IconBox>
+        {isSuccess ? (
+          <CheckCircleIcon width={ICON_CIRCLE_SIZE} height={ICON_CIRCLE_SIZE} color={theme.blue[800]} />
+        ) : (
+          <WarningIcon width={ICON_CIRCLE_SIZE} height={ICON_CIRCLE_SIZE} color={theme.semantic.warning} />
+        )}
+      </IconBox>
       <Text numberOfLines={1}>{text}</Text>
     </Container>
   );
 }
+
+// Figma 토스트 아이콘은 20px 틀 안에 지름 16.67px 원이다. SVG는 원 크기로 잘려 내보내져 있어서 20px로 그리면 원이
+// 그만큼 커진다 — 원은 실제 지름으로 그리고 20px 틀 가운데에 둔다.
+const ICON_CIRCLE_SIZE = 16.666;
+
+const IconBox = styled.View`
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+`;
 
 const Container = styled.View<{ variant: 'warning' | 'success' }>`
   width: 100%;
