@@ -42,6 +42,7 @@ import { regionToFit, slicePath, splitPathAt } from '@utils/routePath';
 import type { RouteMapData } from '@appTypes/routeView';
 import { useFloorGeoAnchors } from '@api/floorPlan/useFloorGeoAnchors';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
+import { useSettledMapViewport } from '@hooks/map/useSettledMapViewport';
 import { animateValue } from '@utils/animateValue';
 import { useRouteSearch } from '@api/route/useRouteSearch';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
@@ -443,6 +444,8 @@ function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
   );
   const [cardHeight, setCardHeight] = useState(0);
   const [isMapReady, setIsMapReady] = useState(false);
+  // 확대했을 때 평면도를 선명한 조각으로 바꿔 얹으려고 카메라가 멈춘 위치를 기억한다.
+  const { viewport: mapViewport, handleCameraIdle } = useSettledMapViewport();
   const hasFittedRef = useRef(false);
   useEffect(() => {
     // 지도가 준비되고 상단 카드 높이(지도 패딩)를 잰 뒤에 맞춘다. 첫 번째는 애니메이션 없이 바로.
@@ -465,6 +468,7 @@ function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
         style={StyleSheet.absoluteFill}
         initialCamera={initialCamera}
         onInitialized={() => setIsMapReady(true)}
+        onCameraIdle={handleCameraIdle}
         // 상단 안내 카드와 하단 버튼에 가려진 만큼 빼서, 경로가 보이는 영역 가운데에 맞춰지게 한다.
         mapPadding={{
           top: insets.top + 8 + cardHeight,
@@ -483,6 +487,7 @@ function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
             key={currentPlanFloorId}
             floorId={currentPlanFloorId}
             anchors={currentFloorAnchors}
+            viewport={mapViewport}
           />
         )}
         <GuidanceMapOverlays

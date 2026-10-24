@@ -13,6 +13,7 @@ import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonPro
 import { CAMPUS_EXTENT, MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { findRoomFloor } from '@constant/floorMaps';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
+import { useSettledMapViewport } from '@hooks/map/useSettledMapViewport';
 import { useFloorGeoAnchors } from '@api/floorPlan/useFloorGeoAnchors';
 import { createFloorToGeo, getContentBounds } from '@utils/floorGeoTransform';
 import { SearchBar } from '@components/common/SearchBar';
@@ -173,6 +174,8 @@ export default function SearchScreen() {
     return findRoomFloor(buildingCode, roomNumber, nodeDetail?.floorId);
   }, [selectedItem, nodeDetail]);
   const searchedRoomAnchors = useFloorGeoAnchors(searchedRoom?.floorId);
+  // 확대했을 때 평면도를 선명한 조각으로 바꿔 얹으려고 카메라가 멈춘 위치를 기억한다.
+  const { viewport: mapViewport, handleCameraIdle } = useSettledMapViewport();
   // 카메라를 옮길 호실 중심(호실 도형 꼭짓점들의 평균). 칠하기는 FloorPlanOverlay가 한다.
   const searchedRoomCenter = useMemo(() => {
     if (!searchedRoom || !searchedRoomAnchors) return null;
@@ -295,6 +298,7 @@ export default function SearchScreen() {
           extent={CAMPUS_EXTENT}
           maxZoom={MAP_MAX_ZOOM}
           onTapMap={() => bottomSheetRef.current?.close()}
+          onCameraIdle={handleCameraIdle}
         >
           {searchedRoom && searchedRoomAnchors && (
             <FloorPlanOverlay
@@ -302,6 +306,7 @@ export default function SearchScreen() {
               floorId={searchedRoom.floorId}
               anchors={searchedRoomAnchors}
               highlightRoomIds={searchedRoom.rooms.map(room => room.id)}
+              viewport={mapViewport}
             />
           )}
           {/* 지도 화면과 같이, 카드가 열린(포커싱된) 마커 하나만 네임택을 달고 남기고 나머지 마커는 숨긴다. */}

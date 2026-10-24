@@ -10,6 +10,8 @@ import { getBuildingMask } from '@constant/buildingMasks';
 import { FLOOR_MAPS, getHostedArea, isInHostedArea, parseFloorId, resolveFloorId } from '@constant/floorMaps';
 import { FLOOR_OVERLAY_IMAGES, FloorOverlayIconType, FloorOverlayImage } from '@constant/floorOverlayImages';
 import { createFloorToGeo, FloorGeoAnchors, GeoCoord, getContentBounds } from '@utils/floorGeoTransform';
+import { expandRegion, regionsOverlap } from '@utils/geoRegion';
+import type { MapViewport } from '@hooks/map/useSettledMapViewport';
 import { theme } from '@theme/color';
 import ElevatorIcon from '@assets/svgs/icons/elevator.svg';
 import StairsIcon from '@assets/svgs/icons/stairs.svg';
@@ -61,6 +63,9 @@ const BUILDING_MASK_GLOBAL_Z = -310000;
 // 방 도형 폴리곤을 경로선(폴리라인, 같은 기본 전역 z -200000)보다 아래, 평면도 PNG(GroundOverlay -300000)보다
 // 위에 깐다. 이걸 안 주면 zIndex가 같은 전역 층에서 비교돼서 방 도형이 길찾기 경로선을 덮는다.
 const FLOOR_SHAPE_GLOBAL_Z = -250000;
+
+// 확대용 조각은 화면에 보이는 영역보다 각 변을 이만큼(폭 대비) 넓혀서 겹치는 것까지 얹는다 — 조금 끌어도 조각이 바로 보이게.
+const TILE_PRELOAD_RATIO = 0.25;
 
 // 기준점이 이만큼(위경도 도 단위, 약 0.1m) 안에서 같으면 같은 위치로 본다. 서버 기준점으로 앱에서 계산한 값과
 // PNG를 구울 때 스크립트로 계산한 값은 같은 식이어도 부동소수점 끝자리가 다를 수 있다.
@@ -137,6 +142,11 @@ interface Props {
   highlightRoomIds?: string[];
   /** 건물 덮개를 깔지 않는다(덮개 찍기 모드: 네이버 건물이 보여야 모서리를 찍을 수 있다) */
   hideBuildingMask?: boolean;
+  /**
+   * 카메라가 멈췄을 때의 줌·보이는 영역(useSettledMapViewport). 넘기면 확대했을 때 화면과 겹치는 고해상도 조각을
+   * 기본 PNG 위에 얹어 선명하게 보여준다. 생략하면 기본 PNG만 쓴다.
+   */
+  viewport?: MapViewport | null;
 }
 
 /**
@@ -152,9 +162,19 @@ export function FloorPlanOverlay({
   anchors,
   highlightRoomIds,
   hideBuildingMask = false,
+  viewport,
 }: Props) {
   const overlayImage = getFreshOverlayImage(floorId, anchors);
   const hasImage = Boolean(overlayImage);
+
+  // 기본 PNG가 화면보다 거칠어질 만큼 확대했으면, 같은 그림을 더 촘촘히 구운 조각 중 화면 근처 것만 얹는다.
+  // 조각은 카메라가 멈췄을 때만 다시 고른다(viewport가 그때만 바뀐다).
+  const visibleTiles = useMemo(() => {
+    const { tiles, tilesMinZoom } = overlayImage ?? {};
+    if (!viewport || !tiles || tilesMinZoom === undefined || viewport.zoom < tilesMinZoom) return [];
+    const area = expandRegion(viewport.region, TILE_PRELOAD_RATIO);
+    return tiles.filter(tile => regionsOverlap(tile.region, area));
+  }, [overlayImage, viewport]);
 
   const floor = useMemo(() => {
     if (!anchors) return null;
@@ -220,6 +240,14 @@ export function FloorPlanOverlay({
           zIndex={1}
         />
       )}
+      {visibleTiles.map(tile => (
+        <NaverMapGroundOverlay
+          key={`floor-tile-${floorId}-${tile.region.latitude}-${tile.region.longitude}`}
+          image={tile.image}
+          region={tile.region}
+          zIndex={2}
+        />
+      ))}
       {shapes?.map(shape => (
         <NaverMapPolygonOverlay
           key={`floor-${floorId}-${shape.id}`}
