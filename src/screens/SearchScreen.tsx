@@ -70,9 +70,10 @@ function findFacilityForSearchItem(item: SearchResultItem, facilityMarkers: Faci
     const marker = CAMPUS_BUILDINGS.find(m => m.label === item.building);
     return marker ? { type: 'dong', marker } : null;
   }
-  const categoryMarker = facilityMarkers.find(
-    m => m.buildingCode === item.building && m.room === item.room,
-  );
+  // 시설은 서버 노드로 먼저 맞추고(검색 이름 "열람실"과 시설 이름 "열람실(K동)"이 다를 수 있다), 없으면 동 + 이름으로.
+  const categoryMarker =
+    facilityMarkers.find(m => item.nodeId !== undefined && m.nodeId === item.nodeId) ??
+    facilityMarkers.find(m => m.buildingCode === item.building && m.room === item.room);
   if (categoryMarker) return { type: 'category', marker: categoryMarker };
 
   const dongMarker = CAMPUS_BUILDINGS.find(m => m.label === item.building);
@@ -100,9 +101,9 @@ export default function SearchScreen() {
   const facilityMarkers = useFacilityMarkers();
   const openSearchItem = (item: SearchResultItem) => {
     addRecentSearch(item);
-    // 검색창에 친 글자("R") 대신 고른 장소 이름을 넣는다. 서버 표시 이름과 같은 형식("R동 313호", "R동",
-    // 동 코드가 없는 장소는 "R5 강의실 끝 여자화장실")이라 카드를 닫으면 그 장소가 다시 검색 결과로 보인다.
-    setValue(item.building ? [item.building, item.room].filter(Boolean).join(' ') : item.place);
+    // 검색창에 친 글자("R") 대신 고른 장소의 서버 표시 이름("R동 313호", "열람실(K동)")을 넣는다. 카드를 닫으면
+    // 그 장소가 다시 검색 결과로 보인다. 표시 이름이 없는 항목(최근 검색 옛 기록)은 동 + 호실로 맞춘다.
+    setValue(item.displayName ?? (item.building ? [item.building, item.room].filter(Boolean).join(' ') : item.place));
     setSelectedItem(item);
     const facility = findFacilityForSearchItem(item, facilityMarkers);
     if (facility) setSelectedFacility(facility);

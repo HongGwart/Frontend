@@ -50,6 +50,8 @@ export interface SearchResultItem {
   room?: string;
   category: SearchItemCategory;
   isFavorite?: boolean;
+  /** 서버 표시 이름("열람실(K동)"). 검색창에 다시 넣으면 그 장소가 그대로 검색된다 */
+  displayName?: string;
 }
 
 /** 최근 검색어(로컬 저장, useRecentSearches). 목록의 날짜는 searchedAt에서 계산한다. */

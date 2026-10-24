@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { keepPreviousData } from '@tanstack/react-query';
 import { useAutocomplete } from '@api/generated/honggwart';
+import { useFacilityBuildingCodes } from '@api/facility/facilities';
 import type { NodeSuggestionResponse } from '@api/generated/model';
 import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
 import { SearchItemCategory, SearchResultItem } from '@constant/dummySearchData';
@@ -14,24 +15,49 @@ const matchesKeyword = (item: SearchResultItem, lower: string) =>
 
 // "C동 630호" → 동 코드 "C동" + 나머지 "630호". "R동"처럼 건물 자체면 나머지는 없다.
 const BUILDING_NAME = /^([A-Z]+\d*동)(?:\s+(.+))?$/;
+// 편의시설은 동 표기가 뒤 괄호에 붙어 온다: "열람실(K동)" → 동 코드 "K동" + 이름 "열람실".
+const FACILITY_NAME = /^(.+)\(([A-Z]+\d*동)\)$/;
 
-/** 서버 자동완성 항목을 검색 리스트 항목 모양으로 바꾼다. */
-function toSearchResultItem(suggestion: NodeSuggestionResponse): SearchResultItem {
+/** 서버 시설 분류 → 검색 리스트 아이콘. 모르는 분류·일반 장소는 강의실 아이콘. */
+const CATEGORY_BY_SERVER: Record<string, SearchItemCategory> = {
+  RESTAURANT: 'restaurant',
+  CAFE: 'cafe',
+  CONVENIENCE_STORE: 'store',
+  READING_ROOM: 'readingRoom',
+  PC_ROOM: 'pcRoom',
+  PRINTER: 'printer',
+  BOOK_RETURN: 'bookReturn',
+  SMOKING_AREA: 'smokingArea',
+};
+
+/**
+ * 서버 자동완성 항목을 검색 리스트 항목 모양으로 바꾼다. 이름에 동 표기가 없는 시설("그라찌에")은 시설 목록에서
+ * 찾은 소속 동(facilityBuildingCodes)을 붙인다.
+ */
+function toSearchResultItem(
+  suggestion: NodeSuggestionResponse,
+  facilityBuildingCodes: ReadonlyMap<number, string>,
+): SearchResultItem {
   const displayName = suggestion.displayName ?? '';
   const match = displayName.match(BUILDING_NAME);
-  const building = match?.[1] ?? '';
-  const room = match?.[2];
+  const facility = match ? null : displayName.match(FACILITY_NAME);
+  const facilityBuilding = suggestion.nodeId !== undefined ? facilityBuildingCodes.get(suggestion.nodeId) : undefined;
+  const building = match?.[1] ?? facility?.[2] ?? facilityBuilding ?? '';
+  const room = match?.[2] ?? facility?.[1] ?? (facilityBuilding ? displayName : undefined);
   const place = CAMPUS_BUILDINGS.find(marker => marker.label === building)?.buildingName ?? '';
   const isBuilding = suggestion.nodeType === 'SYMBOLIC' || (match && !room);
-  const category: SearchItemCategory = isBuilding ? 'building' : 'classroom';
+  const category: SearchItemCategory = isBuilding
+    ? 'building'
+    : (CATEGORY_BY_SERVER[suggestion.category ?? ''] ?? 'classroom');
   return {
     id: `node-${suggestion.nodeId}`,
     nodeId: suggestion.nodeId,
     building,
-    // 동 코드로 시작하지 않는 이름("R5 강의실 끝 여자화장실")은 이름 전체를 장소명 자리에 보여준다.
-    place: match ? place : displayName,
+    // 동 코드를 못 찾은 이름("R5 강의실 끝 여자화장실", "그라찌에")은 이름 전체를 장소명 자리에 보여준다.
+    place: building ? place : displayName,
     room,
     category,
+    displayName,
   };
 }
 
@@ -65,10 +91,12 @@ export function useSearchSuggestions(keyword: string) {
     },
   );
 
+  const facilityBuildingCodes = useFacilityBuildingCodes();
+
   const results = useMemo(() => {
     if (!immediate) return [];
     if (isError) return [];
-    let remote = (data?.suggestions ?? []).map(toSearchResultItem);
+    let remote = (data?.suggestions ?? []).map(suggestion => toSearchResultItem(suggestion, facilityBuildingCodes));
     // 아직 지금 입력값의 응답이 아니면(디바운스 중이거나 새 요청을 기다리는 중) 이전 검색어의 서버 결과 중 지금 입력값에도
     // 맞는 것만 남긴다 — 다 숨기면 목록이 깜빡이고, 다 보여주면 다른 검색어 결과가 섞인다.
     if (query !== immediate || isPlaceholderData) {
@@ -76,7 +104,7 @@ export function useSearchSuggestions(keyword: string) {
       remote = remote.filter(item => matchesKeyword(item, lower));
     }
     return remote;
-  }, [immediate, query, isError, data, isPlaceholderData]);
+  }, [immediate, query, isError, data, isPlaceholderData, facilityBuildingCodes]);
 
   // 입력이 있는데 디바운스 중이거나 지금 검색어의 응답을 기다리는 중 — 이때 결과가 비어 있어도 "검색 결과 없음"을
   // 띄우지 않는다. 디바운스된 query가 아니라 지금 입력값으로 봐야 빈 검색창에 첫 글자를 칠 때도 깜빡이지 않는다.

@@ -16,19 +16,20 @@ import { useFavorites } from '@hooks/useFavorites';
 // 마이페이지 "기본 출발지" 카드의 "수정"을 누르면 오는 화면(Figma "마이페이지_기본 출발지 설정").
 // 검색창에 입력하면 아래에 서버 검색 결과가 리스트로 뜨고(SearchListItem 재사용), 항목을 누르면 기본 출발지로
 // 기기에 저장되면서 선택 표시(배경/체크) + 하단 토스트가 2초간 떴다 사라진다. 검색 전에는 지금 기본 출발지를
-// 선택된 항목으로 보여준다.
+// 선택된 항목으로 보여주고, 선택된 항목을 다시 누르면 해제된다.
 export default function DepartureSettingScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const [value, setValue] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
+  const [toastText, setToastText] = useState('');
   // 선택할 때마다 증가시켜 AnimatedToast를 리마운트한다(이미 떠 있어도 2초 타이머가 재시작되도록).
   const [toastKey, setToastKey] = useState(0);
 
   // 즐겨찾기 별은 기기 로컬에 저장된 앱 전역 상태로 표시한다.
   const { isFavorite } = useFavorites();
 
-  const { departure, setDeparture } = useDefaultDeparture();
+  const { departure, setDeparture, clearDeparture } = useDefaultDeparture();
 
   // 길찾기 출발지 검색과 같은 서버 검색. 서버 결과엔 nodeId가 있어서 기본 출발지로도 실제 경로 탐색을 쓴다.
   const { results: searchResults, isSearching, isError: searchFailed } = useSearchSuggestions(value);
@@ -39,11 +40,27 @@ export default function DepartureSettingScreen() {
     !!departure &&
     (departure.nodeId !== undefined ? departure.nodeId === item.nodeId : departureLabelOf(departure) === departureLabelOf(item));
 
-  const handleSelect = (item: SearchResultItem) => {
-    Keyboard.dismiss();
-    setDeparture(item);
+  const showToast = (text: string) => {
+    setToastText(text);
     setToastVisible(true);
     setToastKey(key => key + 1);
+  };
+
+  const handleClearCurrent = () => {
+    Keyboard.dismiss();
+    clearDeparture();
+    showToast('기본 출발지가 해제되었습니다.');
+  };
+
+  // 지금 기본 출발지를 다시 누르면 해제한다(토글).
+  const handleSelect = (item: SearchResultItem) => {
+    if (isCurrent(item)) {
+      handleClearCurrent();
+      return;
+    }
+    Keyboard.dismiss();
+    setDeparture(item);
+    showToast('기본 출발지로 설정되었습니다.');
   };
 
   return (
@@ -69,7 +86,7 @@ export default function DepartureSettingScreen() {
                 isFavorite={isFavorite({ buildingCode: departure.building, name: departure.room })}
                 selected
                 showDivider={false}
-                onPress={Keyboard.dismiss}
+                onPress={handleClearCurrent}
                 {...SEARCH_ITEM_ICONS[departure.category]}
               />
             )}
@@ -94,7 +111,7 @@ export default function DepartureSettingScreen() {
       {toastVisible && (
         <AnimatedToast
           key={toastKey}
-          text="기본 출발지로 설정되었습니다."
+          text={toastText}
           variant="success"
           bottomOffset={insets.bottom + 12}
           onHide={() => setToastVisible(false)}

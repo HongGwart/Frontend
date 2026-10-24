@@ -74,6 +74,23 @@ function useCampusFacilities() {
   return useMemo(() => (data?.items ?? NO_FACILITIES).filter(item => item.onCampus), [data]);
 }
 
+/**
+ * 시설 노드 id → 소속 동 코드("R동"). 검색 자동완성은 시설의 소속 건물을 주지 않아서, 이름에 동 표기가 없는
+ * 시설("그라찌에")도 검색 결과에 동·건물명을 붙이려고 쓴다.
+ */
+export function useFacilityBuildingCodes(): ReadonlyMap<number, string> {
+  const facilities = useCampusFacilities();
+  return useMemo(
+    () =>
+      new Map(
+        facilities
+          .filter(item => item.buildingCode)
+          .map(item => [item.legacyNodeId, toBuildingCode(item.buildingCode)] as const),
+      ),
+    [facilities],
+  );
+}
+
 /** 지도·건물 상세에 찍을 편의시설 목록. 지도 칩이 없는 "기타" 시설은 빠진다. */
 export function useFacilityMarkers(): FacilityMarker[] {
   const facilities = useCampusFacilities();
