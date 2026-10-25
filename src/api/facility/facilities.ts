@@ -36,7 +36,7 @@ const NO_FACILITIES: FacilityListItem[] = [];
 /**
  * 서버 시설 분류 코드 → 편의시설 탭 카테고리. 서버는 분류를 enum으로 막지 않아서(지금 쓰는 값: CAFE·CONVENIENCE_STORE·
  * READING_ROOM·PC_ROOM·PRINTER·ETC) 모르는 코드는 "기타"로 모은다. 식당·도서 반납기·흡연 구역은 서버에 아직 등록된
- * 시설이 없어 코드를 추정해 둔 것이다 — 실제 코드가 다르면 여기만 고친다.
+ * 시설이 없어 코드를 추정해 둔 것이다 — 실제 코드가 다르면 여기만 고친다(검색 결과 아이콘도 이 표를 거친다).
  */
 const TAB_CATEGORY_BY_SERVER: Record<string, FacilityCategoryId> = {
   RESTAURANT: 'restaurant',
@@ -48,7 +48,8 @@ const TAB_CATEGORY_BY_SERVER: Record<string, FacilityCategoryId> = {
   BOOK_RETURN: 'bookReturn',
   SMOKING_AREA: 'smokingArea',
 };
-const toTabCategory = (serverCategory: string): FacilityCategoryId => TAB_CATEGORY_BY_SERVER[serverCategory] ?? 'etc';
+export const toTabCategory = (serverCategory: string): FacilityCategoryId =>
+  TAB_CATEGORY_BY_SERVER[serverCategory] ?? 'etc';
 
 /** 편의시설 탭 카테고리 → 지도 칩. "기타"는 지도 칩이 없어 지도에는 안 찍는다. */
 const CHIP_BY_TAB_CATEGORY: Partial<Record<FacilityCategoryId, FacilityMarker['category']>> = {

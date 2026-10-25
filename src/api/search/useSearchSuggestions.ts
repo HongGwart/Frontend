@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { keepPreviousData } from '@tanstack/react-query';
 import { useAutocomplete } from '@api/generated/honggwart';
-import { useFacilityBuildingCodes } from '@api/facility/facilities';
+import { toTabCategory, useFacilityBuildingCodes } from '@api/facility/facilities';
 import type { NodeSuggestionResponse } from '@api/generated/model';
 import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
 import { SearchItemCategory, SearchResultItem } from '@constant/dummySearchData';
+import type { FacilityCategoryId } from '@navigation/types';
 
 const DEBOUNCE_MS = 250;
 const LIMIT = '20'; // 서버 스펙상 string(1~50). 스펙이 integer로 고쳐지면 숫자로 바꾼다.
@@ -18,16 +19,19 @@ const BUILDING_NAME = /^([A-Z]+\d*동)(?:\s+(.+))?$/;
 // 편의시설은 동 표기가 뒤 괄호에 붙어 온다: "열람실(K동)" → 동 코드 "K동" + 이름 "열람실".
 const FACILITY_NAME = /^(.+)\(([A-Z]+\d*동)\)$/;
 
-/** 서버 시설 분류 → 검색 리스트 아이콘. 모르는 분류·일반 장소는 강의실 아이콘. */
-const CATEGORY_BY_SERVER: Record<string, SearchItemCategory> = {
-  RESTAURANT: 'restaurant',
-  CAFE: 'cafe',
-  CONVENIENCE_STORE: 'store',
-  READING_ROOM: 'readingRoom',
-  PC_ROOM: 'pcRoom',
-  PRINTER: 'printer',
-  BOOK_RETURN: 'bookReturn',
-  SMOKING_AREA: 'smokingArea',
+/**
+ * 편의시설 탭 카테고리 → 검색 리스트 아이콘. 서버 분류 코드는 시설 목록과 같은 표(toTabCategory)로 먼저 바꾼다 —
+ * 표가 하나라 서버 코드가 바뀌어도 facilities.ts만 고치면 된다. "기타"·일반 장소는 강의실 아이콘.
+ */
+const SEARCH_CATEGORY_BY_TAB: Partial<Record<FacilityCategoryId, SearchItemCategory>> = {
+  restaurant: 'restaurant',
+  cafe: 'cafe',
+  store: 'store',
+  readingRoom: 'readingRoom',
+  pc: 'pcRoom',
+  printer: 'printer',
+  bookReturn: 'bookReturn',
+  smokingArea: 'smokingArea',
 };
 
 /**
@@ -48,7 +52,7 @@ function toSearchResultItem(
   const isBuilding = suggestion.nodeType === 'SYMBOLIC' || (match && !room);
   const category: SearchItemCategory = isBuilding
     ? 'building'
-    : (CATEGORY_BY_SERVER[suggestion.category ?? ''] ?? 'classroom');
+    : ((suggestion.category ? SEARCH_CATEGORY_BY_TAB[toTabCategory(suggestion.category)] : undefined) ?? 'classroom');
   return {
     id: `node-${suggestion.nodeId}`,
     nodeId: suggestion.nodeId,
