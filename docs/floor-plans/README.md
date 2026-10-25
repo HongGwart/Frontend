@@ -1,6 +1,6 @@
 # 평면도 데이터 작업
 
-Figma에서 내보낸 층 평면도 SVG를 앱 데이터(내부 지도 JSON·배경 SVG, 네이버 지도용 PNG)로 바꾸는 방법.
+Figma에서 내보낸 층 평면도 SVG를 앱 데이터(내부 지도 JSON·배경 SVG, 네이버 지도용 이미지)로 바꾸는 방법.
 
 | 문서 | 내용 |
 |---|---|
@@ -14,8 +14,8 @@ Figma에서 내보낸 층 평면도 SVG를 앱 데이터(내부 지도 JSON·배
 - 원본·산출물: `src/assets/svgs/floors/{층}.svg` → `{층}.json`, `{층}_bg.svg` (`_doors.svg`, `_icons.svg`는 중간 산출물)
 - 층 목록: `src/constant/floorMaps.ts`의 `FLOOR_MAPS` — 층 키는 `{동}_{층}` (지하 `_B1`, R동 로비 `_L`)
 - 지도 기준점: `src/constant/floorPlanReferencePoints.json`(서버 layerId + Figma 기준점 두 개) → `floorPlanAnchors.json`(계산된 네 모서리)
-- 지도용 PNG: `src/assets/floorOverlays/{층}.png` + `src/constant/floorOverlayImages.ts`(자동 생성, 직접 고치지 않음)
-- 확대용 조각: `src/assets/floorOverlays/hires/{층}_{행}_{열}.png` — 지도용 PNG와 같이 구워진다([decisions.md](decisions.md) 2026-10-25)
+- 지도용 이미지: `src/assets/floorOverlays/{층}.webp` (무손실 WebP, [decisions.md](decisions.md) 2026-10-26) + `src/constant/floorOverlayImages.ts`(자동 생성, 직접 고치지 않음)
+- 확대용 조각: `src/assets/floorOverlays/hires/{층}_{행}_{열}.webp` — 지도용 이미지와 같이 구워진다([decisions.md](decisions.md) 2026-10-25)
 - 다른 동 도면에 함께 그려진 층: `src/constant/hostedFloors.json` ([decisions.md](decisions.md))
 
 ## 층을 추가하거나 다시 처리할 때
@@ -33,7 +33,7 @@ Figma에서 내보낸 층 평면도 SVG를 앱 데이터(내부 지도 JSON·배
    node scripts/buildFloorPlanAnchors.js C_8
    ```
    새 층은 먼저 `floorPlanReferencePoints.json`에 `{ layerId, points }`를 넣는다(Figma "평면도 기준점 · API" 프레임의 기준점 1·2). layerId가 서버와 어긋나면 `syncFloorPlanLayers.js`(관리자 키 필요).
-4. **지도용 PNG**:
+4. **지도용 이미지**:
    ```bash
    node scripts/renderFloorOverlay.js C_8
    ```
