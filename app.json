@@ -24,7 +24,9 @@
               "NSIncludesSubdomains": true
             }
           }
-        }
+        },
+        "NSSpeechRecognitionUsageDescription": "음성을 텍스트로 변환하려면 음성 인식 권한이 필요합니다.",
+        "NSMicrophoneUsageDescription": "음성으로 검색하려면 마이크 접근 권한이 필요합니다."
       }
     },
     "android": {
@@ -41,6 +43,9 @@
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "plugins": [
@@ -73,6 +78,12 @@
           "speechRecognitionPermission": "음성을 텍스트로 변환하려면 음성 인식 권한이 필요합니다."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3b0e17ac-29ff-4460-ac80-67bfae308521"
+      }
+    },
+    "owner": "honggwart"
   }
 }
