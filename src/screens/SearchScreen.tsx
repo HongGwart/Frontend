@@ -128,7 +128,7 @@ export default function SearchScreen() {
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
   // 카드를 연 검색 결과. 서버 장소(nodeId)면 장소 상세(층·호실·출입구)를 불러와 카드에 채운다.
   const [selectedItem, setSelectedItem] = useState<SearchResultItem | null>(null);
-  const nodeDetail = useNodeDetail(selectedItem?.nodeId);
+  const { detail: nodeDetail, isLoading: isNodeDetailLoading } = useNodeDetail(selectedItem?.nodeId);
   // 시설 카드의 운영 상태 — 서버 장소 소개(place-info)의 시설 자체 운영 시간. 시설 데이터가 없으면 undefined라
   // 카드는 건물 운영 시간을 쓰거나 그 줄을 뺀다.
   const facilityStatus = useFacilityOperatingStatus(
@@ -319,8 +319,10 @@ export default function SearchScreen() {
               favorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
             />
           )}
-          {/* 시설이 있는 방을 평면도에 칠했으면 그걸로 위치가 보여서 시설 마커는 안 띄운다. 칠할 방을 못 찾았을 때만 마커로 표시. */}
-          {selectedFacility.type === 'category' && !(searchedRoom && searchedRoomAnchors) && (
+          {/* 시설이 있는 방을 평면도에 칠했으면 그걸로 위치가 보여서 시설 마커는 안 띄운다. 칠할 방을 못 찾았을 때만 마커로 표시.
+              시설 이름("열람실")만으로는 방을 몰라 장소 상세(층·호실)가 와야 칠할 방이 정해지니, 그 응답을 기다리는 동안엔
+              마커를 띄우지 않는다 — 안 그러면 마커가 잠깐 떴다가 사라진다. */}
+          {selectedFacility.type === 'category' && !isNodeDetailLoading && !(searchedRoom && searchedRoomAnchors) && (
             <NaverMapCategoryMarker
               latitude={selectedFacility.marker.latitude}
               longitude={selectedFacility.marker.longitude}

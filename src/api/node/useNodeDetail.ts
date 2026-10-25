@@ -55,9 +55,12 @@ function toNodeDetailView(detail: NodeDetailResponse): NodeDetailView {
 /**
  * 장소 상세(GET /api/nodes/{nodeId}) — 층·호실·소속 건물·출입구. nodeId가 없으면(앱 더미 장소) 요청하지
  * 않는다. 실패하면 카드는 더미/검색 결과 값으로 그대로 뜨니 전역 토스트도 띄우지 않는다.
+ * isLoading은 첫 응답을 기다리는 동안만 true다(요청하지 않거나 실패했으면 false) — 상세가 와야 정해지는 표시(시설
+ * 마커를 띄울지 등)를 그동안 미룰 때 쓴다.
  */
 export function useNodeDetail(nodeId: number | undefined) {
   const enabled = nodeId !== undefined;
-  const { data } = useNode(nodeId ?? 0, { query: { enabled, meta: { silent: true } } });
-  return useMemo(() => (enabled && data ? toNodeDetailView(data) : undefined), [enabled, data]);
+  const { data, isLoading } = useNode(nodeId ?? 0, { query: { enabled, meta: { silent: true } } });
+  const detail = useMemo(() => (enabled && data ? toNodeDetailView(data) : undefined), [enabled, data]);
+  return { detail, isLoading };
 }
