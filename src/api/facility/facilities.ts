@@ -67,12 +67,26 @@ const CHIP_BY_TAB_CATEGORY: Partial<Record<FacilityCategoryId, FacilityMarker['c
 const toBuildingCode = (code: string | null) => (code ? `${code}동` : '');
 
 /** 교내 시설 전체. 시설 목록은 자주 안 바뀌어서 10분 동안은 다시 받지 않는다. */
-function useCampusFacilities() {
-  const { data } = useFacilities(undefined, {
-    // 실패해도 지도·편의시설 탭이 빈 상태로 보일 뿐이라 토스트는 띄우지 않는다.
+function useFacilitiesQuery() {
+  return useFacilities(undefined, {
+    // 실패는 화면이 직접 처리한다 — 편의시설 목록은 useFacilitiesStatus로 실패 문구를 띄우고, 지도·검색은 시설
+    // 마커·동 표기만 빠진 채로 쓸 수 있어서 전역 토스트는 띄우지 않는다.
     query: { staleTime: 10 * 60_000, meta: { silent: true } },
   });
+}
+
+function useCampusFacilities() {
+  const { data } = useFacilitiesQuery();
   return useMemo(() => (data?.items ?? NO_FACILITIES).filter(item => item.onCampus), [data]);
+}
+
+/**
+ * 시설 목록을 불러오는 중인지·실패했는지. 목록이 비었을 때 "등록된 시설 없음"과 "아직 못 받음/못 불러옴"을 화면이
+ * 구분하려고 쓴다(같은 쿼리라 요청은 한 번만 간다).
+ */
+export function useFacilitiesStatus() {
+  const { isLoading, isError, error } = useFacilitiesQuery();
+  return { isLoading, isError, error };
 }
 
 /**

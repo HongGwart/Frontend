@@ -16,7 +16,8 @@ import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonPro
 import { useCloseOnHardwareBack } from '@hooks/useCloseOnHardwareBack';
 import { useOperatingStatus } from '@hooks/useOperatingStatus';
 import { FACILITY_CATEGORIES } from '@constant/facilityCategories';
-import { useFacilityPlaces } from '@api/facility/facilities';
+import { useFacilitiesStatus, useFacilityPlaces } from '@api/facility/facilities';
+import { getErrorMessage } from '@api/errors';
 import { FacilityCategoryId, RootStackParamList } from '@navigation/types';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { FavoritePlace } from '@constant/dummyMypage';
@@ -48,7 +49,9 @@ export default function FacilityCategoryListScreen() {
 
   const category = FACILITY_CATEGORIES.find(item => item.id === params.categoryId);
   // 서버 시설 목록(GET /api/facilities). 등록된 시설이 없으면 아래 "등록된 ○○ 정보가 없어요" 빈 상태가 보인다.
+  // 아직 받는 중이면 빈 상태를 띄우지 않고, 못 불러왔으면 "없어요" 대신 실패 문구를 띄운다.
   const places = useFacilityPlaces(params.categoryId);
+  const facilitiesStatus = useFacilitiesStatus();
 
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(마이페이지/지도/길찾기와 같은 상태).
   const { isFavorite, toggleFavorite: togglePlaceFavorite } = useFavorites();
@@ -57,6 +60,8 @@ export default function FacilityCategoryListScreen() {
     buildingName: place.buildingName,
     name: place.name,
     category: MARKER_ICON_BY_CATEGORY[params.categoryId],
+    latitude: place.latitude,
+    longitude: place.longitude,
     nodeId: place.nodeId,
   });
   const routeButtonProps = useRouteButtonProps();
@@ -156,9 +161,13 @@ export default function FacilityCategoryListScreen() {
             />
           ))}
         </ScrollView>
-      ) : (
+      ) : facilitiesStatus.isLoading ? null : (
         <EmptyState>
-          <EmptyText>등록된 {category?.label ?? '편의시설'} 정보가 없어요</EmptyText>
+          <EmptyText>
+            {facilitiesStatus.isError
+              ? getErrorMessage(facilitiesStatus.error, '편의시설 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.')
+              : `등록된 ${category?.label ?? '편의시설'} 정보가 없어요`}
+          </EmptyText>
         </EmptyState>
       )}
     </Container>
