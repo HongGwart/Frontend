@@ -32,6 +32,7 @@ export const favoriteFromListItem = (item: FacilityListSheetItem): FavoriteInput
   buildingCode: item.building,
   buildingName: item.place,
   name: item.room,
+  nodeId: item.nodeId,
 });
 
 /** 마이페이지/즐겨찾기 목록에서 지도로 넘어온 시설 */
@@ -39,4 +40,5 @@ export const favoriteFromFocusParam = (facility: FocusFacilityParam): FavoriteIn
   buildingCode: facility.buildingCode,
   buildingName: facility.buildingName,
   name: facility.placeName,
+  nodeId: facility.nodeId,
 });

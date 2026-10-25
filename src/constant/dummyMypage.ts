@@ -35,6 +35,7 @@ export function favoritePlaceToFocusParam(place: FavoritePlace): FocusFacilityPa
     buildingName: place.buildingName,
     facilityName: place.name ?? `${place.buildingCode} ${place.buildingName}`,
     placeName: place.name,
+    nodeId: place.nodeId,
   };
 }
 

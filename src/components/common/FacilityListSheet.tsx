@@ -28,6 +28,8 @@ export interface FacilityListSheetItem {
   images?: [PhotoSource, PhotoSource];
   /** 사진이 없을 때 사진 자리에 넣을 기본 이미지 아이콘(FacilityListItem) */
   placeholderIcon?: React.FC<SvgProps>;
+  /** 서버 노드 id. 있으면 길찾기가 이름 검색 없이 이 노드로 바로 간다(동 표기 없는 시설 이름은 검색으로 못 찾는다) */
+  nodeId?: number;
 }
 
 interface Props {

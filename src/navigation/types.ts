@@ -12,6 +12,8 @@ export interface FocusFacilityParam {
   facilityName: string;
   /** 즐겨찾기 장소 키를 만들 시설/호실 이름. 건물 자체면 생략(facilityName엔 "R동 홍문관"처럼 표시용 이름이 들어간다) */
   placeName?: string;
+  /** 서버 노드 id. 있으면 카드의 길찾기가 이름 검색 없이 이 노드로 바로 간다 */
+  nodeId?: number;
 }
 
 /**

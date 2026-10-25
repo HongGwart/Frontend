@@ -191,6 +191,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
       description: marker.description,
       isFavorite: isFavorite(favoriteFromCategoryMarker(marker)),
       images: marker.images,
+      nodeId: marker.nodeId,
     }),
     [isFavorite],
   );
@@ -575,7 +576,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
                   selectedFacility.facility.buildingName,
                   selectedFacility.facility.facilityName,
                 ),
-                undefined,
+                selectedFacility.facility.nodeId,
                 { buildingCode: selectedFacility.facility.buildingCode, room: selectedFacility.facility.placeName },
               )}
               onViewInsidePress={() =>
@@ -599,7 +600,7 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
               placeholderIcon={selectedFacility.item.icon}
               {...routeButtonProps(
                 toRoutePlaceLabel(selectedFacility.item.building, selectedFacility.item.place, selectedFacility.item.room),
-                undefined,
+                selectedFacility.item.nodeId,
                 { buildingCode: selectedFacility.item.building, room: selectedFacility.item.room },
               )}
               onViewInsidePress={() => openBuildingIndoorOf(selectedFacility.item.building, selectedFacility.item.place)}
