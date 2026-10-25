@@ -1,0 +1,81 @@
+import React, { useMemo } from 'react';
+import { ScrollView } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import styled from 'styled-components/native';
+import Header from '@components/layout/Header';
+import { FavoritePlaceCard } from '@components/mypage/FavoritePlaceCard';
+import { useFavorites } from '@hooks/useFavorites';
+import { FavoritePlace, favoritePlaceToFocusParam } from '@constant/dummyMypage';
+import { toFavoritePlace } from '@constant/favoriteCards';
+import { RootStackParamList } from '@navigation/types';
+import { findHongdaePlaceByKey } from '@constant/hongdaePlaces';
+
+// 마이페이지 "즐겨찾기" 섹션의 "더보기"를 누르면 오는 전체 목록 화면(Figma "마이페이지_즐겨찾기 목록").
+// 탭 바 없이 전체화면으로 뜨고, 상단은 공통 Header(뒤로가기 + "즐겨찾기"), 본문은 마이페이지와
+// 같은 FavoritePlaceCard 리스트다. 새로 만든 컴포넌트는 없다.
+export default function FavoriteListScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
+  // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(FavoritesProvider). 여기서 별을 끄면 목록에서 빠진다.
+  const { favorites: storedFavorites, removeFavorite } = useFavorites();
+  const favorites = useMemo(() => storedFavorites.map(toFavoritePlace), [storedFavorites]);
+
+  const openFacilityOnMap = (place: FavoritePlace) => {
+    // 주변상권 장소는 캠퍼스 지도가 아니라 주변상권 탭의 상세로 연다.
+    const hongdaePlace = findHongdaePlaceByKey(place.id);
+    if (hongdaePlace) {
+      navigation.popTo('MainTabs', { screen: 'hongdae', params: { focusPlaceId: hongdaePlace.id } });
+      return;
+    }
+    // navigate는 새 MainTabs를 위에 쌓으므로(React Navigation 7), 이미 있는 MainTabs로 되돌아간다.
+    navigation.popTo('MainTabs', {
+      screen: 'map',
+      params: { focusFacility: favoritePlaceToFocusParam(place) },
+    });
+  };
+
+  return (
+    <Container edges={['top']}>
+      <Header title="즐겨찾기" onBackPress={() => navigation.goBack()} />
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: insets.bottom + 8 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {favorites.length === 0 && <EmptyText>즐겨찾기한 장소가 없어요</EmptyText>}
+        {favorites.map((item, index) => (
+          <FavoritePlaceCard
+            key={item.id}
+            name={item.name}
+            buildingCode={item.buildingCode}
+            buildingName={item.buildingName}
+            locationDetail={item.locationDetail}
+            photo={item.photo}
+            icon={item.icon}
+            iconWidth={item.iconWidth}
+            iconHeight={item.iconHeight}
+            operatingHours={item.operatingHours}
+            isFavorite
+            onToggleFavorite={() => removeFavorite(item.id)}
+            onPress={() => openFacilityOnMap(item)}
+            showDivider={index !== favorites.length - 1}
+          />
+        ))}
+      </ScrollView>
+    </Container>
+  );
+}
+
+const Container = styled(SafeAreaView)`
+  flex: 1;
+  background-color: ${({ theme }) => theme.semantic.background.primary};
+`;
+
+const EmptyText = styled.Text`
+  padding: 48px 20px;
+  text-align: center;
+  font-family: ${({ theme }) => theme.typography.labelNormal.semiBold.fontFamily};
+  font-size: ${({ theme }) => theme.typography.labelNormal.semiBold.fontSize}px;
+  color: ${({ theme }) => theme.semantic.text.tertiary};
+`;

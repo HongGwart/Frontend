@@ -1,0 +1,173 @@
+{
+  "floorId": "L_4",
+  "width": 1920,
+  "height": 1235,
+  "contentBounds": {
+    "minX": 586,
+    "minY": 281,
+    "width": 761,
+    "height": 716
+  },
+  "rooms": [
+    {
+      "id": "401",
+      "placeId": null,
+      "points": [
+        [
+          588,
+          283
+        ],
+        [
+          814,
+          283
+        ],
+        [
+          814,
+          566
+        ],
+        [
+          588,
+          566
+        ]
+      ],
+      "path": "M588,283 L814,283 L814,566 L588,566 Z"
+    },
+    {
+      "id": "401-1",
+      "placeId": null,
+      "points": [
+        [
+          867,
+          283
+        ],
+        [
+          1039,
+          283
+        ],
+        [
+          1039,
+          517
+        ],
+        [
+          867,
+          517
+        ]
+      ],
+      "path": "M867,283 L1039,283 L1039,517 L867,517 Z"
+    },
+    {
+      "id": "J002",
+      "placeId": null,
+      "points": [
+        [
+          886,
+          798
+        ],
+        [
+          1171,
+          798
+        ],
+        [
+          1171,
+          994
+        ],
+        [
+          886,
+          994
+        ]
+      ],
+      "path": "M886,798 L1171,798 L1171,994 L886,994 Z"
+    }
+  ],
+  "icons": [
+    {
+      "id": "map_elevator",
+      "type": "elevator",
+      "center": [
+        1063,
+        423
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_elevator_2",
+      "type": "elevator",
+      "center": [
+        1063,
+        475
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_elevator_3",
+      "type": "elevator",
+      "center": [
+        959,
+        768
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_stairs",
+      "type": "stairs",
+      "center": [
+        1222,
+        472
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_stairs_2",
+      "type": "stairs",
+      "center": [
+        1310,
+        542
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_stairs_3",
+      "type": "stairs",
+      "center": [
+        1310,
+        650
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_stairs_4",
+      "type": "stairs",
+      "center": [
+        1216,
+        712
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_stairs_5",
+      "type": "stairs",
+      "center": [
+        950,
+        712
+      ],
+      "size": 32
+    }
+  ],
+  "doors": [
+    {
+      "m": [0, -1, -1, 0, 1171, 598]
+    },
+    {
+      "m": [0, -1, -1, 0, 1171, 399]
+    },
+    {
+      "m": [0, -1, -1, 0, 814, 517]
+    },
+    {
+      "m": [0, 1, -1, 0, 814, 549]
+    },
+    {
+      "m": [0, 1, -1, 0, 1171, 670]
+    }
+  ]
+}

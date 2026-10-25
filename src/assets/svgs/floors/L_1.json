@@ -1,0 +1,51 @@
+{
+  "floorId": "L_1",
+  "width": 1920,
+  "height": 1235,
+  "contentBounds": {
+    "minX": 601,
+    "minY": 209,
+    "width": 696,
+    "height": 729
+  },
+  "rooms": [],
+  "icons": [
+    {
+      "id": "map_stairs",
+      "type": "stairs",
+      "center": [
+        638,
+        255
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_elevator",
+      "type": "elevator",
+      "center": [
+        737,
+        790
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_elevator_2",
+      "type": "elevator",
+      "center": [
+        737,
+        842
+      ],
+      "size": 32
+    },
+    {
+      "id": "map_stairs_2",
+      "type": "stairs",
+      "center": [
+        1172,
+        710
+      ],
+      "size": 32
+    }
+  ],
+  "doors": []
+}

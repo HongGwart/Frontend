@@ -1,0 +1,108 @@
+#!/usr/bin/env node
+/**
+ *
+ * 층 하나를 통째로 처리하는 오케스트레이터. 아래 단계를 순서대로 돌려서, 원본 SVG 한 장으로
+ * IndoorMapView에 바로 꽂을 수 있는 산출물(_bg.svg / .json)을 한 번에 만든다.
+ * (_doors.svg / _icons.svg는 중간 산출물 — 앱은 JSON의 문·아이콘 좌표로 공용 도형을 그린다.)
+ *
+ *   1. splitVisualLayers.js  - 배경/문/아이콘 SVG 3개로 분리
+ *   2. svgToRoomShapes.js    - Hitbox 레이어로 방 좌표 JSON 생성
+ *   3. stripLabelPaths.js    - 배경 SVG에서 박혀있는 방 번호·방 이름 라벨 제거 (RoomLabelsLayer가 대신 그림)
+ *   4. svgToIcons.js         - 같은 JSON에 아이콘 좌표 병합
+ *   5. svgToDoors.js         - 같은 JSON에 문 위치·방향 병합
+ *   6. auditFloors.js        - 이 층 데이터 검사(번호 오타·다른 층 히트박스 복사·글자 겹침 등). 경고만 내고 멈추지 않는다
+ *
+ * 사용법:
+ *   node scripts/processFloor.js <입력.svg> [출력 디렉토리] [--allow-empty]
+ * 출력 디렉토리를 생략하면 입력 파일과 같은 폴더에 만든다.
+ * --allow-empty: 강의실이 없어 Hitbox 레이어가 없는 층(예: R_16)에만 붙인다 (svgToRoomShapes.js 참고).
+ *
+ * 원본 SVG가 지켜야 하는 네이밍 규칙 (각 스크립트 상단 주석에 더 자세히):
+ *   - 배경/방/문/아이콘을 전부 담는 최상위 그룹: id="Visual"
+ *   - 방 탭/하이라이트 영역: Visual과 나란한 최상위 그룹 id="Hitbox" 안에 방마다 id="room_방이름" 도형
+ *     (이 레이어가 없으면 아무 파일도 건드리지 않고 멈춘다)
+ *   - 방 번호 라벨: id="103", id="102-1" 같은 숫자(-숫자) <path>
+ *   - 문: id="door", "door_2", "door_3"...
+ *   - 계단/엘리베이터: id="map_elevator", "map_stairs", "map_stairs_2"...
+ *
+ * 실행 로그에 [경고]가 뜨면 원본 SVG의 레이어 이름이 규칙과 안 맞는 부분이 있다는 뜻이니
+ * Figma에서 레이어명을 고치고 다시 export하는 게 제일 확실하다.
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { execFileSync } = require('child_process');
+
+const SCRIPTS_DIR = __dirname;
+
+function run(scriptName, args) {
+  console.log(`\n▶ ${scriptName} ${args.map((a) => `"${a}"`).join(' ')}`);
+  execFileSync('node', [path.join(SCRIPTS_DIR, scriptName), ...args], { stdio: 'inherit' });
+}
+
+function main() {
+  const args = process.argv.slice(2);
+  const allowEmpty = args.includes('--allow-empty');
+  const [inputPath, outDirArg] = args.filter((arg) => !arg.startsWith('--'));
+  if (!inputPath) {
+    console.error('사용법: node scripts/processFloor.js <입력.svg> [출력 디렉토리] [--allow-empty]');
+    process.exit(1);
+  }
+  if (!fs.existsSync(inputPath)) {
+    console.error(`[에러] 입력 파일을 찾을 수 없습니다: ${inputPath}`);
+    process.exit(1);
+  }
+
+  // 방 도형은 Hitbox 레이어로만 만든다. 없는 파일로 돌리면 배경/문 SVG만 새로 쓰고 JSON 단계에서
+  // 실패해 층이 반쯤 바뀐 채로 남으니, 아무것도 건드리기 전에 먼저 막는다.
+  if (!allowEmpty && !/<g id="Hitbox"[\s>]/.test(fs.readFileSync(inputPath, 'utf8'))) {
+    console.error(`[에러] ${inputPath}에 Hitbox 레이어가 없어 처리하지 않습니다. Figma에서 Hitbox를 추가해 다시 export하세요.`);
+    process.exit(1);
+  }
+
+  const base = path.basename(inputPath, path.extname(inputPath));
+  const inputDir = path.dirname(inputPath);
+  const outDir = outDirArg || inputDir;
+  fs.mkdirSync(outDir, { recursive: true });
+
+  // splitVisualLayers.js는 항상 입력 파일과 같은 폴더에 <base>_bg.svg 등으로 만든다.
+  // outDir이 입력 폴더와 다르면 만든 뒤에 옮긴다.
+  run('splitVisualLayers.js', [inputPath]);
+
+  const moved = {};
+  for (const key of ['bg', 'doors', 'icons']) {
+    const producedPath = path.join(inputDir, `${base}_${key}.svg`);
+    const finalPath = path.join(outDir, `${base}_${key}.svg`);
+    if (producedPath !== finalPath) {
+      fs.renameSync(producedPath, finalPath);
+    }
+    moved[key] = finalPath;
+  }
+
+  const jsonPath = path.join(outDir, `${base}.json`);
+
+  // 방 좌표는 원본(문/아이콘까지 다 있는) SVG에서 뽑아야 방 순서·이름 인식이 안정적이다.
+  run('svgToRoomShapes.js', [inputPath, jsonPath, ...(allowEmpty ? ['--allow-empty'] : [])]);
+  // 방 이름을 알아야 "계단 세미나실"처럼 글자로 된 이름 라벨도 지울 수 있어서 방 JSON을 만든 뒤에 돌린다.
+  run('stripLabelPaths.js', [moved.bg, `--rooms=${jsonPath}`]);
+  run('svgToIcons.js', [moved.icons, jsonPath]);
+  run('svgToDoors.js', [moved.doors, jsonPath]);
+
+  const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  console.log(`\n✓ "${base}" 층 처리 완료`);
+  console.log(`  배경: ${moved.bg}`);
+  console.log(`  문:   ${moved.doors}`);
+  console.log(`  아이콘: ${moved.icons}`);
+  console.log(
+    `  데이터: ${jsonPath} (방 ${data.rooms.length}개, 아이콘 ${(data.icons ?? []).length}개, 문 ${(data.doors ?? []).length}개)`
+  );
+  console.log(
+    `\n위 로그에 [경고]가 하나도 없었는지, rooms/icons 개수가 실제 도면 개수와 맞는지 확인하세요.`
+  );
+
+  // 다른 층 히트박스 복사, 번호 오타, 글자 겹침 같은 데이터 오류를 바로 알 수 있게 이 층을 검사한다.
+  // 검사는 원본 SVG와 같은 폴더의 JSON·배경을 읽으므로 출력 폴더를 따로 준 경우엔 건너뛴다.
+  if (outDir === inputDir) run('auditFloors.js', [inputPath]);
+}
+
+main();

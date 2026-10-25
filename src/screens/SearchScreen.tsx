@@ -1,0 +1,589 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Keyboard, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import styled from 'styled-components/native';
+import Animated from 'react-native-reanimated';
+import { NaverMapView, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
+import { useFacilityCardCameraFocus } from '@hooks/useFacilityCardCameraFocus';
+import { useBuildingDetailSwipeUp } from '@hooks/useBuildingDetailSwipeUp';
+import { useCloseWhenCovered } from '@hooks/useCloseWhenCovered';
+import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
+import { CAMPUS_EXTENT, MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
+import { findRoomFloor } from '@constant/floorMaps';
+import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
+import { useSettledMapViewport } from '@hooks/map/useSettledMapViewport';
+import { useFloorGeoAnchors } from '@api/floorPlan/useFloorGeoAnchors';
+import { createFloorToGeo, getContentBounds } from '@utils/floorGeoTransform';
+import { SearchBar } from '@components/common/SearchBar';
+import { SearchPageHeader } from '@components/common/SearchPageHeader';
+import { SearchListItem } from '@components/common/SearchListItem';
+import { SearchEmptyResult } from '@components/common/SearchEmptyResult';
+import { CategoryChipList } from '@components/common/CategoryChipList';
+import { FacilityInfoCard } from '@components/common/FacilityInfoCard';
+import {
+  DismissibleBottomSheet,
+  DismissibleBottomSheetRef,
+} from '@components/common/DismissibleBottomSheet';
+import { BuildingDetailBody, BuildingDetailHeader } from '@components/common/BuildingDetailContent';
+import NavigationBar from '@components/layout/NavigationBar';
+import { NaverMapMarker } from '@components/map/NaverMapMarker';
+import { NaverMapCategoryMarker } from '@components/map/NaverMapCategoryMarker';
+import { useVoiceSearch } from '@hooks/useVoiceSearch';
+import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
+import { useNodeDetail } from '@api/node/useNodeDetail';
+import { useBuildingDetail } from '@api/building/useBuildingDetail';
+import { CategoryKey } from '@constant/categoryChips';
+import { CATEGORY_MARKER_ICONS } from '@constant/categoryMarkerIcons';
+import { CAMPUS_BUILDINGS, CampusBuilding } from '@constant/campusBuildings';
+import { FacilityMarker, useFacilityMarkers, useFacilityOperatingStatus } from '@api/facility/facilities';
+import {
+  SEARCH_ITEM_ICONS,
+  SearchResultItem,
+} from '@constant/dummySearchData';
+import { RootStackParamList } from '@navigation/types';
+import { formatSearchedDate, useRecentSearches } from '@hooks/useRecentSearches';
+import { useFavorites } from '@hooks/useFavorites';
+import { favoriteFromCategoryMarker, favoriteFromDongMarker } from '@constant/favoriteInputs';
+import { VoicePermissionDialog } from '@components/common/VoicePermissionDialog';
+import { AnimatedToast } from '@components/mypage/AnimatedToast';
+
+// 지도 화면(MapScreen)과 동일한 형태. 검색 뷰 안에서 지도를 띄울 때도 마커를 직접
+// 탭한 것과 같은 방식으로 시설 정보 바텀시트를 채운다.
+type SelectedFacility =
+  | { type: 'dong'; marker: CampusBuilding }
+  | { type: 'category'; marker: FacilityMarker };
+
+// 검색 결과 항목(건물/호실)에 대응하는 지도 더미 마커를 찾는다.
+// 지도/검색 더미 데이터가 각각 따로 채워져 있어 건물 코드나 호실명이 정확히
+// 일치하지 않는 경우가 많다(예: "S동 학생회관 식당" vs 지도의 "G동 학생회관 학생 식당").
+// 정확히 일치하는 카테고리(시설) 마커가 없으면, 같은 건물의 동 마커로라도 폴백해서
+// 어떤 검색 결과를 눌러도 최소한 카드는 뜨도록 한다.
+// 지도 모드 검색창은 보여주기만 하므로 아무 동작 없는 핸들러를 넘긴다(onPress가 있어야 입력 불가 상태로 그려진다).
+const noop = () => {};
+
+// 검색한 호실로 카메라를 옮길 때의 줌(평면도와 호실 번호가 보일 만큼).
+const SEARCHED_ROOM_ZOOM = 19;
+
+function findFacilityForSearchItem(item: SearchResultItem, facilityMarkers: FacilityMarker[]): SelectedFacility | null {
+  if (item.category === 'building') {
+    const marker = CAMPUS_BUILDINGS.find(m => m.label === item.building);
+    return marker ? { type: 'dong', marker } : null;
+  }
+  // 시설은 서버 노드로 먼저 맞추고(검색 이름 "열람실"과 시설 이름 "열람실(K동)"이 다를 수 있다), 없으면 동 + 이름으로.
+  const categoryMarker =
+    facilityMarkers.find(m => item.nodeId !== undefined && m.nodeId === item.nodeId) ??
+    facilityMarkers.find(m => m.buildingCode === item.building && m.room === item.room);
+  if (categoryMarker) return { type: 'category', marker: categoryMarker };
+
+  const dongMarker = CAMPUS_BUILDINGS.find(m => m.label === item.building);
+  return dongMarker ? { type: 'dong', marker: dongMarker } : null;
+}
+
+// react-navigation 스택 화면으로 등록되기 전까지는 App.tsx가 이 값을 들고 있었는데,
+// 다른 화면에서 쓰지 않아서 스택 전환으로 옮기며 그냥 이 화면 로컬 상태로 내렸다.
+export default function SearchScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [value, setValue] = useState('');
+  // 마이크 버튼 -> 듣기 시작 -> 인식된 텍스트로 검색창 내용을 그대로 갱신(중간 결과 포함).
+  // expo-speech-recognition은 네이티브 모듈이라 Expo Go가 아니라 dev-client 빌드에서만 동작한다.
+  // 마이크 권한은 버튼을 누를 때 앱 안 안내(VoicePermissionDialog) → 시스템 팝업 순서로 묻는다. 거부해도
+  // 글자 검색은 그대로 쓸 수 있게 토스트로 안내만 한다.
+  const [voiceDeniedToastKey, setVoiceDeniedToastKey] = useState(0);
+  const { isListening, toggleListening, permissionPrompt, confirmPermissionPrompt, dismissPermissionPrompt } =
+    useVoiceSearch({ onResult: setValue, onUnavailable: () => setVoiceDeniedToastKey(key => key + 1) });
+
+  // "최근 검색한 장소"는 기기 로컬(AsyncStorage)에 저장된다. 검색 결과나 최근 검색어를 탭해 찾아간 장소가 맨 위에 쌓인다.
+  const { recentSearches, addRecentSearch, removeRecentSearch } = useRecentSearches();
+  // 즐겨찾기 별은 기기 로컬에 저장된 앱 전역 상태로 표시한다(지도/마이페이지와 같은 상태).
+  const { isFavorite, toggleFavorite } = useFavorites();
+  // 편의시설 마커(서버 시설 목록) — 검색 결과가 편의시설이면 그 마커 카드로 연다.
+  const facilityMarkers = useFacilityMarkers();
+  const openSearchItem = (item: SearchResultItem) => {
+    addRecentSearch(item);
+    // 검색창에 친 글자("R") 대신 고른 장소의 서버 표시 이름("R동 313호", "열람실(K동)")을 넣는다. 카드를 닫으면
+    // 그 장소가 다시 검색 결과로 보인다. 표시 이름이 없는 항목(최근 검색 옛 기록)은 동 + 호실로 맞춘다.
+    setValue(item.displayName ?? (item.building ? [item.building, item.room].filter(Boolean).join(' ') : item.place));
+    setSelectedItem(item);
+    const facility = findFacilityForSearchItem(item, facilityMarkers);
+    if (facility) setSelectedFacility(facility);
+  };
+
+  const trimmedValue = value.trim();
+  // 서버 검색(자동완성 API) + 아직 서버에 없는 앱 더미 장소. 실패하면 더미 결과로 대신한다.
+  const {
+    results: searchResults,
+    isSearching: isFetchingResults,
+    isError: searchFailed,
+  } = useSearchSuggestions(value);
+
+  // 검색어가 없으면 최근 검색어를, 있으면 검색 결과를 보여준다.
+  const isSearching = trimmedValue.length > 0;
+
+  // 검색 결과를 탭하면 다른 화면으로 이동하지 않고, 검색 뷰 안의 리스트(흰 배경)를
+  // 네이버 지도로 바꿔치기한 뒤 그 위에 시설 정보 카드를 띄운다.
+  const bottomSheetRef = useRef<DismissibleBottomSheetRef>(null);
+  const mapViewRef = useRef<NaverMapViewRef>(null);
+  const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
+  // 카드를 연 검색 결과. 서버 장소(nodeId)면 장소 상세(층·호실·출입구)를 불러와 카드에 채운다.
+  const [selectedItem, setSelectedItem] = useState<SearchResultItem | null>(null);
+  const { detail: nodeDetail, isLoading: isNodeDetailLoading } = useNodeDetail(selectedItem?.nodeId);
+  // 시설 카드의 운영 상태 — 서버 장소 소개(place-info)의 시설 자체 운영 시간. 시설 데이터가 없으면 undefined라
+  // 카드는 건물 운영 시간을 쓰거나 그 줄을 뺀다.
+  const facilityStatus = useFacilityOperatingStatus(
+    selectedFacility?.type === 'category'
+      ? selectedFacility.marker.nodeId
+      : selectedItem && selectedItem.category !== 'building'
+        ? selectedItem.nodeId
+        : undefined,
+  );
+  const closeFacilityCard = useCallback(() => {
+    setSelectedFacility(null);
+    setSelectedItem(null);
+  }, []);
+  // "R5 강의실 끝 여자화장실"처럼 이름에 동 코드가 없는 서버 장소는 검색 결과만으로 건물을 몰라서 카드를 못
+  // 띄운다. 장소 상세의 소속 건물(parent)이 오면 그 건물 마커 위치에 카드를 띄운다.
+  useEffect(() => {
+    if (selectedFacility || !selectedItem?.nodeId || !nodeDetail?.buildingCode) return;
+    const marker = CAMPUS_BUILDINGS.find(m => m.label === nodeDetail.buildingCode);
+    if (marker) setSelectedFacility({ type: 'dong', marker });
+  }, [selectedFacility, selectedItem, nodeDetail]);
+  // 동 마커 위에 띄우되 건물이 아니라 그 안의 호실/시설 카드로 보여줄 장소(건물 자체 검색은 제외) — 서버 장소,
+  // 또는 "C동 816호"처럼 호실 번호가 있는 앱 더미 장소(지도 마커가 따로 없어서 동 마커로 열린다).
+  const placeItem =
+    selectedFacility?.type === 'dong' &&
+    selectedItem &&
+    (selectedItem.nodeId !== undefined || selectedItem.room !== undefined) &&
+    selectedItem.category !== 'building' &&
+    !nodeDetail?.isBuilding
+      ? selectedItem
+      : null;
+  // 건물 자체를 서버 검색 결과로 골랐으면 그 노드(출입구 정보·길찾기 출발/도착에 쓴다).
+  const buildingNodeId = selectedItem?.category === 'building' ? selectedItem.nodeId : undefined;
+  // 건물 카드 정보(설명·사진·운영 시간·주 출입구) — 확인된 건물 정보 + 서버 장소 상세의 출입구.
+  const dongDetail = useBuildingDetail(selectedFacility?.type === 'dong' ? selectedFacility.marker.label : undefined);
+
+  // 호실을 골랐으면 그 호실이 있는 층 평면도를 지도에 깔고 호실을 칠한다. 층은 서버 장소 상세에 있으면 그 층을
+  // 먼저 보고, 없으면(앱 더미 장소) 건물의 평면도들에서 같은 번호의 방을 찾는다.
+  const searchedRoom = useMemo(() => {
+    if (!selectedItem || selectedItem.category === 'building' || nodeDetail?.isBuilding) return null;
+    const buildingCode = nodeDetail?.buildingCode ?? selectedItem.building;
+    const roomNumber = nodeDetail?.roomNumber ?? selectedItem.room;
+    if (!buildingCode || !roomNumber) return null;
+    return findRoomFloor(buildingCode, roomNumber, nodeDetail?.floorId);
+  }, [selectedItem, nodeDetail]);
+  const searchedRoomAnchors = useFloorGeoAnchors(searchedRoom?.floorId);
+  // 확대했을 때 평면도를 선명한 조각으로 바꿔 얹으려고 카메라가 멈춘 위치를 기억한다.
+  const { viewport: mapViewport, handleCameraIdle } = useSettledMapViewport();
+  // 카메라를 옮길 호실 중심(호실 도형 꼭짓점들의 평균). 칠하기는 FloorPlanOverlay가 한다.
+  const searchedRoomCenter = useMemo(() => {
+    if (!searchedRoom || !searchedRoomAnchors) return null;
+    const toGeo = createFloorToGeo(getContentBounds(searchedRoom.data), searchedRoomAnchors);
+    const points = searchedRoom.rooms.flatMap(room => room.points.map(([x, y]) => toGeo(x, y)));
+    return {
+      latitude: points.reduce((sum, point) => sum + point.latitude, 0) / points.length,
+      longitude: points.reduce((sum, point) => sum + point.longitude, 0) / points.length,
+      zoom: SEARCHED_ROOM_ZOOM,
+    };
+  }, [searchedRoom, searchedRoomAnchors]);
+  // "건물 내부 보기"로 넘어가면 내부 지도 화면이 이 화면을 완전히 덮은 뒤 카드를 조용히 닫는다(MapScreen과 같음).
+  const closeCardWhenCovered = useCloseWhenCovered(navigation, closeFacilityCard);
+  // 카드의 출발/도착 → 길찾기 탭으로 가서 입력창을 채운다(검색 화면은 스택에서 빠지며 같이 닫힌다).
+  const routeButtonProps = useRouteButtonProps();
+
+  // 마커가 시설 카드에 가리지 않도록, 검색창+카테고리 칩 아래쪽 끝과 시설 카드 위쪽 끝
+  // 사이의 세로 중앙에 마커가 오도록 카메라를 옮긴다(MapScreen과 공유하는 훅).
+  const { cardHeight, handleChipsAreaLayout: handleTopOverlayLayout, handleFacilityCardLayout } =
+    useFacilityCardCameraFocus(mapViewRef, searchedRoomCenter ?? selectedFacility?.marker ?? null);
+  // 지도 모드 상단 카테고리 칩. 실제 마커 필터링과의 연결 없이 Figma와 동일한 UI만 우선 갖춘다.
+  const [selectedKey, setSelectedKey] = useState<CategoryKey | null>(null);
+  const insets = useSafeAreaInsets();
+
+  // 건물 카드를 위로 슬라이드하면 그 건물의 상세보기로 넘어간다. MapScreen과 동일한
+  // 인터랙션 — 애니메이션 묶음은 훅으로 공유하고, buildingCode를 뽑아내는 부분만 여기 남겨둔다.
+  // 시설(category) 카드는 건물 상세가 그 시설의 정보가 아니라서 올려도 열지 않는다.
+  const swipeUpBuildingCode = useMemo(
+    () => (selectedFacility?.type === 'dong' ? (selectedFacility.marker.label ?? null) : null),
+    [selectedFacility],
+  );
+
+  const handleSwipeUp = useCallback(() => {
+    if (!swipeUpBuildingCode) return;
+    navigation.navigate('BuildingDetail', { buildingCode: swipeUpBuildingCode });
+    // animateClose와 마찬가지로 슬라이드업 애니메이션이 끝난 뒤 호출되므로 여기서 바로
+    // 닫아도 끊겨 보이지 않는다.
+    closeFacilityCard();
+  }, [swipeUpBuildingCode, navigation, closeFacilityCard]);
+
+  const {
+    swipeCardTranslateY,
+    detailHeaderStyle,
+    detailBodyStyle,
+    cardFadeStyle,
+    minSwipeUpDistance,
+  } = useBuildingDetailSwipeUp(swipeUpBuildingCode, selectedFacility);
+
+  // 서버 검색으로 고른 호실/시설 카드. 호실 번호가 있으면 강의실 카드(room), 화장실처럼 번호가 없으면
+  // 시설 카드(facility)로 보여주고, 위치(층)는 장소 상세에서 채운다. 지도 위치·건물 정보는 소속 동 마커 것을 쓴다.
+  const renderPlaceCard = (marker: CampusBuilding, item: SearchResultItem) => {
+    const buildingCode = marker.label ?? '';
+    const roomNumber = item.room ?? nodeDetail?.roomNumber;
+    const name = roomNumber ?? nodeDetail?.displayName ?? item.place;
+    const favorite = {
+      buildingCode,
+      buildingName: marker.buildingName,
+      name,
+      category: item.category,
+      latitude: marker.latitude,
+      longitude: marker.longitude,
+      nodeId: item.nodeId,
+    };
+    const common = {
+      buildingCode,
+      buildingName: marker.buildingName,
+      isFavorite: isFavorite(favorite),
+      onToggleFavorite: () => toggleFavorite(favorite),
+      ...routeButtonProps(toRoutePlaceLabel(buildingCode, marker.buildingName, name), item.nodeId),
+      // 시설 자체 운영 시간(place-info)이 있으면 그걸, 없으면(호실 등) 그 건물의 운영 시간을 쓴다.
+      operatingHours: facilityStatus ?? dongDetail.operatingHours,
+    };
+    if (roomNumber) {
+      return (
+        <FacilityInfoCard
+          variant="room"
+          roomNumber={roomNumber}
+          description={nodeDetail?.floorText ?? marker.description}
+          {...common}
+        />
+      );
+    }
+    return (
+      <FacilityInfoCard
+        variant="facility"
+        facilityName={name}
+        locationDetail={nodeDetail?.floorText}
+        {...common}
+        onViewInsidePress={() => {
+          closeCardWhenCovered();
+          navigation.navigate('BuildingIndoor', {
+            buildingCode,
+            buildingName: marker.buildingName,
+            description: marker.description,
+            fromCardHeight: cardHeight,
+          });
+        }}
+      />
+    );
+  };
+
+  if (selectedFacility) {
+    // MapScreen과 동일하게, 지도는 상태바 아래까지 풀블리드로 채우고 검색창/칩만
+    // SafeAreaView로 안전영역만큼 내려서 얹는다.
+    return (
+      <View style={styles.container}>
+        <NaverMapView
+          // 서비스에서 현재 위치를 제공하지 않으므로 현위치 버튼(위치 권한 요청 경로)을 끈다.
+          isShowLocationButton={false}
+          // 안드로이드 네이버 지도는 +/- 줌 버튼을 기본으로 띄운다(디자인에 없음). 핀치 줌으로 충분하다.
+          isShowZoomControls={false}
+          ref={mapViewRef}
+          style={StyleSheet.absoluteFill}
+          initialCamera={{
+            latitude: selectedFacility.marker.latitude,
+            longitude: selectedFacility.marker.longitude,
+            zoom: 16,
+          }}
+          minZoom={MAP_MIN_ZOOM}
+          extent={CAMPUS_EXTENT}
+          maxZoom={MAP_MAX_ZOOM}
+          onTapMap={() => bottomSheetRef.current?.close()}
+          onCameraIdle={handleCameraIdle}
+        >
+          {searchedRoom && searchedRoomAnchors && (
+            <FloorPlanOverlay
+              key={searchedRoom.floorId}
+              floorId={searchedRoom.floorId}
+              anchors={searchedRoomAnchors}
+              highlightRoomIds={searchedRoom.rooms.map(room => room.id)}
+              viewport={mapViewport}
+            />
+          )}
+          {/* 지도 화면과 같이, 카드가 열린(포커싱된) 마커 하나만 네임택을 달고 남기고 나머지 마커는 숨긴다. */}
+          {selectedFacility.type === 'dong' && (
+            <NaverMapMarker
+              latitude={selectedFacility.marker.latitude}
+              longitude={selectedFacility.marker.longitude}
+              label={selectedFacility.marker.label}
+              active
+              favorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
+            />
+          )}
+          {/* 시설이 있는 방을 평면도에 칠했으면 그걸로 위치가 보여서 시설 마커는 안 띄운다. 칠할 방을 못 찾았을 때만 마커로 표시.
+              시설 이름("열람실")만으로는 방을 몰라 장소 상세(층·호실)가 와야 칠할 방이 정해지니, 그 응답을 기다리는 동안엔
+              마커를 띄우지 않는다 — 안 그러면 마커가 잠깐 떴다가 사라진다. */}
+          {selectedFacility.type === 'category' && !isNodeDetailLoading && !(searchedRoom && searchedRoomAnchors) && (
+            <NaverMapCategoryMarker
+              latitude={selectedFacility.marker.latitude}
+              longitude={selectedFacility.marker.longitude}
+              favorite={isFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
+              count={selectedFacility.marker.count}
+              {...CATEGORY_MARKER_ICONS[selectedFacility.marker.category]}
+            />
+          )}
+        </NaverMapView>
+        {/* 지도 위에 검색창 + 카테고리 칩(캠퍼스맵 메인홈과 동일한 형태)이 떠 있다.
+            검색창을 탭하면 지도를 벗어나 다시 검색 리스트/입력 상태로 돌아간다. */}
+        <SafeAreaView
+          edges={['top']}
+          style={styles.mapTopOverlay}
+          pointerEvents="box-none"
+          onLayout={handleTopOverlayLayout}
+        >
+          {/* 검색창·카테고리 칩은 메인홈(MapScreen)에서만 쓸 수 있고, 여기선 같은 모양으로 보여주기만 한다. */}
+          <View style={styles.searchBarPadding} pointerEvents="none">
+            <SearchBar value={value} onChangeText={setValue} onPress={noop} />
+          </View>
+          <CategoryChipList selectedKey={selectedKey} onSelect={setSelectedKey} disabled />
+        </SafeAreaView>
+        <View style={styles.navBarWrapper}>
+          <NavigationBar activeTab="map" bottomInset={insets.bottom} />
+        </View>
+        {/* 본문은 카드보다 먼저(=아래에) 그려서, 카드 밑단이 밀려 올라간 만큼만 뒤에서
+            드러나는 것처럼 보이게 한다. 아직 실제 화면 전환 전이라 조작은 막아둔다. */}
+        {swipeUpBuildingCode && (
+          <Animated.View
+            style={[StyleSheet.absoluteFill, detailBodyStyle]}
+            pointerEvents="none"
+            renderToHardwareTextureAndroid
+            shouldRasterizeIOS
+          >
+            <BuildingDetailBody buildingCode={swipeUpBuildingCode} />
+          </Animated.View>
+        )}
+        <DismissibleBottomSheet
+          ref={bottomSheetRef}
+          onClose={closeFacilityCard}
+          onSwipeUp={swipeUpBuildingCode ? handleSwipeUp : undefined}
+          translateY={swipeUpBuildingCode ? swipeCardTranslateY : undefined}
+          rasterize={Boolean(swipeUpBuildingCode)}
+          minSwipeUpDistance={swipeUpBuildingCode ? minSwipeUpDistance : undefined}
+          style={[styles.facilityCardWrapper, cardFadeStyle]}
+        >
+          <View onLayout={handleFacilityCardLayout}>
+            {selectedFacility.type === 'dong' && placeItem ? (
+              renderPlaceCard(selectedFacility.marker, placeItem)
+            ) : selectedFacility.type === 'dong' ? (
+              <FacilityInfoCard
+                variant="outside"
+                buildingCode={selectedFacility.marker.label ?? ''}
+                buildingName={selectedFacility.marker.buildingName}
+                description={dongDetail.description}
+                isFavorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
+                onToggleFavorite={() =>
+                  toggleFavorite({ ...favoriteFromDongMarker(selectedFacility.marker), nodeId: buildingNodeId })
+                }
+                images={dongDetail.images}
+                {...routeButtonProps(
+                  toRoutePlaceLabel(selectedFacility.marker.label, selectedFacility.marker.buildingName),
+                  buildingNodeId,
+                  { buildingCode: selectedFacility.marker.label ?? '' },
+                )}
+                facilityCounts={dongDetail.facilityCounts}
+                mainEntrance={dongDetail.mainEntrance}
+                operatingHours={dongDetail.operatingHours}
+                onViewInsidePress={() => {
+                  closeCardWhenCovered();
+                  navigation.navigate('BuildingIndoor', {
+                    buildingCode: selectedFacility.marker.label ?? '',
+                    buildingName: selectedFacility.marker.buildingName,
+                    description: selectedFacility.marker.description,
+                    fromCardHeight: cardHeight,
+                  });
+                }}
+              />
+            ) : (
+              <FacilityInfoCard
+                variant="facility"
+                buildingCode={selectedFacility.marker.buildingCode}
+                buildingName={selectedFacility.marker.buildingName}
+                facilityName={selectedFacility.marker.room}
+                isFavorite={isFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
+                onToggleFavorite={() => toggleFavorite(favoriteFromCategoryMarker(selectedFacility.marker))}
+                images={selectedFacility.marker.images}
+                placeholderIcon={CATEGORY_MARKER_ICONS[selectedFacility.marker.category].icon}
+                operatingHours={facilityStatus}
+                {...routeButtonProps(
+                  toRoutePlaceLabel(
+                    selectedFacility.marker.buildingCode,
+                    selectedFacility.marker.buildingName,
+                    selectedFacility.marker.room,
+                  ),
+                  // 시설은 서버 시설 목록의 노드로 바로 길을 찾는다(이름 검색으로는 동 표기가 없어 못 찾는다).
+                  selectedFacility.marker.nodeId,
+                  { buildingCode: selectedFacility.marker.buildingCode, room: selectedFacility.marker.room },
+                )}
+                // 시설이 있는 건물(동)의 내부 지도로 간다(지도 화면의 시설 카드와 같음).
+                onViewInsidePress={() => {
+                  const { buildingCode, buildingName } = selectedFacility.marker;
+                  const dongMarker = CAMPUS_BUILDINGS.find(marker => marker.label === buildingCode);
+                  closeCardWhenCovered();
+                  navigation.navigate('BuildingIndoor', {
+                    buildingCode,
+                    buildingName: dongMarker?.buildingName || buildingName,
+                    description: dongMarker?.description ?? '',
+                    fromCardHeight: cardHeight,
+                  });
+                }}
+              />
+            )}
+          </View>
+        </DismissibleBottomSheet>
+        {/* 헤더는 카드보다 나중에(=위에) 그려서, 카드가 위로 슬라이드하다 헤더 자리에
+            닿으면 그 속으로 사라지는 것처럼(헤더가 카드를 덮으며) 보이게 한다. */}
+        {swipeUpBuildingCode && (
+          <Animated.View
+            style={[{ position: 'absolute', top: 0, left: 0, right: 0 }, detailHeaderStyle]}
+            pointerEvents="none"
+          >
+            <BuildingDetailHeader buildingCode={swipeUpBuildingCode} />
+          </Animated.View>
+        )}
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView edges={['top']} style={styles.container}>
+      {/* 리스트 항목이 아닌 빈 영역을 탭하면 키보드를 내린다. 각 리스트 항목은 자체
+          Pressable이 터치를 먼저 가져가므로 항목을 누르는 동작과는 겹치지 않는다. */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.container}>
+          <View style={styles.searchHeaderWrapper}>
+            <SearchPageHeader
+              value={value}
+              onChangeText={setValue}
+              onVoicePress={toggleListening}
+              isListening={isListening}
+              onBackPress={() => navigation.goBack()}
+            />
+          </View>
+          <View style={styles.content}>
+            {/* "최근 검색한 장소" 타이틀은 고정, 그 아래 리스트만 스크롤된다. */}
+            {!isSearching && <RecentSearchesTitle>최근 검색한 장소</RecentSearchesTitle>}
+            <ScrollView
+              style={styles.scrollView}
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+            >
+              {isSearching ? (
+                searchResults.length > 0 ? (
+                  searchResults.map((item, index) => (
+                    <SearchListItem
+                      key={item.id}
+                      building={item.building}
+                      place={item.place}
+                      room={item.room}
+                      isFavorite={isFavorite({ buildingCode: item.building, name: item.room })}
+                      onPress={() => openSearchItem(item)}
+                      showDivider={index !== searchResults.length - 1}
+                      {...SEARCH_ITEM_ICONS[item.category]}
+                    />
+                  ))
+                ) : isFetchingResults || searchFailed ? null : (
+                  <SearchEmptyResult />
+                )
+              ) : (
+                recentSearches.map((item, index) => (
+                  <SearchListItem
+                    key={`${item.id}-${item.searchedAt}`}
+                    building={item.building}
+                    place={item.place}
+                    room={item.room}
+                    isFavorite={isFavorite({ buildingCode: item.building, name: item.room })}
+                    history
+                    date={formatSearchedDate(item.searchedAt)}
+                    showDivider={index !== recentSearches.length - 1}
+                    onPress={() => openSearchItem(item)}
+                    onDeletePress={() => removeRecentSearch(item)}
+                    {...SEARCH_ITEM_ICONS[item.category]}
+                  />
+                ))
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
+      <VoicePermissionDialog
+        prompt={permissionPrompt}
+        onConfirm={confirmPermissionPrompt}
+        onDismiss={dismissPermissionPrompt}
+      />
+      {voiceDeniedToastKey > 0 && (
+        <AnimatedToast
+          key={voiceDeniedToastKey}
+          text="마이크 권한이 없어요. 검색창에 글자로 입력해 주세요."
+          variant="warning"
+          bottomOffset={insets.bottom + 16}
+          onHide={() => setVoiceDeniedToastKey(0)}
+        />
+      )}
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#fff' },
+  searchHeaderWrapper: { marginTop: 8 },
+  content: { flex: 1, marginTop: 16 },
+  scrollView: { flex: 1 },
+  // 검색 결과가 없을 때 SearchEmptyResult를 검색창 아래 여백의 정중앙에 오도록
+  // 스크롤 콘텐츠 자체가 (위 scrollView의 flex:1로 확보된) 남은 공간을 다 채우게 한다.
+  scrollContent: { flexGrow: 1 },
+  mapTopOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingTop: 13,
+    gap: 12,
+  },
+  searchBarPadding: { paddingHorizontal: 20 },
+  navBarWrapper: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  facilityCardWrapper: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+});
+
+const RecentSearchesTitle = styled.Text`
+  padding: 4px 20px;
+  font-family: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontFamily};
+  font-size: ${({ theme }) => theme.typography.bodyNormal.semiBold.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.bodyNormal.semiBold.lineHeight}px;
+  letter-spacing: ${({ theme }) => theme.typography.bodyNormal.semiBold.letterSpacing}px;
+  color: ${({ theme }) => theme.semantic.text.secondary};
+`;
+
+
+const ListeningRow = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-horizontal: 20px;
+`;
+
+// 녹음 중 표시 — 일반적인 "녹음 중" 빨간 점(warning 색).
+const ListeningDot = styled.View`
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: ${({ theme }) => theme.semantic.warning};
+`;
+
+const ListeningText = styled.Text`
+  font-family: ${({ theme }) => theme.typography.labelReading.medium.fontFamily};
+  font-size: ${({ theme }) => theme.typography.labelReading.medium.fontSize}px;
+  line-height: ${({ theme }) => theme.typography.labelReading.medium.lineHeight}px;
+  letter-spacing: ${({ theme }) => theme.typography.labelReading.medium.letterSpacing}px;
+  color: ${({ theme }) => theme.semantic.text.secondary};
+`;

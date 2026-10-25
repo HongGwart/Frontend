@@ -1,0 +1,412 @@
+<svg width="1920" height="1961" viewBox="0 0 1920 1961" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g>
+<g id="Union">
+<mask id="path-1-outside-1_1075_16244" maskUnits="userSpaceOnUse" x="296" y="256" width="1403" height="1356" fill="black">
+<rect fill="white" x="296" y="256" width="1403" height="1356"/>
+<path d="M468 259C559.664 259 634.279 331.977 636.924 423H1588V529H1696V688H1058V1379H1058V1609H435V1379H475.995V1074H531.995V777H632.995V464.727C616.225 540.403 548.723 597 468 597C374.664 597 299 521.336 299 428C299 334.664 374.664 259 468 259Z"/>
+</mask>
+<path d="M468 259C559.664 259 634.279 331.977 636.924 423H1588V529H1696V688H1058V1379H1058V1609H435V1379H475.995V1074H531.995V777H632.995V464.727C616.225 540.403 548.723 597 468 597C374.664 597 299 521.336 299 428C299 334.664 374.664 259 468 259Z" fill="white"/>
+<path d="M636.924 423L633.925 423.087L634.01 426H636.924V423ZM1588 423H1591V420H1588V423ZM1588 529H1585V532H1588V529ZM1696 529H1699V526H1696V529ZM1696 688V691H1699V688H1696ZM1058 688V685H1055V688H1058ZM1058 1379H1055V1382H1058V1379ZM1058 1379H1061V1376H1058V1379ZM1058 1609V1612H1061V1609H1058ZM435 1609H432V1612H435V1609ZM435 1379V1376H432V1379H435ZM475.995 1379V1382H478.995V1379H475.995ZM475.995 1074V1071H472.995V1074H475.995ZM531.995 1074V1077H534.995V1074H531.995ZM531.995 777V774H528.995V777H531.995ZM632.995 777V780H635.995V777H632.995ZM632.995 464.727H635.995L630.066 464.077L632.995 464.727ZM468 259V262C558.036 262 631.327 333.681 633.925 423.087L636.924 423L639.923 422.913C637.231 330.272 561.291 256 468 256V259ZM636.924 423V426H1588V423V420H636.924V423ZM1588 423H1585V529H1588H1591V423H1588ZM1588 529V532H1696V529V526H1588V529ZM1696 529H1693V688H1696H1699V529H1696ZM1696 688V685H1058V688V691H1696V688ZM1058 688H1055V1379H1058H1061V688H1058ZM1058 1379V1382H1058V1379V1376H1058V1379ZM1058 1379H1055V1609H1058H1061V1379H1058ZM1058 1609V1606H435V1609V1612H1058V1609ZM435 1609H438V1379H435H432V1609H435ZM435 1379V1382H475.995V1379V1376H435V1379ZM475.995 1379H478.995V1074H475.995H472.995V1379H475.995ZM475.995 1074V1077H531.995V1074V1071H475.995V1074ZM531.995 1074H534.995V777H531.995H528.995V1074H531.995ZM531.995 777V780H632.995V777V774H531.995V777ZM632.995 777H635.995V464.727H632.995H629.995V777H632.995ZM632.995 464.727L630.066 464.077C613.594 538.41 547.287 594 468 594V597V600C550.16 600 618.856 542.396 635.924 465.376L632.995 464.727ZM468 597V594C376.321 594 302 519.679 302 428H299H296C296 522.993 373.007 600 468 600V597ZM299 428H302C302 336.321 376.321 262 468 262V259V256C373.007 256 296 333.007 296 428H299Z" fill="#1D2056" mask="url(#path-1-outside-1_1075_16244)"/>
+</g>
+<g id="Union_2">
+<path d="M468 259C559.664 259 634.279 331.977 636.924 423H1588V529H1696V688H1058V1379H1058V1609H435V1379H475.995V1074H531.995V777H632.995V464.727C616.225 540.403 548.723 597 468 597C374.664 597 299 521.336 299 428C299 334.664 374.664 259 468 259Z" fill="white"/>
+<path d="M636.924 423L635.924 423.029L635.952 424H636.924V423ZM1588 423H1589V422H1588V423ZM1588 529H1587V530H1588V529ZM1696 529H1697V528H1696V529ZM1696 688V689H1697V688H1696ZM1058 688V687H1057V688H1058ZM1058 1379H1057V1380H1058V1379ZM1058 1379H1059V1378H1058V1379ZM1058 1609V1610H1059V1609H1058ZM435 1609H434V1610H435V1609ZM435 1379V1378H434V1379H435ZM475.995 1379V1380H476.995V1379H475.995ZM475.995 1074V1073H474.995V1074H475.995ZM531.995 1074V1075H532.995V1074H531.995ZM531.995 777V776H530.995V777H531.995ZM632.995 777V778H633.995V777H632.995ZM632.995 464.727H633.995L632.019 464.51L632.995 464.727ZM468 259V260C559.121 260 633.295 332.545 635.924 423.029L636.924 423L637.923 422.971C635.263 331.408 560.206 258 468 258V259ZM636.924 423V424H1588V423V422H636.924V423ZM1588 423H1587V529H1588H1589V423H1588ZM1588 529V530H1696V529V528H1588V529ZM1696 529H1695V688H1696H1697V529H1696ZM1696 688V687H1058V688V689H1696V688ZM1058 688H1057V1379H1058H1059V688H1058ZM1058 1379V1380H1058V1379V1378H1058V1379ZM1058 1379H1057V1609H1058H1059V1379H1058ZM1058 1609V1608H435V1609V1610H1058V1609ZM435 1609H436V1379H435H434V1609H435ZM435 1379V1380H475.995V1379V1378H435V1379ZM475.995 1379H476.995V1074H475.995H474.995V1379H475.995ZM475.995 1074V1075H531.995V1074V1073H475.995V1074ZM531.995 1074H532.995V777H531.995H530.995V1074H531.995ZM531.995 777V778H632.995V777V776H531.995V777ZM632.995 777H633.995V464.727H632.995H631.995V777H632.995ZM632.995 464.727L632.019 464.51C615.348 539.739 548.244 596 468 596V597V598C549.202 598 617.102 541.068 633.971 464.943L632.995 464.727ZM468 597V596C375.216 596 300 520.784 300 428H299H298C298 521.888 374.112 598 468 598V597ZM299 428H300C300 335.216 375.216 260 468 260V259V258C374.112 258 298 334.112 298 428H299Z" fill="#1D2056"/>
+</g>
+<g id="room">
+<rect x="1004" y="1297" width="54" height="82" fill="#F5F7FA"/>
+<rect x="1004" y="1297" width="54" height="82" stroke="#1D2056"/>
+</g>
+<g id="room_2">
+<rect x="1004" y="993" width="54" height="82" fill="#F5F7FA"/>
+<rect x="1004" y="993" width="54" height="82" stroke="#1D2056"/>
+</g>
+<g id="room_3">
+<rect x="1004" y="688" width="54" height="90" fill="#F5F7FA"/>
+<rect x="1004" y="688" width="54" height="90" stroke="#1D2056"/>
+</g>
+<path id="Vector 29329" d="M848 688L1057 688" stroke="#1D2056"/>
+<g id="room_4">
+<rect x="435" y="1379" width="365" height="230" fill="#EBEBF5"/>
+<rect x="435" y="1379" width="365" height="230" stroke="#1D2056"/>
+</g>
+<g id="room_5">
+<rect x="800" y="1379" width="258" height="230" fill="#EBEBF5"/>
+<rect x="800" y="1379" width="258" height="230" stroke="#1D2056"/>
+</g>
+<g id="room_6">
+<rect x="477" y="1075" width="272" height="304" fill="#EBEBF5"/>
+<rect x="477" y="1075" width="272" height="304" stroke="#1D2056"/>
+</g>
+<path id="Rectangle 240653121" d="M752.5 1096.5V1145.5H745.5V1096.5H752.5Z" fill="white" stroke="#1D2056"/>
+<g id="room_7">
+<rect x="852" y="1075" width="206" height="222" fill="#EBEBF5"/>
+<rect x="852" y="1075" width="206" height="222" stroke="#1D2056"/>
+</g>
+<g id="room_8">
+<rect x="533" y="778" width="216" height="215" fill="#EBEBF5"/>
+<rect x="533" y="778" width="216" height="215" stroke="#1D2056"/>
+</g>
+<g id="room_9">
+<rect x="533" y="993" width="216" height="82" fill="#EBEBF5"/>
+<rect x="533" y="993" width="216" height="82" stroke="#1D2056"/>
+</g>
+<g id="room_10">
+<rect x="848" y="778" width="210" height="215" fill="#EBEBF5"/>
+<rect x="848" y="778" width="210" height="215" stroke="#1D2056"/>
+</g>
+<g id="Frame 2087332194">
+<g id="stair">
+<rect id="Rectangle 240653086" x="848" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_2">
+<rect id="Rectangle 240653086_2" x="854" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_3">
+<rect id="Rectangle 240653086_3" x="860" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_4">
+<rect id="Rectangle 240653086_4" x="866" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_5">
+<rect id="Rectangle 240653086_5" x="872" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_6">
+<rect id="Rectangle 240653086_6" x="878" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_7">
+<rect id="Rectangle 240653086_7" x="884" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_8">
+<rect id="Rectangle 240653086_8" x="890" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_9">
+<rect id="Rectangle 240653086_9" x="896" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_10">
+<rect id="Rectangle 240653086_10" x="902" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_11">
+<rect id="Rectangle 240653086_11" x="908" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_12">
+<rect id="Rectangle 240653086_12" x="914" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<rect id="Rectangle 240653086_13" x="920" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653087" x="926" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653088" x="932" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653089" x="938" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653090" x="944" y="688" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="Frame 2087332195">
+<g id="stair_13">
+<rect id="Rectangle 240653086_14" x="848" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_14">
+<rect id="Rectangle 240653086_15" x="854" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_15">
+<rect id="Rectangle 240653086_16" x="860" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_16">
+<rect id="Rectangle 240653086_17" x="866" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_17">
+<rect id="Rectangle 240653086_18" x="872" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_18">
+<rect id="Rectangle 240653086_19" x="878" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_19">
+<rect id="Rectangle 240653086_20" x="884" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_20">
+<rect id="Rectangle 240653086_21" x="890" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_21">
+<rect id="Rectangle 240653086_22" x="896" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_22">
+<rect id="Rectangle 240653086_23" x="902" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_23">
+<rect id="Rectangle 240653086_24" x="908" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_24">
+<rect id="Rectangle 240653086_25" x="914" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<rect id="Rectangle 240653086_26" x="920" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653087_2" x="926" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653088_2" x="932" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653089_2" x="938" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653090_2" x="944" y="733" width="6" height="45" fill="white" stroke="#1D2056"/>
+</g>
+<g id="room_11">
+<rect x="634" y="705" width="115" height="73" fill="#F5F7FA"/>
+<rect x="634" y="705" width="115" height="73" stroke="#1D2056"/>
+<g id="map_toilet_male">
+<path id="Vector" fill-rule="evenodd" clip-rule="evenodd" d="M687.93 737.626C688.757 737.559 689.93 737.5 691.501 737.5C693.072 737.5 694.245 737.559 695.071 737.626C696.158 737.713 697.053 738.412 697.395 739.412C698.086 741.445 698.564 743.541 698.821 745.667C698.95 746.762 698.102 747.707 696.98 747.776C696.654 747.795 696.285 747.816 695.88 747.835L695.487 752.977C695.416 753.908 694.696 754.685 693.719 754.781C693.539 754.798 693.347 754.816 693.147 754.831C693.028 754.84 692.909 754.825 692.796 754.788C692.683 754.751 692.58 754.692 692.491 754.615C692.402 754.538 692.33 754.444 692.28 754.34C692.229 754.235 692.201 754.122 692.196 754.006L691.973 748.797C691.97 748.722 691.937 748.652 691.881 748.6C691.825 748.548 691.751 748.519 691.674 748.519H691.326C691.249 748.519 691.175 748.548 691.119 748.6C691.064 748.652 691.031 748.723 691.028 748.798L690.805 754.006C690.801 754.122 690.772 754.235 690.722 754.34C690.671 754.444 690.599 754.538 690.51 754.615C690.422 754.692 690.318 754.751 690.205 754.788C690.092 754.825 689.973 754.84 689.854 754.831C689.663 754.816 689.473 754.799 689.282 754.78C688.306 754.685 687.585 753.908 687.513 752.977L687.121 747.835C686.716 747.816 686.349 747.796 686.02 747.776C684.898 747.707 684.05 746.762 684.18 745.667C684.437 743.541 684.915 741.446 685.606 739.413C685.948 738.412 686.843 737.713 687.93 737.626Z" fill="#2297EB"/>
+<path id="Vector_2" d="M691.515 736.252C694.116 736.252 695.58 734.797 695.58 732.21C695.58 729.622 694.118 728.167 691.515 728.167C688.912 728.167 687.448 729.622 687.448 732.21C687.448 734.797 688.912 736.252 691.515 736.252Z" fill="#2297EB"/>
+</g>
+</g>
+<g id="room_12">
+<rect x="634" y="632" width="115" height="73" fill="#F5F7FA"/>
+<rect x="634" y="632" width="115" height="73" stroke="#1D2056"/>
+<g id="map_toilet_female">
+<path id="Vector_3" fill-rule="evenodd" clip-rule="evenodd" d="M691.5 664.709C690.247 664.709 689.238 665.104 688.419 665.776C687.61 666.437 687.007 667.351 686.521 668.363C685.816 669.826 685.376 671.683 685.181 673.384C685.028 674.746 686.151 675.812 687.458 675.812H687.723L688.253 679.085C688.377 679.852 688.772 680.549 689.366 681.053C689.961 681.557 690.716 681.833 691.496 681.833C692.277 681.833 693.032 681.557 693.627 681.053C694.221 680.549 694.616 679.852 694.74 679.085L695.272 675.812H695.542C696.849 675.812 697.973 674.746 697.82 673.384C697.624 671.683 697.184 669.826 696.48 668.363C695.994 667.351 695.391 666.439 694.582 665.774C693.762 665.104 692.754 664.707 691.5 664.707V664.709ZM695.581 659.21C695.581 661.797 694.116 663.252 691.516 663.252C688.913 663.252 687.449 661.797 687.449 659.21C687.449 656.622 688.913 655.167 691.516 655.167C694.118 655.167 695.581 656.622 695.581 659.21Z" fill="#FF338B"/>
+</g>
+</g>
+<g id="room_13">
+<rect x="634" y="552" width="115" height="80" fill="#EBEBF5"/>
+<rect x="634" y="552" width="115" height="80" stroke="#1D2056"/>
+</g>
+<g id="room_14">
+<rect x="1168" y="424" width="419" height="264" fill="#EBEBF5"/>
+<rect x="1168" y="424" width="419" height="264" stroke="#1D2056"/>
+</g>
+<g id="room_15">
+<rect x="848" y="424" width="320" height="208" fill="#EBEBF5"/>
+<rect x="848" y="424" width="320" height="208" stroke="#1D2056"/>
+</g>
+<circle id="Ellipse 1" cx="468" cy="428" r="168" fill="#EBEBF5" stroke="#1D2056"/>
+<g id="Frame 2087332188">
+<g id="stair_25">
+<rect id="Rectangle 240653086_27" x="852" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_26">
+<rect id="Rectangle 240653086_28" x="858" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_27">
+<rect id="Rectangle 240653086_29" x="864" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_28">
+<rect id="Rectangle 240653086_30" x="870" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_29">
+<rect id="Rectangle 240653086_31" x="876" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_30">
+<rect id="Rectangle 240653086_32" x="882" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_31">
+<rect id="Rectangle 240653086_33" x="888" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_32">
+<rect id="Rectangle 240653086_34" x="894" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_33">
+<rect id="Rectangle 240653086_35" x="900" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_34">
+<rect id="Rectangle 240653086_36" x="906" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_35">
+<rect id="Rectangle 240653086_37" x="912" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_36">
+<rect id="Rectangle 240653086_38" x="918" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<rect id="Rectangle 240653086_39" x="924" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653087_3" x="930" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653088_3" x="936" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653089_3" x="942" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653090_3" x="948" y="1297" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="Frame 2087332192">
+<g id="stair_37">
+<rect id="Rectangle 240653086_40" x="1695" y="530" width="6" height="41" transform="rotate(90 1695 530)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_38">
+<rect id="Rectangle 240653086_41" x="1695" y="536" width="6" height="41" transform="rotate(90 1695 536)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_39">
+<rect id="Rectangle 240653086_42" x="1695" y="542" width="6" height="41" transform="rotate(90 1695 542)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_40">
+<rect id="Rectangle 240653086_43" x="1695" y="548" width="6" height="41" transform="rotate(90 1695 548)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_41">
+<rect id="Rectangle 240653086_44" x="1695" y="554" width="6" height="41" transform="rotate(90 1695 554)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_42">
+<rect id="Rectangle 240653086_45" x="1695" y="560" width="6" height="41" transform="rotate(90 1695 560)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_43">
+<rect id="Rectangle 240653086_46" x="1695" y="566" width="6" height="41" transform="rotate(90 1695 566)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_44">
+<rect id="Rectangle 240653086_47" x="1695" y="572" width="6" height="41" transform="rotate(90 1695 572)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_45">
+<rect id="Rectangle 240653086_48" x="1695" y="578" width="6" height="41" transform="rotate(90 1695 578)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_46">
+<rect id="Rectangle 240653086_49" x="1695" y="584" width="6" height="41" transform="rotate(90 1695 584)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_47">
+<rect id="Rectangle 240653086_50" x="1695" y="590" width="6" height="41" transform="rotate(90 1695 590)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_48">
+<rect id="Rectangle 240653086_51" x="1695" y="596" width="6" height="41" transform="rotate(90 1695 596)" fill="white" stroke="#1D2056"/>
+</g>
+<rect id="Rectangle 240653086_52" x="1695" y="602" width="6" height="41" transform="rotate(90 1695 602)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653087_4" x="1695" y="608" width="6" height="41" transform="rotate(90 1695 608)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653088_4" x="1695" y="614" width="6" height="41" transform="rotate(90 1695 614)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653089_4" x="1695" y="620" width="6" height="41" transform="rotate(90 1695 620)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653090_4" x="1695" y="626" width="6" height="41" transform="rotate(90 1695 626)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="Frame 2087332189">
+<g id="stair_49">
+<rect id="Rectangle 240653086_53" x="852" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_50">
+<rect id="Rectangle 240653086_54" x="858" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_51">
+<rect id="Rectangle 240653086_55" x="864" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_52">
+<rect id="Rectangle 240653086_56" x="870" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_53">
+<rect id="Rectangle 240653086_57" x="876" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_54">
+<rect id="Rectangle 240653086_58" x="882" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_55">
+<rect id="Rectangle 240653086_59" x="888" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_56">
+<rect id="Rectangle 240653086_60" x="894" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_57">
+<rect id="Rectangle 240653086_61" x="900" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_58">
+<rect id="Rectangle 240653086_62" x="906" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_59">
+<rect id="Rectangle 240653086_63" x="912" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_60">
+<rect id="Rectangle 240653086_64" x="918" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<rect id="Rectangle 240653086_65" x="924" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653087_5" x="930" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653088_5" x="936" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653089_5" x="942" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653090_5" x="948" y="1338" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="Frame 2087332193">
+<g id="stair_61">
+<rect id="Rectangle 240653086_66" x="1654" y="530" width="6" height="41" transform="rotate(90 1654 530)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_62">
+<rect id="Rectangle 240653086_67" x="1654" y="536" width="6" height="41" transform="rotate(90 1654 536)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_63">
+<rect id="Rectangle 240653086_68" x="1654" y="542" width="6" height="41" transform="rotate(90 1654 542)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_64">
+<rect id="Rectangle 240653086_69" x="1654" y="548" width="6" height="41" transform="rotate(90 1654 548)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_65">
+<rect id="Rectangle 240653086_70" x="1654" y="554" width="6" height="41" transform="rotate(90 1654 554)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_66">
+<rect id="Rectangle 240653086_71" x="1654" y="560" width="6" height="41" transform="rotate(90 1654 560)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_67">
+<rect id="Rectangle 240653086_72" x="1654" y="566" width="6" height="41" transform="rotate(90 1654 566)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_68">
+<rect id="Rectangle 240653086_73" x="1654" y="572" width="6" height="41" transform="rotate(90 1654 572)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_69">
+<rect id="Rectangle 240653086_74" x="1654" y="578" width="6" height="41" transform="rotate(90 1654 578)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_70">
+<rect id="Rectangle 240653086_75" x="1654" y="584" width="6" height="41" transform="rotate(90 1654 584)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_71">
+<rect id="Rectangle 240653086_76" x="1654" y="590" width="6" height="41" transform="rotate(90 1654 590)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_72">
+<rect id="Rectangle 240653086_77" x="1654" y="596" width="6" height="41" transform="rotate(90 1654 596)" fill="white" stroke="#1D2056"/>
+</g>
+<rect id="Rectangle 240653086_78" x="1654" y="602" width="6" height="41" transform="rotate(90 1654 602)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653087_6" x="1654" y="608" width="6" height="41" transform="rotate(90 1654 608)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653088_6" x="1654" y="614" width="6" height="41" transform="rotate(90 1654 614)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653089_6" x="1654" y="620" width="6" height="41" transform="rotate(90 1654 620)" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653090_6" x="1654" y="626" width="6" height="41" transform="rotate(90 1654 626)" fill="white" stroke="#1D2056"/>
+</g>
+<g id="Frame 2087332190">
+<g id="stair_73">
+<rect id="Rectangle 240653086_79" x="892" y="993" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_74">
+<rect id="Rectangle 240653086_80" x="898" y="993" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_75">
+<rect id="Rectangle 240653086_81" x="904" y="993" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_76">
+<rect id="Rectangle 240653086_82" x="910" y="993" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_77">
+<rect id="Rectangle 240653086_83" x="916" y="993" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_78">
+<rect id="Rectangle 240653086_84" x="922" y="993" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<rect id="Rectangle 240653086_85" x="928" y="993" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653087_7" x="934" y="993" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653088_7" x="940" y="993" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653089_7" x="946" y="993" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653090_7" x="952" y="993" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="Frame 2087332191">
+<g id="stair_79">
+<rect id="Rectangle 240653086_86" x="892" y="1034" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_80">
+<rect id="Rectangle 240653086_87" x="898" y="1034" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_81">
+<rect id="Rectangle 240653086_88" x="904" y="1034" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_82">
+<rect id="Rectangle 240653086_89" x="910" y="1034" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_83">
+<rect id="Rectangle 240653086_90" x="916" y="1034" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<g id="stair_84">
+<rect id="Rectangle 240653086_91" x="922" y="1034" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<rect id="Rectangle 240653086_92" x="928" y="1034" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653087_8" x="934" y="1034" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653088_8" x="940" y="1034" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653089_8" x="946" y="1034" width="6" height="41" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653090_8" x="952" y="1034" width="6" height="41" fill="white" stroke="#1D2056"/>
+</g>
+<path id="Rectangle 240653270" d="M855.5 1227.5V1276.5H848.5V1227.5H855.5Z" fill="white" stroke="#1D2056"/>
+<path id="Rectangle 240653274" d="M752.5 857.5V906.5H745.5V857.5H752.5Z" fill="white" stroke="#1D2056"/>
+<path id="Rectangle 240653275" d="M851.5 857.5V906.5H844.5V857.5H851.5Z" fill="white" stroke="#1D2056"/>
+<rect id="Rectangle 240653272" x="816" y="420" width="4" height="32" transform="rotate(90 816 420)" fill="white"/>
+</g>
+<defs>
+<clipPath id="clip0_1075_16244">
+<rect width="32" height="32" fill="white" transform="translate(884 717)"/>
+</clipPath>
+<clipPath id="clip1_1075_16244">
+<rect width="32" height="32" fill="white" transform="translate(888 1322)"/>
+</clipPath>
+<clipPath id="clip2_1075_16244">
+<rect width="32" height="32" fill="white" transform="translate(1638 566)"/>
+</clipPath>
+<clipPath id="clip3_1075_16244">
+<rect width="32" height="32" fill="white" transform="translate(909 1018)"/>
+</clipPath>
+</defs>
+</svg>
