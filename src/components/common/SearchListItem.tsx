@@ -101,10 +101,25 @@ export function SearchListItem({
           </Pressable>
         </HistoryActions>
       )}
-      {selected && <CheckCircleIcon width={28} height={28} color={theme.blue[800]} />}
+      {selected && (
+        <CheckIconBox>
+          <CheckCircleIcon width={CHECK_CIRCLE_SIZE} height={CHECK_CIRCLE_SIZE} color={theme.blue[800]} />
+        </CheckIconBox>
+      )}
     </Container>
   );
 }
+
+// Figma 체크 아이콘은 28px 틀 안에 지름 23.33px 원이다. SVG는 원 크기로 잘려 내보내져 있어서 28px로 그리면 원이
+// 그만큼 커진다 — 원은 실제 지름으로 그리고 28px 틀 가운데에 둔다.
+const CHECK_CIRCLE_SIZE = 23.334;
+
+const CheckIconBox = styled.View`
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+`;
 
 const Container = styled(Pressable)<{ selected: boolean; pressed: boolean; showDivider: boolean }>`
   flex-direction: row;

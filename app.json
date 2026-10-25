@@ -12,7 +12,7 @@
       "appleTeamId": "9K8JHKDYV3",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSLocationWhenInUseUsageDescription": "지도 표시 기능에 위치 정보가 사용될 수 있습니다. 이 앱은 현재 위치를 수집하지 않습니다.",
+        "NSLocationWhenInUseUsageDescription": "홍그와트는 현재 위치를 사용하지 않습니다. 지도 기능에 포함된 항목이며, 위치 정보를 수집하거나 저장하지 않습니다.",
         "NSAppTransportSecurity": {
           "NSExceptionDomains": {
             "map.naver.com": {
@@ -49,7 +49,7 @@
         {
           "client_id": "41u83ejd91",
           "ios": {
-            "NSLocationWhenInUseUsageDescription": "지도 표시 기능에 위치 정보가 사용될 수 있습니다. 이 앱은 현재 위치를 수집하지 않습니다."
+            "NSLocationWhenInUseUsageDescription": "홍그와트는 현재 위치를 사용하지 않습니다. 지도 기능에 포함된 항목이며, 위치 정보를 수집하거나 저장하지 않습니다."
           }
         }
       ],
@@ -73,6 +73,12 @@
           "speechRecognitionPermission": "음성을 텍스트로 변환하려면 음성 인식 권한이 필요합니다."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3b0e17ac-29ff-4460-ac80-67bfae308521"
+      }
+    },
+    "owner": "honggwart"
   }
 }

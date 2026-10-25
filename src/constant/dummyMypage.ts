@@ -17,6 +17,11 @@ export interface FavoritePlace {
   iconHeight?: number;
   /** 요일별 운영 시간. 운영 상태 문구는 지금 시각으로 계산한다(utils/operatingHours). 없으면 운영 줄을 숨긴다 */
   operatingHours?: OperatingHours;
+  /** 장소 자체 좌표(서버 시설 목록의 대표 접근점). 없으면 지도는 소속 건물 마커 좌표에 찍는다 */
+  latitude?: number;
+  longitude?: number;
+  /** 서버 노드 id. 있으면 길찾기가 이름 검색 없이 이 노드로 바로 간다 */
+  nodeId?: number;
 }
 
 /**
@@ -30,6 +35,7 @@ export function favoritePlaceToFocusParam(place: FavoritePlace): FocusFacilityPa
     buildingName: place.buildingName,
     facilityName: place.name ?? `${place.buildingCode} ${place.buildingName}`,
     placeName: place.name,
+    nodeId: place.nodeId,
   };
 }
 

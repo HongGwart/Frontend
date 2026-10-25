@@ -35,5 +35,8 @@ export function toFavoritePlace(favorite: StoredFavorite): FavoritePlace {
     buildingCode: favorite.buildingCode,
     buildingName: favorite.buildingName,
     icon,
+    latitude: favorite.latitude,
+    longitude: favorite.longitude,
+    nodeId: favorite.nodeId,
   };
 }

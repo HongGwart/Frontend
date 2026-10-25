@@ -13,6 +13,7 @@ import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonPro
 import { CAMPUS_EXTENT, MAP_MAX_ZOOM, MAP_MIN_ZOOM } from '@constant/mapCamera';
 import { findRoomFloor } from '@constant/floorMaps';
 import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
+import { useSettledMapViewport } from '@hooks/map/useSettledMapViewport';
 import { useFloorGeoAnchors } from '@api/floorPlan/useFloorGeoAnchors';
 import { createFloorToGeo, getContentBounds } from '@utils/floorGeoTransform';
 import { SearchBar } from '@components/common/SearchBar';
@@ -70,9 +71,10 @@ function findFacilityForSearchItem(item: SearchResultItem, facilityMarkers: Faci
     const marker = CAMPUS_BUILDINGS.find(m => m.label === item.building);
     return marker ? { type: 'dong', marker } : null;
   }
-  const categoryMarker = facilityMarkers.find(
-    m => m.buildingCode === item.building && m.room === item.room,
-  );
+  // 시설은 서버 노드로 먼저 맞추고(검색 이름 "열람실"과 시설 이름 "열람실(K동)"이 다를 수 있다), 없으면 동 + 이름으로.
+  const categoryMarker =
+    facilityMarkers.find(m => item.nodeId !== undefined && m.nodeId === item.nodeId) ??
+    facilityMarkers.find(m => m.buildingCode === item.building && m.room === item.room);
   if (categoryMarker) return { type: 'category', marker: categoryMarker };
 
   const dongMarker = CAMPUS_BUILDINGS.find(m => m.label === item.building);
@@ -96,13 +98,13 @@ export default function SearchScreen() {
   const { recentSearches, addRecentSearch, removeRecentSearch } = useRecentSearches();
   // 즐겨찾기 별은 기기 로컬에 저장된 앱 전역 상태로 표시한다(지도/마이페이지와 같은 상태).
   const { isFavorite, toggleFavorite } = useFavorites();
-  // 편의시설 마커(서버 시설 목록 API 전까지는 빈 목록) — 검색 결과가 편의시설이면 그 마커 카드로 연다.
+  // 편의시설 마커(서버 시설 목록) — 검색 결과가 편의시설이면 그 마커 카드로 연다.
   const facilityMarkers = useFacilityMarkers();
   const openSearchItem = (item: SearchResultItem) => {
     addRecentSearch(item);
-    // 검색창에 친 글자("R") 대신 고른 장소 이름을 넣는다. 서버 표시 이름과 같은 형식("R동 313호", "R동",
-    // 동 코드가 없는 장소는 "R5 강의실 끝 여자화장실")이라 카드를 닫으면 그 장소가 다시 검색 결과로 보인다.
-    setValue(item.building ? [item.building, item.room].filter(Boolean).join(' ') : item.place);
+    // 검색창에 친 글자("R") 대신 고른 장소의 서버 표시 이름("R동 313호", "열람실(K동)")을 넣는다. 카드를 닫으면
+    // 그 장소가 다시 검색 결과로 보인다. 표시 이름이 없는 항목(최근 검색 옛 기록)은 동 + 호실로 맞춘다.
+    setValue(item.displayName ?? (item.building ? [item.building, item.room].filter(Boolean).join(' ') : item.place));
     setSelectedItem(item);
     const facility = findFacilityForSearchItem(item, facilityMarkers);
     if (facility) setSelectedFacility(facility);
@@ -126,7 +128,7 @@ export default function SearchScreen() {
   const [selectedFacility, setSelectedFacility] = useState<SelectedFacility | null>(null);
   // 카드를 연 검색 결과. 서버 장소(nodeId)면 장소 상세(층·호실·출입구)를 불러와 카드에 채운다.
   const [selectedItem, setSelectedItem] = useState<SearchResultItem | null>(null);
-  const nodeDetail = useNodeDetail(selectedItem?.nodeId);
+  const { detail: nodeDetail, isLoading: isNodeDetailLoading } = useNodeDetail(selectedItem?.nodeId);
   // 시설 카드의 운영 상태 — 서버 장소 소개(place-info)의 시설 자체 운영 시간. 시설 데이터가 없으면 undefined라
   // 카드는 건물 운영 시간을 쓰거나 그 줄을 뺀다.
   const facilityStatus = useFacilityOperatingStatus(
@@ -172,6 +174,8 @@ export default function SearchScreen() {
     return findRoomFloor(buildingCode, roomNumber, nodeDetail?.floorId);
   }, [selectedItem, nodeDetail]);
   const searchedRoomAnchors = useFloorGeoAnchors(searchedRoom?.floorId);
+  // 확대했을 때 평면도를 선명한 조각으로 바꿔 얹으려고 카메라가 멈춘 위치를 기억한다.
+  const { viewport: mapViewport, handleCameraIdle } = useSettledMapViewport();
   // 카메라를 옮길 호실 중심(호실 도형 꼭짓점들의 평균). 칠하기는 FloorPlanOverlay가 한다.
   const searchedRoomCenter = useMemo(() => {
     if (!searchedRoom || !searchedRoomAnchors) return null;
@@ -294,6 +298,7 @@ export default function SearchScreen() {
           extent={CAMPUS_EXTENT}
           maxZoom={MAP_MAX_ZOOM}
           onTapMap={() => bottomSheetRef.current?.close()}
+          onCameraIdle={handleCameraIdle}
         >
           {searchedRoom && searchedRoomAnchors && (
             <FloorPlanOverlay
@@ -301,6 +306,7 @@ export default function SearchScreen() {
               floorId={searchedRoom.floorId}
               anchors={searchedRoomAnchors}
               highlightRoomIds={searchedRoom.rooms.map(room => room.id)}
+              viewport={mapViewport}
             />
           )}
           {/* 지도 화면과 같이, 카드가 열린(포커싱된) 마커 하나만 네임택을 달고 남기고 나머지 마커는 숨긴다. */}
@@ -313,7 +319,10 @@ export default function SearchScreen() {
               favorite={isFavorite(favoriteFromDongMarker(selectedFacility.marker))}
             />
           )}
-          {selectedFacility.type === 'category' && (
+          {/* 시설이 있는 방을 평면도에 칠했으면 그걸로 위치가 보여서 시설 마커는 안 띄운다. 칠할 방을 못 찾았을 때만 마커로 표시.
+              시설 이름("열람실")만으로는 방을 몰라 장소 상세(층·호실)가 와야 칠할 방이 정해지니, 그 응답을 기다리는 동안엔
+              마커를 띄우지 않는다 — 안 그러면 마커가 잠깐 떴다가 사라진다. */}
+          {selectedFacility.type === 'category' && !isNodeDetailLoading && !(searchedRoom && searchedRoomAnchors) && (
             <NaverMapCategoryMarker
               latitude={selectedFacility.marker.latitude}
               longitude={selectedFacility.marker.longitude}
@@ -410,7 +419,8 @@ export default function SearchScreen() {
                     selectedFacility.marker.buildingName,
                     selectedFacility.marker.room,
                   ),
-                  undefined,
+                  // 시설은 서버 시설 목록의 노드로 바로 길을 찾는다(이름 검색으로는 동 표기가 없어 못 찾는다).
+                  selectedFacility.marker.nodeId,
                   { buildingCode: selectedFacility.marker.buildingCode, room: selectedFacility.marker.room },
                 )}
                 // 시설이 있는 건물(동)의 내부 지도로 간다(지도 화면의 시설 카드와 같음).

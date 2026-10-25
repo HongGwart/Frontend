@@ -8,11 +8,12 @@ import { defineConfig, type InputTransformerFn } from 'orval';
  * (예: "평면도 기준 꼭짓점"의 저장 API)도 있어서, 아래 transformer로 관리자 경로를 한 번 더 뺀다.
  */
 const SPEC_URL = 'https://dev-api.honggwart.com/v3/api-docs';
-const APP_TAGS = ['검색', '길찾기', '평면도 기준 꼭짓점', '장소 소개'];
+const APP_TAGS = ['검색', '길찾기', '평면도 기준 꼭짓점', '장소 소개', '편의시설'];
 
 // 서버 operationId가 "get"처럼 뜻이 안 드러나는 경우 생성 함수/훅 이름을 여기서 정한다(경로 → 이름).
 const OPERATION_NAMES: Record<string, string> = {
   '/api/layers/{layerId}/floor-plan-corners': 'floorPlanCorners',
+  '/api/facilities': 'facilities',
 };
 
 const keepAppApis: InputTransformerFn = spec => {

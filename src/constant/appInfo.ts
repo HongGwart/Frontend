@@ -6,5 +6,8 @@
  */
 export const PRIVACY_POLICY_URL = 'https://shadowed-lemonade-c3e.notion.site/d4bc9c7c7267837cbbd401f98f893148';
 
+/** 문의 이메일. 개인정보처리방침 "개인정보 보호책임자"와 같은 주소를 쓴다(앱 안 연락 경로 — 심사 가이드라인 1.5). */
+export const CONTACT_EMAIL = 'eyssik05@naver.com';
+
 /** 사용자에게 보이는 앱 버전. app.json의 expo.version을 그대로 쓴다(스토어 버전과 같음). */
 export const APP_VERSION: string = require('../../app.json').expo.version;
