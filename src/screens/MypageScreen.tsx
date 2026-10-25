@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from 'styled-components/native';
@@ -7,7 +7,7 @@ import { SectionHeader } from '@components/mypage/SectionHeader';
 import { DefaultDepartureCard } from '@components/mypage/DefaultDepartureCard';
 import { FavoritePlaceCard } from '@components/mypage/FavoritePlaceCard';
 import { MenuRow } from '@components/mypage/MenuRow';
-import { APP_VERSION, PRIVACY_POLICY_URL } from '@constant/appInfo';
+import { APP_VERSION, CONTACT_EMAIL, PRIVACY_POLICY_URL } from '@constant/appInfo';
 import { useFavorites } from '@hooks/useFavorites';
 import { useDefaultDeparture } from '@hooks/useDefaultDeparture';
 import { FavoritePlace, favoritePlaceToFocusParam } from '@constant/dummyMypage';
@@ -101,6 +101,15 @@ export default function MypageScreen() {
             onPress={() =>
               Linking.openURL(PRIVACY_POLICY_URL).catch(error =>
                 console.warn('[mypage] 개인정보처리방침을 열지 못했어요', error),
+              )
+            }
+          />
+          <MenuRow
+            title="문의하기"
+            onPress={() =>
+              // 메일 앱이 없거나 계정이 설정되지 않은 기기에서는 mailto가 실패하니 주소를 대신 보여준다.
+              Linking.openURL(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('[홍그와트] 문의')}`).catch(
+                () => Alert.alert('문의하기', `아래 주소로 메일을 보내주세요.\n${CONTACT_EMAIL}`),
               )
             }
           />
