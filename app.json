@@ -79,6 +79,12 @@
         "projectId": "3b0e17ac-29ff-4460-ac80-67bfae308521"
       }
     },
-    "owner": "honggwart"
+    "owner": "honggwart",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3b0e17ac-29ff-4460-ac80-67bfae308521"
+    }
   }
 }
