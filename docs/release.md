@@ -25,10 +25,12 @@ git checkout main && git pull
 eas update --channel production --environment production --message "무엇을 고쳤는지"
 ```
 
-- `--environment production`을 꼭 붙인다. 빼면 운영 API 주소가 아닌 값으로 묶일 수 있다.
-- 업데이트는 같은 runtime version(= `app.json`의 `version`, `runtimeVersion.policy: "appVersion"`)으로 만든 빌드에만 간다.
+- `--environment`는 생략할 수 없다(SDK 55부터 필수). 지정한 EAS 환경의 변수(`EXPO_PUBLIC_API_URL` 등)가 업데이트에 들어가니, 운영 업데이트는 반드시 `production`으로 지정한다.
+- 업데이트는 **runtime version과 채널이 둘 다 맞는** 빌드만 받는다.
+  - runtime version: `app.json`의 `version`(`runtimeVersion.policy: "appVersion"`). 1.0.0으로 만든 업데이트는 1.0.0 빌드만 받는다.
+  - 채널: 빌드 프로필의 `channel`(`eas.json`). `production` 채널 업데이트는 production 빌드만 받고, 같은 버전의 preview 빌드는 받지 않는다.
 - **새 빌드와 심사가 필요한 경우**: 네이티브 라이브러리 추가·제거·업그레이드, 권한·`app.json`의 네이티브 설정(아이콘, 권한 문구, 플러그인 등) 변경, Expo SDK 업그레이드. 이때는 `app.json`의 `version`도 올려서(예: 1.0.1) 이전 빌드가 맞지 않는 업데이트를 받지 않게 한다.
 - 앱의 주요 목적을 바꾸는 변경은 업데이트로 내보내지 않는다(App Store 심사 가이드라인).
 - 업데이트도 main에 반영된 코드로 만든다 — 사용자 기기의 코드가 어떤 커밋인지 main으로 추적할 수 있게.
 
-채널은 빌드 프로필과 같은 이름이다(`development`·`preview`·`production`, `eas.json`). 내부 테스트용 빌드에는 `--channel preview --environment preview`로 먼저 올려 확인할 수 있다.
+채널은 빌드 프로필과 같은 이름이다(`development`·`preview`·`production`, `eas.json`). 내부 테스트는 preview 빌드를 설치해 두고 `--channel preview --environment preview`로 먼저 올려 확인한다(production 빌드에는 가지 않는다).
