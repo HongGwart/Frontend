@@ -30,6 +30,7 @@ eas update --channel production --environment production --message "무엇을 �
   - runtime version: `app.json`의 `version`(`runtimeVersion.policy: "appVersion"`). 1.0.0으로 만든 업데이트는 1.0.0 빌드만 받는다.
   - 채널: 빌드 프로필의 `channel`(`eas.json`). `production` 채널 업데이트는 production 빌드만 받고, 같은 버전의 preview 빌드는 받지 않는다.
 - **새 빌드와 심사가 필요한 경우**: 네이티브 라이브러리 추가·제거·업그레이드, 권한·`app.json`의 네이티브 설정(아이콘, 권한 문구, 플러그인 등) 변경, Expo SDK 업그레이드. 이때는 `app.json`의 `version`도 올려서(예: 1.0.1) 이전 빌드가 맞지 않는 업데이트를 받지 않게 한다.
+  - 예외: 그 버전이 아직 출시 전이면(심사 반려·Apple 처리 단계 반려 후 재제출) 버전은 그대로 두고 빌드 번호만 올린다. 사용자 기기에 그 버전 빌드가 없고 그 runtime version으로 올린 업데이트도 없어서 어긋날 빌드가 없다. App Store도 같은 버전에 새 빌드를 골라 다시 제출하는 흐름이다.
 - 앱의 주요 목적을 바꾸는 변경은 업데이트로 내보내지 않는다(App Store 심사 가이드라인).
 - 업데이트도 main에 반영된 코드로 만든다 — 사용자 기기의 코드가 어떤 커밋인지 main으로 추적할 수 있게.
 
