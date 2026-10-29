@@ -1,12 +1,25 @@
 import { useMemo } from 'react';
 import { useRoute as useRouteQuery } from '@api/generated/honggwart';
-import { toApiError } from '@api/errors';
+import { isRetryableError, toApiError } from '@api/errors';
+import { routeFreshMs } from './routeCacheTime';
 import { RouteView, toRouteView } from './toRouteView';
 
 export interface RouteSearchParams {
   fromNodeId?: number;
   toNodeId?: number;
+  /**
+   * false면 캐시에 경로가 있는 동안 저절로 다시 불러오지 않는다(화면 진입·앱 복귀·네트워크 복구 때). 캐시가 없으면
+   * 그대로 받고, 받지 못했으면(실패) 화면 진입·앱 복귀 때 다시 시도한다(네트워크 복구 감지는 onlineManager를 netinfo에 연결한 뒤부터 동작한다). 앱 복귀 때는 이 경로를 보는 화면 중 하나라도 켜져 있으면 다시 불러오므로, 경로를 쓰지 않는
+   * 화면은 모두 꺼야 한다.
+   * - 길 안내 화면: 처음 정한 경로를 고정해 두고 다시 받은 응답을 쓰지 않는다 → 항상 false
+   * - 길찾기 화면: 길 안내 화면 밑에 가려져 있는 동안 false. 다시 보이면 refetchIfStale로 기한을 확인한다
+   */
+  autoRefetch?: boolean;
 }
+
+// 화면을 나간 뒤에도 경로 응답을 이만큼 들고 있는다(기본 5분). 강의실을 확인하고 조금 뒤 같은 경로를 다시 찾을 때
+// 요청하지 않게 한다. 응답 하나가 30KB 안팎이라 부담이 작다.
+const ROUTE_GC_TIME_MS = 30 * 60 * 1000;
 
 /**
  * 서버는 세 모드 경로를 따로 주지만, 절반 넘게는 두세 모드가 똑같은 길이다(실제 응답 569건 중 두 모드 같음 50%,
@@ -33,7 +46,7 @@ function mergeSameRoutes(views: RouteView[]): RouteView[] {
  * 출발/도착 중 노드가 없는 곳(서버에 없는 장소)이 있으면 요청하지 않는다(enabled=false, 화면이 안내 문구를 띄운다).
  * 실패는 토스트 대신 notFound(404 ROUTE_NOT_FOUND)/error로 돌려줘서 화면이 목록 자리에 안내한다.
  */
-export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
+export function useRouteSearch({ fromNodeId, toNodeId, autoRefetch = true }: RouteSearchParams) {
   const enabled = fromNodeId !== undefined && toNodeId !== undefined;
 
   const { data, error, isError, isFetching, isStale, refetch } = useRouteQuery(
@@ -43,10 +56,26 @@ export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
         enabled,
         // 실패하면 경로 목록 자리에 바로 문구를 띄우니(경로 없음/그 밖의 실패) 전역 토스트는 끈다.
         meta: { silent: true },
-        // 엘리베이터 혼잡은 요청 시각 기준 예상이라 무기한 재사용하지 않는다 — 1분이 지나면 길찾기 화면에 다시
-        // 들어오거나 앱으로 돌아올 때 새로 불러온다. 길 안내 화면은 처음 정한 경로를 상태로 고정해 두므로
-        // 안내 도중 다시 불러와도 구간이 바뀌지 않는다(RouteGuidanceScreen).
-        staleTime: 60_000,
+        // 응답이 달라질 수 있는 건 엘리베이터 혼잡 시간(평일 매시 50분~정각) 경계를 넘을 때뿐이라, 그 전까지는
+        // 다시 요청하지 않는다(routeCacheTime). 혼잡은 엘리베이터 도착 시각으로 판정해서 가장 긴 경로 시간만큼 앞당긴다.
+        staleTime: query =>
+          routeFreshMs(
+            query.state.dataUpdatedAt,
+            Math.max(0, ...(query.state.data?.routes ?? []).map(route => route.summary?.durationSeconds ?? 0)),
+          ),
+        gcTime: ROUTE_GC_TIME_MS,
+        // 경로는 요청마다 서버가 새로 계산한다. 서버가 힘들어 느리거나(타임아웃) 5xx를 낼 때 세 번씩 보내면 더 힘들어지고
+        // 기다림도 30초를 넘어서 한 번만 다시 시도한다. 이동 중 신호가 잠깐 끊긴 건(network) 전역 기본처럼 두 번.
+        retry: (failureCount, retryError) => {
+          if (!isRetryableError(retryError)) return false;
+          return failureCount < (toApiError(retryError).kind === 'network' ? 2 : 1);
+        },
+        // 경로를 쓰지 않는 화면이라도 아직 받은 경로가 없으면(첫 요청이 네트워크 오류로 실패 등) 화면 진입·앱 복귀 때
+        // 다시 받는다 — 길 안내 화면이 "경로를 불러오지 못했어요"에 멈춰 있지 않게. refetchOnReconnect는 RN에서
+        // onlineManager를 netinfo에 연결해야 동작한다(아직 미연결).
+        refetchOnMount: query => autoRefetch || !query.state.data,
+        refetchOnWindowFocus: query => autoRefetch || !query.state.data,
+        refetchOnReconnect: query => autoRefetch || !query.state.data,
       },
     },
   );
@@ -71,7 +100,7 @@ export function useRouteSearch({ fromNodeId, toNodeId }: RouteSearchParams) {
     /** 경로 없음 외의 실패(네트워크·서버 오류). 화면이 문구를 띄운다. */
     error: apiError && !notFound ? apiError : undefined,
     /**
-     * 캐시가 1분이 지났으면 다시 불러온다. 다른 화면에 갔다가 돌아오면 화면이 새로 마운트되지 않아(포커스만 바뀜)
+     * 캐시가 재사용 기한(staleTime — 다음 혼잡 시간 경계 전)을 넘겼으면 다시 불러온다. 다른 화면에 갔다가 돌아오면 화면이 새로 마운트되지 않아(포커스만 바뀜)
      * 자동으로 다시 불러오지 않아서, 화면 포커스 때 부른다. 이미 불러오는 중이면 겹쳐 요청하지 않는다.
      */
     refetchIfStale: () => {
