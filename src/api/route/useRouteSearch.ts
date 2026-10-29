@@ -9,7 +9,7 @@ export interface RouteSearchParams {
   toNodeId?: number;
   /**
    * false면 캐시에 경로가 있는 동안 저절로 다시 불러오지 않는다(화면 진입·앱 복귀·네트워크 복구 때). 캐시가 없으면
-   * 그대로 받고, 받지 못했으면(실패) 화면 진입·앱 복귀 때 다시 시도한다(네트워크 복구 감지는 onlineManager를 netinfo에 연결한 뒤부터 동작한다). 앱 복귀 때는 이 경로를 보는 화면 중 하나라도 켜져 있으면 다시 불러오므로, 경로를 쓰지 않는
+   * 그대로 받고, 받지 못했으면(실패) 화면 진입·앱 복귀 때 다시 시도한다(네트워크 복구 때도 — queryClient에서 onlineManager를 expo-network에 연결해 뒀다). 앱 복귀 때는 이 경로를 보는 화면 중 하나라도 켜져 있으면 다시 불러오므로, 경로를 쓰지 않는
    * 화면은 모두 꺼야 한다.
    * - 길 안내 화면: 처음 정한 경로를 고정해 두고 다시 받은 응답을 쓰지 않는다 → 항상 false
    * - 길찾기 화면: 길 안내 화면 밑에 가려져 있는 동안 false. 다시 보이면 refetchIfStale로 기한을 확인한다
@@ -71,8 +71,8 @@ export function useRouteSearch({ fromNodeId, toNodeId, autoRefetch = true }: Rou
           return failureCount < (toApiError(retryError).kind === 'network' ? 2 : 1);
         },
         // 경로를 쓰지 않는 화면이라도 아직 받은 경로가 없으면(첫 요청이 네트워크 오류로 실패 등) 화면 진입·앱 복귀 때
-        // 다시 받는다 — 길 안내 화면이 "경로를 불러오지 못했어요"에 멈춰 있지 않게. refetchOnReconnect는 RN에서
-        // onlineManager를 netinfo에 연결해야 동작한다(아직 미연결).
+        // 다시 받는다 — 길 안내 화면이 "경로를 불러오지 못했어요"에 멈춰 있지 않게. 네트워크 복구는 queryClient에서
+        // onlineManager를 expo-network에 연결해 감지한다.
         refetchOnMount: query => autoRefetch || !query.state.data,
         refetchOnWindowFocus: query => autoRefetch || !query.state.data,
         refetchOnReconnect: query => autoRefetch || !query.state.data,
