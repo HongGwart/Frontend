@@ -53,10 +53,17 @@ const isOnline = (state: Network.NetworkState) => state.isConnected !== false &&
 // 네트워크 연결 상태를 TanStack Query에 알린다(React Native에는 브라우저 online 이벤트가 없어서 직접 연결한다).
 // 오프라인이면 요청을 보내지 않고 멈춰(fetchStatus 'paused') 뒀다가, 연결이 돌아오면 멈춘 요청을 이어서 보내고
 // refetchOnReconnect인 쿼리를 다시 불러온다. 화면은 멈춘 동안 "인터넷 연결 없음"을 안내한다(useIsOffline).
+// 처음 상태 조회보다 연결 변경 이벤트가 먼저 오면, 늦게 도착한 조회 결과(이전 상태)로 되돌리지 않는다.
 onlineManager.setEventListener(setOnline => {
+  let receivedChange = false;
   Network.getNetworkStateAsync()
-    .then(state => setOnline(isOnline(state)))
+    .then(state => {
+      if (!receivedChange) setOnline(isOnline(state));
+    })
     .catch(() => {});
-  const subscription = Network.addNetworkStateListener(state => setOnline(isOnline(state)));
+  const subscription = Network.addNetworkStateListener(state => {
+    receivedChange = true;
+    setOnline(isOnline(state));
+  });
   return () => subscription.remove();
 });
