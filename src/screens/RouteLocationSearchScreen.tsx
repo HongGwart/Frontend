@@ -42,7 +42,13 @@ export default function RouteLocationSearchScreen() {
   const keyword = value.trim().toLowerCase();
   // 검색어가 있을 때만 서버 검색 결과를 보여준다(검색어가 없으면 아래 즐겨찾기만). 서버 결과엔 nodeId가 있어서,
   // 출발/도착을 둘 다 서버 결과로 고르면 실제 경로 탐색 API를 쓴다.
-  const { results: searchResults, isSearching, isError: searchFailed } = useSearchSuggestions(value);
+  const {
+    results: searchResults,
+    isSearching,
+    isError: searchFailed,
+    error: searchError,
+    retry: retrySearch,
+  } = useSearchSuggestions(value);
   const results = keyword ? searchResults : [];
 
   // 검색어가 없을 땐 기기에 저장된 즐겨찾기를 맨 위에 먼저 보여줘서 바로 고를 수 있게 한다.
@@ -115,6 +121,7 @@ export default function RouteLocationSearchScreen() {
                 {...SEARCH_ITEM_ICONS[item.category]}
               />
             ))}
+            {!!keyword && searchFailed && <SearchEmptyResult error={searchError} onRetry={retrySearch} />}
             {!!keyword && !isSearching && !searchFailed && results.length === 0 && <SearchEmptyResult />}
           </ScrollView>
         </View>

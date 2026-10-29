@@ -45,6 +45,8 @@ import { FloorPlanOverlay } from '@components/map/FloorPlanOverlay';
 import { useSettledMapViewport } from '@hooks/map/useSettledMapViewport';
 import { animateValue } from '@utils/animateValue';
 import { useRouteSearch } from '@api/route/useRouteSearch';
+import { RetryButton } from '@components/common/RetryButton';
+import { useSlowRequest } from '@hooks/useSlowRequest';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 import { getErrorMessage } from '@api/errors';
 import Header from '@components/layout/Header';
@@ -275,6 +277,8 @@ export default function RouteGuidanceScreen() {
   };
   const [guidanceRoute, setGuidanceRoute] = useState<GuidanceRoute | null>(() => findApiRoute());
   const apiRoute = guidanceRoute ? null : findApiRoute();
+  // 경로를 몇 초 넘게 못 받으면 기다리는 중임을 알린다(훅이라 아래 조기 반환보다 먼저 부른다).
+  const loadingSlow = useSlowRequest(!guidanceRoute && routeSearch.isLoading);
   useEffect(() => {
     if (apiRoute) setGuidanceRoute(apiRoute);
   }, [apiRoute]);
@@ -284,7 +288,9 @@ export default function RouteGuidanceScreen() {
   // 서버 경로를 기다리는 중이거나 못 불러왔을 때. 노드 id가 없으면 다시 불러올 수도 없다.
   const failed = !routeSearch.enabled || routeSearch.notFound || !!routeSearch.error || (!routeSearch.isLoading && !apiRoute);
   const message = !failed
-    ? '경로를 불러오고 있어요'
+    ? loadingSlow
+      ? '응답이 늦어지고 있어요. 조금만 기다려 주세요.'
+      : '경로를 불러오고 있어요'
     : routeSearch.error
       ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
       : '경로를 찾지 못했어요';
@@ -293,6 +299,8 @@ export default function RouteGuidanceScreen() {
       <Header title="길 안내" onBackPress={() => navigation.goBack()} />
       <StatusBody>
         <StatusText>{message}</StatusText>
+        {/* 네트워크·서버 문제로 못 불러왔을 때만 그 자리에서 다시 요청한다(경로 없음은 다시 해도 같다). */}
+        {routeSearch.error && <RetryButton onPress={routeSearch.retry} />}
       </StatusBody>
     </StatusContainer>
   );
@@ -564,6 +572,7 @@ const StatusBody = styled.View`
   flex: 1;
   align-items: center;
   justify-content: center;
+  gap: 16px;
 `;
 
 const StatusText = styled.Text`

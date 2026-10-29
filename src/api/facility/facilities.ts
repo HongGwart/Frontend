@@ -85,8 +85,16 @@ function useCampusFacilities() {
  * 구분하려고 쓴다(같은 쿼리라 요청은 한 번만 간다).
  */
 export function useFacilitiesStatus() {
-  const { isLoading, isError, error } = useFacilitiesQuery();
-  return { isLoading, isError, error };
+  const { isLoading, isError, error, isFetching, refetch } = useFacilitiesQuery();
+  return {
+    isLoading,
+    isError,
+    error,
+    /** 실패한 뒤 "다시 시도" — 이미 불러오는 중이면 겹쳐 요청하지 않는다 */
+    retry: () => {
+      if (!isFetching) refetch();
+    },
+  };
 }
 
 /**

@@ -106,5 +106,9 @@ export function useRouteSearch({ fromNodeId, toNodeId, autoRefetch = true }: Rou
     refetchIfStale: () => {
       if (enabled && isStale && !isFetching) refetch();
     },
+    /** 실패한 뒤 "다시 시도" — 화면을 나가지 않고 그 자리에서 다시 요청한다. 이미 불러오는 중이면 겹쳐 요청하지 않는다. */
+    retry: () => {
+      if (enabled && !isFetching) refetch();
+    },
   };
 }

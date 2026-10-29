@@ -28,6 +28,8 @@ import { CAMPUS_EXTENT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
 import { regionToFit } from '@utils/routePath';
 import { useRouteSearch } from '@api/route/useRouteSearch';
+import { RetryButton } from '@components/common/RetryButton';
+import { useSlowRequest } from '@hooks/useSlowRequest';
 import { RoutePlace, usePlaceNodeId } from '@api/node/usePlaceNodeId';
 import { getErrorMessage } from '@api/errors';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
@@ -120,15 +122,27 @@ export default function NavigationScreen() {
     () => (selectedOption ? allRouteResults.filter(route => route.options.includes(selectedOption)) : allRouteResults),
     [allRouteResults, selectedOption],
   );
+  // 경로를 찾는 동안 몇 초 넘게 응답이 없으면 기다리는 중임을 알린다(타임아웃 10초 + 재시도).
+  const routeLoadingSlow = useSlowRequest(hasRoute && (isLookingUpPlace || routeSearch.isLoading));
+  const loadingText = routeLoadingSlow ? '응답이 늦어지고 있어요. 조금만 기다려 주세요.' : '경로를 찾고 있어요';
+  // 실패하면 원인(인터넷 끊김·응답 지연·서버 오류)을 알려주고, 그 자리에서 "다시 시도"할 수 있게 한다.
+  const retryRoute = placeLookupFailed
+    ? () => {
+        departureLookup.retry();
+        destinationLookup.retry();
+      }
+    : routeSearch.error
+      ? routeSearch.retry
+      : undefined;
   // 경로 목록 대신 띄울 안내 — 장소 찾는 중/장소 찾기 실패/서버에 없는 장소/경로 찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
   const routeStatusText = isLookingUpPlace
-    ? '경로를 찾고 있어요'
+    ? loadingText
     : placeLookupFailed
-      ? '경로를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'
+      ? getErrorMessage(departureLookup.error ?? destinationLookup.error, '경로를 불러오지 못했어요.')
       : !routeSearch.enabled
         ? '길찾기를 지원하지 않는 장소예요'
         : routeSearch.isLoading
-          ? '경로를 찾고 있어요'
+          ? loadingText
           : routeSearch.samePlace
             ? '출발지와 도착지가 같은 곳이에요'
             : routeSearch.notFound
@@ -455,6 +469,7 @@ export default function NavigationScreen() {
       {hasRoute && routeStatusText ? (
         <EmptyState>
           <EmptyText>{routeStatusText}</EmptyText>
+          {retryRoute && <RetryButton onPress={retryRoute} />}
         </EmptyState>
       ) : hasRoute ? (
         <ResultsArea>
