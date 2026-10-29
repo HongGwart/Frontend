@@ -64,8 +64,12 @@ export function useRouteSearch({ fromNodeId, toNodeId, autoRefetch = true }: Rou
             Math.max(0, ...(query.state.data?.routes ?? []).map(route => route.summary?.durationSeconds ?? 0)),
           ),
         gcTime: ROUTE_GC_TIME_MS,
-        // 경로는 요청마다 서버가 새로 계산한다. 서버가 힘들어 5xx를 낼 때 세 번씩 보내면 더 힘들어져서 한 번만 다시 시도한다.
-        retry: (failureCount, retryError) => isRetryableError(retryError) && failureCount < 1,
+        // 경로는 요청마다 서버가 새로 계산한다. 서버가 힘들어 느리거나(타임아웃) 5xx를 낼 때 세 번씩 보내면 더 힘들어지고
+        // 기다림도 30초를 넘어서 한 번만 다시 시도한다. 이동 중 신호가 잠깐 끊긴 건(network) 전역 기본처럼 두 번.
+        retry: (failureCount, retryError) => {
+          if (!isRetryableError(retryError)) return false;
+          return failureCount < (toApiError(retryError).kind === 'network' ? 2 : 1);
+        },
         // 경로를 쓰지 않는 화면이라도 아직 받은 경로가 없으면(첫 요청이 네트워크 오류로 실패 등) 화면 진입·앱 복귀 때
         // 다시 받는다 — 길 안내 화면이 "경로를 불러오지 못했어요"에 멈춰 있지 않게. refetchOnReconnect는 RN에서
         // onlineManager를 netinfo에 연결해야 동작한다(아직 미연결).

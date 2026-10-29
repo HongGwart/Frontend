@@ -12,6 +12,9 @@ const CONGESTION_START_MINUTE = 50;
 const CLOCK_MARGIN_MS = 60 * 1000;
 // 평일 경계는 주말을 건너도 3일 안에 나온다. 넉넉히 일주일까지만 찾는다.
 const SEARCH_DAYS = 7;
+// 혼잡 경계가 멀어도(밤·주말) 그사이 서버 길 데이터가 바뀌어 배포됐을 수 있어서, 이보다 오래 재사용하지 않는다.
+// 길찾기 화면을 띄운 채 둔 쿼리는 gcTime이 적용되지 않으니 여기서 막는다(useRouteSearch의 gcTime과 같은 30분).
+const MAX_FRESH_MS = 30 * 60 * 1000;
 
 /** fetchedAt 뒤로 처음 오는 혼잡 시간 시작·끝 시각(ms). */
 function nextCongestionBoundary(fetchedAt: number): number {
@@ -36,9 +39,10 @@ function nextCongestionBoundary(fetchedAt: number): number {
 /**
  * fetchedAt에 받은 경로 응답을 다시 요청하지 않고 써도 되는 시간(ms). 혼잡은 엘리베이터에 도착하는 시각으로
  * 판정해서, 지금 출발해 도착할 때까지(최대 longestRouteSeconds) 다음 혼잡 경계를 넘을 수 있으면 응답이 달라질 수
- * 있다. 그래서 "다음 경계 − 가장 긴 경로 소요 시간"까지만 재사용한다. 예) 화요일 14:10에 받은 6분 경로 → 14:44까지.
+ * 있다. 그래서 "다음 경계 − 가장 긴 경로 소요 시간"까지만 재사용한다. 예) 화요일 14:10에 받은 6분 경로 → 14:40까지
+ * (경계 기준 14:43이지만 최대 30분 상한). 밤·주말처럼 경계가 멀어도 최대 30분(MAX_FRESH_MS)까지만 재사용한다.
  */
 export function routeFreshMs(fetchedAt: number, longestRouteSeconds: number): number {
   const reusableUntil = nextCongestionBoundary(fetchedAt) - longestRouteSeconds * 1000 - CLOCK_MARGIN_MS;
-  return Math.max(0, reusableUntil - fetchedAt);
+  return Math.min(MAX_FRESH_MS, Math.max(0, reusableUntil - fetchedAt));
 }
