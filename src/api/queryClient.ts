@@ -6,7 +6,8 @@ import { showErrorToast } from './errorToast';
 /**
  * 쿼리/뮤테이션에 붙이는 meta. 이전 프로젝트의 handleAxiosError({ errorMessage })와 같은 역할.
  *   useQuery({ ..., meta: { errorMessage: '검색에 실패했어요' } })
- * 서버가 메시지를 주면 그걸, 아니면 errorMessage를, 그것도 없으면 종류별 기본 문구를 토스트로 띄운다.
+ * 서버가 메시지를 주면 그걸, 원인을 알 수 있으면(인터넷 끊김·응답 지연·서버 오류) 원인별 문구를, 아니면 errorMessage를
+ * 토스트로 띄운다(getErrorMessage).
  */
 interface ApiMeta extends Record<string, unknown> {
   errorMessage?: string;
