@@ -12,6 +12,7 @@ import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
 import { SEARCH_ITEM_ICONS, SearchResultItem } from '@constant/dummySearchData';
 import { RootStackParamList } from '@navigation/types';
 import { StoredFavorite, useFavorites } from '@hooks/useFavorites';
+import { useIsOffline } from '@hooks/useIsOffline';
 
 function formatLocationLabel(item: SearchResultItem) {
   return [item.building, item.place, item.room].filter(Boolean).join(' ');
@@ -49,6 +50,8 @@ export default function RouteLocationSearchScreen() {
     error: searchError,
     retry: retrySearch,
   } = useSearchSuggestions(value);
+  // 오프라인이면 검색 요청이 멈춰 있어서 "결과 없음" 대신 연결을 기다린다고 안내한다.
+  const isOffline = useIsOffline();
   const results = keyword ? searchResults : [];
 
   // 검색어가 없을 땐 기기에 저장된 즐겨찾기를 맨 위에 먼저 보여줘서 바로 고를 수 있게 한다.
@@ -121,8 +124,9 @@ export default function RouteLocationSearchScreen() {
                 {...SEARCH_ITEM_ICONS[item.category]}
               />
             ))}
-            {!!keyword && searchFailed && <SearchEmptyResult error={searchError} onRetry={retrySearch} />}
-            {!!keyword && !isSearching && !searchFailed && results.length === 0 && <SearchEmptyResult />}
+            {!!keyword && isOffline && results.length === 0 && <SearchEmptyResult offline />}
+            {!!keyword && !isOffline && searchFailed && <SearchEmptyResult error={searchError} onRetry={retrySearch} />}
+            {!!keyword && !isOffline && !isSearching && !searchFailed && results.length === 0 && <SearchEmptyResult />}
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>

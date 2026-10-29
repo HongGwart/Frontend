@@ -12,6 +12,7 @@ import { useSearchSuggestions } from '@api/search/useSearchSuggestions';
 import { SEARCH_ITEM_ICONS, SearchResultItem } from '@constant/dummySearchData';
 import { departureLabelOf, useDefaultDeparture } from '@hooks/useDefaultDeparture';
 import { useFavorites } from '@hooks/useFavorites';
+import { useIsOffline } from '@hooks/useIsOffline';
 
 // 마이페이지 "기본 출발지" 카드의 "수정"을 누르면 오는 화면(Figma "마이페이지_기본 출발지 설정").
 // 검색창에 입력하면 아래에 서버 검색 결과가 리스트로 뜨고(SearchListItem 재사용), 항목을 누르면 기본 출발지로
@@ -39,6 +40,8 @@ export default function DepartureSettingScreen() {
     error: searchError,
     retry: retrySearch,
   } = useSearchSuggestions(value);
+  // 오프라인이면 검색 요청이 멈춰 있어서 "결과 없음" 대신 연결을 기다린다고 안내한다.
+  const isOffline = useIsOffline();
   const results = value.trim() ? searchResults : [];
 
   // 지금 기본 출발지와 같은 장소면 선택 표시. 서버 장소는 nodeId로, 아니면 표시 이름으로 비교한다.
@@ -109,8 +112,9 @@ export default function DepartureSettingScreen() {
                 {...SEARCH_ITEM_ICONS[item.category]}
               />
             ))}
-            {!!value.trim() && searchFailed && <SearchEmptyResult error={searchError} onRetry={retrySearch} />}
-            {!!value.trim() && !isSearching && !searchFailed && results.length === 0 && <SearchEmptyResult />}
+            {!!value.trim() && isOffline && results.length === 0 && <SearchEmptyResult offline />}
+            {!!value.trim() && !isOffline && searchFailed && <SearchEmptyResult error={searchError} onRetry={retrySearch} />}
+            {!!value.trim() && !isOffline && !isSearching && !searchFailed && results.length === 0 && <SearchEmptyResult />}
           </ScrollView>
         </View>
       </TouchableWithoutFeedback>

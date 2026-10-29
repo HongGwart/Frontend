@@ -33,6 +33,7 @@ import { useSlowRequest } from '@hooks/useSlowRequest';
 import { RoutePlace, usePlaceNodeId } from '@api/node/usePlaceNodeId';
 import { getErrorMessage } from '@api/errors';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
+import { useIsOffline } from '@hooks/useIsOffline';
 
 // Header.tsx의 Container height와 동일한 값 — 경로 보기 화면에서 지도 위에 얹는
 // 투명 헤더의 실제 높이(세이프에어리어 제외)를 지도 카메라 패딩 계산에 재사용한다.
@@ -134,24 +135,23 @@ export default function NavigationScreen() {
     : routeSearch.error
       ? routeSearch.retry
       : undefined;
-  // 경로 목록 대신 띄울 안내 — 장소 찾는 중/장소 찾기 실패/서버에 없는 장소/경로 찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
-  const routeStatusText = isLookingUpPlace
-    ? loadingText
-    : placeLookupFailed
-      ? getErrorMessage(departureLookup.error ?? destinationLookup.error, '경로를 불러오지 못했어요.')
-      : !routeSearch.enabled
-        ? '길찾기를 지원하지 않는 장소예요'
-        : routeSearch.isLoading
-          ? loadingText
-          : routeSearch.samePlace
-            ? '출발지와 도착지가 같은 곳이에요'
-            : routeSearch.notFound
-              ? '두 장소를 잇는 경로를 찾지 못했어요'
-              : routeSearch.error
-                ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
-                : routeResults.length === 0
-                  ? '이 옵션으로 갈 수 있는 경로가 없어요'
-                  : null;
+  // 오프라인이면 장소 조회·경로 요청이 멈춰 있다 — "지원하지 않는 장소"·"경로 없음"으로 잘못 보이지 않게 연결을 기다린다고
+  // 안내하고, 연결되면 멈춘 요청이 이어서 나간다.
+  const isOffline = useIsOffline();
+  const waitingForNetwork = isOffline && routeSearch.routes.length === 0 && !routeSearch.notFound && !routeSearch.samePlace;
+  // 경로 목록 대신 띄울 안내 — 연결 대기/장소 찾는 중/장소 찾기 실패/서버에 없는 장소/경로 찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
+  const routeStatusText = (() => {
+    if (waitingForNetwork) return '인터넷에 연결되어 있지 않아요. 연결되면 바로 이어서 찾아요.';
+    if (isLookingUpPlace) return loadingText;
+    if (placeLookupFailed) return getErrorMessage(departureLookup.error ?? destinationLookup.error, '경로를 불러오지 못했어요.');
+    if (!routeSearch.enabled) return '길찾기를 지원하지 않는 장소예요';
+    if (routeSearch.isLoading) return loadingText;
+    if (routeSearch.samePlace) return '출발지와 도착지가 같은 곳이에요';
+    if (routeSearch.notFound) return '두 장소를 잇는 경로를 찾지 못했어요';
+    if (routeSearch.error) return getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.');
+    if (routeResults.length === 0) return '이 옵션으로 갈 수 있는 경로가 없어요';
+    return null;
+  })();
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
@@ -469,7 +469,7 @@ export default function NavigationScreen() {
       {hasRoute && routeStatusText ? (
         <EmptyState>
           <EmptyText>{routeStatusText}</EmptyText>
-          {retryRoute && <RetryButton onPress={retryRoute} />}
+          {retryRoute && !waitingForNetwork && <RetryButton onPress={retryRoute} />}
         </EmptyState>
       ) : hasRoute ? (
         <ResultsArea>
