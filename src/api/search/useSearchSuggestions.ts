@@ -76,7 +76,7 @@ function useDebouncedValue<T>(value: T, delayMs: number) {
 
 /**
  * 검색어로 장소 후보를 찾는다(GET /api/search/autocomplete). 입력이 멈추고 250ms 뒤에 요청하고, 새 결과가 올
- * 때까지 이전 결과를 그대로 보여준다. 서버 요청이 실패하면 전역 토스트가 뜨고 목록은 비운다.
+ * 때까지 이전 결과를 그대로 보여준다. 서버 요청이 실패하면 목록을 비우고, 화면이 실패 원인과 "다시 시도"를 보여준다.
  */
 export function useSearchSuggestions(keyword: string) {
   // 서버 요청만 디바운스하고, 이전 서버 결과는 입력하자마자 지금 검색어로 다시 거른다(아래 results).
@@ -84,13 +84,14 @@ export function useSearchSuggestions(keyword: string) {
   const query = useDebouncedValue(immediate, DEBOUNCE_MS);
   const enabled = query.length > 0;
 
-  const { data, isError, isFetching, isPlaceholderData } = useAutocomplete(
+  const { data, error, isError, isFetching, isPlaceholderData, refetch } = useAutocomplete(
     { q: query, limit: LIMIT },
     {
       query: {
         enabled,
         placeholderData: keepPreviousData,
-        meta: { errorMessage: '검색 결과를 불러오지 못했어요.' },
+        // 실패는 검색 화면이 결과 자리에 원인과 "다시 시도"로 직접 안내해서 전역 토스트는 띄우지 않는다.
+        meta: { silent: true },
       },
     },
   );
@@ -118,7 +119,13 @@ export function useSearchSuggestions(keyword: string) {
     results,
     isLoading: enabled && isFetching && !data,
     isSearching,
-    /** 검색 요청 실패 — 전역 토스트가 뜨니 화면은 "검색 결과 없음"을 띄우지 않는다(결과 0개와 구분) */
+    /** 검색 요청 실패 — 화면은 "검색 결과 없음" 대신 실패 안내와 "다시 시도"를 띄운다(결과 0개와 구분) */
     isError: enabled && isError,
+    /** 실패 원인(인터넷 끊김·응답 지연 등) — 실패 안내 문구에 쓴다 */
+    error: enabled && isError ? error : undefined,
+    /** 실패한 뒤 "다시 시도" */
+    retry: () => {
+      if (enabled && !isFetching) refetch();
+    },
   };
 }

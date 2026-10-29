@@ -111,11 +111,13 @@ export default function SearchScreen() {
   };
 
   const trimmedValue = value.trim();
-  // 서버 검색(자동완성 API) + 아직 서버에 없는 앱 더미 장소. 실패하면 더미 결과로 대신한다.
+  // 서버 검색(자동완성 API). 실패하면 결과 자리에 원인과 "다시 시도"를 보여준다.
   const {
     results: searchResults,
     isSearching: isFetchingResults,
     isError: searchFailed,
+    error: searchError,
+    retry: retrySearch,
   } = useSearchSuggestions(value);
 
   // 검색어가 없으면 최근 검색어를, 있으면 검색 결과를 보여준다.
@@ -491,7 +493,9 @@ export default function SearchScreen() {
                       {...SEARCH_ITEM_ICONS[item.category]}
                     />
                   ))
-                ) : isFetchingResults || searchFailed ? null : (
+                ) : searchFailed ? (
+                  <SearchEmptyResult error={searchError} onRetry={retrySearch} />
+                ) : isFetchingResults ? null : (
                   <SearchEmptyResult />
                 )
               ) : (

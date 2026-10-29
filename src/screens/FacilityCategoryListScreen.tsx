@@ -21,6 +21,7 @@ import { getErrorMessage } from '@api/errors';
 import { FacilityCategoryId, RootStackParamList } from '@navigation/types';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { FavoritePlace } from '@constant/dummyMypage';
+import { RetryButton } from '@components/common/RetryButton';
 
 // 편의시설 카테고리 → 지도 위 원형 카테고리 마커 아이콘(메인 지도와 같은 것). "기타"는 전용
 // 아이콘이 없어서 기본 핀 마커로 찍는다.
@@ -165,9 +166,10 @@ export default function FacilityCategoryListScreen() {
         <EmptyState>
           <EmptyText>
             {facilitiesStatus.isError
-              ? getErrorMessage(facilitiesStatus.error, '편의시설 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.')
+              ? getErrorMessage(facilitiesStatus.error, '편의시설 정보를 불러오지 못했어요.')
               : `등록된 ${category?.label ?? '편의시설'} 정보가 없어요`}
           </EmptyText>
+          {facilitiesStatus.isError && <RetryButton onPress={facilitiesStatus.retry} />}
         </EmptyState>
       )}
     </Container>
@@ -183,6 +185,7 @@ const EmptyState = styled.View`
   flex: 1;
   align-items: center;
   justify-content: center;
+  gap: 16px;
 `;
 
 const EmptyText = styled.Text`
