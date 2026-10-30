@@ -50,6 +50,7 @@ import { useSlowRequest } from '@hooks/useSlowRequest';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
 import { getErrorMessage } from '@api/errors';
 import Header from '@components/layout/Header';
+import { useIsOffline } from '@hooks/useIsOffline';
 
 const MOVE_TYPE_ICONS: Record<GuidanceMoveType, React.FC<SvgProps>> = {
   walk: WalkIcon,
@@ -279,6 +280,8 @@ export default function RouteGuidanceScreen() {
   const apiRoute = guidanceRoute ? null : findApiRoute();
   // 경로를 몇 초 넘게 못 받으면 기다리는 중임을 알린다(훅이라 아래 조기 반환보다 먼저 부른다).
   const loadingSlow = useSlowRequest(!guidanceRoute && routeSearch.isLoading);
+  // 오프라인이면 경로 요청이 멈춰 있다 — "경로를 찾지 못했어요" 대신 연결을 기다린다고 안내한다.
+  const isOffline = useIsOffline();
   useEffect(() => {
     if (apiRoute) setGuidanceRoute(apiRoute);
   }, [apiRoute]);
@@ -287,20 +290,19 @@ export default function RouteGuidanceScreen() {
 
   // 서버 경로를 기다리는 중이거나 못 불러왔을 때. 노드 id가 없으면 다시 불러올 수도 없다.
   const failed = !routeSearch.enabled || routeSearch.notFound || !!routeSearch.error || (!routeSearch.isLoading && !apiRoute);
-  const message = !failed
-    ? loadingSlow
-      ? '응답이 늦어지고 있어요. 조금만 기다려 주세요.'
-      : '경로를 불러오고 있어요'
-    : routeSearch.error
-      ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
-      : '경로를 찾지 못했어요';
+  const message = (() => {
+    if (isOffline && routeSearch.enabled && !routeSearch.notFound) return '인터넷에 연결되어 있지 않아요. 연결되면 바로 이어서 찾아요.';
+    if (!failed) return loadingSlow ? '응답이 늦어지고 있어요. 조금만 기다려 주세요.' : '경로를 불러오고 있어요';
+    if (routeSearch.error) return getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.');
+    return '경로를 찾지 못했어요';
+  })();
   return (
     <StatusContainer style={{ paddingTop: insets.top }}>
       <Header title="길 안내" onBackPress={() => navigation.goBack()} />
       <StatusBody>
         <StatusText>{message}</StatusText>
         {/* 네트워크·서버 문제로 못 불러왔을 때만 그 자리에서 다시 요청한다(경로 없음은 다시 해도 같다). */}
-        {routeSearch.error && <RetryButton onPress={routeSearch.retry} />}
+        {routeSearch.error && !isOffline && <RetryButton onPress={routeSearch.retry} />}
       </StatusBody>
     </StatusContainer>
   );

@@ -1,5 +1,6 @@
 import { AppState } from 'react-native';
-import { focusManager, MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
+import * as Network from 'expo-network';
+import { focusManager, MutationCache, onlineManager, QueryCache, QueryClient } from '@tanstack/react-query';
 import { getErrorMessage, isRetryableError, toApiError } from './errors';
 import { showErrorToast } from './errorToast';
 
@@ -43,5 +44,26 @@ export const queryClient = new QueryClient({
 // 앱이 백그라운드에서 돌아오면(포그라운드 전환) 오래된 쿼리를 다시 불러온다 — 웹의 창 포커스 대신 AppState.
 focusManager.setEventListener(handleFocus => {
   const subscription = AppState.addEventListener('change', status => handleFocus(status === 'active'));
+  return () => subscription.remove();
+});
+
+/** 인터넷에 연결돼 있는지. 연결 상태를 모르면(값이 없으면) 연결된 것으로 본다 — 요청을 막아 두지 않게. */
+const isOnline = (state: Network.NetworkState) => state.isConnected !== false && state.isInternetReachable !== false;
+
+// 네트워크 연결 상태를 TanStack Query에 알린다(React Native에는 브라우저 online 이벤트가 없어서 직접 연결한다).
+// 오프라인이면 요청을 보내지 않고 멈춰(fetchStatus 'paused') 뒀다가, 연결이 돌아오면 멈춘 요청을 이어서 보내고
+// refetchOnReconnect인 쿼리를 다시 불러온다. 화면은 멈춘 동안 "인터넷 연결 없음"을 안내한다(useIsOffline).
+// 처음 상태 조회보다 연결 변경 이벤트가 먼저 오면, 늦게 도착한 조회 결과(이전 상태)로 되돌리지 않는다.
+onlineManager.setEventListener(setOnline => {
+  let receivedChange = false;
+  Network.getNetworkStateAsync()
+    .then(state => {
+      if (!receivedChange) setOnline(isOnline(state));
+    })
+    .catch(() => {});
+  const subscription = Network.addNetworkStateListener(state => {
+    receivedChange = true;
+    setOnline(isOnline(state));
+  });
   return () => subscription.remove();
 });

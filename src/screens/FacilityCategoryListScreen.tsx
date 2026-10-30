@@ -22,6 +22,7 @@ import { FacilityCategoryId, RootStackParamList } from '@navigation/types';
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { FavoritePlace } from '@constant/dummyMypage';
 import { RetryButton } from '@components/common/RetryButton';
+import { useIsOffline } from '@hooks/useIsOffline';
 
 // 편의시설 카테고리 → 지도 위 원형 카테고리 마커 아이콘(메인 지도와 같은 것). "기타"는 전용
 // 아이콘이 없어서 기본 핀 마커로 찍는다.
@@ -53,6 +54,7 @@ export default function FacilityCategoryListScreen() {
   // 아직 받는 중이면 빈 상태를 띄우지 않고, 못 불러왔으면 "없어요" 대신 실패 문구를 띄운다.
   const places = useFacilityPlaces(params.categoryId);
   const facilitiesStatus = useFacilitiesStatus();
+  const isOffline = useIsOffline();
 
   // 즐겨찾기는 기기 로컬에 저장된 앱 전역 상태(마이페이지/지도/길찾기와 같은 상태).
   const { isFavorite, toggleFavorite: togglePlaceFavorite } = useFavorites();
@@ -165,11 +167,14 @@ export default function FacilityCategoryListScreen() {
       ) : facilitiesStatus.isLoading ? null : (
         <EmptyState>
           <EmptyText>
-            {facilitiesStatus.isError
+            {/* 오프라인이면 시설 목록 요청이 멈춰 있다 — "등록된 정보 없음"으로 잘못 보이지 않게 연결을 기다린다고 안내한다. */}
+            {isOffline
+              ? '인터넷에 연결되어 있지 않아요. 연결되면 바로 불러와요.'
+              : facilitiesStatus.isError
               ? getErrorMessage(facilitiesStatus.error, '편의시설 정보를 불러오지 못했어요.')
               : `등록된 ${category?.label ?? '편의시설'} 정보가 없어요`}
           </EmptyText>
-          {facilitiesStatus.isError && <RetryButton onPress={facilitiesStatus.retry} />}
+          {facilitiesStatus.isError && !isOffline && <RetryButton onPress={facilitiesStatus.retry} />}
         </EmptyState>
       )}
     </Container>

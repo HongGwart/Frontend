@@ -8,15 +8,28 @@ interface Props {
   /** 검색 요청이 실패했으면 그 에러 — "검색 결과가 없어요" 대신 실패 원인과 "다시 시도"를 보여준다 */
   error?: unknown;
   onRetry?: () => void;
+  /** 오프라인이라 검색 요청이 멈춰 있음 — 연결되면 저절로 이어서 검색한다 */
+  offline?: boolean;
 }
 
 /**
  * 검색어에 해당하는 결과가 하나도 없을 때(또는 검색 요청이 실패했을 때) 보여주는 빈 상태 화면. 검색·길찾기 장소 검색·
  * 기본 출발지 설정이 같이 쓴다. 부모 스크롤의 contentContainerStyle에 flexGrow: 1을 주면 남은 공간의 정중앙에 온다.
  */
-export function SearchEmptyResult({ error, onRetry }: Props) {
+export function SearchEmptyResult({ error, onRetry, offline = false }: Props) {
   const theme = useTheme();
   const failed = error !== undefined;
+  if (offline) {
+    return (
+      <Container>
+        <IconCircle>
+          <SearchIcon width={28} height={28} color={theme.semantic.text.tertiary} />
+        </IconCircle>
+        <TitleText>인터넷에 연결되어 있지 않아요</TitleText>
+        <SubtitleText>연결되면 바로 이어서 검색해요</SubtitleText>
+      </Container>
+    );
+  }
   return (
     <Container>
       <IconCircle>
