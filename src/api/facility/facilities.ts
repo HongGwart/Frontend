@@ -97,6 +97,29 @@ export function useFacilitiesStatus() {
   };
 }
 
+/** 시설이 있는 방을 찾는 키. buildingCode는 앱 동 코드("R동"), roomNumber는 서버 호실 번호("B103"). */
+export const facilityRoomKey = (buildingCode: string, roomNumber: string) => `${buildingCode}|${roomNumber}`;
+
+/**
+ * 시설이 있는 방(facilityRoomKey) → 시설 이름. 내부 지도가 방 번호 대신 보여줄 이름이다. 이미 그 건물 안을 보고 있어서
+ * 이름 끝 괄호의 동·호실 표기는 뗀다("카페나무(R동)" → "카페나무", "그룹 스터디룸 (H302-1)" → "그룹 스터디룸").
+ * 불러오는 중이거나 실패하면 비어 있어서 내부 지도는 방 번호를 그대로 보여준다.
+ */
+export function useFacilityRoomNames(): ReadonlyMap<string, string> {
+  const facilities = useCampusFacilities();
+  return useMemo(() => {
+    const names = new Map<string, string>();
+    facilities.forEach(item => {
+      if (!item.buildingCode || !item.roomNumber) return;
+      names.set(
+        facilityRoomKey(toBuildingCode(item.buildingCode), item.roomNumber),
+        item.displayName.replace(/\s*\([^)]*\)$/, ''),
+      );
+    });
+    return names;
+  }, [facilities]);
+}
+
 /**
  * 시설 노드 id → 소속 동 코드("R동"). 검색 자동완성은 시설의 소속 건물을 주지 않아서, 이름에 동 표기가 없는
  * 시설("그라찌에")도 검색 결과에 동·건물명을 붙이려고 쓴다.

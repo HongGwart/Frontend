@@ -57,6 +57,10 @@ interface LabelProps {
   verticalFit: number;
   /** 층 전체 방 번호의 기준 글자 크기(도면 좌표 단위). 화면 크기 = 이 값 × 배율을 9~14pt로 자른 값 */
   floorSize: number;
+  /** 이 방에 시설 이름이 있을 때, 그 이름이 들어가는 가장 큰 글자 크기(도면 좌표 단위). 없으면 번호만 그린다 */
+  nameFit?: number;
+  /** 시설 이름 라벨인지. 이름이 들어가는 배율에서는 이름만, 그보다 작으면 번호만 보인다 */
+  isName?: boolean;
   isSelected: boolean;
   scale: SharedValue<number>;
   translateX: SharedValue<number>;
@@ -74,6 +78,9 @@ interface LabelProps {
  * 따라 정해서, 확대하다 가로가 들어가는 순간 가로로 바뀐다). 6pt로도 넘치면 6pt 가로 글자로 방 밖까지 조금 넘쳐
  * 보인다 — 숨기지 않는다. 크기·방향은 transform으로 UI 스레드에서만 바꿔서 확대·축소 중 다시 렌더하지 않는다.
  *
+ * 시설이 있는 방은 번호 대신 시설 이름을 보여준다. 다만 이름이 긴데 방이 작으면(스터디룸처럼 작은 방이 나란히 있는 층)
+ * 줄여도 옆 방 글자와 겹쳐서, 가장 작은 크기(6pt)로도 안 들어가는 배율에서는 번호를 보여주다가 확대하면 이름으로 바꾼다.
+ *
  * 방을 탭하면 selectedRoomIds가 바뀌어 레이어 전체가 다시 렌더되는데, 한 층에 라벨이 70개
  * 넘게 있을 수 있어서 memo로 감싸 isSelected가 실제로 바뀐 라벨만 다시 그린다.
  */
@@ -83,6 +90,8 @@ const RoomLabel = React.memo(function RoomLabel({
   horizontalFit,
   verticalFit,
   floorSize,
+  nameFit,
+  isName = false,
   isSelected,
   scale,
   translateX,
@@ -118,7 +127,9 @@ const RoomLabel = React.memo(function RoomLabel({
         }
       }
     }
+    const nameFits = nameFit !== undefined && nameFit * scale.value >= MIN_FONT_SIZE;
     return {
+      opacity: nameFits === isName ? 1 : 0,
       transform: [
         { translateX: translateX.value + rotatedX - boxWidth / 2 },
         { translateY: translateY.value + rotatedY - boxHeight / 2 },
@@ -147,9 +158,11 @@ interface Props {
   /** 하이라이팅된 방들의 id. 같은 라벨을 공유하는 방이 여러 개면 전부 넘겨서 다 같이
    *  흰색으로 바뀌게 한다 (진한 배경 위라 검정 글자는 안 보임) */
   selectedRoomIds?: string[];
+  /** 방 라벨(room.label ?? room.id) → 번호 대신 보여줄 시설 이름 */
+  roomNames?: ReadonlyMap<string, string>;
 }
 
-export function RoomLabelsLayer({ rooms, scale, translateX, translateY, rotation, selectedRoomIds = [] }: Props) {
+export function RoomLabelsLayer({ rooms, scale, translateX, translateY, rotation, selectedRoomIds = [], roomNames }: Props) {
   // 하나의 강의실이 도면상 여러 조각으로 나뉜 경우(같은 label을 공유) 텍스트는
   // 한 번만 그린다 — 안 그러면 조각 개수만큼 같은 번호가 겹쳐 보인다.
   // 선택(클릭) 자체는 label이 같은 모든 조각에 걸리므로(IndoorMapView의 그룹핑 로직)
@@ -175,25 +188,48 @@ export function RoomLabelsLayer({ rooms, scale, translateX, translateY, rotation
     [labels],
   );
 
+  // 시설 이름의 글자 크기. 층 기준 크기는 번호로만 정해서, 시설 이름이 있어도 다른 방 번호 크기는 그대로다.
+  const nameLabels = useMemo(() => {
+    const names = new Map<string, ReturnType<typeof fitFontSizes> & { name: string }>();
+    labels.forEach(({ room, text }) => {
+      const name = roomNames?.get(text);
+      if (name) names.set(text, { name, ...fitFontSizes(room.points, name) });
+    });
+    return names;
+  }, [labels, roomNames]);
+
   if (labels.length === 0) return null;
 
   return (
     <Animated.View style={styles.overlay} pointerEvents="none">
-      {labels.map(({ room, text, horizontal, vertical }) => (
-        <RoomLabel
-          key={room.id}
-          room={room}
-          text={text}
-          horizontalFit={horizontal}
-          verticalFit={vertical}
-          floorSize={floorSize}
-          isSelected={selectedRoomIds.includes(room.id)}
-          scale={scale}
-          translateX={translateX}
-          translateY={translateY}
-          rotation={rotation}
-        />
-      ))}
+      {labels.map(({ room, text, horizontal, vertical }) => {
+        const nameLabel = nameLabels.get(text);
+        const nameFit = nameLabel && Math.max(nameLabel.horizontal, nameLabel.vertical);
+        const shared = {
+          room,
+          floorSize,
+          nameFit,
+          isSelected: selectedRoomIds.includes(room.id),
+          scale,
+          translateX,
+          translateY,
+          rotation,
+        };
+        return (
+          <React.Fragment key={room.id}>
+            <RoomLabel {...shared} text={text} horizontalFit={horizontal} verticalFit={vertical} />
+            {nameLabel && (
+              <RoomLabel
+                {...shared}
+                isName
+                text={nameLabel.name}
+                horizontalFit={nameLabel.horizontal}
+                verticalFit={nameLabel.vertical}
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
     </Animated.View>
   );
 }
