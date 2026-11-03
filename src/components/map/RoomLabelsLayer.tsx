@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { RoomShape } from '@appTypes/room';
 import { largestBoxFontSize, roomLabelCenter } from '@utils/geometry';
@@ -120,7 +120,8 @@ const RoomLabel = React.memo(function RoomLabel({
 
   return (
     <Animated.View style={[styles.label, { width: boxWidth, height: boxHeight }, animatedStyle]}>
-      <Text style={[styles.labelText, isSelected && styles.labelTextSelected]} numberOfLines={1}>
+      {/* 상자 폭을 14pt 기준으로 잡아서, 시스템 글자 크기를 따라 커지면 "제1열…"로 잘린다. 크게 보려면 지도를 확대하면 된다. */}
+      <Text style={[styles.labelText, isSelected && styles.labelTextSelected]} numberOfLines={1} allowFontScaling={false}>
         {text}
       </Text>
     </Animated.View>
@@ -168,7 +169,7 @@ export function RoomLabelsLayer({ rooms, scale, defaultScale, translateX, transl
   if (labels.length === 0) return null;
 
   return (
-    <Animated.View style={styles.overlay} pointerEvents="none">
+    <View style={styles.overlay} pointerEvents="none">
       {labels.map(({ room, text, numberFit }) => {
         const nameLabel = nameLabels.get(text);
         const shared = {
@@ -189,7 +190,7 @@ export function RoomLabelsLayer({ rooms, scale, defaultScale, translateX, transl
           </React.Fragment>
         );
       })}
-    </Animated.View>
+    </View>
   );
 }
 
