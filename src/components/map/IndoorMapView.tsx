@@ -99,6 +99,8 @@ interface Props {
    */
   renderForeground?: (size: LayerSize) => React.ReactNode;
   onRoomSelect?: (room: RoomShape | null) => void;
+  /** 방 라벨 → 번호 밑에 보여줄 시설 이름. 탭·선택은 그대로 방 라벨로 한다 */
+  roomNames?: ReadonlyMap<string, string>;
   minScale?: number;
   maxScale?: number;
   /** 계단/엘리베이터 마커의 고정 화면 픽셀 크기 (확대/축소해도 안 바뀜). 생략 시 IconMarkersLayer 기본값 */
@@ -125,6 +127,7 @@ export function IndoorMapView({
   backgroundColor,
   fitOffsetY,
   onControlsReady,
+  roomNames,
 }: Props) {
   const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
 
@@ -219,6 +222,7 @@ export function IndoorMapView({
     translateX,
     translateY,
     rotation,
+    defaultScale,
   } = useMapGestures({
     rooms: selectableRooms,
     onMapTap: handleMapTap,
@@ -323,10 +327,12 @@ export function IndoorMapView({
       <RoomLabelsLayer
         rooms={mapData.rooms}
         scale={scale}
+        defaultScale={defaultScale}
         translateX={translateX}
         translateY={translateY}
         rotation={rotation}
         selectedRoomIds={selectedRoomIds}
+        roomNames={roomNames}
       />
       </Animated.View>
       {!onControlsReady && <ResetViewButton rotation={rotation} onPress={resetTransform} />}

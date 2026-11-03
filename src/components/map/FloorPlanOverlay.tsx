@@ -5,6 +5,7 @@ import {
   NaverMapMarkerOverlay,
   NaverMapPolygonOverlay,
 } from '@mj-studio/react-native-naver-map';
+import { roomLabelCenter } from '@utils/geometry';
 import { labelWidthEm } from '@utils/roomLabel';
 import { getBuildingMask } from '@constant/buildingMasks';
 import { FLOOR_MAPS, getHostedArea, isInHostedArea, parseFloorId, resolveFloorId } from '@constant/floorMaps';
@@ -35,8 +36,8 @@ const MAP_ICON_SIZE = 20;
 // 확대했을 때부터 보이게 고정 줌으로 정한다.
 const MAP_ICON_MIN_ZOOM = 18;
 // 호수 라벨 글자 크기(pt)와, 방 안에 들어가는지 볼 때 쓰는 글자 한 개 폭/위아래 높이 어림값(pt). 네이버 지도 마커는 그림으로
-// 찍어 붙여서 줌마다 크기를 바꾸면 매번 다시 찍어야 하므로 크기는 고정하고, 내부지도 뷰(RoomLabelsLayer)의 최소 크기 9pt에
-// 가깝게 둔다.
+// 찍어 붙여서 줌마다 크기를 바꾸면 매번 다시 찍어야 하므로 크기는 고정하고, 휴대폰에서 읽을 수 있는 크기로
+// 둔다.
 const LABEL_FONT_SIZE = 10;
 // 굵기 600이라 내부지도 뷰(500)보다 글자 폭을 조금 넓게 잡는다(labelWidthEm × 이 배율).
 const LABEL_WEIGHT_WIDTH_FACTOR = 1.05;
@@ -187,11 +188,7 @@ export function FloorPlanOverlay({
       .filter(icon => inArea(icon.center))
       .map(icon => ({ ...icon, position: toGeo(icon.center[0], icon.center[1]) }));
     const rooms = data.rooms.filter(room => room.points.every(inArea)).map(room => {
-      const [cx, cy] =
-        room.labelAnchor ??
-        room.points
-          .reduce(([sx, sy], [x, y]) => [sx + x, sy + y], [0, 0])
-          .map(v => v / room.points.length);
+      const [cx, cy] = room.labelAnchor ?? roomLabelCenter(room.points);
       const label = room.label ?? room.id;
       const coords = room.points.map(([x, y]) => toGeo(x, y));
       const center = toGeo(cx, cy);

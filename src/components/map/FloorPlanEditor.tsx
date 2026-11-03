@@ -6,6 +6,7 @@ import { FLOOR_MAPS } from '@constant/floorMaps';
 import { FloorDoors } from './FloorDoors';
 import ElevatorIcon from '@assets/svgs/icons/elevator.svg';
 import StairsIcon from '@assets/svgs/icons/stairs.svg';
+import { roomLabelCenter } from '@utils/geometry';
 
 // 외곽 벽 stroke가 contentBounds 밖으로 살짝 삐져나오는 만큼 여유 (도면 px, renderFloorOverlay.js와 같은 값)
 const MARGIN = 8;
@@ -152,11 +153,7 @@ export const FloorPlanEditor = forwardRef<FloorPlanEditorHandle, Props>(({ floor
           {data.rooms.map(room => {
             const label = room.label ?? room.id;
             if (!label) return null;
-            const [x, y] =
-              room.labelAnchor ??
-              room.points
-                .reduce(([sx, sy], [px, py]) => [sx + px, sy + py], [0, 0])
-                .map(v => v / room.points.length);
+            const [x, y] = room.labelAnchor ?? roomLabelCenter(room.points);
             return (
               <Text
                 key={room.id}

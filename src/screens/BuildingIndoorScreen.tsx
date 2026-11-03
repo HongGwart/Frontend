@@ -16,6 +16,7 @@ import { FLOOR_MAPS, getBuildingFloors, getRoomDisplayLabel, getRoomOwner } from
 import { FavoriteInput, useFavorites } from '@hooks/useFavorites';
 import { roomDisplayName } from '@utils/roomLabel';
 import { useBuildingDetail } from '@api/building/useBuildingDetail';
+import { facilityRoomKey, useFacilityRoomNames } from '@api/facility/facilities';
 import { CAMPUS_BUILDINGS } from '@constant/campusBuildings';
 import { RootStackParamList } from '@navigation/types';
 import { toRoutePlaceLabel, useRouteButtonProps } from '@hooks/useRouteButtonProps';
@@ -87,6 +88,22 @@ export default function BuildingIndoorScreen() {
     });
     return { mapData: { ...floorAssets.data, rooms }, originalLabelOf: originals };
   }, [floorId, floorAssets, params.buildingCode]);
+
+  // 편의시설이 있는 방은 번호 밑에 시설 이름을 함께 그린다. 방을 구분하는 라벨은 그대로 둬서, 이름이 같은 방("그룹
+  // 스터디룸" 4개)도 따로 탭된다. 소속 동으로 찾아서 다른 동 도면에 함께 그려진 방과 헷갈리지 않는다.
+  const facilityRoomNames = useFacilityRoomNames();
+  const roomNames = useMemo(() => {
+    const names = new Map<string, string>();
+    if (!floorId || !mapData) return names;
+    mapData.rooms.forEach(room => {
+      const label = room.label ?? room.id;
+      if (!label) return;
+      const owner = getRoomOwner(floorId, originalLabelOf.get(label) ?? label);
+      const name = facilityRoomNames.get(facilityRoomKey(owner.buildingCode, owner.roomNumber));
+      if (name) names.set(label, name);
+    });
+    return names;
+  }, [floorId, mapData, originalLabelOf, facilityRoomNames]);
 
   // 탭한 강의실 라벨(예: "212"). 층을 바꾸면 이전 층의 선택은 의미가 없으니 비운다.
   const [selectedRoomLabel, setSelectedRoomLabel] = useState<string | null>(null);
@@ -160,6 +177,7 @@ export default function BuildingIndoorScreen() {
   const routeButtonProps = useRouteButtonProps();
   // 번호 방은 "101호", 글자 이름 방("제1열람실", "멀티미디어실")은 그대로.
   const selectedRoom = roomOwner ? roomDisplayName(roomOwner.roomNumber) : undefined;
+  const selectedFacilityName = roomOwner && facilityRoomNames.get(facilityRoomKey(roomOwner.buildingCode, roomOwner.roomNumber));
   const placeLabel = toRoutePlaceLabel(roomBuildingCode, roomBuildingName, selectedRoom);
   // 건물 내부 지도는 서버 검색을 거치지 않아 nodeId가 없다 — 동 코드 + 호실로 누를 때 서버 노드를 찾는다.
   const routePlace = { buildingCode: roomBuildingCode, room: selectedRoom };
@@ -187,6 +205,7 @@ export default function BuildingIndoorScreen() {
                 mapData={mapData}
                 backgroundColor={theme.semantic.line.tertiary}
                 fitOffsetY={PLAN_FIT_OFFSET_Y}
+                roomNames={roomNames}
                 onControlsReady={setMapControls}
                 // LayerSize를 그대로 펼친다. viewBox가 없을 때 viewBox={undefined}로 넘기면 SVG 컴포넌트의
                 // 원래 viewBox를 덮어써서 도면 스케일이 깨진다.
@@ -257,7 +276,7 @@ export default function BuildingIndoorScreen() {
               buildingCode={roomBuildingCode}
               buildingName={roomBuildingName}
               roomNumber={selectedRoom}
-              description={roomMarker?.description ?? params.description}
+              description={selectedFacilityName ?? roomMarker?.description ?? params.description}
               isFavorite={isFavorite(roomFavorite)}
               onToggleFavorite={() => toggleFavorite(roomFavorite)}
               {...routeButtonProps(placeLabel, undefined, routePlace)}
