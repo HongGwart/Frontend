@@ -89,8 +89,8 @@ export default function BuildingIndoorScreen() {
     return { mapData: { ...floorAssets.data, rooms }, originalLabelOf: originals };
   }, [floorId, floorAssets, params.buildingCode]);
 
-  // 편의시설이 있는 방은 번호 대신 시설 이름을 그린다. 방을 구분하는 라벨은 그대로 두고 그릴 글자만 바꿔서, 이름이 같은
-  // 방("그룹 스터디룸" 4개)도 따로 탭된다. 소속 동으로 찾아서 다른 동 도면에 함께 그려진 방과 헷갈리지 않는다.
+  // 편의시설이 있는 방은 번호 밑에 시설 이름을 함께 그린다. 방을 구분하는 라벨은 그대로 둬서, 이름이 같은 방("그룹
+  // 스터디룸" 4개)도 따로 탭된다. 소속 동으로 찾아서 다른 동 도면에 함께 그려진 방과 헷갈리지 않는다.
   const facilityRoomNames = useFacilityRoomNames();
   const roomNames = useMemo(() => {
     const names = new Map<string, string>();

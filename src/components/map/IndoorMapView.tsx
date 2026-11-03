@@ -99,7 +99,7 @@ interface Props {
    */
   renderForeground?: (size: LayerSize) => React.ReactNode;
   onRoomSelect?: (room: RoomShape | null) => void;
-  /** 방 라벨 → 번호 대신 보여줄 시설 이름. 라벨 표시만 바뀌고 탭·선택은 그대로 방 라벨로 한다 */
+  /** 방 라벨 → 번호 밑에 보여줄 시설 이름. 탭·선택은 그대로 방 라벨로 한다 */
   roomNames?: ReadonlyMap<string, string>;
   minScale?: number;
   maxScale?: number;
@@ -222,6 +222,7 @@ export function IndoorMapView({
     translateX,
     translateY,
     rotation,
+    defaultScale,
   } = useMapGestures({
     rooms: selectableRooms,
     onMapTap: handleMapTap,
@@ -326,6 +327,7 @@ export function IndoorMapView({
       <RoomLabelsLayer
         rooms={mapData.rooms}
         scale={scale}
+        defaultScale={defaultScale}
         translateX={translateX}
         translateY={translateY}
         rotation={rotation}

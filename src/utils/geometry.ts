@@ -104,3 +104,47 @@ export function roomLabelCenter(points: [number, number][]): [number, number] {
     ? widest.point
     : center;
 }
+
+function segmentsCross(a: [number, number], b: [number, number], c: [number, number], d: [number, number]): boolean {
+  const side = (p: [number, number], q: [number, number], r: [number, number]) =>
+    (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]);
+  return side(a, b, c) * side(a, b, d) < 0 && side(c, d, a) * side(c, d, b) < 0;
+}
+
+/**
+ * (cx, cy)를 가운데로 하는 글자 상자가 방 도형 안에 들어가는 가장 큰 글자 크기. 상자 크기는 글자 크기 대비 비율(em)로 받는다.
+ * 바운딩 박스로 재면 비스듬한 방에서 실제보다 크게 잡혀 글자가 벽 밖으로 나가서, 도형으로 직접 잰다.
+ */
+export function largestBoxFontSize(
+  cx: number,
+  cy: number,
+  widthEm: number,
+  heightEm: number,
+  points: [number, number][],
+): number {
+  const fits = (size: number) => {
+    const halfWidth = (widthEm * size) / 2;
+    const halfHeight = (heightEm * size) / 2;
+    const corners: [number, number][] = [
+      [cx - halfWidth, cy - halfHeight],
+      [cx + halfWidth, cy - halfHeight],
+      [cx + halfWidth, cy + halfHeight],
+      [cx - halfWidth, cy + halfHeight],
+    ];
+    if (!corners.every(([x, y]) => pointInPolygon(x, y, points))) return false;
+    return !corners.some((corner, i) =>
+      points.some((point, j) =>
+        segmentsCross(corner, corners[(i + 1) % 4], point, points[(j + 1) % points.length]),
+      ),
+    );
+  };
+  const xs = points.map(([x]) => x);
+  let low = 0;
+  let high = (Math.max(...xs) - Math.min(...xs)) / widthEm;
+  for (let i = 0; i < 12; i++) {
+    const size = (low + high) / 2;
+    if (fits(size)) low = size;
+    else high = size;
+  }
+  return low;
+}
