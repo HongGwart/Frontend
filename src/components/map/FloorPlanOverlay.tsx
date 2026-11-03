@@ -5,6 +5,7 @@ import {
   NaverMapMarkerOverlay,
   NaverMapPolygonOverlay,
 } from '@mj-studio/react-native-naver-map';
+import { roomLabelCenter } from '@utils/geometry';
 import { labelWidthEm } from '@utils/roomLabel';
 import { getBuildingMask } from '@constant/buildingMasks';
 import { FLOOR_MAPS, getHostedArea, isInHostedArea, parseFloorId, resolveFloorId } from '@constant/floorMaps';
@@ -187,11 +188,7 @@ export function FloorPlanOverlay({
       .filter(icon => inArea(icon.center))
       .map(icon => ({ ...icon, position: toGeo(icon.center[0], icon.center[1]) }));
     const rooms = data.rooms.filter(room => room.points.every(inArea)).map(room => {
-      const [cx, cy] =
-        room.labelAnchor ??
-        room.points
-          .reduce(([sx, sy], [x, y]) => [sx + x, sy + y], [0, 0])
-          .map(v => v / room.points.length);
+      const [cx, cy] = room.labelAnchor ?? roomLabelCenter(room.points);
       const label = room.label ?? room.id;
       const coords = room.points.map(([x, y]) => toGeo(x, y));
       const center = toGeo(cx, cy);

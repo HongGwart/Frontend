@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { RoomShape } from '@appTypes/room';
+import { roomLabelCenter } from '@utils/geometry';
 import { labelWidthEm } from '@utils/roomLabel';
 
 // 층 기준 방 번호 글자 크기(화면 pt). 확대하면 커지고 축소하면 작아지되 이 범위를 넘지 않는다 — 9pt보다 작으면 휴대폰에서
@@ -29,13 +30,6 @@ const quantile = (values: number[], q: number) => {
   const sorted = [...values].sort((a, b) => a - b);
   return sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] ?? 0;
 };
-
-/** 방 4개 모서리의 평균 = 사각형 중심점. 배경 SVG에 박혀있던 숫자 라벨을 대신해서
- *  이 좌표에 room.id를 앵커로 그린다 (라벨은 stripLabelPaths.js로 배경에서 제거됨) */
-function centroid(points: RoomShape['points']): [number, number] {
-  const sum = points.reduce(([sx, sy], [x, y]) => [sx + x, sy + y], [0, 0]);
-  return [sum[0] / points.length, sum[1] / points.length];
-}
 
 /** 글자를 가로로 / 세로로(90°) 썼을 때 방 안에 들어가는 가장 큰 글자 크기(도면 좌표 단위). 방 바운딩 박스 기준이다. */
 function fitFontSizes(points: RoomShape['points'], text: string) {
@@ -98,7 +92,8 @@ const RoomLabel = React.memo(function RoomLabel({
   translateY,
   rotation,
 }: LabelProps) {
-  const [cx, cy] = room.labelAnchor ?? centroid(room.points);
+  // 배경 SVG에 박혀있던 숫자 라벨을 대신해서 이 좌표에 그린다(라벨은 stripLabelPaths.js로 배경에서 제거됨).
+  const [cx, cy] = useMemo(() => room.labelAnchor ?? roomLabelCenter(room.points), [room]);
   // 한글이 섞인 이름("제1열람실")도 잘리지 않게 글자마다 폭을 따로 잡는다.
   const boxWidth = labelWidthEm(text) * MAX_FONT_SIZE + BOX_PADDING * 2;
   const boxHeight = MAX_FONT_SIZE * LINE_HEIGHT_EM;
