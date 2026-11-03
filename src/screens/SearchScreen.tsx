@@ -48,6 +48,7 @@ import { useFavorites } from '@hooks/useFavorites';
 import { favoriteFromCategoryMarker, favoriteFromDongMarker } from '@constant/favoriteInputs';
 import { VoicePermissionDialog } from '@components/common/VoicePermissionDialog';
 import { AnimatedToast } from '@components/mypage/AnimatedToast';
+import { useIsOffline } from '@hooks/useIsOffline';
 
 // 지도 화면(MapScreen)과 동일한 형태. 검색 뷰 안에서 지도를 띄울 때도 마커를 직접
 // 탭한 것과 같은 방식으로 시설 정보 바텀시트를 채운다.
@@ -111,12 +112,16 @@ export default function SearchScreen() {
   };
 
   const trimmedValue = value.trim();
-  // 서버 검색(자동완성 API) + 아직 서버에 없는 앱 더미 장소. 실패하면 더미 결과로 대신한다.
+  // 서버 검색(자동완성 API). 실패하면 결과 자리에 원인과 "다시 시도"를 보여준다.
   const {
     results: searchResults,
     isSearching: isFetchingResults,
     isError: searchFailed,
+    error: searchError,
+    retry: retrySearch,
   } = useSearchSuggestions(value);
+  // 오프라인이면 검색 요청이 멈춰 있어서 "결과 없음" 대신 연결을 기다린다고 안내한다.
+  const isOffline = useIsOffline();
 
   // 검색어가 없으면 최근 검색어를, 있으면 검색 결과를 보여준다.
   const isSearching = trimmedValue.length > 0;
@@ -491,7 +496,11 @@ export default function SearchScreen() {
                       {...SEARCH_ITEM_ICONS[item.category]}
                     />
                   ))
-                ) : isFetchingResults || searchFailed ? null : (
+                ) : isOffline ? (
+                  <SearchEmptyResult offline />
+                ) : searchFailed ? (
+                  <SearchEmptyResult error={searchError} onRetry={retrySearch} />
+                ) : isFetchingResults ? null : (
                   <SearchEmptyResult />
                 )
               ) : (

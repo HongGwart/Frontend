@@ -50,11 +50,14 @@ export function toApiError(error: unknown): ApiError {
   });
 }
 
-/** 사용자에게 보여줄 문구. 서버 메시지 > 호출부 기본 문구 > 종류별 기본 문구 순서. */
+/**
+ * 사용자에게 보여줄 문구. 서버 메시지 > 원인별 문구(인터넷 끊김·응답 지연·서버 오류) > 호출부 기본 문구 > 기본 문구 순서.
+ * 원인을 알 수 있는 실패는 호출부 문구("경로를 불러오지 못했어요")보다 원인을 먼저 알려준다 — 사용자가 할 일이 다르다
+ * (인터넷 연결 확인 / 잠시 후 다시 시도).
+ */
 export function getErrorMessage(error: unknown, fallback?: string): string {
   const apiError = toApiError(error);
   if (apiError.serverMessage) return apiError.serverMessage;
-  if (fallback) return fallback;
   switch (apiError.kind) {
     case 'network':
       return '인터넷 연결을 확인해 주세요.';
@@ -63,7 +66,7 @@ export function getErrorMessage(error: unknown, fallback?: string): string {
     case 'server':
       return '서버에 문제가 생겼어요. 잠시 후 다시 시도해 주세요.';
     default:
-      return '요청을 처리하지 못했어요.';
+      return fallback ?? '요청을 처리하지 못했어요.';
   }
 }
 

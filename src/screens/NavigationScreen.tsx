@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NaverMapView, NaverMapPolylineOverlay, NaverMapViewRef } from '@mj-studio/react-native-naver-map';
 import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
@@ -28,9 +28,12 @@ import { CAMPUS_EXTENT, MAP_MIN_ZOOM, MAP_MAX_ZOOM } from '@constant/mapCamera';
 import { RootStackParamList } from '@navigation/types';
 import { regionToFit } from '@utils/routePath';
 import { useRouteSearch } from '@api/route/useRouteSearch';
+import { RetryButton } from '@components/common/RetryButton';
+import { useSlowRequest } from '@hooks/useSlowRequest';
 import { RoutePlace, usePlaceNodeId } from '@api/node/usePlaceNodeId';
 import { getErrorMessage } from '@api/errors';
 import { useBlockScreenCapture } from '@hooks/useBlockScreenCapture';
+import { useIsOffline } from '@hooks/useIsOffline';
 
 // Header.tsx의 Container height와 동일한 값 — 경로 보기 화면에서 지도 위에 얹는
 // 투명 헤더의 실제 높이(세이프에어리어 제외)를 지도 카메라 패딩 계산에 재사용한다.
@@ -104,9 +107,12 @@ export default function NavigationScreen() {
   const toNodeId = destinationNodeId ?? destinationLookup.nodeId;
   const isLookingUpPlace = departureLookup.isLoading || destinationLookup.isLoading;
   const placeLookupFailed = departureLookup.isError || destinationLookup.isError;
-  const routeSearch = useRouteSearch({ fromNodeId, toNodeId });
-  // 장소 검색·길 안내 화면에서 돌아오면(이 화면은 스택에 남아 포커스만 바뀐다) 1분 지난 경로를 다시 불러와
-  // 엘리베이터 혼잡 예상을 새로 계산한다. 길 안내 화면은 처음 정한 경로를 고정해 두므로 영향이 없다.
+  // 길 안내·장소 검색 화면 밑에 가려져 있는 동안은 앱 복귀 때 다시 불러오지 않는다(돌아오면 아래 refetchIfStale이 확인).
+  const isFocused = useIsFocused();
+  const routeSearch = useRouteSearch({ fromNodeId, toNodeId, autoRefetch: isFocused });
+  // 장소 검색·길 안내 화면에서 돌아오면(이 화면은 스택에 남아 포커스만 바뀐다) 재사용 기한이 지난 경로를 다시
+  // 불러와 엘리베이터 혼잡 예상을 새로 계산한다(기한은 useRouteSearch의 staleTime). 길 안내 화면은 처음 정한 경로를
+  // 고정해 두므로 영향이 없다.
   const refetchIfStaleRef = useRef(routeSearch.refetchIfStale);
   refetchIfStaleRef.current = routeSearch.refetchIfStale;
   useFocusEffect(useCallback(() => refetchIfStaleRef.current(), []));
@@ -117,29 +123,41 @@ export default function NavigationScreen() {
     () => (selectedOption ? allRouteResults.filter(route => route.options.includes(selectedOption)) : allRouteResults),
     [allRouteResults, selectedOption],
   );
-  // 경로 목록 대신 띄울 안내 — 장소 찾는 중/장소 찾기 실패/서버에 없는 장소/경로 찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
-  const routeStatusText = isLookingUpPlace
-    ? '경로를 찾고 있어요'
-    : placeLookupFailed
-      ? '경로를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'
-      : !routeSearch.enabled
-        ? '길찾기를 지원하지 않는 장소예요'
-        : routeSearch.isLoading
-          ? '경로를 찾고 있어요'
-          : routeSearch.samePlace
-            ? '출발지와 도착지가 같은 곳이에요'
-            : routeSearch.notFound
-              ? '두 장소를 잇는 경로를 찾지 못했어요'
-              : routeSearch.error
-                ? getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.')
-                : routeResults.length === 0
-                  ? '이 옵션으로 갈 수 있는 경로가 없어요'
-                  : null;
+  // 경로를 찾는 동안 몇 초 넘게 응답이 없으면 기다리는 중임을 알린다(타임아웃 10초 + 재시도).
+  const routeLoadingSlow = useSlowRequest(hasRoute && (isLookingUpPlace || routeSearch.isLoading));
+  const loadingText = routeLoadingSlow ? '응답이 늦어지고 있어요. 조금만 기다려 주세요.' : '경로를 찾고 있어요';
+  // 실패하면 원인(인터넷 끊김·응답 지연·서버 오류)을 알려주고, 그 자리에서 "다시 시도"할 수 있게 한다.
+  const retryRoute = placeLookupFailed
+    ? () => {
+        departureLookup.retry();
+        destinationLookup.retry();
+      }
+    : routeSearch.error
+      ? routeSearch.retry
+      : undefined;
+  // 오프라인이면 장소 조회·경로 요청이 멈춰 있다 — "지원하지 않는 장소"·"경로 없음"으로 잘못 보이지 않게 연결을 기다린다고
+  // 안내하고, 연결되면 멈춘 요청이 이어서 나간다.
+  const isOffline = useIsOffline();
+  const waitingForNetwork = isOffline && routeSearch.routes.length === 0 && !routeSearch.notFound && !routeSearch.samePlace;
+  // 경로 목록 대신 띄울 안내 — 연결 대기/장소 찾는 중/장소 찾기 실패/서버에 없는 장소/경로 찾는 중/경로 없음/실패/고른 옵션의 경로 없음.
+  const routeStatusText = (() => {
+    if (waitingForNetwork) return '인터넷에 연결되어 있지 않아요. 연결되면 바로 이어서 찾아요.';
+    if (isLookingUpPlace) return loadingText;
+    if (placeLookupFailed) return getErrorMessage(departureLookup.error ?? destinationLookup.error, '경로를 불러오지 못했어요.');
+    if (!routeSearch.enabled) return '길찾기를 지원하지 않는 장소예요';
+    if (routeSearch.isLoading) return loadingText;
+    if (routeSearch.samePlace) return '출발지와 도착지가 같은 곳이에요';
+    if (routeSearch.notFound) return '두 장소를 잇는 경로를 찾지 못했어요';
+    if (routeSearch.error) return getErrorMessage(routeSearch.error, '경로를 불러오지 못했어요.');
+    if (routeResults.length === 0) return '이 옵션으로 갈 수 있는 경로가 없어요';
+    return null;
+  })();
 
   // 경로 카드를 누르면 페이지 이동 대신 이 화면 안에서 지도+구간 안내 컴포넌트로 바꿔치기한다.
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
-  // 고른 카드의 옵션. 경로를 다시 불러왔을 때(1분 지나 화면 복귀) 고른 카드가 다른 카드와 같은 길이 되어 합쳐지면
-  // id로는 못 찾으니, 같은 옵션이 들어 있는 카드를 대신 보여준다 — 보던 경로 화면이 갑자기 목록으로 닫히지 않게.
+  // 고른 카드의 옵션. 경로를 다시 불러왔는데 서버 길 데이터가 바뀌어(백엔드 배포) 고른 카드가 다른 카드와 같은 길이
+  // 되어 합쳐지면 id로는 못 찾으니, 같은 옵션이 들어 있는 카드를 대신 보여준다 — 보던 경로 화면이 갑자기 목록으로
+  // 닫히지 않게. 엘리베이터 혼잡 예상은 경로를 바꾸지 않아서 이 경우가 아니다.
   const [selectedRouteOptions, setSelectedRouteOptions] = useState<RouteOptionKey[]>([]);
   const selectedView = useMemo(() => {
     if (!selectedRouteId) return null;
@@ -451,6 +469,7 @@ export default function NavigationScreen() {
       {hasRoute && routeStatusText ? (
         <EmptyState>
           <EmptyText>{routeStatusText}</EmptyText>
+          {retryRoute && !waitingForNetwork && <RetryButton onPress={retryRoute} />}
         </EmptyState>
       ) : hasRoute ? (
         <ResultsArea>

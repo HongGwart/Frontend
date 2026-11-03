@@ -28,6 +28,11 @@ const PAN_DECELERATION = 0.9975;
  * 바꾼 다음 이 계수로 한번 더 눌러서 네이버지도처럼 "살짝만" 더 나아가는 정도로 맞춘다.
  */
 const ZOOM_MOMENTUM_FACTOR = 0.6;
+/**
+ * 두 손가락을 이만큼(15°) 넘게 돌려야 지도가 회전하기 시작한다. 핀치 확대·축소 중 손가락이 살짝 틀어지는 정도로는
+ * 돌아가지 않게 한다. 넘긴 뒤에는 그 지점부터 이어서 돌아서 지도가 툭 튀지 않는다.
+ */
+const ROTATION_START_THRESHOLD = Math.PI / 12;
 /** 확대 관성이 멎는 속도. 팬보다 살짝 빠르게 멎도록 조금 더 낮게 잡았다 */
 const ZOOM_DECELERATION = 0.996;
 /**
@@ -122,6 +127,8 @@ export function useMapGestures({
   // 라디안 단위. 두 손가락 회전 제스처로 갱신됨
   const rotation = useSharedValue(0);
   const savedRotation = useSharedValue(0);
+  // 이번 제스처에서 회전이 시작된 순간의 손가락 각도. 아직 시작 기준을 안 넘었으면 null.
+  const rotationStartAngle = useSharedValue<number | null>(null);
   // 화면에 맞춘 배율보다 더 축소하지 못하게, fitToContainer가 호출되면 여기가 갱신됨
   const minScaleShared = useSharedValue(minScale);
   const maxScaleShared = useSharedValue(maxScale);
@@ -345,10 +352,15 @@ export function useMapGestures({
       .onStart(() => {
         capturePivot();
         pivotActive.value = true;
+        rotationStartAngle.value = null;
       })
       .onUpdate((e) => {
+        if (rotationStartAngle.value === null) {
+          if (Math.abs(e.rotation) < ROTATION_START_THRESHOLD) return;
+          rotationStartAngle.value = e.rotation;
+        }
         // translate는 위 useAnimatedReaction이 rotation 변화를 보고 자동으로 따라간다.
-        rotation.value = savedRotation.value + e.rotation;
+        rotation.value = savedRotation.value + e.rotation - rotationStartAngle.value;
       })
       .onEnd(() => {
         savedRotation.value = rotation.value;
@@ -387,6 +399,7 @@ export function useMapGestures({
     savedTranslateY,
     rotation,
     savedRotation,
+    rotationStartAngle,
     minScaleShared,
     maxScaleShared,
     containerWidthShared,
@@ -554,5 +567,7 @@ export function useMapGestures({
     translateX,
     translateY,
     rotation,
+    // 방 라벨이 "처음 화면보다 얼마나 확대했는지"에 맞춰 글자 크기를 정할 때 쓴다.
+    defaultScale: defaultScaleShared,
   };
 }

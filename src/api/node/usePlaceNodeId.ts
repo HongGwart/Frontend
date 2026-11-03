@@ -59,9 +59,21 @@ export function usePlaceNodeId(place: RoutePlace | undefined) {
   const query = lookupQuery(place);
   // 동 코드가 비어 있으면(이름 없는 마커 등) 빈 검색어로 요청하지 않는다.
   const enabled = query.length > 0;
-  const { data, isLoading, isError } = useAutocomplete(lookupParams(query), { query: { enabled, ...LOOKUP_QUERY } });
+  const { data, error, isLoading, isError, isFetching, refetch } = useAutocomplete(lookupParams(query), {
+    query: { enabled, ...LOOKUP_QUERY },
+  });
   const nodeId = pickNodeId(data, place);
-  return { nodeId: enabled ? nodeId : undefined, isLoading: enabled && isLoading, isError: enabled && isError };
+  return {
+    nodeId: enabled ? nodeId : undefined,
+    isLoading: enabled && isLoading,
+    isError: enabled && isError,
+    /** 실패 원인(인터넷 끊김·응답 지연 등) — 화면이 원인별 문구를 고른다 */
+    error: enabled && isError ? error : undefined,
+    /** 실패한 뒤 "다시 시도" */
+    retry: () => {
+      if (enabled && !isFetching) refetch();
+    },
+  };
 }
 
 /**
