@@ -65,6 +65,8 @@ function flattenChildren(children: React.ReactNode): React.ReactElement[] {
 const MAX_LAYER_PIXELS = 8_000_000;
 /** 예전 고정 한도(긴 변 1000dp). 이 크기로는 크래시 없이 써 왔으니, 초고밀도 기기에서도 이보다 작게는 안 그린다. */
 const MIN_RENDER_LONG_SIDE_DP = 1000;
+/** SVG 레이어를 도면 영역(contentBounds)만큼만 그릴 때 둘레에 더 남길 여유(도면 좌표). 외곽선 두께가 잘리지 않게. */
+const DRAW_AREA_PADDING = 16;
 
 function AbsoluteLayer({ children }: { children: React.ReactNode }) {
   return (
@@ -204,6 +206,17 @@ export function IndoorMapView({
     [selectableRooms]
   );
 
+  // SVG 레이어는 캔버스 전체가 아니라 도면이 있는 영역만 그린다. 캔버스는 층마다 1920px 안팎으로 고정이라 도면이 차지하는
+  // 면적은 중간값 23%뿐인데, react-native-svg는 Android에서 레이어 크기만큼 비트맵에 그려서 층을 바꿀 때마다 빈 여백까지
+  // 그리느라 느렸다. 레이어는 mapLayer 안에서 그 영역 자리에 놓아서, 도면 좌표 → 화면 좌표 계산(제스처·라벨·아이콘)은 그대로다.
+  const drawArea = useMemo(() => {
+    const minX = Math.max(0, contentBounds.minX - DRAW_AREA_PADDING);
+    const minY = Math.max(0, contentBounds.minY - DRAW_AREA_PADDING);
+    const maxX = Math.min(mapData.width, contentBounds.minX + contentBounds.width + DRAW_AREA_PADDING);
+    const maxY = Math.min(mapData.height, contentBounds.minY + contentBounds.height + DRAW_AREA_PADDING);
+    return { minX, minY, width: maxX - minX, height: maxY - minY };
+  }, [contentBounds, mapData.width, mapData.height]);
+
   // 레이어 비트맵이 MAX_LAYER_PIXELS를 넘는 층만 그만큼 축소해서 그린다.
   const renderScale = useMemo(() => {
     const density = PixelRatio.get();
@@ -241,6 +254,19 @@ export function IndoorMapView({
     width: mapData.width * renderScale,
     height: mapData.height * renderScale,
   };
+  // SVG 레이어가 실제로 그릴 영역(drawArea)의 dp 크기·위치와 viewBox.
+  const drawLayerStyle = {
+    position: 'absolute' as const,
+    left: drawArea.minX * renderScale,
+    top: drawArea.minY * renderScale,
+    width: drawArea.width * renderScale,
+    height: drawArea.height * renderScale,
+  };
+  const drawLayerSize: LayerSize = {
+    width: drawLayerStyle.width,
+    height: drawLayerStyle.height,
+    viewBox: `${drawArea.minX} ${drawArea.minY} ${drawArea.width} ${drawArea.height}`,
+  };
 
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const handleContainerLayout = useCallback(
@@ -277,16 +303,20 @@ export function IndoorMapView({
             opacity 0으로 만들면 iOS가 그 뷰에 터치를 안 보내서 확대/이동이 멈춘다.
           */}
           <Animated.View style={[styles.fill, baseStyle]}>
-            <AbsoluteLayer>{renderBackground(size)}</AbsoluteLayer>
-            <RoomPolygons
-              width={size.width}
-              height={size.height}
-              viewBoxWidth={mapData.width}
-              viewBoxHeight={mapData.height}
-              rooms={mapData.rooms}
-              selectedRoomIds={selectedRoomIds}
-            />
-            {renderForeground && <AbsoluteLayer>{renderForeground(size)}</AbsoluteLayer>}
+            <View style={drawLayerStyle} pointerEvents="none">
+              <AbsoluteLayer>{renderBackground(drawLayerSize)}</AbsoluteLayer>
+              <RoomPolygons
+                width={drawLayerSize.width}
+                height={drawLayerSize.height}
+                viewBoxX={drawArea.minX}
+                viewBoxY={drawArea.minY}
+                viewBoxWidth={drawArea.width}
+                viewBoxHeight={drawArea.height}
+                rooms={mapData.rooms}
+                selectedRoomIds={selectedRoomIds}
+              />
+              {renderForeground && <AbsoluteLayer>{renderForeground(drawLayerSize)}</AbsoluteLayer>}
+            </View>
           </Animated.View>
         </Animated.View>
       </GestureDetector>
