@@ -834,6 +834,8 @@ export default function OnboardingScreen() {
           <Button
             label="입학하기"
             onPress={() => {
+              // 숨겨 둔 동안은 터치만 막혀 있어서, 키보드·접근성 동작으로 눌려도 완료 처리하지 않는다.
+              if (!ctaEnabled) return;
               // 끝까지 보고 입학하기를 눌렀을 때만 완료로 기록한다(중간에 앱을 끄면 다음에 다시 보여준다).
               markOnboardingCompleted();
               navigation.replace('MainTabs', { screen: 'map' });
