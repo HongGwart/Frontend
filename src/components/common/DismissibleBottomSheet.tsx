@@ -159,7 +159,8 @@ export const DismissibleBottomSheet = forwardRef<DismissibleBottomSheetRef, Prop
             } else if (shouldSwipeUp) {
               animateSwipeUp();
             } else {
-              translateY.value = withSpring(0, { damping: 22, stiffness: 320 });
+              // mass를 생략하면 Reanimated 4 기본값(4)으로 크게 출렁여서 카드 밑으로 지도가 비친다.
+              translateY.value = withSpring(0, { damping: 22, stiffness: 320, mass: 1, overshootClamping: true });
             }
           }),
       [canSwipeUp, translateY, animateClose, animateSwipeUp],
