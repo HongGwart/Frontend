@@ -408,7 +408,7 @@ function RouteGuidanceView({ route, routeMap }: GuidanceRoute) {
           if (wantsNext) slideOut(1);
           else if (wantsPrev) slideOut(-1);
           else {
-            cardX.value = withSpring(0, { damping: 20, stiffness: 260 });
+            cardX.value = withSpring(0, { damping: 20, stiffness: 260, mass: 1, overshootClamping: true });
             cardOpacity.value = withTiming(1, { duration: 150 });
           }
         }),

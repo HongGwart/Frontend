@@ -75,14 +75,14 @@ export function Chip({
     if (active) {
       scale.value = withSequence(
         withSpring(1.08, { damping: 8, stiffness: 260, mass: 0.4 }),
-        withSpring(1, { damping: 12, stiffness: 220 }),
+        withSpring(1, { damping: 12, stiffness: 220, mass: 1 }),
       );
       lift.value = withSequence(
-        withSpring(-3, { damping: 8, stiffness: 260 }),
-        withSpring(0, { damping: 12, stiffness: 220 }),
+        withSpring(-3, { damping: 8, stiffness: 260, mass: 1 }),
+        withSpring(0, { damping: 12, stiffness: 220, mass: 1 }),
       );
     } else {
-      lift.value = withSpring(0, { damping: 12, stiffness: 220 });
+      lift.value = withSpring(0, { damping: 12, stiffness: 220, mass: 1 });
       scale.value = withRepeat(
         withSequence(
           withTiming(1.045, { duration: 620, easing: Easing.inOut(Easing.quad) }),

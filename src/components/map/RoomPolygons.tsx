@@ -75,6 +75,10 @@ export function RoomPolygons({
     fillOpacity: opacity.value,
   }));
 
+  // 한 번도 선택하지 않았으면 빈 SVG 레이어도 만들지 않는다. Android는 빈 레이어도 그 크기만큼 비트맵을 잡아서, 층을 바꿀
+  // 때마다 쓸데없이 그리게 된다.
+  if (displayedPaths.length === 0) return null;
+
   return (
     <Svg
       width={width}
