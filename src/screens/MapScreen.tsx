@@ -390,9 +390,10 @@ export default function MapScreen({ onSearchPress, onOpenBuildingDetail, onOpenB
         isShowZoomControls={false}
         ref={mapViewRef}
         style={StyleSheet.absoluteFill}
+        // 처음 화면은 캠퍼스 건물 22곳의 가운데(건물 좌표 범위의 중심)를 보여준다.
         initialCamera={{
-          latitude: 37.5504,
-          longitude: 126.9251,
+          latitude: 37.55076,
+          longitude: 126.92594,
           zoom: INITIAL_ZOOM,
         }}
         minZoom={MAP_MIN_ZOOM}
