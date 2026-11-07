@@ -453,8 +453,14 @@ export default function OnboardingScreen() {
   // 지금 보고 있는 온보딩 페이지(스와이프로 이동). 점 인디케이터 표시에만 쓰여서
   // reanimated 없이 일반 state로 충분하다.
   const [pageIndex, setPageIndex] = useState(0);
-  // "입학하기"는 마지막 페이지에서만 바로 눌리게 열린다(트랜지션 없이 즉시 반영).
+  // "입학하기"는 마지막 페이지에서만 보인다. 앞 페이지에서 눌러도 안 넘어가는 버튼이 보이면 고장 난 줄 안다(사용자 피드백).
+  // 버튼 자리는 비워 둬서 마지막 페이지에 와도 위쪽 내용이 밀리지 않는다.
   const ctaEnabled = pageIndex === TOTAL_PAGES - 1;
+  const ctaOpacity = useSharedValue(0);
+  useEffect(() => {
+    ctaOpacity.value = withTiming(ctaEnabled ? 1 : 0, { duration: 200 });
+  }, [ctaEnabled, ctaOpacity]);
+  const ctaStyle = useAnimatedStyle(() => ({ opacity: ctaOpacity.value }));
   // 길찾기 목업의 "최단 경로"/"비 회피"/"계단 회피" 칩 중 지금 활성화된 것. 사용자가
   // 누르는 게 아니라 아래 인터벌로 왼쪽부터 순서대로 자동 순환된다.
   const [selectedRouteOptionIndex, setSelectedRouteOptionIndex] = useState(0);
@@ -818,10 +824,9 @@ export default function OnboardingScreen() {
           ))}
         </PageDots>
 
-        <CtaBar style={{ paddingBottom: insets.bottom + 8 }}>
+        <CtaBar style={[{ paddingBottom: insets.bottom + 8 }, ctaStyle]} pointerEvents={ctaEnabled ? 'auto' : 'none'}>
           <Button
             label="입학하기"
-            disabled={!ctaEnabled}
             onPress={() => {
               // 끝까지 보고 입학하기를 눌렀을 때만 완료로 기록한다(중간에 앱을 끄면 다음에 다시 보여준다).
               markOnboardingCompleted();
@@ -1022,7 +1027,7 @@ const Dot = styled.View<{ active: boolean }>`
   background-color: ${({ theme, active }) => (active ? theme.semantic.main : theme.semantic.line.primary)};
 `;
 
-const CtaBar = styled.View`
+const CtaBar = styled(Animated.View)`
   width: 100%;
   padding: 0 20px;
 `;
