@@ -105,7 +105,7 @@ export default function BuildingIndoorScreen() {
     return names;
   }, [floorId, mapData, originalLabelOf, facilityRoomNames]);
 
-  // 탭한 강의실 라벨(예: "212"). 층을 바꾸면 이전 층의 선택은 의미가 없으니 비운다.
+  // 마지막으로 탭한 강의실 라벨(예: "212"). 선택을 해제해도 남겨 두고, 층을 바꾸면 이전 층의 방이라 비운다.
   const [selectedRoomLabel, setSelectedRoomLabel] = useState<string | null>(null);
 
   // 직전 층 번호를 기억해뒀다가, 층이 바뀔 때 위/아래 어느 방향에서 들어올지 정한다.
@@ -219,10 +219,12 @@ export default function BuildingIndoorScreen() {
                   />
                 )}
                 onRoomSelect={room => {
-                  const label = room ? room.label ?? room.id : null;
+                  // 선택을 해제하면(빈 곳·같은 방을 다시 탭) 하이라이트만 지우고 카드는 마지막 강의실 정보로 둔다.
+                  if (!room) return;
+                  const label = room.label ?? room.id;
                   setSelectedRoomLabel(label && (originalLabelOf.get(label) ?? label));
                   // 카드를 내려 둔 상태에서 강의실을 탭하면 카드를 부드럽게 올려 그 강의실 정보를 보여준다.
-                  if (room) cardSheetRef.current?.expand();
+                  cardSheetRef.current?.expand();
                 }}
               />
             </Animated.View>
