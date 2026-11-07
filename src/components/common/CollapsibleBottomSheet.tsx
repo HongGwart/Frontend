@@ -40,8 +40,10 @@ interface Props {
 const SNAP_VELOCITY = 500;
 // 손가락이 이 정도(px) 이상 세로로 움직여야 드래그로 본다 — 그 전엔 탭/스크롤 후보.
 const ACTIVATION_DISTANCE = 8;
-// stiffness/damping을 같은 비율로 올려서 튕기는 느낌
-const SPRING = { damping: 30, stiffness: 250 };
+// 거의 임계 감쇠(감쇠비 0.95)라 출렁이지 않고 빠르게 멈춘다. Reanimated 4는 mass 기본값이 4라 생략하면 감쇠비가
+// 0.47로 떨어져 펼칠 때 20% 가까이 위로 튀어 올라 카드 밑으로 지도가 비친다 — mass를 꼭 적는다.
+// overshootClamping으로 목표를 넘지 않게 해서 카드 밑변이 화면 밑변 위로 뜨지 않는다.
+const SPRING = { damping: 30, stiffness: 250, mass: 1, overshootClamping: true };
 
 /**
  * 아래로 밀면 peekHeight만 남기고 접히고, 다시 위로 밀거나 남은 부분을 탭하면 펼쳐지는 바텀시트.

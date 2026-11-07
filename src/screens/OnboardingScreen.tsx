@@ -528,7 +528,7 @@ export default function OnboardingScreen() {
 
         await wait(SEARCH_DEMO_CARD_APPEAR_DELAY_MS);
         if (cancelled) return;
-        facilityCardProgress.value = withSpring(1, { damping: 15, stiffness: 160 });
+        facilityCardProgress.value = withSpring(1, { damping: 15, stiffness: 160, mass: 1, overshootClamping: true });
 
         await wait(SEARCH_DEMO_HOLD_MS);
         if (cancelled) return;
