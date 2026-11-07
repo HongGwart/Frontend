@@ -824,7 +824,13 @@ export default function OnboardingScreen() {
           ))}
         </PageDots>
 
-        <CtaBar style={[{ paddingBottom: insets.bottom + 8 }, ctaStyle]} pointerEvents={ctaEnabled ? 'auto' : 'none'}>
+        <CtaBar
+          style={[{ paddingBottom: insets.bottom + 8 }, ctaStyle]}
+          pointerEvents={ctaEnabled ? 'auto' : 'none'}
+          // 숨겨 둔 동안에는 화면 낭독기(TalkBack·VoiceOver)도 버튼을 읽거나 누르지 못하게 한다.
+          accessibilityElementsHidden={!ctaEnabled}
+          importantForAccessibility={ctaEnabled ? 'auto' : 'no-hide-descendants'}
+        >
           <Button
             label="입학하기"
             onPress={() => {

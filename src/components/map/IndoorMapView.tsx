@@ -209,13 +209,17 @@ export function IndoorMapView({
   // SVG 레이어는 캔버스 전체가 아니라 도면이 있는 영역만 그린다. 캔버스는 층마다 1920px 안팎으로 고정이라 도면이 차지하는
   // 면적은 중간값 23%뿐인데, react-native-svg는 Android에서 레이어 크기만큼 비트맵에 그려서 층을 바꿀 때마다 빈 여백까지
   // 그리느라 느렸다. 레이어는 mapLayer 안에서 그 영역 자리에 놓아서, 도면 좌표 → 화면 좌표 계산(제스처·라벨·아이콘)은 그대로다.
+  // 스크립트가 도면 외곽선으로 구한 영역(mapData.contentBounds)이 없으면 자르지 않는다 — 위 contentBounds의 대체값(방·아이콘
+  // 바운딩 박스)에는 건물 외벽이 빠질 수 있어서다.
   const drawArea = useMemo(() => {
-    const minX = Math.max(0, contentBounds.minX - DRAW_AREA_PADDING);
-    const minY = Math.max(0, contentBounds.minY - DRAW_AREA_PADDING);
-    const maxX = Math.min(mapData.width, contentBounds.minX + contentBounds.width + DRAW_AREA_PADDING);
-    const maxY = Math.min(mapData.height, contentBounds.minY + contentBounds.height + DRAW_AREA_PADDING);
+    const bounds = mapData.contentBounds;
+    if (!bounds) return { minX: 0, minY: 0, width: mapData.width, height: mapData.height };
+    const minX = Math.max(0, bounds.minX - DRAW_AREA_PADDING);
+    const minY = Math.max(0, bounds.minY - DRAW_AREA_PADDING);
+    const maxX = Math.min(mapData.width, bounds.minX + bounds.width + DRAW_AREA_PADDING);
+    const maxY = Math.min(mapData.height, bounds.minY + bounds.height + DRAW_AREA_PADDING);
     return { minX, minY, width: maxX - minX, height: maxY - minY };
-  }, [contentBounds, mapData.width, mapData.height]);
+  }, [mapData.contentBounds, mapData.width, mapData.height]);
 
   // 레이어 비트맵이 MAX_LAYER_PIXELS를 넘는 층만 그만큼 축소해서 그린다.
   const renderScale = useMemo(() => {
@@ -254,19 +258,26 @@ export function IndoorMapView({
     width: mapData.width * renderScale,
     height: mapData.height * renderScale,
   };
-  // SVG 레이어가 실제로 그릴 영역(drawArea)의 dp 크기·위치와 viewBox.
-  const drawLayerStyle = {
-    position: 'absolute' as const,
-    left: drawArea.minX * renderScale,
-    top: drawArea.minY * renderScale,
-    width: drawArea.width * renderScale,
-    height: drawArea.height * renderScale,
-  };
-  const drawLayerSize: LayerSize = {
-    width: drawLayerStyle.width,
-    height: drawLayerStyle.height,
-    viewBox: `${drawArea.minX} ${drawArea.minY} ${drawArea.width} ${drawArea.height}`,
-  };
+  // SVG 레이어가 실제로 그릴 영역(drawArea)의 dp 크기·위치와 viewBox. 방을 선택할 때마다 다시 그려지는 화면이라, 같은 층에선
+  // 같은 객체를 넘겨 배경 SVG가 새 props로 다시 그려지지 않게 한다.
+  const drawLayerStyle = useMemo(
+    () => ({
+      position: 'absolute' as const,
+      left: drawArea.minX * renderScale,
+      top: drawArea.minY * renderScale,
+      width: drawArea.width * renderScale,
+      height: drawArea.height * renderScale,
+    }),
+    [drawArea, renderScale]
+  );
+  const drawLayerSize = useMemo<LayerSize>(
+    () => ({
+      width: drawLayerStyle.width,
+      height: drawLayerStyle.height,
+      viewBox: `${drawArea.minX} ${drawArea.minY} ${drawArea.width} ${drawArea.height}`,
+    }),
+    [drawLayerStyle, drawArea]
+  );
 
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const handleContainerLayout = useCallback(
